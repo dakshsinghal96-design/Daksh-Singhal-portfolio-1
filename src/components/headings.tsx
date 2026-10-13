@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
 import GradientText from './GradientText';
+import TechText from './TechText';
+import { useTheme } from '../hooks/themeContext';
 
 /**
  * GradientHeading — a real heading element whose text carries the animated
@@ -28,7 +30,7 @@ export function GradientHeading({
   );
 }
 
-/** Section heading with an optional eyebrow and supporting line. */
+/** Section heading with interactive TechText vector animation */
 export function SectionHeading({
   eyebrow,
   title,
@@ -44,6 +46,10 @@ export function SectionHeading({
   align?: 'left' | 'center';
   id?: string;
 }) {
+  const { theme } = useTheme();
+  const textColor = theme === 'dark' ? '#ffffff' : '#0f172a';
+  const accentColor = theme === 'dark' ? '#38bdf8' : '#2563eb';
+
   return (
     <div className={`max-w-2xl ${align === 'center' ? 'mx-auto text-center' : ''}`}>
       {eyebrow && <p className="eyebrow mb-3">{eyebrow}</p>}
@@ -51,6 +57,21 @@ export function SectionHeading({
         <GradientHeading level={2} className="text-3xl sm:text-4xl">
           {title}
         </GradientHeading>
+      ) : typeof title === 'string' ? (
+        <div id={id} className={`relative w-full h-14 sm:h-16 ${align === 'center' ? 'mx-auto' : ''}`}>
+          <TechText
+            text={title}
+            fontWeight={700}
+            fontSize={42}
+            reveal="letter"
+            dashLength={4}
+            dashGap={2}
+            specks={15}
+            align={align}
+            color={textColor}
+            accentColor={accentColor}
+          />
+        </div>
       ) : (
         <h2 id={id} className="text-3xl text-ink sm:text-4xl">
           {title}
@@ -75,6 +96,10 @@ export function PageHeader({
   gradient?: boolean;
   children?: ReactNode;
 }) {
+  const { theme } = useTheme();
+  const textColor = theme === 'dark' ? '#ffffff' : '#0f172a';
+  const accentColor = theme === 'dark' ? '#38bdf8' : '#2563eb';
+
   return (
     <header className="scrim pb-10 pt-14 sm:pt-20">
       <div className="shell">
@@ -88,6 +113,21 @@ export function PageHeader({
               {title}
             </GradientText>
           </h1>
+        ) : typeof title === 'string' ? (
+          <div className="relative w-full max-w-xl h-16 sm:h-20 lg:h-24">
+            <TechText
+              text={title}
+              fontWeight={700}
+              fontSize={56}
+              reveal="letter"
+              dashLength={4}
+              dashGap={2}
+              specks={15}
+              align="left"
+              color={textColor}
+              accentColor={accentColor}
+            />
+          </div>
         ) : (
           <h1 className="text-4xl text-ink sm:text-5xl lg:text-6xl">{title}</h1>
         )}
