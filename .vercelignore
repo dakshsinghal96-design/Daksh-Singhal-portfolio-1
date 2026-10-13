@@ -1,0 +1,18 @@
+# Vercel does not read .gitignore, so build artefacts and local-only files must
+# be excluded here or they are uploaded with the source. `dist/` in particular
+# is ~60 MB and is rebuilt on Vercel anyway, so shipping it doubles the upload
+# for no benefit.
+node_modules
+dist
+.git
+
+# Local environment and CLI state.
+.env*
+.vercel
+
+# TypeScript incremental build info.
+*.tsbuildinfo
+
+# Kept in the repository for provenance and for `npm run gen:projects`, but the
+# build does not read it, so it does not need to be uploaded.
+legacy-archive.html
