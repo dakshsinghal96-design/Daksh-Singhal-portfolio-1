@@ -6,3 +6,6 @@ dist
 tsconfig.app.tsbuildinfo
 tsconfig.node.tsbuildinfo
 *.tsbuildinfo
+
+.vercel
+.env*
