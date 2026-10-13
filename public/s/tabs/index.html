@@ -1,0 +1,58 @@
+<!--
+  REPAIRED ASSET PATHS (portfolio rebuild, 2026-09-06):
+  This build shipped ROOT-ABSOLUTE asset references, so it requested its own
+  files from the site root and received 404s. That is broken on the original
+  deployment too - it is not a regression introduced here. The references were
+  made relative so they resolve inside this build folder, where the real files
+  actually live. No other markup, styling or behaviour was changed.
+    /assets/index-SME3WJJk.js → assets/…
+    /assets/index-DmQR7F53.css → assets/…
+-->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+    <title>Tabs — step inside your thoughts</title>
+    <script type="module" crossorigin src="assets/index-SME3WJJk.js"></script>
+    <link rel="stylesheet" crossorigin href="assets/index-DmQR7F53.css">
+  </head>
+  <body>
+    <!-- The 3D scene renders into this canvas -->
+    <canvas id="scene"></canvas>
+
+    <!-- Intro / title card, fades out after camera or first interaction -->
+    <div id="intro" class="intro">
+      <h1>Tabs</h1>
+      <p class="tagline">Step inside your thoughts.</p>
+      <p class="sub">
+        Your Second Brain as a living 3D space. Reach out and move your ideas —
+        with your hands, or your mouse.
+      </p>
+      <div class="cta-row">
+        <button id="enable-cam" class="btn">Enable hand tracking</button>
+        <button id="explore-mouse" class="btn ghost">Explore with mouse →</button>
+      </div>
+      <p class="hint">
+        No webcam? Choose “Explore with mouse” and drag the notes directly. Drag
+        empty space to orbit, scroll to zoom.
+      </p>
+      <p id="cam-status" class="status" role="status" aria-live="polite"></p>
+    </div>
+
+    <!-- Persistent gesture hint (bottom center) -->
+    <div id="legend" class="legend hidden">
+      <span><b>Pinch</b> to grab</span>
+      <span><b>Open hand</b> to release</span>
+      <span><b>Drag empty space</b> to orbit</span>
+    </div>
+
+    <!-- Webcam preview + hand-skeleton overlay (corner). Hidden until camera on. -->
+    <div id="cam-preview" class="cam-preview hidden">
+      <video id="webcam" playsinline muted></video>
+      <canvas id="hand-overlay"></canvas>
+      <span class="cam-label">hand tracking</span>
+    </div>
+
+  </body>
+</html>

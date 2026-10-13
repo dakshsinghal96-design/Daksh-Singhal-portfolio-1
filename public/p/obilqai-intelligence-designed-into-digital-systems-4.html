@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ObilqAI — Intelligence, designed into digital systems</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ===========================================================
+   ObilqAI — luxury dark-violet AI studio. Single file.
+   =========================================================== */
+:root{
+  --bg-0:#0d0f17;
+  --bg-1:#11131C;
+  --bg-2:#13151F;
+  --bg-3:#171925;
+  --panel-1:#1a1726;
+  --panel-2:#211C32;
+  --panel-3:#2B2440;
+  --panel-4:#312C4D;
+  --v-1:#6A5593;
+  --v-2:#7D63B3;
+  --v-3:#9A7AE0;
+  --tx-1:#F0EAF4;
+  --tx-2:#C9C6D6;
+  --tx-3:#98969E;
+  --line:rgba(154,122,224,.10);
+  --line-2:rgba(154,122,224,.16);
+  --soft:0 30px 80px -40px rgba(0,0,0,.8);
+  --r:20px;
+  --max:1180px;
+  --f-d:'Sora',sans-serif;
+  --f-b:'Inter',sans-serif;
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  background:var(--bg-1);color:var(--tx-2);font-family:var(--f-b);
+  line-height:1.6;font-weight:400;overflow-x:hidden;letter-spacing:.1px;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+}
+body.lock{overflow:hidden;height:100vh}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+::selection{background:rgba(154,122,224,.28);color:var(--tx-1)}
+::-webkit-scrollbar{width:9px}
+::-webkit-scrollbar-track{background:var(--bg-0)}
+::-webkit-scrollbar-thumb{background:#2b2440;border-radius:8px}
+::-webkit-scrollbar-thumb:hover{background:#3a3155}
+
+/* ---------- atmosphere ---------- */
+.bg-field{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.bg-field::before{
+  content:"";position:absolute;inset:0;
+  background:
+    radial-gradient(120% 80% at 50% -10%,rgba(45,36,72,.55),transparent 60%),
+    radial-gradient(90% 60% at 85% 8%,rgba(106,85,147,.18),transparent 55%),
+    linear-gradient(180deg,var(--bg-1),var(--bg-0) 120%);
+}
+.aura{position:absolute;border-radius:50%;filter:blur(110px);opacity:.5;mix-blend-mode:screen}
+.aura.a1{width:640px;height:640px;background:radial-gradient(circle,rgba(125,99,179,.5),transparent 68%);top:-220px;left:-160px;animation:drift1 26s ease-in-out infinite}
+.aura.a2{width:720px;height:720px;background:radial-gradient(circle,rgba(106,85,147,.42),transparent 70%);bottom:-300px;right:-220px;animation:drift2 32s ease-in-out infinite}
+.aura.a3{width:480px;height:480px;background:radial-gradient(circle,rgba(154,122,224,.22),transparent 70%);top:40%;left:55%;animation:drift1 38s ease-in-out infinite}
+@keyframes drift1{50%{transform:translate(90px,70px) scale(1.08)}}
+@keyframes drift2{50%{transform:translate(-80px,-60px) scale(1.06)}}
+#dust{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.6}
+#light{position:fixed;width:560px;height:560px;border-radius:50%;z-index:1;pointer-events:none;
+  background:radial-gradient(circle,rgba(125,99,179,.10),transparent 60%);
+  transform:translate(-50%,-50%);transition:opacity .6s;will-change:transform}
+.noise{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.025;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+/* ---------- intro ---------- */
+#intro{position:fixed;inset:0;z-index:1000;background:var(--bg-0);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:34px;
+  transition:opacity 1s var(--ease),visibility 1s}
+#intro.done{opacity:0;visibility:hidden}
+#intro .halo{position:absolute;width:540px;height:540px;border-radius:50%;
+  background:radial-gradient(circle,rgba(125,99,179,.35),transparent 62%);
+  transform:scale(.4);opacity:0;animation:halo 2.6s var(--ease) forwards .2s}
+@keyframes halo{40%{opacity:1}100%{transform:scale(1.1);opacity:.7}}
+#intro .mark{font-family:var(--f-d);font-weight:600;font-size:clamp(2rem,5vw,3rem);letter-spacing:-.02em;
+  color:var(--tx-1);opacity:0;transform:translateY(14px);animation:rise .9s var(--ease) forwards .35s;position:relative}
+#intro .mark span{color:var(--v-3)}
+#intro .tag{font-size:.95rem;color:var(--tx-3);letter-spacing:.04em;opacity:0;
+  animation:rise .9s var(--ease) forwards 1.5s;position:relative}
+@keyframes rise{to{opacity:1;transform:none}}
+#intro .line{width:min(280px,60vw);height:1px;background:rgba(154,122,224,.18);position:relative;overflow:hidden;opacity:0;animation:rise .6s var(--ease) forwards .9s}
+#intro .line i{position:absolute;inset:0;width:0;background:linear-gradient(90deg,transparent,var(--v-3),transparent);animation:fill 2.2s var(--ease) forwards .9s}
+@keyframes fill{to{width:100%}}
+
+/* ---------- nav ---------- */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;
+  padding:22px clamp(20px,5vw,56px);transition:padding .4s var(--ease),background .4s,border-color .4s;border-bottom:1px solid transparent}
+nav.scrolled{padding:14px clamp(20px,5vw,56px);background:rgba(13,15,23,.6);backdrop-filter:blur(20px) saturate(140%);border-bottom:1px solid var(--line)}
+.brand{font-family:var(--f-d);font-weight:600;font-size:1.2rem;letter-spacing:-.01em;color:var(--tx-1);display:flex;align-items:center;gap:11px}
+.brand .glyph{width:26px;height:26px;position:relative;display:inline-block}
+.brand .glyph::before,.brand .glyph::after{content:"";position:absolute;inset:0;border-radius:7px;border:1.4px solid var(--v-3)}
+.brand .glyph::after{transform:rotate(45deg) scale(.62);border-color:rgba(154,122,224,.45)}
+.brand span{color:var(--v-3)}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-links a{font-size:.9rem;color:var(--tx-3);padding:9px 14px;border-radius:10px;transition:color .25s;position:relative}
+.nav-links a:hover{color:var(--tx-1)}
+.nav-links a.active{color:var(--tx-1)}
+.nav-links a.active::after{content:"";position:absolute;left:14px;right:14px;bottom:2px;height:1px;background:var(--v-3);opacity:.7}
+.nav-cta{margin-left:8px}
+.btn{position:relative;display:inline-flex;align-items:center;gap:9px;font-size:.92rem;font-weight:500;letter-spacing:.01em;
+  padding:12px 22px;border-radius:12px;transition:transform .35s var(--ease),box-shadow .35s,border-color .3s,background .3s;will-change:transform}
+.btn .mag{display:inline-flex;align-items:center;gap:9px;transition:transform .25s var(--ease)}
+.btn-primary{color:#fff;background:linear-gradient(135deg,var(--v-2),var(--v-1));box-shadow:0 14px 30px -14px rgba(125,99,179,.8)}
+.btn-primary:hover{box-shadow:0 18px 40px -14px rgba(125,99,179,.9)}
+.btn-ghost{color:var(--tx-1);background:rgba(43,36,64,.4);border:1px solid var(--line-2);backdrop-filter:blur(10px)}
+.btn-ghost:hover{border-color:rgba(154,122,224,.35);background:rgba(43,36,64,.6)}
+.btn .arrow{width:14px;height:14px;stroke:currentColor;stroke-width:1.6;fill:none;transition:transform .3s var(--ease)}
+.btn:hover .arrow{transform:translateX(4px)}
+.burger{display:none;width:42px;height:42px;border-radius:11px;border:1px solid var(--line-2);position:relative;background:rgba(43,36,64,.4)}
+.burger span{position:absolute;left:12px;right:12px;height:1.4px;background:var(--tx-1);transition:.3s var(--ease)}
+.burger span:nth-child(1){top:16px}.burger span:nth-child(2){top:21px}.burger span:nth-child(3){top:26px}
+.burger.open span:nth-child(1){top:21px;transform:rotate(45deg)}
+.burger.open span:nth-child(2){opacity:0}
+.burger.open span:nth-child(3){top:21px;transform:rotate(-45deg)}
+
+/* ---------- layout ---------- */
+.wrap{max-width:var(--max);margin:0 auto;width:100%}
+section{position:relative;z-index:2;padding:clamp(80px,11vw,150px) clamp(20px,5vw,56px)}
+.eyebrow{font-size:.74rem;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--v-3);
+  display:inline-flex;align-items:center;gap:12px;margin-bottom:22px}
+.eyebrow::before{content:"";width:26px;height:1px;background:rgba(154,122,224,.5)}
+.h-title{font-family:var(--f-d);font-weight:600;color:var(--tx-1);line-height:1.08;letter-spacing:-.02em;
+  font-size:clamp(2rem,4.4vw,3.1rem)}
+.h-sub{color:var(--tx-3);font-size:1.05rem;max-width:560px;margin-top:18px}
+.sec-head{margin-bottom:clamp(44px,6vw,72px);max-width:680px}
+
+/* ---------- hero ---------- */
+.hero{min-height:100vh;display:flex;align-items:center;padding-top:120px;padding-bottom:80px}
+.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center}
+.hero-tag{display:inline-flex;align-items:center;gap:10px;font-size:.78rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--tx-3);padding:8px 16px;border-radius:30px;background:rgba(43,36,64,.5);border:1px solid var(--line);margin-bottom:30px}
+.hero-tag i{width:6px;height:6px;border-radius:50%;background:var(--v-3);box-shadow:0 0 10px rgba(154,122,224,.8)}
+.hero-name{font-family:var(--f-d);font-weight:300;font-size:clamp(1.1rem,2vw,1.4rem);letter-spacing:.42em;text-transform:uppercase;color:var(--tx-3);margin-bottom:18px}
+.hero h1{font-family:var(--f-d);font-weight:600;color:var(--tx-1);line-height:1.04;letter-spacing:-.025em;
+  font-size:clamp(2.5rem,5.6vw,4.1rem)}
+.hero h1 em{font-style:normal;background:linear-gradient(120deg,var(--tx-1) 10%,var(--v-3) 60%,#cbb6f5);
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p.lede{font-size:1.12rem;color:var(--tx-2);max-width:500px;margin:26px 0 38px}
+.hero-cta{display:flex;gap:14px;flex-wrap:wrap}
+
+/* hero visual */
+.stage{position:relative;height:480px;display:grid;place-items:center;perspective:1200px}
+.stage .depth{position:relative;width:340px;height:340px;transform-style:preserve-3d;transition:transform .4s var(--ease);will-change:transform}
+.sphere{position:absolute;inset:50% auto auto 50%;width:210px;height:210px;border-radius:50%;transform:translate(-50%,-50%);
+  background:
+    radial-gradient(circle at 38% 32%,rgba(203,182,245,.9),rgba(125,99,179,.55) 42%,rgba(45,36,72,.9) 78%,rgba(20,16,32,.95)),
+    radial-gradient(circle at 70% 75%,rgba(154,122,224,.4),transparent 50%);
+  box-shadow:0 40px 90px -30px rgba(125,99,179,.7),inset -22px -22px 60px rgba(0,0,0,.6),inset 16px 16px 50px rgba(203,182,245,.18);
+  animation:bob 8s ease-in-out infinite}
+.sphere::after{content:"";position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 60% 78%,rgba(255,255,255,.16),transparent 45%);mix-blend-mode:screen}
+@keyframes bob{50%{transform:translate(-50%,-58%)}}
+.ringo{position:absolute;inset:50% auto auto 50%;border-radius:50%;border:1px solid rgba(154,122,224,.22);transform:translate(-50%,-50%) rotateX(74deg)}
+.ringo.o1{width:300px;height:300px;animation:rot 18s linear infinite}
+.ringo.o2{width:380px;height:380px;border-color:rgba(154,122,224,.14);animation:rot 30s linear infinite reverse}
+.ringo .bead{position:absolute;top:-3px;left:50%;width:7px;height:7px;border-radius:50%;background:var(--v-3);box-shadow:0 0 12px rgba(154,122,224,.9);transform:translateX(-50%)}
+@keyframes rot{to{transform:translate(-50%,-50%) rotateX(74deg) rotate(360deg)}}
+.gpanel{position:absolute;border-radius:14px;background:rgba(33,28,50,.5);border:1px solid var(--line-2);
+  backdrop-filter:blur(14px);box-shadow:var(--soft);padding:14px 16px;transform-style:preserve-3d}
+.gpanel .pl{display:flex;flex-direction:column;gap:7px}
+.gpanel .bar{height:5px;border-radius:4px;background:rgba(154,122,224,.3)}
+.gpanel .bar.w1{width:46px}.gpanel .bar.w2{width:30px;background:rgba(154,122,224,.16)}
+.gpanel .dot{width:8px;height:8px;border-radius:50%;background:var(--v-3);box-shadow:0 0 10px rgba(154,122,224,.7)}
+.gp1{top:8%;left:-6%;transform:translateZ(60px)}
+.gp2{bottom:6%;right:-8%;transform:translateZ(40px)}
+.gp3{bottom:30%;left:-12%;transform:translateZ(80px);padding:12px 14px}
+.dataline{position:absolute;left:50%;top:50%;width:1px;height:140px;background:linear-gradient(transparent,rgba(154,122,224,.4),transparent);transform-origin:top}
+.scroll-cue{position:absolute;bottom:30px;left:clamp(20px,5vw,56px);display:flex;align-items:center;gap:12px;font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--tx-3)}
+.scroll-cue .track{width:26px;height:42px;border:1px solid var(--line-2);border-radius:14px;position:relative}
+.scroll-cue .track i{position:absolute;top:7px;left:50%;width:3px;height:7px;border-radius:3px;background:var(--v-3);transform:translateX(-50%);animation:wheel 1.8s var(--ease) infinite}
+@keyframes wheel{60%{transform:translate(-50%,14px);opacity:0}}
+
+/* ---------- reveal ---------- */
+.rv{opacity:0;transform:translateY(34px);transition:opacity 1s var(--ease),transform 1s var(--ease)}
+.rv.in{opacity:1;transform:none}
+
+/* ---------- filters ---------- */
+.filters{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:40px}
+.filter{font-size:.86rem;color:var(--tx-3);padding:9px 18px;border-radius:30px;background:rgba(33,28,50,.4);border:1px solid var(--line);transition:.3s var(--ease)}
+.filter:hover{color:var(--tx-1);border-color:var(--line-2)}
+.filter.active{color:var(--tx-1);background:rgba(125,99,179,.18);border-color:rgba(154,122,224,.4)}
+
+/* ---------- bento ---------- */
+.bento{display:grid;grid-template-columns:repeat(6,1fr);gap:18px;grid-auto-flow:row dense}
+.card{position:relative;border-radius:var(--r);padding:26px;overflow:hidden;cursor:pointer;grid-column:span 2;
+  background:linear-gradient(165deg,rgba(33,28,50,.72),rgba(23,21,35,.82));
+  border:1px solid var(--line);box-shadow:var(--soft);
+  transition:opacity .55s var(--ease),transform .5s var(--ease),filter .55s var(--ease),border-color .4s,box-shadow .4s;
+  transform-style:preserve-3d;display:flex;flex-direction:column}
+.card::before{content:"";position:absolute;inset:0;border-radius:var(--r);padding:1px;pointer-events:none;opacity:0;transition:opacity .4s;
+  background:linear-gradient(140deg,rgba(154,122,224,.5),transparent 38%);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.card::after{content:"";position:absolute;top:0;left:-120%;width:55%;height:100%;transform:skewX(-16deg);transition:left .8s var(--ease);
+  background:linear-gradient(110deg,transparent,rgba(203,182,245,.10),transparent)}
+.card:hover{border-color:rgba(154,122,224,.3);box-shadow:0 40px 90px -40px rgba(125,99,179,.5)}
+.card:hover::before{opacity:1}
+.card:hover::after{left:120%}
+.card .ico{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;margin-bottom:auto;
+  background:rgba(125,99,179,.14);border:1px solid var(--line-2)}
+.card .ico svg{width:22px;height:22px;stroke:var(--v-3);stroke-width:1.4;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.card .cat{font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--v-3);margin:22px 0 9px}
+.card h3{font-family:var(--f-d);font-weight:600;color:var(--tx-1);font-size:1.18rem;letter-spacing:-.01em;line-height:1.25}
+.card .desc{color:var(--tx-3);font-size:.92rem;margin-top:10px}
+.card .meta{display:flex;align-items:flex-end;justify-content:space-between;margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}
+.card .impact{font-size:.9rem;color:var(--tx-2);font-weight:500}
+.card .impact small{display:block;font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--tx-3);margin-bottom:3px;font-weight:400}
+.card .view{display:inline-flex;align-items:center;gap:7px;font-size:.84rem;color:var(--v-3);font-weight:500}
+.card .view svg{width:14px;height:14px;stroke:currentColor;stroke-width:1.6;fill:none;transition:transform .3s var(--ease)}
+.card:hover .view svg{transform:translateX(4px)}
+.card .tools{display:flex;flex-wrap:wrap;gap:6px;margin-top:16px}
+.card .tools span{font-size:.7rem;color:var(--tx-3);padding:4px 10px;border-radius:7px;background:rgba(43,36,64,.5);border:1px solid var(--line)}
+.card.feature{grid-column:span 4;grid-row:span 2}
+.card.feature h3{font-size:1.7rem}
+.card.feature .desc{font-size:1rem;max-width:420px}
+.card.feature .ico{width:54px;height:54px}
+.card.feature .ico svg{width:26px;height:26px}
+.card.hidden{opacity:0;transform:scale(.92);filter:blur(6px);pointer-events:none;display:none}
+
+/* ---------- capabilities ---------- */
+.cap-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.cap{position:relative;padding:30px;border-radius:var(--r);overflow:hidden;
+  background:linear-gradient(165deg,rgba(26,23,38,.7),rgba(19,21,31,.8));border:1px solid var(--line);
+  transition:transform .5s var(--ease),border-color .4s,box-shadow .4s}
+.cap:hover{transform:translateY(-6px);border-color:rgba(154,122,224,.26);box-shadow:0 36px 80px -44px rgba(125,99,179,.55)}
+.cap .ico{width:50px;height:50px;border-radius:13px;display:grid;place-items:center;margin-bottom:20px;
+  background:rgba(125,99,179,.12);border:1px solid var(--line-2);transition:.4s var(--ease)}
+.cap:hover .ico{background:rgba(125,99,179,.2)}
+.cap .ico svg{width:24px;height:24px;stroke:var(--v-3);stroke-width:1.4;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.cap h3{font-family:var(--f-d);font-weight:600;color:var(--tx-1);font-size:1.12rem;margin-bottom:9px}
+.cap p{color:var(--tx-3);font-size:.92rem}
+
+/* ---------- process ---------- */
+.steps{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;position:relative}
+.steps::before{content:"";position:absolute;top:7px;left:8%;right:8%;height:1px;background:linear-gradient(90deg,transparent,rgba(154,122,224,.35),rgba(154,122,224,.35),transparent)}
+.step{position:relative;padding-right:18px}
+.step .node{width:15px;height:15px;border-radius:50%;background:var(--bg-1);border:1px solid var(--v-3);position:relative;z-index:2;margin-bottom:24px}
+.step .node::after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--v-3);box-shadow:0 0 12px rgba(154,122,224,.7)}
+.step .n{font-size:.72rem;letter-spacing:.18em;color:var(--tx-3);margin-bottom:8px}
+.step h4{font-family:var(--f-d);font-weight:600;color:var(--tx-1);font-size:1.12rem;margin-bottom:10px}
+.step p{color:var(--tx-3);font-size:.9rem;max-width:200px}
+
+/* ---------- metrics ---------- */
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.metric{padding:46px 28px;border-right:1px solid var(--line)}
+.metric:last-child{border-right:none}
+.metric b{font-family:var(--f-d);font-weight:300;font-size:clamp(2.4rem,4vw,3.4rem);color:var(--tx-1);letter-spacing:-.02em;display:block;line-height:1}
+.metric span{display:block;margin-top:14px;font-size:.84rem;letter-spacing:.04em;color:var(--tx-3)}
+
+/* ---------- about ---------- */
+.about-stmt{font-family:var(--f-d);font-weight:400;color:var(--tx-1);line-height:1.3;letter-spacing:-.015em;
+  font-size:clamp(1.5rem,3.4vw,2.6rem);max-width:900px}
+.about-stmt em{font-style:normal;color:var(--v-3)}
+.about-foot{display:flex;flex-wrap:wrap;gap:40px;margin-top:50px;padding-top:34px;border-top:1px solid var(--line)}
+.about-foot div{max-width:240px}
+.about-foot h5{font-size:.74rem;letter-spacing:.16em;text-transform:uppercase;color:var(--v-3);margin-bottom:10px;font-weight:500}
+.about-foot p{font-size:.92rem;color:var(--tx-3)}
+
+/* ---------- contact ---------- */
+.contact-grid{display:grid;grid-template-columns:.85fr 1.15fr;gap:48px;align-items:start}
+.form-panel{border-radius:24px;padding:clamp(28px,4vw,42px);position:relative;overflow:hidden;
+  background:linear-gradient(165deg,rgba(33,28,50,.7),rgba(19,21,31,.84));border:1px solid var(--line-2);box-shadow:var(--soft)}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
+.field{display:flex;flex-direction:column;gap:8px}
+.field.full{grid-column:1/-1}
+.field label{font-size:.74rem;letter-spacing:.14em;text-transform:uppercase;color:var(--tx-3)}
+.field input,.field select,.field textarea{font-family:inherit;font-size:.95rem;color:var(--tx-1);padding:13px 15px;border-radius:12px;
+  background:rgba(13,15,23,.55);border:1px solid var(--line-2);outline:none;transition:.3s var(--ease);width:100%}
+.field textarea{resize:vertical;min-height:118px}
+.field input::placeholder,.field textarea::placeholder{color:#6c6a78}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:rgba(154,122,224,.5);background:rgba(13,15,23,.75)}
+.field select{appearance:none;cursor:pointer}
+.field select option{background:#1a1726}
+.form-note{display:none;margin-top:18px;padding:15px 18px;border-radius:12px;font-size:.92rem;color:var(--v-3);
+  background:rgba(125,99,179,.1);border:1px solid rgba(154,122,224,.26)}
+.form-note.show{display:block;animation:rise .5s var(--ease)}
+
+/* ---------- footer ---------- */
+footer{position:relative;z-index:2;padding:56px clamp(20px,5vw,56px) 44px;border-top:1px solid var(--line)}
+.foot-in{max-width:var(--max);margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px}
+.foot-in p{font-size:.84rem;color:var(--tx-3)}
+.foot-links{display:flex;gap:22px}
+.foot-links a{font-size:.86rem;color:var(--tx-3);transition:color .25s}
+.foot-links a:hover{color:var(--tx-1)}
+
+/* ---------- overlay ---------- */
+#ov{position:fixed;inset:0;z-index:600;display:none;align-items:stretch;justify-content:flex-end}
+#ov.open{display:flex}
+#ov .scrim{position:absolute;inset:0;background:rgba(8,9,14,.7);backdrop-filter:blur(6px);opacity:0;transition:opacity .6s var(--ease)}
+#ov.open .scrim{opacity:1}
+#ov .scrim::after{content:"";position:absolute;inset:0;background:radial-gradient(60% 60% at 80% 30%,rgba(125,99,179,.22),transparent 60%);opacity:0;transition:opacity .8s;transition-delay:.1s}
+#ov.open .scrim::after{opacity:1}
+.detail{position:relative;width:min(680px,100%);height:100%;overflow-y:auto;
+  background:linear-gradient(180deg,rgba(23,25,37,.98),rgba(13,15,23,.99));border-left:1px solid var(--line-2);
+  transform:translateX(60px);opacity:0;transition:transform .7s var(--ease),opacity .6s var(--ease);box-shadow:-40px 0 120px -40px rgba(0,0,0,.9)}
+#ov.open .detail{transform:none;opacity:1}
+.detail::-webkit-scrollbar{width:7px}
+.detail-head{position:sticky;top:0;z-index:5;display:flex;justify-content:space-between;align-items:flex-start;gap:20px;
+  padding:32px clamp(26px,4vw,44px) 24px;background:linear-gradient(rgba(23,25,37,.98),rgba(23,25,37,.6));backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.detail-head .cat{font-size:.74rem;letter-spacing:.18em;text-transform:uppercase;color:var(--v-3);margin-bottom:12px}
+.detail-head h2{font-family:var(--f-d);font-weight:600;color:var(--tx-1);font-size:clamp(1.5rem,3vw,2rem);line-height:1.12;letter-spacing:-.02em}
+.x{width:42px;height:42px;border-radius:12px;border:1px solid var(--line-2);background:rgba(43,36,64,.4);position:relative;flex-shrink:0;transition:.3s var(--ease)}
+.x::before,.x::after{content:"";position:absolute;top:50%;left:50%;width:15px;height:1.4px;background:var(--tx-1);transform:translate(-50%,-50%) rotate(45deg)}
+.x::after{transform:translate(-50%,-50%) rotate(-45deg)}
+.x:hover{border-color:rgba(154,122,224,.4);transform:rotate(90deg)}
+.detail-body{padding:28px clamp(26px,4vw,44px) 48px}
+.mock{height:200px;border-radius:18px;margin-bottom:34px;position:relative;overflow:hidden;
+  background:linear-gradient(150deg,rgba(43,36,64,.7),rgba(19,21,31,.7));border:1px solid var(--line-2);display:flex;flex-direction:column}
+.mock .topbar{height:38px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:7px;padding:0 16px}
+.mock .topbar i{width:8px;height:8px;border-radius:50%;background:rgba(154,122,224,.4)}
+.mock .topbar i:first-child{background:rgba(154,122,224,.7)}
+.mock .body{flex:1;display:grid;grid-template-columns:80px 1fr;gap:14px;padding:16px}
+.mock .body .side{border-radius:10px;background:rgba(154,122,224,.07);border:1px solid var(--line)}
+.mock .body .main{display:flex;flex-direction:column;gap:10px}
+.mock .ln{height:10px;border-radius:5px;background:rgba(154,122,224,.16)}
+.mock .ln.s{width:50%}.mock .ln.m{width:75%}.mock .ln.l{width:90%}
+.mock .glow{position:absolute;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(125,99,179,.4),transparent 65%);bottom:-80px;right:-40px;filter:blur(20px)}
+.dblock{margin-bottom:28px}
+.dblock h4{font-size:.74rem;letter-spacing:.16em;text-transform:uppercase;color:var(--v-3);margin-bottom:11px}
+.dblock p{color:var(--tx-2);font-size:.98rem}
+.dblock ul{list-style:none;display:grid;gap:11px}
+.dblock li{position:relative;padding-left:22px;color:var(--tx-2);font-size:.96rem}
+.dblock li::before{content:"";position:absolute;left:0;top:9px;width:7px;height:7px;border-radius:2px;background:var(--v-3);transform:rotate(45deg)}
+.dmeta{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:32px}
+.dmeta .m{padding:18px;border-radius:14px;background:rgba(43,36,64,.4);border:1px solid var(--line)}
+.dmeta .m small{font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--tx-3);display:block;margin-bottom:7px}
+.dmeta .m strong{color:var(--tx-1);font-weight:500;font-size:1rem}
+.dtools{display:flex;flex-wrap:wrap;gap:8px}
+.dtools span{font-size:.78rem;color:var(--tx-2);padding:6px 13px;border-radius:9px;background:rgba(43,36,64,.5);border:1px solid var(--line)}
+
+/* ---------- responsive ---------- */
+@media(max-width:980px){
+  .hero-grid{grid-template-columns:1fr;gap:20px}
+  .stage{height:380px;order:-1;margin-bottom:10px}
+  .cap-grid{grid-template-columns:repeat(2,1fr)}
+  .steps{grid-template-columns:1fr;gap:0}
+  .steps::before{left:7px;right:auto;top:0;bottom:0;width:1px;height:auto}
+  .step{padding:0 0 34px 34px}
+  .step .node{position:absolute;left:0;margin:0}
+  .step p{max-width:none}
+  .metrics{grid-template-columns:repeat(2,1fr)}
+  .metric:nth-child(2){border-right:none}
+  .metric:nth-child(1),.metric:nth-child(2){border-bottom:1px solid var(--line)}
+  .contact-grid{grid-template-columns:1fr;gap:30px}
+  .bento{grid-template-columns:repeat(4,1fr)}
+  .card.feature{grid-column:span 4;grid-row:span 1}
+  .card{grid-column:span 2}
+}
+@media(max-width:680px){
+  .nav-links{position:fixed;inset:0 0 0 auto;width:min(300px,82vw);flex-direction:column;justify-content:center;align-items:flex-start;
+    gap:8px;padding:40px 30px;background:rgba(13,15,23,.97);backdrop-filter:blur(24px);border-left:1px solid var(--line);
+    transform:translateX(100%);transition:transform .5s var(--ease);z-index:190}
+  .nav-links.open{transform:none}
+  .nav-links a{font-size:1.05rem;padding:12px 0}
+  .nav-cta{margin:14px 0 0}
+  .burger{display:block;z-index:200}
+  .bento{grid-template-columns:1fr}
+  .card,.card.feature{grid-column:span 1;grid-row:auto}
+  .cap-grid{grid-template-columns:1fr}
+  .fgrid{grid-template-columns:1fr}
+  .metrics{grid-template-columns:1fr}
+  .metric{border-right:none;border-bottom:1px solid var(--line)}
+  .metric:last-child{border-bottom:none}
+  .detail{width:100%}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+  .rv{opacity:1;transform:none}
+}
+</style>
+</head>
+<body class="lock">
+
+<!-- intro -->
+<div id="intro">
+  <div class="halo"></div>
+  <div class="mark">Obilq<span>AI</span></div>
+  <div class="line"><i></i></div>
+  <div class="tag">Designing intelligence beyond automation.</div>
+</div>
+
+<!-- atmosphere -->
+<div class="bg-field"><div class="aura a1"></div><div class="aura a2"></div><div class="aura a3"></div></div>
+<canvas id="dust"></canvas>
+<div id="light"></div>
+<div class="noise"></div>
+
+<!-- nav -->
+<nav id="nav">
+  <a href="#top" class="brand"><span class="glyph"></span>Obilq<span>AI</span></a>
+  <div class="nav-links" id="navLinks">
+    <a href="#index" class="active">Innovation Index</a>
+    <a href="#capabilities">Capabilities</a>
+    <a href="#process">Process</a>
+    <a href="#about">Studio</a>
+    <a href="#contact" class="btn btn-ghost nav-cta"><span class="mag">Start a Build</span></a>
+  </div>
+  <button class="burger" id="burger" aria-label="Menu"><span></span><span></span><span></span></button>
+</nav>
+
+<!-- hero -->
+<section class="hero" id="top">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="hero-tag rv"><i></i>AI Innovation Studio</div>
+      <div class="hero-name rv">ObilqAI</div>
+      <h1 class="rv">Intelligence, <em>designed</em> into digital systems.</h1>
+      <p class="lede rv">We create AI-powered tools, automations, assistants, and digital products that turn ideas into intelligent business systems.</p>
+      <div class="hero-cta rv">
+        <a href="#index" class="btn btn-primary"><span class="mag">Explore Projects</span></a>
+        <a href="#contact" class="btn btn-ghost"><span class="mag">Start a Build<svg class="arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>
+      </div>
+    </div>
+    <div class="stage rv">
+      <div class="depth" id="depth">
+        <div class="ringo o1"><span class="bead"></span></div>
+        <div class="ringo o2"><span class="bead"></span></div>
+        <div class="dataline" style="transform:rotate(28deg)"></div>
+        <div class="dataline" style="transform:rotate(-52deg)"></div>
+        <div class="sphere"></div>
+        <div class="gpanel gp1"><div class="pl"><div class="bar w1"></div><div class="bar w2"></div></div></div>
+        <div class="gpanel gp2"><div class="pl"><div class="bar w1"></div><div class="bar w2"></div></div></div>
+        <div class="gpanel gp3"><span class="dot"></span></div>
+      </div>
+    </div>
+  </div>
+  <div class="scroll-cue rv"><span class="track"><i></i></span>Scroll</div>
+</section>
+
+<!-- innovation index -->
+<section id="index">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <div class="eyebrow">Selected Work</div>
+      <h2 class="h-title">The Innovation Index</h2>
+      <p class="h-sub">A curated set of intelligent systems we've designed and shipped — each one built to remove friction and create leverage.</p>
+    </div>
+    <div class="filters rv" id="filters"></div>
+    <div class="bento" id="bento"></div>
+  </div>
+</section>
+
+<!-- capabilities -->
+<section id="capabilities">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <div class="eyebrow">What we build</div>
+      <h2 class="h-title">ObilqAI Capabilities</h2>
+      <p class="h-sub">Modular intelligence, engineered to fit into the way a business already works.</p>
+    </div>
+    <div class="cap-grid" id="capGrid"></div>
+  </div>
+</section>
+
+<!-- process -->
+<section id="process">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <div class="eyebrow">How we work</div>
+      <h2 class="h-title">From Idea to Intelligent System</h2>
+    </div>
+    <div class="steps" id="steps"></div>
+  </div>
+</section>
+
+<!-- metrics -->
+<section id="metrics" style="padding-top:0">
+  <div class="wrap">
+    <div class="metrics rv" id="metrics"></div>
+  </div>
+</section>
+
+<!-- about -->
+<section id="about">
+  <div class="wrap">
+    <div class="eyebrow rv">The Studio</div>
+    <p class="about-stmt rv">ObilqAI is an AI innovation studio building <em>intelligent digital systems</em> for businesses that want to move faster, automate smarter, and create with AI.</p>
+    <div class="about-foot rv">
+      <div><h5>Approach</h5><p>Strategy first, then systems. We design intelligence around real workflows, not demos.</p></div>
+      <div><h5>Focus</h5><p>Assistants, automation, AI-native products, and the quiet infrastructure behind them.</p></div>
+      <div><h5>Outcome</h5><p>Tools your team trusts — measured in hours saved and decisions made better.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- contact -->
+<section id="contact">
+  <div class="wrap contact-grid">
+    <div class="rv">
+      <div class="eyebrow">Let's begin</div>
+      <h2 class="h-title">Start a Build</h2>
+      <p class="h-sub">Tell us what you're trying to make intelligent. We'll reply with a clear, considered next step.</p>
+    </div>
+    <div class="form-panel rv">
+      <div class="fgrid">
+        <div class="field"><label>Name</label><input id="f-name" type="text" placeholder="Your name"></div>
+        <div class="field"><label>Company</label><input id="f-company" type="text" placeholder="Company"></div>
+        <div class="field full"><label>Email</label><input id="f-email" type="email" placeholder="you@company.com"></div>
+        <div class="field full"><label>Project Type</label>
+          <select id="f-type">
+            <option>AI Assistant</option>
+            <option>Business Automation</option>
+            <option>AI Website</option>
+            <option>Content System</option>
+            <option>Intelligence Dashboard</option>
+            <option>Custom AI Product</option>
+          </select>
+        </div>
+        <div class="field full"><label>Message</label><textarea id="f-msg" placeholder="A few lines about the system you have in mind."></textarea></div>
+      </div>
+      <button class="btn btn-primary" id="send" style="width:100%;justify-content:center"><span class="mag">Send Project Brief</span></button>
+      <div class="form-note" id="note">Thank you — your brief has been received. We'll be in touch shortly.</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="foot-in">
+    <a href="#top" class="brand"><span class="glyph"></span>Obilq<span>AI</span></a>
+    <div class="foot-links"><a href="#index">Index</a><a href="#capabilities">Capabilities</a><a href="#about">Studio</a><a href="#contact">Contact</a></div>
+    <p>© 2026 ObilqAI Innovation Studio</p>
+  </div>
+</footer>
+
+<!-- detail overlay -->
+<div id="ov"><div class="scrim" id="scrim"></div><div class="detail" id="detail"></div></div>
+
+<script>
+/* ---------- line icons (no emoji) ---------- */
+const IC = {
+  assistant:'<path d="M4 5h16v11H9l-4 4v-4H4z"/><path d="M8 10h8M8 13h5"/>',
+  automation:'<circle cx="6" cy="6" r="2.4"/><circle cx="18" cy="6" r="2.4"/><circle cx="12" cy="18" r="2.4"/><path d="M8 7.4l3 8.4M16 7.4l-3 8.4"/>',
+  marketing:'<path d="M4 15V9l11-4v14L4 15z"/><path d="M15 7c2.5.6 2.5 9.4 0 10"/><path d="M6 15v3a2 2 0 0 0 3 .6"/>',
+  data:'<path d="M4 19h16"/><path d="M7 19V9M12 19V5M17 19v-7"/>',
+  website:'<rect x="3.5" y="5" width="17" height="14" rx="2"/><path d="M3.5 9h17M7 7h.01M9.5 7h.01"/>',
+  business:'<path d="M5 8l7-4 7 4v8l-7 4-7-4z"/><path d="M5 8l7 4 7-4M12 12v8"/>',
+  content:'<rect x="5" y="3.5" width="14" height="17" rx="2"/><path d="M8.5 8h7M8.5 11.5h7M8.5 15h4"/>',
+  custom:'<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 7.5l4 2.25v4.5L12 16.5l-4-2.25v-4.5z"/>'
+};
+function icon(k){return '<svg viewBox="0 0 24 24">'+(IC[k]||IC.custom)+'</svg>';}
+
+/* ---------- data ---------- */
+const PROJECTS = [
+  {id:1,title:"AI Customer Support System",cat:"Conversational AI",ic:"assistant",feature:true,
+   desc:"A support assistant that answers questions, captures leads, and reduces manual response time.",
+   tools:["GPT","Website Chat","CRM"],impact:"60% faster response time",
+   overview:"An always-available support layer embedded across the website and messaging channels, grounded in the company's own knowledge.",
+   problem:"A small team was buried in repetitive questions, leaving slower responses and leads slipping through outside working hours.",
+   solution:"A retrieval-grounded assistant that answers from the knowledge base, captures qualified leads into the CRM, and hands off cleanly to a human when needed.",
+   features:["Context-aware multi-turn conversations","Knowledge-grounded, accurate answers","Automatic lead capture into the CRM","Graceful escalation to a human","Always-on availability"]},
+  {id:2,title:"WhatsApp Sales Automation",cat:"Workflow Automation",ic:"automation",
+   desc:"Automated lead replies, follow-ups, and qualification through WhatsApp.",
+   tools:["WhatsApp API","GPT","Make"],impact:"20+ hours saved weekly",
+   overview:"An automation that manages first replies, structured follow-ups, and lead scoring across WhatsApp without manual effort.",
+   problem:"Reps spent entire days replying to inbound messages, and warm leads cooled while waiting for a response.",
+   solution:"An orchestration on the WhatsApp Business API with intent detection and timed follow-ups, surfacing only the hottest leads to the sales team.",
+   features:["Instant, context-aware replies","Automated multi-step follow-ups","Lead scoring and qualification","Hot-lead routing to sales","Full conversation history"]},
+  {id:3,title:"AI Content Engine",cat:"Marketing Intelligence",ic:"marketing",
+   desc:"A content system for blogs, captions, ads, and campaign ideas.",
+   tools:["GPT","Prompt System","Sheets"],impact:"5x faster content creation",
+   overview:"A central content system that turns a single brief into coordinated, on-brand output across every channel.",
+   problem:"Producing consistent content at the pace modern channels demand was slow and stretched the team thin.",
+   solution:"A structured prompt framework drawing on a brand-voice library, with output organised in Sheets for fast review and approval.",
+   features:["Long-form and blog generation","Social captions and ad copy","Consistent brand voice","Campaign ideation engine","Batch production at scale"]},
+  {id:4,title:"Business Intelligence Dashboard",cat:"Data Intelligence",ic:"data",
+   desc:"A dashboard that converts business data into clear AI-powered insights.",
+   tools:["Python","Analytics","Dashboard"],impact:"Better decisions",
+   overview:"An intelligence layer that reads the numbers and explains them — in plain language, with the next step attached.",
+   problem:"Leadership had plenty of charts but little time to translate them into decisions.",
+   solution:"A Python pipeline that aggregates sources and uses AI to produce narrative summaries, anomaly alerts, and clear recommendations.",
+   features:["Plain-language data summaries","Automatic anomaly detection","Trend and forecast signals","Custom KPI tracking","Shareable reports"]},
+  {id:5,title:"Website AI Assistant",cat:"Website Intelligence",ic:"website",
+   desc:"An on-site assistant that guides visitors and recommends services.",
+   tools:["JavaScript","GPT","Web UI"],impact:"Higher engagement",
+   overview:"A refined on-site guide that reads intent and steers visitors toward the right product or service.",
+   problem:"Visitors arrived, felt lost among the options, and left without converting.",
+   solution:"A lightweight assistant woven into the site that answers in context, recommends services, and nudges gently toward action.",
+   features:["Intent-aware guidance","Personalised recommendations","Inline, in-context answers","Considered conversion nudges","Seamless interface integration"]},
+  {id:6,title:"Proposal Intelligence System",cat:"Business Tool",ic:"business",
+   desc:"A system that turns client requirements into polished business proposals.",
+   tools:["GPT","Forms","PDF Generator"],impact:"Faster onboarding",
+   overview:"A tool that converts a short intake into a branded, ready-to-send proposal in moments.",
+   problem:"Tailoring proposals by hand took hours per client and slowed the whole sales cycle.",
+   solution:"An intake form feeding a drafting layer and PDF generator that outputs polished, on-brand proposals instantly.",
+   features:["Intake-to-proposal in seconds","Branded PDF export","Tailored scope and pricing","Editable drafts","Faster client onboarding"]}
+];
+
+const CATS = ["All","Conversational AI","Automation","Marketing Intelligence","Data Intelligence","Website Intelligence","Business Tools"];
+const CAT_MATCH = {"Automation":"Workflow Automation","Business Tools":"Business Tool"};
+
+const CAPS = [
+  {ic:"assistant",t:"AI Assistants",d:"Conversational systems that understand context, answer precisely, and act on intent."},
+  {ic:"automation",t:"Business Automation",d:"Quiet workflows that remove repetitive work and move information on their own."},
+  {ic:"website",t:"AI Websites",d:"Sites with intelligence built in — guiding, recommending, and responding in real time."},
+  {ic:"content",t:"Content Systems",d:"Engines that produce on-brand writing across every channel, at pace."},
+  {ic:"data",t:"Intelligence Dashboards",d:"Data translated into clear language and confident decisions."},
+  {ic:"custom",t:"Custom AI Products",d:"Bespoke systems engineered around a single, specific business problem."}
+];
+
+const STEPS = [
+  {t:"Discover",d:"We map your goals, constraints, and the highest-leverage place for intelligence to live."},
+  {t:"Architect",d:"We design the system — models, data flow, and the surfaces people will actually use."},
+  {t:"Prototype",d:"A working version, built quickly, so the idea can be felt rather than imagined."},
+  {t:"Integrate",d:"The system moves into your real tools and workflows, quietly and reliably."},
+  {t:"Scale",d:"We refine, extend, and let the system grow alongside the business."}
+];
+
+const METRICS = [
+  {n:25,s:"+",l:"AI Projects"},
+  {n:50,s:"+",l:"Automations"},
+  {n:1000,s:"+",l:"Hours Saved"},
+  {n:20,s:"+",l:"Tools Integrated"}
+];
+
+const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- intro ---------- */
+window.addEventListener('load',()=>{
+  const delay = REDUCED ? 300 : 3000;
+  setTimeout(()=>{
+    const intro=document.getElementById('intro');
+    intro.classList.add('done');
+    document.body.classList.remove('lock');
+    setTimeout(()=>intro.style.display='none',1100);
+    runReveals();
+  },delay);
+});
+
+/* ---------- render ---------- */
+function matches(filter,project){
+  if(filter==="All") return true;
+  const target = CAT_MATCH[filter]||filter;
+  return project.cat===target;
+}
+const bento=document.getElementById('bento');
+function renderBento(){
+  bento.innerHTML = PROJECTS.map(p=>`
+    <article class="card${p.feature?' feature':''}" data-id="${p.id}" data-cat="${p.cat}">
+      <div class="ico">${icon(p.ic)}</div>
+      <div class="cat">${p.cat}</div>
+      <h3>${p.title}</h3>
+      <p class="desc">${p.desc}</p>
+      <div class="tools">${p.tools.map(t=>`<span>${t}</span>`).join('')}</div>
+      <div class="meta">
+        <div class="impact"><small>Impact</small>${p.impact}</div>
+        <span class="view">View System<svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+      </div>
+    </article>`).join('');
+  bindCards();
+}
+document.getElementById('filters').innerHTML = CATS.map((c,i)=>`<button class="filter${i===0?' active':''}" data-f="${c}">${c}</button>`).join('');
+document.getElementById('capGrid').innerHTML = CAPS.map(c=>`<div class="cap rv"><div class="ico">${icon(c.ic)}</div><h3>${c.t}</h3><p>${c.d}</p></div>`).join('');
+document.getElementById('steps').innerHTML = STEPS.map((s,i)=>`<div class="step rv" style="transition-delay:${i*90}ms"><div class="node"></div><div class="n">0${i+1}</div><h4>${s.t}</h4><p>${s.d}</p></div>`).join('');
+document.getElementById('metrics').innerHTML = METRICS.map(m=>`<div class="metric"><b data-n="${m.n}" data-s="${m.s}">0</b><span>${m.l}</span></div>`).join('');
+renderBento();
+
+/* ---------- filtering ---------- */
+document.getElementById('filters').addEventListener('click',e=>{
+  const b=e.target.closest('.filter'); if(!b) return;
+  document.querySelectorAll('.filter').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  const f=b.dataset.f;
+  document.querySelectorAll('.card').forEach(card=>{
+    const p=PROJECTS.find(x=>x.id==card.dataset.id);
+    if(matches(f,p)){
+      card.style.display='';
+      requestAnimationFrame(()=>card.classList.remove('hidden'));
+    } else {
+      card.classList.add('hidden');
+      setTimeout(()=>{ if(card.classList.contains('hidden')) card.style.display='none'; },550);
+    }
+  });
+});
+
+/* ---------- 3D tilt + magnetic ---------- */
+function bindCards(){
+  document.querySelectorAll('.card').forEach(card=>{
+    if(!REDUCED){
+      card.addEventListener('mousemove',e=>{
+        const r=card.getBoundingClientRect();
+        const x=(e.clientX-r.left)/r.width-.5, y=(e.clientY-r.top)/r.height-.5;
+        card.style.transform=`perspective(1000px) rotateY(${x*7}deg) rotateX(${-y*7}deg) translateY(-4px)`;
+      });
+      card.addEventListener('mouseleave',()=>card.style.transform='');
+    }
+    card.addEventListener('click',()=>openDetail(card.dataset.id));
+  });
+}
+function bindMagnetic(){
+  if(REDUCED) return;
+  document.querySelectorAll('.btn').forEach(btn=>{
+    const mag=btn.querySelector('.mag')||btn;
+    btn.addEventListener('mousemove',e=>{
+      const r=btn.getBoundingClientRect();
+      const x=(e.clientX-r.left-r.width/2), y=(e.clientY-r.top-r.height/2);
+      btn.style.transform=`translate(${x*.18}px,${y*.3}px)`;
+      mag.style.transform=`translate(${x*.1}px,${y*.18}px)`;
+    });
+    btn.addEventListener('mouseleave',()=>{btn.style.transform='';mag.style.transform='';});
+  });
+}
+bindMagnetic();
+
+/* ---------- detail overlay ---------- */
+const ov=document.getElementById('ov'), detail=document.getElementById('detail');
+function openDetail(id){
+  const p=PROJECTS.find(x=>x.id==id); if(!p) return;
+  detail.innerHTML=`
+    <div class="detail-head">
+      <div><div class="cat">${p.cat}</div><h2>${p.title}</h2></div>
+      <button class="x" id="closeX" aria-label="Close"></button>
+    </div>
+    <div class="detail-body">
+      <div class="mock">
+        <div class="topbar"><i></i><i></i><i></i></div>
+        <div class="body"><div class="side"></div><div class="main"><div class="ln l"></div><div class="ln m"></div><div class="ln s"></div><div class="ln m"></div><div class="ln l"></div></div></div>
+        <div class="glow"></div>
+      </div>
+      <div class="dblock"><h4>Overview</h4><p>${p.overview}</p></div>
+      <div class="dblock"><h4>The Problem</h4><p>${p.problem}</p></div>
+      <div class="dblock"><h4>The Solution</h4><p>${p.solution}</p></div>
+      <div class="dblock"><h4>Features</h4><ul>${p.features.map(f=>`<li>${f}</li>`).join('')}</ul></div>
+      <div class="dmeta">
+        <div class="m"><small>Category</small><strong>${p.cat}</strong></div>
+        <div class="m"><small>Impact</small><strong>${p.impact}</strong></div>
+      </div>
+      <div class="dblock"><h4>Tools</h4><div class="dtools">${p.tools.map(t=>`<span>${t}</span>`).join('')}</div></div>
+      <a href="#contact" class="btn btn-primary" id="buildSimilar" style="margin-top:8px"><span class="mag">Build Similar System</span></a>
+    </div>`;
+  ov.classList.add('open');
+  document.body.classList.add('lock');
+  detail.scrollTop=0;
+  document.getElementById('closeX').onclick=closeDetail;
+  document.getElementById('buildSimilar').onclick=closeDetail;
+}
+function closeDetail(){ ov.classList.remove('open'); document.body.classList.remove('lock'); }
+document.getElementById('scrim').addEventListener('click',closeDetail);
+addEventListener('keydown',e=>{if(e.key==='Escape'&&ov.classList.contains('open'))closeDetail();});
+
+/* ---------- reveals ---------- */
+let revObs;
+function runReveals(){
+  const els=document.querySelectorAll('.rv');
+  if(REDUCED){els.forEach(e=>e.classList.add('in'));return;}
+  revObs=new IntersectionObserver(en=>{
+    en.forEach(x=>{if(x.isIntersecting){x.target.classList.add('in');revObs.unobserve(x.target);}});
+  },{threshold:.14});
+  els.forEach(e=>revObs.observe(e));
+  document.querySelectorAll('.hero .rv').forEach((e,i)=>setTimeout(()=>e.classList.add('in'),120+i*110));
+}
+
+/* ---------- counters ---------- */
+const seen=new Set();
+function count(el){
+  const t=+el.dataset.n, s=el.dataset.s||'', dur=1700, st=performance.now();
+  function f(now){const k=Math.min((now-st)/dur,1);const e=1-Math.pow(1-k,3);
+    el.textContent=Math.floor(e*t)+(k===1?s:'');if(k<1)requestAnimationFrame(f);else el.textContent=t+s;}
+  requestAnimationFrame(f);
+}
+const cObs=new IntersectionObserver(en=>{
+  en.forEach(x=>{if(x.isIntersecting&&!seen.has(x.target)){seen.add(x.target);count(x.target);cObs.unobserve(x.target);}});
+},{threshold:.5});
+document.querySelectorAll('[data-n]').forEach(e=>cObs.observe(e));
+
+/* ---------- nav state + mobile ---------- */
+const nav=document.getElementById('nav'), links=document.querySelectorAll('.nav-links a:not(.nav-cta)');
+addEventListener('scroll',()=>{
+  nav.classList.toggle('scrolled',scrollY>30);
+  let cur='index';
+  document.querySelectorAll('section[id]').forEach(s=>{if(scrollY>=s.offsetTop-180)cur=s.id;});
+  links.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+cur));
+});
+const burger=document.getElementById('burger'), navLinks=document.getElementById('navLinks');
+burger.addEventListener('click',()=>{burger.classList.toggle('open');navLinks.classList.toggle('open');});
+navLinks.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{burger.classList.remove('open');navLinks.classList.remove('open');}));
+
+/* ---------- soft mouse light + hero parallax + dust ---------- */
+const light=document.getElementById('light'), depth=document.getElementById('depth');
+if(!REDUCED){
+  let tx=innerWidth/2,ty=innerHeight/2,cx=tx,cy=ty;
+  addEventListener('mousemove',e=>{
+    tx=e.clientX;ty=e.clientY;
+    if(depth){const dx=(e.clientX/innerWidth-.5),dy=(e.clientY/innerHeight-.5);
+      depth.style.transform=`rotateY(${dx*10}deg) rotateX(${-dy*10}deg)`;}
+  });
+  (function loop(){cx+=(tx-cx)*.08;cy+=(ty-cy)*.08;light.style.left=cx+'px';light.style.top=cy+'px';requestAnimationFrame(loop);})();
+}else{light.style.display='none';}
+
+(function dust(){
+  const c=document.getElementById('dust'),x=c.getContext('2d');let w,h,ps=[];
+  const N=REDUCED?0:(innerWidth<700?26:54);
+  function rs(){w=c.width=innerWidth;h=c.height=innerHeight;}rs();addEventListener('resize',rs);
+  for(let i=0;i<N;i++)ps.push({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:Math.random()*1.4+.4,vx:(Math.random()-.5)*.12,vy:(Math.random()-.5)*.12,a:Math.random()*.4+.1});
+  (function d(){x.clearRect(0,0,w,h);ps.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>w)p.vx*=-1;if(p.y<0||p.y>h)p.vy*=-1;
+    x.beginPath();x.arc(p.x,p.y,p.r,0,7);x.fillStyle='rgba(154,122,224,'+p.a+')';x.fill();});requestAnimationFrame(d);})();
+  if(N===0)c.style.display='none';
+})();
+
+/* ---------- form ---------- */
+document.getElementById('send').addEventListener('click',()=>{
+  const n=document.getElementById('f-name').value.trim(), e=document.getElementById('f-email').value.trim();
+  const note=document.getElementById('note');
+  if(!n||!e){note.style.color='#d98c8c';note.style.background='rgba(217,140,140,.1)';note.style.borderColor='rgba(217,140,140,.3)';
+    note.textContent='Please add your name and email so we can reply.';note.classList.add('show');return;}
+  note.style.color='';note.style.background='';note.style.borderColor='';
+  note.textContent='Thank you — your brief has been received. We\u2019ll be in touch shortly.';
+  note.classList.add('show');
+  ['f-name','f-company','f-email','f-msg'].forEach(id=>document.getElementById(id).value='');
+});
+</script>
+</body>
+</html>

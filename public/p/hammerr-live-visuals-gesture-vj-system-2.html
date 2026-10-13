@@ -1,0 +1,2060 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>HAMMERR LIVE VISUALS — Gesture VJ System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   THEME TOKENS — swapped at runtime for palette themes
+   ============================================================ */
+:root{
+    --bg-0: #07030f;
+    --bg-1: #0d0620;
+    --accent:   #b06bff;   /* main neon */
+    --accent-2: #6d29ff;   /* deep neon */
+    --accent-3: #e8b3ff;   /* hot highlight */
+    --magenta:  #ff4dd2;
+    --cyan:     #5cf0ff;
+    --text:     #efe7ff;
+    --text-dim: #9d8dc0;
+    --text-mute:#6a5d8a;
+    --line:     rgba(176,107,255,0.20);
+    --line-soft:rgba(176,107,255,0.10);
+    --panel:    rgba(14, 6, 30, 0.55);
+    --panel-strong: rgba(22, 8, 44, 0.78);
+    --good: #6dffb1;
+    --warn: #ffd166;
+    --bad:  #ff6188;
+    --shadow-neon: 0 0 24px rgba(176,107,255,0.30), 0 0 60px rgba(109,41,255,0.16);
+}
+
+*{ box-sizing:border-box; margin:0; padding:0; }
+html, body{
+    height:100%;
+    width:100%;
+    overflow:hidden;
+    background: var(--bg-0);
+    color: var(--text);
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 13px;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior: none;
+}
+
+/* ============================================================
+   FULLSCREEN CANVAS — the main stage covers the whole viewport
+   ============================================================ */
+#stage-canvas{
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    display: block;
+    z-index: 0;
+    background: radial-gradient(ellipse at center, #160a2c 0%, #07030f 100%);
+}
+
+/* ============================================================
+   FLOATING GLASS PANELS — overlay on top of the canvas
+   ============================================================ */
+.panel{
+    position: fixed;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    backdrop-filter: blur(16px) saturate(1.4);
+    -webkit-backdrop-filter: blur(16px) saturate(1.4);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.45), var(--shadow-neon);
+    z-index: 10;
+    color: var(--text);
+    transition: opacity 0.35s ease, transform 0.35s ease;
+}
+.panel.hidden{
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(8px);
+}
+
+/* --- Top-left: brand --- */
+.panel-brand{
+    top: 16px; left: 16px;
+    padding: 12px 16px;
+    display: flex; align-items: center; gap: 12px;
+    user-select: none;
+}
+.brand-mark{
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    position: relative;
+    box-shadow: 0 0 22px var(--accent);
+    flex-shrink:0;
+}
+.brand-mark::before{
+    content:''; position:absolute; inset:7px;
+    border: 2px solid rgba(255,255,255,0.9);
+    border-radius: 4px;
+    transform: rotate(45deg);
+}
+.brand-text{
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.32em;
+    background: linear-gradient(90deg, var(--accent-3), var(--accent));
+    -webkit-background-clip: text; background-clip: text;
+    color: transparent;
+    line-height: 1.05;
+}
+.brand-sub{
+    font-size: 9px;
+    letter-spacing: 0.32em;
+    color: var(--text-mute);
+    margin-top: 2px;
+    text-transform: uppercase;
+}
+.brand-status{
+    margin-left: 14px;
+    padding-left: 14px;
+    border-left: 1px solid var(--line);
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+}
+.brand-status b{
+    color: var(--accent-3); font-weight: 600;
+    display: block; margin-top: 2px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.16em;
+}
+
+/* --- Top-right: control buttons --- */
+.panel-actions{
+    top: 16px; right: 16px;
+    padding: 8px 10px;
+    display: flex; gap: 6px; flex-wrap: wrap;
+    max-width: calc(100vw - 32px);
+    justify-content: flex-end;
+}
+.btn{
+    appearance: none; border: none;
+    background: rgba(7,3,15,0.5);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 9px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    cursor: pointer;
+    transition: all 0.18s ease;
+    display: inline-flex; align-items: center; gap: 6px;
+    white-space: nowrap;
+    min-height: 36px;
+}
+.btn:hover{
+    border-color: var(--accent);
+    color: var(--accent-3);
+    box-shadow: 0 0 16px rgba(176,107,255,0.30);
+    transform: translateY(-1px);
+}
+.btn:active{ transform: translateY(0); }
+.btn.is-active{
+    border-color: var(--accent);
+    background: linear-gradient(135deg, rgba(176,107,255,0.22), rgba(109,41,255,0.12));
+    color: var(--accent-3);
+}
+.btn .dot{
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--text-mute);
+    box-shadow: 0 0 6px currentColor;
+}
+.btn.is-active .dot{ background: var(--good); }
+.btn-icon{
+    width: 38px;
+    padding: 8px;
+    justify-content: center;
+}
+.btn-icon svg{ width: 16px; height: 16px; }
+
+/* --- Bottom-left: camera preview --- */
+.panel-cam{
+    bottom: 16px; left: 16px;
+    width: 280px;
+    height: 200px;
+    padding: 0;
+    overflow: hidden;
+    border-radius: 14px;
+}
+@media (max-width: 700px){
+    .panel-cam{ width: 150px; height: 110px; }
+}
+#cam-video{
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transform: scaleX(-1);
+    opacity: 0.88;
+}
+#cam-canvas{
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    transform: scaleX(-1);
+    pointer-events: none;
+}
+.cam-overlay-top{
+    position: absolute; top: 8px; left: 8px; right: 8px;
+    display: flex; justify-content: space-between; align-items: center;
+    pointer-events: none;
+    z-index: 3;
+}
+.cam-tag{
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 4px 8px;
+    background: rgba(7,3,15,0.7);
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    color: var(--text-dim);
+    display: inline-flex; align-items: center; gap: 5px;
+}
+.cam-tag .pulse-dot{
+    width: 5px; height: 5px; border-radius: 50%;
+    background: var(--bad);
+    animation: pulse 1.4s ease-in-out infinite;
+}
+.cam-tag.live .pulse-dot{ background: var(--good); }
+@keyframes pulse{
+    0%, 100%{ opacity: 0.4; }
+    50%{ opacity: 1; }
+}
+.cam-overlay-bottom{
+    position: absolute; bottom: 8px; left: 8px; right: 8px;
+    z-index: 3;
+    pointer-events: none;
+    display: flex; justify-content: space-between; align-items: end;
+    gap: 8px;
+}
+.cam-status{
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding: 4px 8px;
+    background: rgba(7,3,15,0.7);
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    flex: 1;
+    min-width: 0;
+}
+.cam-status b{
+    color: var(--accent-3);
+    margin-left: 4px;
+    font-weight: 500;
+}
+.cam-empty{
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    padding: 12px;
+    color: var(--text-dim);
+    background: var(--panel);
+}
+.cam-empty.hide{ display: none; }
+.cam-empty svg{
+    width: 30px; height: 30px;
+    opacity: 0.5;
+    margin-bottom: 8px;
+}
+.cam-empty .title{
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--accent-3);
+    margin-bottom: 4px;
+    font-weight: 600;
+}
+.cam-empty .desc{
+    font-size: 9px;
+    line-height: 1.5;
+    color: var(--text-mute);
+    letter-spacing: 0.06em;
+    max-width: 200px;
+}
+
+/* --- Bottom-center: gesture telemetry --- */
+.panel-telemetry{
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 10px 16px;
+    display: flex; align-items: center; gap: 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    white-space: nowrap;
+    max-width: calc(100vw - 32px);
+    overflow-x: auto;
+}
+.panel-telemetry.hidden{ transform: translateX(-50%) translateY(8px); }
+.tele-item{
+    display: inline-flex; flex-direction: column; gap: 3px;
+    min-width: 50px;
+}
+.tele-item .lbl{
+    font-size: 8px;
+    letter-spacing: 0.22em;
+    color: var(--text-mute);
+}
+.tele-item .val{
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent-3);
+    line-height: 1;
+}
+.tele-divider{
+    width: 1px; height: 24px;
+    background: var(--line);
+}
+.tele-gesture{
+    padding: 6px 12px;
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    color: var(--accent-3);
+    background: rgba(176,107,255,0.10);
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.22em;
+    box-shadow: 0 0 14px rgba(176,107,255,0.25);
+}
+@media (max-width: 700px){
+    .panel-telemetry{ font-size: 9px; gap: 10px; padding: 8px 10px; }
+    .tele-item .val{ font-size: 12px; }
+}
+
+/* --- Bottom-right: music control panel --- */
+.panel-music{
+    bottom: 16px; right: 16px;
+    width: 340px;
+    padding: 14px 16px;
+    display: flex; flex-direction: column;
+    gap: 10px;
+}
+@media (max-width: 900px){
+    .panel-music{ width: 280px; }
+}
+@media (max-width: 600px){
+    .panel-music{
+        width: calc(100% - 32px);
+        right: 16px; left: 16px;
+        bottom: 80px;
+    }
+    .panel-cam{ width: 120px; height: 90px; }
+    .panel-telemetry{ bottom: 12px; }
+}
+.music-head{
+    display: flex; justify-content: space-between; align-items: center;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--line);
+}
+.music-title-block{ min-width: 0; flex: 1; }
+.music-title{
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    color: var(--text);
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.music-sub{
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    color: var(--text-mute);
+    text-transform: uppercase;
+    margin-top: 2px;
+}
+.music-energy{
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--accent-3);
+    line-height: 1;
+}
+.music-energy-lbl{
+    font-size: 8px;
+    letter-spacing: 0.24em;
+    color: var(--text-mute);
+    text-transform: uppercase;
+    text-align: right;
+    margin-top: 2px;
+}
+
+/* Audio visualizer */
+#audio-viz{
+    width: 100%;
+    height: 40px;
+    display: block;
+    border-radius: 6px;
+    background: rgba(7,3,15,0.45);
+    border: 1px solid var(--line-soft);
+}
+
+/* Transport controls row */
+.music-transport{
+    display: flex; align-items: center; gap: 6px;
+}
+.music-btn{
+    appearance: none; border: 1px solid var(--line);
+    background: rgba(7,3,15,0.5);
+    color: var(--text);
+    width: 34px; height: 34px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s ease;
+}
+.music-btn:hover{
+    border-color: var(--accent);
+    color: var(--accent-3);
+    box-shadow: 0 0 12px rgba(176,107,255,0.25);
+}
+.music-btn.primary{
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    border-color: transparent;
+    color: white;
+    box-shadow: 0 0 18px rgba(176,107,255,0.45);
+}
+.music-btn.primary:hover{ transform: translateY(-1px); }
+.music-btn svg{ width: 14px; height: 14px; }
+.music-btn.primary svg{ width: 16px; height: 16px; }
+.music-upload{
+    flex: 1; min-width: 0;
+    display: flex; align-items: center; justify-content: center;
+    height: 34px;
+    border: 1px dashed var(--line);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    transition: all 0.15s ease;
+    padding: 0 10px;
+}
+.music-upload:hover{
+    border-color: var(--accent);
+    color: var(--accent-3);
+    background: rgba(176,107,255,0.06);
+}
+.music-upload input{ display: none; }
+
+/* Progress + volume row */
+.music-progress-row{
+    display: flex; align-items: center; gap: 10px;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    color: var(--text-mute);
+}
+.progress-track, .volume-track{
+    flex: 1;
+    height: 4px;
+    background: rgba(176,107,255,0.10);
+    border-radius: 2px;
+    position: relative;
+    cursor: pointer;
+}
+.progress-fill, .volume-fill{
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent-2), var(--accent), var(--accent-3));
+    border-radius: 2px;
+    box-shadow: 0 0 8px var(--accent);
+}
+.progress-handle{
+    position: absolute;
+    top: 50%; left: 0%;
+    width: 10px; height: 10px;
+    background: var(--accent-3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 8px var(--accent);
+    pointer-events: none;
+}
+.music-time{
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-dim);
+    min-width: 36px;
+    text-align: center;
+}
+
+.music-volume-row{
+    display: flex; align-items: center; gap: 10px;
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    color: var(--text-mute);
+    text-transform: uppercase;
+}
+.music-volume-lbl{ min-width: 50px; }
+.volume-num{
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent-3);
+    min-width: 36px;
+    text-align: right;
+}
+
+/* Gesture-music status footer */
+.music-gesture-status{
+    display: flex; justify-content: space-between;
+    font-size: 8px;
+    letter-spacing: 0.22em;
+    color: var(--text-mute);
+    text-transform: uppercase;
+    padding-top: 6px;
+    border-top: 1px solid var(--line-soft);
+}
+.music-gesture-status b{
+    color: var(--accent-3);
+    font-weight: 500;
+    margin-left: 5px;
+}
+.music-gesture-status .dot{
+    display: inline-block;
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--text-mute);
+    margin-right: 5px;
+    box-shadow: 0 0 5px currentColor;
+}
+.music-gesture-status.live .dot{ background: var(--good); }
+
+/* ============================================================
+   BIG OVERLAYS — Volume %, Music Playing, etc.
+   ============================================================ */
+.big-overlay{
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%) scale(0.92);
+    padding: 28px 56px;
+    background: rgba(14, 6, 30, 0.6);
+    border: 1px solid var(--accent);
+    border-radius: 18px;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    text-align: center;
+    color: var(--text);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    z-index: 100;
+    box-shadow: 0 0 60px rgba(176,107,255,0.5);
+    min-width: 220px;
+}
+.big-overlay.show{
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+.big-overlay .label{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.35em;
+    color: var(--text-mute);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+.big-overlay .value{
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 48px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--accent-3);
+    line-height: 1;
+    text-shadow: 0 0 18px var(--accent);
+}
+.big-overlay .meter{
+    margin-top: 14px;
+    height: 4px;
+    background: rgba(176,107,255,0.15);
+    border-radius: 2px;
+    overflow: hidden;
+    display: none;
+}
+.big-overlay.has-meter .meter{ display: block; }
+.big-overlay .meter-fill{
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent-2), var(--accent), var(--accent-3));
+    border-radius: 2px;
+    box-shadow: 0 0 10px var(--accent);
+    transition: width 0.1s linear;
+}
+
+/* ============================================================
+   TOAST / Tip
+   ============================================================ */
+.toast{
+    position: fixed;
+    top: 90px; left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    padding: 11px 20px;
+    background: var(--panel-strong);
+    border: 1px solid var(--accent);
+    border-radius: 10px;
+    color: var(--text);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    z-index: 200;
+    opacity: 0;
+    transition: all 0.35s ease;
+    pointer-events: none;
+    max-width: 90vw;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow: var(--shadow-neon);
+    text-align: center;
+}
+.toast.show{
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* ============================================================
+   PERFORMANCE MODE
+   ============================================================ */
+body.perf-mode .panel-brand,
+body.perf-mode .panel-actions,
+body.perf-mode .panel-cam,
+body.perf-mode .panel-music,
+body.perf-mode .panel-telemetry,
+body.perf-mode .perf-hud{
+    /* default state controlled below */
+}
+body.perf-mode .panel:not(.perf-hud){
+    opacity: 0;
+    pointer-events: none;
+}
+body.perf-mode #stage-canvas{ cursor: none; }
+
+/* Minimal performance-mode HUD */
+.perf-hud{
+    position: fixed;
+    bottom: 24px; left: 50%;
+    transform: translateX(-50%);
+    padding: 10px 22px;
+    background: rgba(14, 6, 30, 0.4);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    z-index: 10;
+    display: none;
+    align-items: center;
+    gap: 16px;
+}
+body.perf-mode .perf-hud{ display: flex; opacity: 1 !important; pointer-events: auto; }
+.perf-hud b{
+    color: var(--accent-3); font-weight: 500;
+    margin-left: 5px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.12em;
+}
+
+/* ============================================================
+   GESTURE HINT (center)
+   ============================================================ */
+.center-hint{
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--text-mute);
+    font-size: 11px;
+    letter-spacing: 0.5em;
+    z-index: 5;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    pointer-events: none;
+    text-align: center;
+    text-transform: uppercase;
+}
+.center-hint.show{ opacity: 0.7; }
+
+/* ============================================================
+   SCROLLBARS
+   ============================================================ */
+::-webkit-scrollbar{ width: 6px; height: 6px; }
+::-webkit-scrollbar-track{ background: transparent; }
+::-webkit-scrollbar-thumb{
+    background: var(--line);
+    border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover{ background: var(--accent); }
+
+/* ============================================================
+   LOADER
+   ============================================================ */
+.loader{
+    position: fixed;
+    inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    background: var(--bg-0);
+    z-index: 9999;
+    transition: opacity 0.5s ease;
+}
+.loader.hide{ opacity: 0; pointer-events: none; }
+.loader-mark{
+    width: 60px; height: 60px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    box-shadow: 0 0 40px var(--accent);
+    animation: loaderSpin 1.6s ease-in-out infinite;
+    margin-bottom: 22px;
+    position: relative;
+}
+.loader-mark::before{
+    content: ''; position: absolute; inset: 10px;
+    border: 2px solid rgba(255,255,255,0.9);
+    border-radius: 6px;
+    transform: rotate(45deg);
+}
+@keyframes loaderSpin{
+    0%, 100%{ transform: rotate(0deg) scale(1); }
+    50%{ transform: rotate(180deg) scale(0.85); }
+}
+.loader-title{
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 0.4em;
+    color: var(--accent-3);
+    margin-bottom: 8px;
+}
+.loader-sub{
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: var(--text-mute);
+    text-transform: uppercase;
+}
+.loader-credit{
+    position: absolute;
+    bottom: 30px; left: 50%;
+    transform: translateX(-50%);
+    font-size: 9px;
+    letter-spacing: 0.32em;
+    color: var(--text-mute);
+    text-transform: uppercase;
+}
+</style>
+</head>
+<body>
+
+<!-- ===== Boot loader ===== -->
+<div class="loader" id="loader">
+    <div class="loader-mark"></div>
+    <div class="loader-title">HAMMERR</div>
+    <div class="loader-sub">Live Visuals — Initialising</div>
+    <div class="loader-credit">Powered by Obliq AI × Digital Hammerr</div>
+</div>
+
+<!-- ===== Toast ===== -->
+<div class="toast" id="toast"></div>
+
+<!-- ===== Big overlay (for volume / music status) ===== -->
+<div class="big-overlay" id="big-overlay">
+    <div class="label" id="big-label">VOLUME</div>
+    <div class="value" id="big-value">50%</div>
+    <div class="meter"><div class="meter-fill" id="big-meter-fill"></div></div>
+</div>
+
+<!-- ===== Fullscreen visual canvas ===== -->
+<canvas id="stage-canvas"></canvas>
+
+<!-- Center hint when idle -->
+<div class="center-hint" id="center-hint">MOVE TO ENERGISE — UPLOAD A SONG TO ENABLE AUDIO REACTIVITY</div>
+
+<!-- ===== Top-left brand panel ===== -->
+<div class="panel panel-brand">
+    <div class="brand-mark"></div>
+    <div>
+        <div class="brand-text">HAMMERR</div>
+        <div class="brand-sub">Live Visuals</div>
+    </div>
+    <div class="brand-status">
+        <span>Mode</span>
+        <b id="status-mode">CALM</b>
+    </div>
+    <div class="brand-status">
+        <span>FPS</span>
+        <b id="status-fps">60</b>
+    </div>
+</div>
+
+<!-- ===== Top-right action buttons ===== -->
+<div class="panel panel-actions">
+    <button class="btn" id="btn-camera" title="Toggle Camera"><span class="dot"></span>Camera</button>
+    <button class="btn" id="btn-gesture" title="Toggle Hand Control"><span class="dot"></span>Gesture</button>
+    <button class="btn" id="btn-theme" title="Cycle Theme">Theme</button>
+    <button class="btn" id="btn-pulse" title="Trigger Pulse">Pulse</button>
+    <button class="btn" id="btn-reset" title="Reset Visual">Reset</button>
+    <button class="btn" id="btn-cam-toggle" title="Show/Hide Camera">Cam UI</button>
+    <button class="btn" id="btn-music-toggle" title="Show/Hide Music">Music UI</button>
+    <button class="btn" id="btn-perf" title="Performance Mode">Perform</button>
+    <button class="btn btn-icon" id="btn-full" title="Fullscreen">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h6M4 4v6M20 4h-6M20 4v6M4 20h6M4 20v-6M20 20h-6M20 20v-6"/></svg>
+    </button>
+</div>
+
+<!-- ===== Bottom-left camera preview ===== -->
+<div class="panel panel-cam" id="panel-cam">
+    <video id="cam-video" autoplay playsinline muted></video>
+    <canvas id="cam-canvas"></canvas>
+
+    <div class="cam-overlay-top">
+        <div class="cam-tag" id="cam-tag">
+            <span class="pulse-dot"></span>
+            <span id="cam-tag-text">OFFLINE</span>
+        </div>
+        <div class="cam-tag">HANDS</div>
+    </div>
+    <div class="cam-overlay-bottom">
+        <div class="cam-status">
+            <span id="cam-status-text">awaiting input</span>
+        </div>
+    </div>
+
+    <div class="cam-empty" id="cam-empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+            <path d="M3 7h3l2-2h8l2 2h3v12H3z"/>
+            <circle cx="12" cy="13" r="4"/>
+        </svg>
+        <div class="title">Camera Idle</div>
+        <div class="desc">Press <b>Camera</b> above to enable hand tracking. Camera stays in your browser.</div>
+    </div>
+</div>
+
+<!-- ===== Bottom-center gesture telemetry ===== -->
+<div class="panel panel-telemetry" id="panel-tele">
+    <div class="tele-gesture" id="tele-gesture">IDLE</div>
+    <div class="tele-divider"></div>
+    <div class="tele-item"><span class="lbl">Hands</span><span class="val" id="tele-hands">0</span></div>
+    <div class="tele-item"><span class="lbl">Rot</span><span class="val" id="tele-rot">0°</span></div>
+    <div class="tele-item"><span class="lbl">Int</span><span class="val" id="tele-int">30%</span></div>
+    <div class="tele-item"><span class="lbl">Zoom</span><span class="val" id="tele-zoom">1.0x</span></div>
+    <div class="tele-item"><span class="lbl">Glow</span><span class="val" id="tele-glow">50%</span></div>
+    <div class="tele-item"><span class="lbl">Audio</span><span class="val" id="tele-audio">0%</span></div>
+</div>
+
+<!-- ===== Bottom-right music control panel ===== -->
+<div class="panel panel-music" id="panel-music">
+    <div class="music-head">
+        <div class="music-title-block">
+            <div class="music-title" id="music-title">No song loaded</div>
+            <div class="music-sub">Hammerr Audio Engine</div>
+        </div>
+        <div>
+            <div class="music-energy" id="music-energy">0%</div>
+            <div class="music-energy-lbl">Energy</div>
+        </div>
+    </div>
+
+    <canvas id="audio-viz"></canvas>
+
+    <div class="music-transport">
+        <button class="music-btn primary" id="m-play" title="Play / Pause (K)">
+            <svg id="m-play-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+        <button class="music-btn" id="m-stop" title="Stop">
+            <svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>
+        </button>
+        <button class="music-btn" id="m-restart" title="Restart">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+        </button>
+        <button class="music-btn" id="m-mute" title="Mute / Unmute (M)">
+            <svg id="m-mute-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4z"/></svg>
+        </button>
+        <label class="music-upload">
+            <input type="file" id="m-file" accept="audio/*" />
+            <span>Upload</span>
+        </label>
+    </div>
+
+    <div class="music-progress-row">
+        <span class="music-time" id="m-time-cur">0:00</span>
+        <div class="progress-track" id="m-progress">
+            <div class="progress-fill" id="m-progress-fill"></div>
+            <div class="progress-handle" id="m-progress-handle"></div>
+        </div>
+        <span class="music-time" id="m-time-dur">0:00</span>
+    </div>
+
+    <div class="music-volume-row">
+        <span class="music-volume-lbl">Volume</span>
+        <div class="volume-track" id="m-volume">
+            <div class="volume-fill" id="m-volume-fill" style="width:70%"></div>
+        </div>
+        <span class="volume-num" id="m-volume-num">70%</span>
+    </div>
+
+    <div class="music-gesture-status" id="music-gesture-status">
+        <span><span class="dot"></span>Gesture Music<b id="gm-status">Idle</b></span>
+        <span>Mode<b id="gm-mode">Manual</b></span>
+    </div>
+</div>
+
+<!-- ===== Performance-mode minimal HUD ===== -->
+<div class="panel perf-hud" id="perf-hud">
+    <span>Gesture<b id="ph-gesture">IDLE</b></span>
+    <span>Volume<b id="ph-volume">70%</b></span>
+    <span>Music<b id="ph-music">—</b></span>
+    <span>FPS<b id="ph-fps">60</b></span>
+</div>
+
+<!-- Hidden audio element -->
+<audio id="audio" preload="metadata"></audio>
+
+<!-- MediaPipe Hands via CDN (graceful fallback if blocked) -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous" onerror="window.__mpFail=true"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous" onerror="window.__mpFail=true"></script>
+
+<script>
+/* =================================================================
+   HAMMERR LIVE VISUALS — Gesture VJ System
+   Single-file HTML / CSS / JS application
+   ================================================================= */
+
+/* ---------- 1. APP STATE -------------------------------------- */
+const state = {
+    rotation: 0.0, rotationTarget: 0.0,
+    intensity: 0.30, intensityTarget: 0.30,
+    zoom: 1.0, zoomTarget: 1.0,
+    particleCount: 900,
+    particleSpread: 0.0, particleSpreadTarget: 0.0,
+    glowStrength: 0.50, glowTarget: 0.50,
+    waveAmplitude: 20,
+    ringSpeed: 0.4,
+    pulseAmount: 0.0,
+    freezeState: false,
+    currentMode: 'CALM',
+    handCount: 0,
+    gestureName: 'IDLE',
+    lastGestureTime: 0,
+    fps: 60, fpsAccum: 0, fpsCount: 0, fpsLast: performance.now(),
+    cameraActive: false,
+    gestureActive: false,
+    swipeBurst: 0,
+    palette: 0,
+    // Audio
+    audioLoaded: false,
+    audioEnergy: 0,
+    audioBass: 0, audioMid: 0, audioTreble: 0,
+    lastBeatTime: 0,
+    // Volume gesture
+    volumeGestureActive: false,
+    lastVolumeShow: 0,
+};
+
+/* Palettes — applied to CSS vars and the canvas */
+const palettes = [
+    { name:'PURPLE VIOLET', a:'#b06bff', b:'#6d29ff', c:'#e8b3ff', m:'#ff4dd2' },
+    { name:'NEON BLUE',     a:'#5cc8ff', b:'#2a6cff', c:'#b8e6ff', m:'#5cf0ff' },
+    { name:'CYBER GREEN',   a:'#7cf18a', b:'#1ea850', c:'#c8ffb0', m:'#5cff9a' },
+    { name:'FIRE ORANGE',   a:'#ff8a3d', b:'#ff3a3a', c:'#ffd5a0', m:'#ffb840' },
+    { name:'ICE WHITE',     a:'#dff5ff', b:'#8fa9c2', c:'#ffffff', m:'#a5d0e8' },
+];
+
+/* ---------- 2. CANVAS SETUP ---------------------------------- */
+const stageCanvas = document.getElementById('stage-canvas');
+const stageCtx    = stageCanvas.getContext('2d');
+let stageW = 0, stageH = 0, stageCX = 0, stageCY = 0;
+
+let particles = [];
+function buildParticles(){
+    particles = [];
+    for(let i = 0; i < state.particleCount; i++){
+        particles.push({
+            a: Math.random() * Math.PI * 2,
+            r: 80 + Math.random() * 220,
+            baseR: 80 + Math.random() * 220,
+            d: Math.random() * 2 - 1,
+            sp: 0.0015 + Math.random() * 0.004,
+            phase: Math.random() * Math.PI * 2,
+            size: 0.5 + Math.random() * 1.6,
+        });
+    }
+}
+
+const pulses = [];
+function spawnPulse(strength = 1){
+    pulses.push({ r: 30, life: 1, strength: strength });
+    state.pulseAmount = Math.min(1, state.pulseAmount + 0.6 * strength);
+}
+
+const bursts = [];
+function spawnBurst(x, y){
+    bursts.push({
+        x, y,
+        vx: (Math.random()-0.5) * 6,
+        vy: (Math.random()-0.5) * 6,
+        life: 1,
+        size: 4 + Math.random() * 6,
+    });
+}
+
+function resizeStage(){
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    stageW = window.innerWidth;
+    stageH = window.innerHeight;
+    stageCanvas.width  = stageW * dpr;
+    stageCanvas.height = stageH * dpr;
+    stageCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    stageCX = stageW / 2;
+    stageCY = stageH / 2;
+}
+window.addEventListener('resize', resizeStage);
+
+/* ---------- 3. COLOR HELPERS --------------------------------- */
+function hexLerp(a, b, t){
+    const pa = parseInt(a.slice(1), 16), pb = parseInt(b.slice(1), 16);
+    const ar = (pa>>16)&255, ag = (pa>>8)&255, ab = pa&255;
+    const br = (pb>>16)&255, bg = (pb>>8)&255, bb = pb&255;
+    return `rgb(${Math.round(ar+(br-ar)*t)},${Math.round(ag+(bg-ag)*t)},${Math.round(ab+(bb-ab)*t)})`;
+}
+function hexToRgba(hex, a){
+    const p = parseInt(hex.slice(1), 16);
+    return `rgba(${(p>>16)&255},${(p>>8)&255},${p&255},${a})`;
+}
+
+/* ---------- 4. MAIN VISUAL LOOP ------------------------------ */
+let lastT = performance.now();
+function drawFrame(now){
+    const dt = Math.min(0.05, (now - lastT) / 1000);
+    lastT = now;
+
+    // FPS smoothing
+    state.fpsAccum += 1/dt;
+    state.fpsCount += 1;
+    if(now - state.fpsLast > 500){
+        state.fps = Math.round(state.fpsAccum / state.fpsCount);
+        state.fpsAccum = 0;
+        state.fpsCount = 0;
+        state.fpsLast = now;
+    }
+
+    // Audio analysis
+    analyseAudio();
+
+    // Smooth value approach
+    state.rotation       += (state.rotationTarget - state.rotation) * 0.08;
+    state.intensity      += (state.intensityTarget - state.intensity) * 0.06;
+    state.zoom           += (state.zoomTarget - state.zoom) * 0.07;
+    state.glowStrength   += (state.glowTarget - state.glowStrength) * 0.07;
+    state.particleSpread += (state.particleSpreadTarget - state.particleSpread) * 0.06;
+    state.pulseAmount    *= 0.94;
+    state.swipeBurst     *= 0.90;
+
+    drawScene(dt, now);
+    drawAudioViz();
+
+    requestAnimationFrame(drawFrame);
+}
+
+function drawScene(dt, now){
+    const pal = palettes[state.palette];
+
+    // Effective audio-reactive params
+    const aEnergy = state.audioEnergy;
+    const aBass   = state.audioBass;
+    const effIntensity = Math.min(1, state.intensity + aEnergy * 0.4);
+    const effGlow      = Math.min(1, state.glowStrength + aEnergy * 0.35);
+    const effSpread    = state.particleSpread + aEnergy * 0.25;
+    const effWaveAmp   = state.waveAmplitude + aEnergy * 22;
+    const effPulse     = state.pulseAmount + aBass * 0.5;
+
+    // 1) Trail fade — leaves nice motion trails
+    stageCtx.globalCompositeOperation = 'source-over';
+    stageCtx.fillStyle = `rgba(7, 3, 15, ${0.10 + (1 - effIntensity) * 0.10})`;
+    stageCtx.fillRect(0, 0, stageW, stageH);
+
+    stageCtx.save();
+    stageCtx.translate(stageCX, stageCY);
+    stageCtx.scale(state.zoom, state.zoom);
+    stageCtx.rotate(state.rotation);
+
+    const t = now * 0.001;
+
+    // 2) Background haze rings
+    stageCtx.globalCompositeOperation = 'lighter';
+    for(let i = 0; i < 4; i++){
+        const r = 100 + i * 90 + Math.sin(t * 0.5 + i) * 18;
+        stageCtx.beginPath();
+        stageCtx.arc(0, 0, r, 0, Math.PI*2);
+        stageCtx.strokeStyle = hexToRgba(pal.b, 0.04 + effGlow * 0.12);
+        stageCtx.lineWidth = 24 + effGlow * 30;
+        stageCtx.stroke();
+    }
+
+    // 3) Particles
+    const breath = Math.sin(t * 0.8) * 0.5 + 0.5;
+    const spreadFactor = 1.0 + effSpread * 0.8;
+    for(let i = 0; i < particles.length; i++){
+        const p = particles[i];
+        if(!state.freezeState){
+            p.a += p.sp * (1 + effIntensity * 2);
+            p.phase += dt * (1 + effIntensity);
+        }
+        const r = p.baseR * spreadFactor + Math.sin(p.phase) * 12 + breath * 8 + effPulse * 60;
+        const x = Math.cos(p.a) * r;
+        const y = Math.sin(p.a) * r;
+        const depthScale = 0.55 + (p.d + 1) * 0.4;
+        const size = p.size * depthScale * (1 + effGlow * 0.7);
+        const col = hexLerp(pal.b, pal.c, (p.d + 1) / 2);
+        stageCtx.fillStyle = col;
+        stageCtx.shadowBlur = 8 + effGlow * 22;
+        stageCtx.shadowColor = pal.a;
+        stageCtx.beginPath();
+        stageCtx.arc(x, y, size, 0, Math.PI*2);
+        stageCtx.fill();
+    }
+    stageCtx.shadowBlur = 0;
+
+    // 4) Wavy radial lines
+    const waveCount = 3;
+    for(let w = 0; w < waveCount; w++){
+        stageCtx.beginPath();
+        const baseR = 140 + w * 60;
+        const segs = 80;
+        for(let s = 0; s <= segs; s++){
+            const ang = (s / segs) * Math.PI * 2;
+            const wob = Math.sin(ang * 6 + t * 1.5 + w) * (effWaveAmp + effIntensity * 30);
+            const r = baseR + wob + Math.sin(t + w) * 10;
+            const x = Math.cos(ang) * r;
+            const y = Math.sin(ang) * r;
+            if(s === 0) stageCtx.moveTo(x, y); else stageCtx.lineTo(x, y);
+        }
+        stageCtx.closePath();
+        stageCtx.strokeStyle = hexToRgba(pal.a, 0.15 + effGlow * 0.30);
+        stageCtx.lineWidth = 1 + effGlow * 1.4;
+        stageCtx.stroke();
+    }
+
+    // 5) Rotating ellipse rings
+    const ringCount = 5;
+    for(let r = 0; r < ringCount; r++){
+        const rot = t * state.ringSpeed * (1 + r * 0.2) + r;
+        stageCtx.save();
+        stageCtx.rotate(rot);
+        stageCtx.scale(1, 0.25 + 0.15 * Math.sin(t * 0.4 + r));
+        stageCtx.beginPath();
+        stageCtx.arc(0, 0, 110 + r * 38, 0, Math.PI * 2);
+        stageCtx.strokeStyle = hexToRgba(pal.c, 0.18 + effGlow * 0.30);
+        stageCtx.lineWidth = 1.2;
+        stageCtx.stroke();
+        stageCtx.restore();
+    }
+
+    // 6) Pulse rings (expanding)
+    for(let i = pulses.length - 1; i >= 0; i--){
+        const pl = pulses[i];
+        pl.r += 240 * dt * (0.6 + pl.strength);
+        pl.life -= dt * 0.6;
+        if(pl.life <= 0){ pulses.splice(i, 1); continue; }
+        stageCtx.beginPath();
+        stageCtx.arc(0, 0, pl.r, 0, Math.PI * 2);
+        stageCtx.strokeStyle = hexToRgba(pal.m, pl.life * 0.5);
+        stageCtx.lineWidth = 3 + pl.life * 6;
+        stageCtx.stroke();
+    }
+
+    // 7) Central glowing orb — breathing & audio-reactive
+    const orbR = 50 + breath * 18 + effIntensity * 25 + effPulse * 30 + aBass * 35;
+    const grad = stageCtx.createRadialGradient(0, 0, 0, 0, 0, orbR * 3.5);
+    grad.addColorStop(0,    hexToRgba(pal.c, 0.95));
+    grad.addColorStop(0.18, hexToRgba(pal.a, 0.75));
+    grad.addColorStop(0.45, hexToRgba(pal.b, 0.30));
+    grad.addColorStop(1,    hexToRgba(pal.b, 0));
+    stageCtx.fillStyle = grad;
+    stageCtx.beginPath();
+    stageCtx.arc(0, 0, orbR * 3.5, 0, Math.PI * 2);
+    stageCtx.fill();
+
+    // Bright core
+    stageCtx.shadowBlur = 40 + effGlow * 60;
+    stageCtx.shadowColor = pal.c;
+    stageCtx.fillStyle = hexToRgba(pal.c, 0.95);
+    stageCtx.beginPath();
+    stageCtx.arc(0, 0, orbR * 0.45, 0, Math.PI * 2);
+    stageCtx.fill();
+    stageCtx.shadowBlur = 0;
+
+    stageCtx.restore();
+
+    // 8) Burst trails (screen-space)
+    stageCtx.globalCompositeOperation = 'lighter';
+    for(let i = bursts.length - 1; i >= 0; i--){
+        const b = bursts[i];
+        b.x += b.vx; b.y += b.vy;
+        b.vx *= 0.95; b.vy *= 0.95;
+        b.life -= dt * 1.2;
+        if(b.life <= 0){ bursts.splice(i, 1); continue; }
+        stageCtx.beginPath();
+        stageCtx.arc(b.x, b.y, b.size * b.life, 0, Math.PI * 2);
+        stageCtx.fillStyle = hexToRgba(pal.m, b.life * 0.7);
+        stageCtx.shadowBlur = 20;
+        stageCtx.shadowColor = pal.m;
+        stageCtx.fill();
+    }
+    stageCtx.shadowBlur = 0;
+    stageCtx.globalCompositeOperation = 'source-over';
+
+    // Idle micro pulses
+    if(now - state.lastGestureTime > 6500 && Math.random() < 0.005){
+        spawnPulse(0.4);
+        state.lastGestureTime = now - 4000;
+    }
+}
+
+/* ---------- 5. AUDIO SYSTEM ---------------------------------- */
+const audio       = document.getElementById('audio');
+const fileInput   = document.getElementById('m-file');
+const musicTitle  = document.getElementById('music-title');
+const playBtn     = document.getElementById('m-play');
+const playIcon    = document.getElementById('m-play-icon');
+const stopBtn     = document.getElementById('m-stop');
+const restartBtn  = document.getElementById('m-restart');
+const muteBtn     = document.getElementById('m-mute');
+const muteIcon    = document.getElementById('m-mute-icon');
+const progressEl  = document.getElementById('m-progress');
+const progressFill= document.getElementById('m-progress-fill');
+const progressHnd = document.getElementById('m-progress-handle');
+const timeCur     = document.getElementById('m-time-cur');
+const timeDur     = document.getElementById('m-time-dur');
+const volEl       = document.getElementById('m-volume');
+const volFill     = document.getElementById('m-volume-fill');
+const volNum      = document.getElementById('m-volume-num');
+const audioVizCv  = document.getElementById('audio-viz');
+const audioVizCtx = audioVizCv.getContext('2d');
+const musicEnergy = document.getElementById('music-energy');
+const gmStatus    = document.getElementById('gm-status');
+const gmMode      = document.getElementById('gm-mode');
+const musicGestureStatus = document.getElementById('music-gesture-status');
+
+let audioCtx = null, audioSource = null, audioAnalyser = null, audioGain = null, audioData = null;
+
+audio.volume = 0.7;
+audio.crossOrigin = 'anonymous';
+
+function initAudioContext(){
+    if(audioCtx) return;
+    try{
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        audioSource = audioCtx.createMediaElementSource(audio);
+        audioAnalyser = audioCtx.createAnalyser();
+        audioAnalyser.fftSize = 256;
+        audioAnalyser.smoothingTimeConstant = 0.7;
+        audioGain = audioCtx.createGain();
+        audioSource.connect(audioAnalyser);
+        audioAnalyser.connect(audioGain);
+        audioGain.connect(audioCtx.destination);
+        audioData = new Uint8Array(audioAnalyser.frequencyBinCount);
+    }catch(e){
+        console.warn('AudioContext init failed', e);
+    }
+}
+
+function analyseAudio(){
+    if(!audioAnalyser || audio.paused){
+        // decay
+        state.audioEnergy *= 0.92;
+        state.audioBass   *= 0.92;
+        state.audioMid    *= 0.92;
+        state.audioTreble *= 0.92;
+        return;
+    }
+    audioAnalyser.getByteFrequencyData(audioData);
+    let bass = 0, mid = 0, treble = 0;
+    const len = audioData.length;
+    for(let i = 0; i < 8;   i++) bass   += audioData[i];
+    for(let i = 8; i < 32;  i++) mid    += audioData[i];
+    for(let i = 32; i < len;i++) treble += audioData[i];
+    bass   /= (8 * 255);
+    mid    /= (24 * 255);
+    treble /= ((len - 32) * 255);
+    // smooth
+    state.audioBass   = state.audioBass   * 0.5 + bass   * 0.5;
+    state.audioMid    = state.audioMid    * 0.5 + mid    * 0.5;
+    state.audioTreble = state.audioTreble * 0.5 + treble * 0.5;
+    state.audioEnergy = (state.audioBass * 1.4 + state.audioMid + state.audioTreble * 0.6) / 3.0;
+
+    // Beat detection: bass spike
+    const now = performance.now();
+    if(state.audioBass > 0.55 && now - state.lastBeatTime > 260){
+        spawnPulse(state.audioBass * 1.0);
+        state.lastBeatTime = now;
+    }
+}
+
+function drawAudioViz(){
+    if(!audioVizCtx) return;
+    const w = audioVizCv.width = audioVizCv.clientWidth;
+    const h = audioVizCv.height = audioVizCv.clientHeight;
+    const pal = palettes[state.palette];
+    audioVizCtx.clearRect(0, 0, w, h);
+    if(!audioData || !state.audioLoaded){
+        // Idle: gentle baseline
+        audioVizCtx.fillStyle = hexToRgba(pal.a, 0.10);
+        audioVizCtx.fillRect(0, h - 2, w, 2);
+        audioVizCtx.fillStyle = hexToRgba(pal.b, 0.3);
+        audioVizCtx.font = '9px JetBrains Mono';
+        audioVizCtx.textAlign = 'center';
+        audioVizCtx.fillText('UPLOAD A SONG FOR AUDIO-REACTIVE VISUALS', w/2, h/2 + 3);
+        return;
+    }
+    const bars = 48;
+    const step = Math.floor(audioData.length / bars);
+    const bw = w / bars;
+    for(let i = 0; i < bars; i++){
+        const v = audioData[i * step] / 255;
+        const bh = Math.max(2, v * h * 0.95);
+        const grad = audioVizCtx.createLinearGradient(0, h, 0, h - bh);
+        grad.addColorStop(0, hexToRgba(pal.b, 0.95));
+        grad.addColorStop(0.7, hexToRgba(pal.a, 0.95));
+        grad.addColorStop(1, hexToRgba(pal.c, 0.95));
+        audioVizCtx.fillStyle = grad;
+        audioVizCtx.shadowBlur = 8;
+        audioVizCtx.shadowColor = pal.a;
+        audioVizCtx.fillRect(i * bw + 1, h - bh, bw - 2, bh);
+    }
+    audioVizCtx.shadowBlur = 0;
+}
+
+/* Format seconds → m:ss */
+function fmtTime(s){
+    if(!isFinite(s) || s < 0) s = 0;
+    const m = Math.floor(s / 60), ss = Math.floor(s % 60);
+    return m + ':' + (ss < 10 ? '0' : '') + ss;
+}
+
+/* File upload */
+fileInput.addEventListener('change', (e) => {
+    const f = e.target.files && e.target.files[0];
+    if(!f) return;
+    if(audio.src) URL.revokeObjectURL(audio.src);
+    audio.src = URL.createObjectURL(f);
+    musicTitle.textContent = f.name.replace(/\.[^.]+$/, '');
+    state.audioLoaded = true;
+    musicGestureStatus.classList.add('live');
+    gmMode.textContent = 'Active';
+    initAudioContext();
+    if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    toast('Loaded: ' + f.name);
+});
+
+/* Transport buttons */
+playBtn.addEventListener('click', () => togglePlay());
+stopBtn.addEventListener('click', () => stopMusic());
+restartBtn.addEventListener('click', () => {
+    if(!audio.src) return toast('Upload a song first.');
+    audio.currentTime = 0;
+    audio.play();
+});
+muteBtn.addEventListener('click', () => toggleMute());
+
+function togglePlay(showOverlay = false){
+    if(!audio.src){ toast('Upload a song first.'); return; }
+    initAudioContext();
+    if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    if(audio.paused){
+        audio.play();
+        if(showOverlay) showBigOverlay('MUSIC', 'PLAYING');
+    } else {
+        audio.pause();
+        if(showOverlay) showBigOverlay('MUSIC', 'PAUSED');
+    }
+}
+function stopMusic(){
+    if(!audio.src) return;
+    audio.pause();
+    audio.currentTime = 0;
+}
+function toggleMute(showOverlay = false){
+    audio.muted = !audio.muted;
+    updateMuteIcon();
+    if(showOverlay) showBigOverlay('AUDIO', audio.muted ? 'MUTED' : 'UNMUTED');
+}
+
+function updatePlayIcon(){
+    if(audio.paused){
+        playIcon.innerHTML = '<path d="M8 5v14l11-7z"/>';
+    } else {
+        playIcon.innerHTML = '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>';
+    }
+}
+function updateMuteIcon(){
+    if(audio.muted || audio.volume === 0){
+        muteIcon.innerHTML = '<path d="M3 9v6h4l5 5V4L7 9H3zM19 12l3-3-1.5-1.5L17.5 10.5 14.5 7.5 13 9l3 3-3 3 1.5 1.5 3-3 3 3L22 15l-3-3z"/>';
+    } else {
+        muteIcon.innerHTML = '<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4z"/>';
+    }
+}
+
+audio.addEventListener('play', () => { updatePlayIcon(); gmStatus.textContent = 'Playing'; });
+audio.addEventListener('pause', () => { updatePlayIcon(); gmStatus.textContent = 'Paused'; });
+audio.addEventListener('ended', () => updatePlayIcon());
+audio.addEventListener('volumechange', () => updateMuteIcon());
+
+/* Update progress + time */
+audio.addEventListener('timeupdate', () => {
+    if(!isFinite(audio.duration)) return;
+    const pct = (audio.currentTime / audio.duration) * 100;
+    progressFill.style.width = pct + '%';
+    progressHnd.style.left = pct + '%';
+    timeCur.textContent = fmtTime(audio.currentTime);
+});
+audio.addEventListener('loadedmetadata', () => {
+    timeDur.textContent = fmtTime(audio.duration);
+});
+
+/* Click progress to seek */
+let progressDragging = false;
+function seekFromEvent(e){
+    if(!isFinite(audio.duration)) return;
+    const rect = progressEl.getBoundingClientRect();
+    const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+    const ratio = Math.max(0, Math.min(1, x / rect.width));
+    audio.currentTime = ratio * audio.duration;
+}
+progressEl.addEventListener('mousedown', (e) => { progressDragging = true; seekFromEvent(e); });
+window.addEventListener('mousemove', (e) => { if(progressDragging) seekFromEvent(e); });
+window.addEventListener('mouseup', () => progressDragging = false);
+progressEl.addEventListener('touchstart', (e) => { progressDragging = true; seekFromEvent(e); }, {passive:true});
+window.addEventListener('touchmove', (e) => { if(progressDragging) seekFromEvent(e); }, {passive:true});
+window.addEventListener('touchend', () => progressDragging = false);
+
+/* Click volume to set */
+let volDragging = false;
+function setVolumeFromEvent(e){
+    const rect = volEl.getBoundingClientRect();
+    const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+    const ratio = Math.max(0, Math.min(1, x / rect.width));
+    setVolume(ratio);
+}
+function setVolume(v){
+    v = Math.max(0, Math.min(1, v));
+    audio.volume = v;
+    if(v > 0 && audio.muted){ audio.muted = false; }
+    volFill.style.width = (v * 100) + '%';
+    volNum.textContent = Math.round(v * 100) + '%';
+}
+volEl.addEventListener('mousedown', (e) => { volDragging = true; setVolumeFromEvent(e); });
+window.addEventListener('mousemove', (e) => { if(volDragging) setVolumeFromEvent(e); });
+window.addEventListener('mouseup', () => volDragging = false);
+volEl.addEventListener('touchstart', (e) => { volDragging = true; setVolumeFromEvent(e); }, {passive:true});
+window.addEventListener('touchmove', (e) => { if(volDragging) setVolumeFromEvent(e); }, {passive:true});
+window.addEventListener('touchend', () => volDragging = false);
+
+/* Initial sync */
+setVolume(0.7);
+updatePlayIcon();
+updateMuteIcon();
+
+/* ---------- 6. HAND TRACKING --------------------------------- */
+const camVideo   = document.getElementById('cam-video');
+const camCanvas  = document.getElementById('cam-canvas');
+const camCtx     = camCanvas.getContext('2d');
+const camEmpty   = document.getElementById('cam-empty');
+const camTag     = document.getElementById('cam-tag');
+const camTagText = document.getElementById('cam-tag-text');
+const camStatus  = document.getElementById('cam-status-text');
+
+let mpHands = null, mpCamera = null, stream = null, prevHands = [];
+
+function resizeCam(){
+    const r = camCanvas.getBoundingClientRect();
+    camCanvas.width = r.width;
+    camCanvas.height = r.height;
+}
+window.addEventListener('resize', resizeCam);
+
+const HAND_CONNECTIONS = [
+    [0,1],[1,2],[2,3],[3,4],
+    [0,5],[5,6],[6,7],[7,8],
+    [5,9],[9,10],[10,11],[11,12],
+    [9,13],[13,14],[14,15],[15,16],
+    [13,17],[17,18],[18,19],[19,20],
+    [0,17]
+];
+
+async function startCamera(){
+    try{
+        if(window.__mpFail || typeof Hands === 'undefined'){
+            toast('Hand tracking model failed to load. Camera will preview only.');
+        }
+        stream = await navigator.mediaDevices.getUserMedia({
+            video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' },
+            audio: false
+        });
+        camVideo.srcObject = stream;
+        await camVideo.play();
+        camEmpty.classList.add('hide');
+        camTag.classList.add('live');
+        camTagText.textContent = 'LIVE';
+        state.cameraActive = true;
+        document.getElementById('btn-camera').classList.add('is-active');
+
+        resizeCam();
+
+        if(!window.__mpFail && typeof Hands !== 'undefined'){
+            try{
+                mpHands = new Hands({
+                    locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+                });
+                mpHands.setOptions({
+                    maxNumHands: 2,
+                    modelComplexity: 0,
+                    minDetectionConfidence: 0.6,
+                    minTrackingConfidence: 0.6
+                });
+                mpHands.onResults(onHandResults);
+                if(typeof Camera !== 'undefined'){
+                    mpCamera = new Camera(camVideo, {
+                        onFrame: async () => { await mpHands.send({ image: camVideo }); },
+                        width: 640, height: 480
+                    });
+                    mpCamera.start();
+                } else {
+                    runManualMpLoop();
+                }
+                state.gestureActive = true;
+                document.getElementById('btn-gesture').classList.add('is-active');
+                toast('Hand tracking active. Open palm = play, fist = pause, pinch = mute.');
+            }catch(err){
+                console.warn(err);
+                toast('Hand tracking unavailable. Camera will preview only.');
+            }
+        } else {
+            toast('Hand tracking unavailable. Use mouse / keyboard / touch.');
+        }
+    }catch(err){
+        console.warn(err);
+        toast('Camera permission denied. You can still control visuals using mouse, touch, and keyboard.');
+    }
+}
+
+async function runManualMpLoop(){
+    const step = async () => {
+        if(!state.cameraActive || !mpHands) return;
+        try{ await mpHands.send({ image: camVideo }); }catch(e){}
+        requestAnimationFrame(step);
+    };
+    step();
+}
+
+function stopCamera(){
+    state.cameraActive = false;
+    state.gestureActive = false;
+    state.handCount = 0;
+    if(mpCamera){ try{ mpCamera.stop(); }catch(e){} mpCamera = null; }
+    if(mpHands){ try{ mpHands.close(); }catch(e){} mpHands = null; }
+    if(stream){ stream.getTracks().forEach(t => t.stop()); stream = null; }
+    camVideo.srcObject = null;
+    camCtx.clearRect(0, 0, camCanvas.width, camCanvas.height);
+    camEmpty.classList.remove('hide');
+    camTag.classList.remove('live');
+    camTagText.textContent = 'OFFLINE';
+    camStatus.textContent = 'awaiting input';
+    document.getElementById('btn-camera').classList.remove('is-active');
+    document.getElementById('btn-gesture').classList.remove('is-active');
+    state.gestureName = 'IDLE';
+    updateTelemetry();
+}
+
+function onHandResults(results){
+    resizeCam();
+    camCtx.clearRect(0, 0, camCanvas.width, camCanvas.height);
+
+    const hands = results.multiHandLandmarks || [];
+    state.handCount = hands.length;
+
+    const palette = palettes[state.palette];
+    hands.forEach((lm, idx) => {
+        camCtx.strokeStyle = palette.c;
+        camCtx.lineWidth = 1.4;
+        camCtx.shadowBlur = 10;
+        camCtx.shadowColor = palette.a;
+        HAND_CONNECTIONS.forEach(([a, b]) => {
+            camCtx.beginPath();
+            camCtx.moveTo(lm[a].x * camCanvas.width, lm[a].y * camCanvas.height);
+            camCtx.lineTo(lm[b].x * camCanvas.width, lm[b].y * camCanvas.height);
+            camCtx.stroke();
+        });
+        camCtx.fillStyle = palette.m;
+        lm.forEach((pt, i) => {
+            const r = (i===0||i===4||i===8||i===12||i===16||i===20) ? 4 : 2.2;
+            camCtx.beginPath();
+            camCtx.arc(pt.x * camCanvas.width, pt.y * camCanvas.height, r, 0, Math.PI*2);
+            camCtx.fill();
+        });
+        camCtx.shadowBlur = 0;
+
+        // Label near palm — drawn unmirrored
+        const palm = lm[9];
+        const x = palm.x * camCanvas.width;
+        const y = palm.y * camCanvas.height;
+        const labelText = labelForHand(lm, idx);
+        camCtx.save();
+        camCtx.translate(x, y - 22);
+        camCtx.scale(-1, 1);
+        camCtx.font = '600 10px "JetBrains Mono", monospace';
+        camCtx.textAlign = 'center';
+        camCtx.fillStyle = palette.c;
+        camCtx.shadowBlur = 6;
+        camCtx.shadowColor = palette.a;
+        camCtx.fillText(labelText, 0, 0);
+        camCtx.restore();
+    });
+
+    analyseGestures(hands);
+    prevHands = hands.map(h => h.map(p => ({x:p.x, y:p.y, z:p.z})));
+}
+
+function labelForHand(lm, idx){
+    if(isFist(lm))     return 'PAUSE';
+    if(isPinch(lm))    return 'MUTE';
+    if(isOpenPalm(lm)) return 'PLAY';
+    return idx === 0 ? 'VOLUME' : 'SEEK';
+}
+
+/* ---------- 7. GESTURE UTILITIES ----------------------------- */
+function dist(a, b){
+    const dx = a.x - b.x, dy = a.y - b.y;
+    return Math.hypot(dx, dy);
+}
+function isOpenPalm(lm){
+    const palm = lm[0];
+    const tips = [8, 12, 16, 20];
+    let avg = 0;
+    tips.forEach(t => avg += dist(lm[t], palm));
+    avg /= tips.length;
+    return avg > 0.20;
+}
+function isFist(lm){
+    const palm = lm[0];
+    const tips = [8, 12, 16, 20];
+    let avg = 0;
+    tips.forEach(t => avg += dist(lm[t], palm));
+    avg /= tips.length;
+    return avg < 0.10;
+}
+function isPinch(lm){
+    return dist(lm[4], lm[8]) < 0.05 && dist(lm[12], lm[0]) > 0.12;
+}
+
+/* Track gesture state transitions to fire actions once */
+let prevPrimaryGesture = 'neutral';
+let lastSeekUpdate = 0;
+let smoothedVolume = audio.volume;
+
+function analyseGestures(hands){
+    const now = performance.now();
+
+    if(hands.length === 0){
+        camStatus.textContent = 'No hand detected';
+        state.rotationTarget   += 0.0005;
+        state.intensityTarget  += (0.30 - state.intensityTarget) * 0.05;
+        state.zoomTarget       += (1.00 - state.zoomTarget) * 0.05;
+        state.glowTarget       += (0.50 - state.glowTarget) * 0.05;
+        state.particleSpreadTarget += (0 - state.particleSpreadTarget) * 0.05;
+        state.freezeState = false;
+        state.gestureName = 'IDLE';
+        state.volumeGestureActive = false;
+        prevPrimaryGesture = 'neutral';
+        updateTelemetry();
+        return;
+    }
+
+    state.lastGestureTime = now;
+    camStatus.textContent = hands.length === 1 ? 'One hand detected' : 'Two hands detected';
+
+    const h1 = hands[0];
+    // We mirror X because video is mirrored on-screen — feels natural
+    const palm1 = { x: 1 - h1[9].x, y: h1[9].y };
+
+    /* Rotation — primary hand X */
+    state.rotationTarget = (palm1.x - 0.5) * Math.PI * 2;
+
+    /* Intensity — primary hand Y also drives intensity */
+    state.intensityTarget = Math.max(0, Math.min(1, 1 - palm1.y));
+
+    /* Hand-raised mode switching */
+    if(palm1.y < 0.25) setMode('ENERGY');
+    else if(palm1.y > 0.75) setMode('CALM');
+    else setMode('INTENSE');
+
+    /* Detect primary gesture state */
+    let g = 'neutral';
+    if(isPinch(h1))        g = 'pinch';
+    else if(isFist(h1))    g = 'fist';
+    else if(isOpenPalm(h1))g = 'palm';
+
+    /* === Visual effects from gesture === */
+    if(g === 'palm'){
+        state.glowTarget = Math.min(1, state.glowTarget + 0.04);
+        state.particleSpreadTarget = Math.min(1, state.particleSpreadTarget + 0.03);
+    } else {
+        state.glowTarget += (0.5 - state.glowTarget) * 0.05;
+    }
+    state.freezeState = (g === 'fist');
+
+    /* === MUSIC GESTURE ACTIONS — only on state transition === */
+    if(g !== prevPrimaryGesture){
+        if(audio.src){
+            if(g === 'palm' && audio.paused){
+                audio.play().catch(()=>{});
+                showBigOverlay('MUSIC', 'PLAYING');
+                state.gestureName = 'PLAY';
+            } else if(g === 'fist' && !audio.paused){
+                audio.pause();
+                showBigOverlay('MUSIC', 'PAUSED');
+                state.gestureName = 'PAUSE';
+            } else if(g === 'pinch'){
+                audio.muted = !audio.muted;
+                showBigOverlay('AUDIO', audio.muted ? 'MUTED' : 'UNMUTED');
+                state.gestureName = 'MUTE';
+                spawnPulse(1);
+            }
+        } else if(g === 'pinch'){
+            // Just visual pulse when no song
+            spawnPulse(1.2);
+            state.gestureName = 'PULSE';
+        }
+        prevPrimaryGesture = g;
+    }
+
+    /* === VOLUME CONTROL (right hand Y, when song loaded & not fist/pinch) === */
+    if(audio.src && g !== 'fist' && g !== 'pinch'){
+        // palm Y: top=0 (loud), bottom=1 (quiet)
+        const targetVol = Math.max(0, Math.min(1, 1 - palm1.y));
+        smoothedVolume = smoothedVolume * 0.85 + targetVol * 0.15;
+        setVolume(smoothedVolume);
+        state.volumeGestureActive = true;
+
+        // Show volume overlay during active changes
+        if(now - state.lastVolumeShow > 80){
+            showBigOverlay('VOLUME', Math.round(smoothedVolume * 100) + '%', smoothedVolume, true);
+            state.lastVolumeShow = now;
+        }
+    } else {
+        state.volumeGestureActive = false;
+    }
+
+    /* === MOVEMENT SPEED → SWIPE BURST === */
+    if(prevHands.length > 0 && prevHands[0]){
+        const prevPalm = prevHands[0][9];
+        const sp = dist({x: h1[9].x, y: h1[9].y}, prevPalm);
+        if(sp > 0.06){
+            state.swipeBurst = Math.min(1, state.swipeBurst + sp * 4);
+            for(let i = 0; i < 4; i++){
+                spawnBurst(stageCX + (Math.random()-0.5) * 80,
+                           stageCY + (Math.random()-0.5) * 80);
+            }
+            state.gestureName = 'SWIPE';
+        }
+    }
+
+    /* === TWO-HAND INTERACTIONS === */
+    if(hands.length === 2){
+        const h2 = hands[1];
+        const palm2 = { x: 1 - h2[9].x, y: h2[9].y };
+        const d = Math.hypot(palm1.x - palm2.x, palm1.y - palm2.y);
+        // Zoom + intensity from hand spread
+        state.zoomTarget = 0.4 + d * 2.4;
+        state.intensityTarget = Math.max(state.intensityTarget, Math.min(1, d * 1.4));
+        state.particleSpreadTarget = (d - 0.4) * 1.5;
+
+        /* === SEEK — left hand X (the one further left on mirrored view) === */
+        if(audio.src && isFinite(audio.duration)){
+            // identify the "left" hand on screen = smaller mirrored x
+            const leftHand = palm1.x < palm2.x ? palm1 : palm2;
+            if(now - lastSeekUpdate > 100){
+                const seekRatio = Math.max(0, Math.min(1, leftHand.x));
+                audio.currentTime = seekRatio * audio.duration;
+                lastSeekUpdate = now;
+                state.gestureName = 'SEEK';
+            }
+        } else {
+            state.gestureName = 'ZOOM';
+        }
+    }
+
+    /* Default labels if nothing stronger detected */
+    if(g === 'neutral' && hands.length === 1 && state.swipeBurst < 0.2 && !state.volumeGestureActive){
+        state.gestureName = 'ROTATE';
+    } else if(g === 'palm' && audio.src && !audio.paused){
+        state.gestureName = 'VOLUME';
+    } else if(g === 'palm'){
+        state.gestureName = 'PLAY';
+    } else if(g === 'fist'){
+        state.gestureName = 'FREEZE';
+    }
+
+    updateTelemetry();
+}
+
+/* ---------- 8. MANUAL CONTROLS (mouse/touch/keys) ------------ */
+stageCanvas.addEventListener('mousemove', (e) => {
+    if(state.gestureActive) return;
+    const x = e.clientX / window.innerWidth;
+    const y = e.clientY / window.innerHeight;
+    state.rotationTarget  = (x - 0.5) * Math.PI * 2;
+    state.intensityTarget = Math.max(0, Math.min(1, 1 - y));
+});
+stageCanvas.addEventListener('click', () => spawnPulse(1));
+stageCanvas.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    state.zoomTarget = Math.max(0.4, Math.min(2.5, state.zoomTarget - e.deltaY * 0.001));
+}, { passive: false });
+
+let lastTouch = null;
+stageCanvas.addEventListener('touchstart', (e) => {
+    if(e.touches.length === 2){
+        lastTouch = pinchDist(e.touches);
+    } else if(e.touches.length === 1){
+        const t = e.touches[0];
+        const now = performance.now();
+        if(state._lastTap && now - state._lastTap < 350) spawnPulse(1);
+        state._lastTap = now;
+        lastTouch = { x: t.clientX, y: t.clientY };
+    }
+}, { passive: true });
+stageCanvas.addEventListener('touchmove', (e) => {
+    if(state.gestureActive) return;
+    if(e.touches.length === 2 && typeof lastTouch === 'number'){
+        const d = pinchDist(e.touches);
+        state.zoomTarget = Math.max(0.4, Math.min(2.5, state.zoomTarget + (d - lastTouch) * 0.003));
+        lastTouch = d;
+    } else if(e.touches.length === 1 && lastTouch && lastTouch.x !== undefined){
+        const t = e.touches[0];
+        const nx = t.clientX / window.innerWidth;
+        const ny = t.clientY / window.innerHeight;
+        state.rotationTarget  = (nx - 0.5) * Math.PI * 2;
+        state.intensityTarget = Math.max(0, Math.min(1, 1 - ny));
+    }
+}, { passive: true });
+function pinchDist(touches){
+    return Math.hypot(touches[0].clientX - touches[1].clientX,
+                      touches[0].clientY - touches[1].clientY);
+}
+
+/* Keyboard */
+window.addEventListener('keydown', (e) => {
+    // Ignore typing in inputs
+    if(e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+
+    switch(e.code){
+        case 'Space':    e.preventDefault(); spawnPulse(1.5); break;
+        case 'KeyR':     resetVisual(); break;
+        case 'KeyF':     toggleFullscreen(); break;
+        case 'Digit1':   setMode('CALM'); break;
+        case 'Digit2':   setMode('ENERGY'); break;
+        case 'Digit3':   setMode('INTENSE'); break;
+        case 'KeyC':     cyclePalette(); break;
+        case 'KeyH':     togglePanels(); break;
+        case 'KeyP':     togglePerf(); break;
+        case 'Escape':   if(document.body.classList.contains('perf-mode')) togglePerf(); break;
+        case 'KeyM':     toggleMute(true); break;
+        case 'KeyK':     e.preventDefault(); togglePlay(true); break;
+        case 'ArrowUp':
+            e.preventDefault();
+            setVolume(audio.volume + 0.05);
+            showBigOverlay('VOLUME', Math.round(audio.volume * 100) + '%', audio.volume, true);
+            break;
+        case 'ArrowDown':
+            e.preventDefault();
+            setVolume(audio.volume - 0.05);
+            showBigOverlay('VOLUME', Math.round(audio.volume * 100) + '%', audio.volume, true);
+            break;
+        case 'ArrowLeft':
+            if(audio.src){ audio.currentTime = Math.max(0, audio.currentTime - 5); }
+            break;
+        case 'ArrowRight':
+            if(audio.src && isFinite(audio.duration)){
+                audio.currentTime = Math.min(audio.duration, audio.currentTime + 5);
+            }
+            break;
+    }
+});
+
+/* ---------- 9. UI BUTTONS ------------------------------------ */
+document.getElementById('btn-camera').onclick = () => {
+    state.cameraActive ? stopCamera() : startCamera();
+};
+document.getElementById('btn-gesture').onclick = () => {
+    if(!state.cameraActive){ toast('Start camera first to enable hand control.'); return; }
+    state.gestureActive = !state.gestureActive;
+    document.getElementById('btn-gesture').classList.toggle('is-active', state.gestureActive);
+    toast(state.gestureActive ? 'Gesture control enabled.' : 'Gesture control paused.');
+};
+document.getElementById('btn-theme').onclick = cyclePalette;
+document.getElementById('btn-pulse').onclick = () => spawnPulse(1.5);
+document.getElementById('btn-reset').onclick = resetVisual;
+document.getElementById('btn-perf').onclick   = togglePerf;
+document.getElementById('btn-full').onclick   = toggleFullscreen;
+document.getElementById('btn-cam-toggle').onclick = () => {
+    document.getElementById('panel-cam').classList.toggle('hidden');
+};
+document.getElementById('btn-music-toggle').onclick = () => {
+    document.getElementById('panel-music').classList.toggle('hidden');
+};
+
+function resetVisual(){
+    state.rotationTarget = 0;
+    state.intensityTarget = 0.30;
+    state.zoomTarget = 1.0;
+    state.glowTarget = 0.50;
+    state.particleSpreadTarget = 0;
+    state.pulseAmount = 0;
+    state.freezeState = false;
+    setMode('CALM');
+    toast('Visual reset.');
+}
+
+function togglePerf(){
+    document.body.classList.toggle('perf-mode');
+    setTimeout(resizeStage, 50);
+}
+
+function togglePanels(){
+    const panels = ['panel-cam','panel-music','panel-tele'];
+    const anyVisible = panels.some(id => !document.getElementById(id).classList.contains('hidden'));
+    panels.forEach(id => document.getElementById(id).classList.toggle('hidden', anyVisible));
+}
+
+function toggleFullscreen(){
+    if(!document.fullscreenElement){ document.documentElement.requestFullscreen?.(); }
+    else{ document.exitFullscreen?.(); }
+}
+
+function cyclePalette(){
+    state.palette = (state.palette + 1) % palettes.length;
+    const pal = palettes[state.palette];
+    document.documentElement.style.setProperty('--accent',   pal.a);
+    document.documentElement.style.setProperty('--accent-2', pal.b);
+    document.documentElement.style.setProperty('--accent-3', pal.c);
+    document.documentElement.style.setProperty('--magenta',  pal.m);
+    document.documentElement.style.setProperty('--line',      hexToRgba(pal.a, 0.20));
+    document.documentElement.style.setProperty('--line-soft', hexToRgba(pal.a, 0.10));
+    toast('Theme: ' + pal.name);
+}
+
+function setMode(m){
+    if(state.currentMode === m) return;
+    state.currentMode = m;
+    if(m === 'CALM')        { state.ringSpeed = 0.3; state.waveAmplitude = 16; }
+    else if(m === 'ENERGY') { state.ringSpeed = 0.8; state.waveAmplitude = 26; }
+    else if(m === 'INTENSE'){ state.ringSpeed = 1.4; state.waveAmplitude = 40; }
+}
+
+/* ---------- 10. UI UPDATERS ---------------------------------- */
+function pct(v){ return Math.round(Math.max(0, Math.min(1, v)) * 100) + '%'; }
+
+function updateTelemetry(){
+    const rotDeg = Math.round((state.rotation * 180/Math.PI) % 360);
+    document.getElementById('tele-gesture').textContent = state.gestureName;
+    document.getElementById('tele-hands').textContent   = state.handCount;
+    document.getElementById('tele-rot').textContent     = rotDeg + '°';
+    document.getElementById('tele-int').textContent     = pct(state.intensity);
+    document.getElementById('tele-zoom').textContent    = state.zoom.toFixed(1) + 'x';
+    document.getElementById('tele-glow').textContent    = pct(state.glowStrength);
+    document.getElementById('tele-audio').textContent   = pct(state.audioEnergy);
+
+    document.getElementById('status-mode').textContent = state.currentMode;
+    document.getElementById('status-fps').textContent  = state.fps;
+
+    musicEnergy.textContent = pct(state.audioEnergy);
+
+    // Perf-mode HUD
+    document.getElementById('ph-gesture').textContent = state.gestureName;
+    document.getElementById('ph-volume').textContent  = Math.round(audio.volume * 100) + '%';
+    document.getElementById('ph-music').textContent   = audio.src ? (audio.paused ? 'Paused' : 'Playing') : '—';
+    document.getElementById('ph-fps').textContent     = state.fps;
+
+    // Idle hint
+    document.getElementById('center-hint').classList.toggle('show',
+        state.handCount === 0 && performance.now() - state.lastGestureTime > 5000);
+}
+setInterval(updateTelemetry, 120);
+
+/* ---------- 11. BIG OVERLAY ---------------------------------- */
+const bigOverlay     = document.getElementById('big-overlay');
+const bigLabel       = document.getElementById('big-label');
+const bigValue       = document.getElementById('big-value');
+const bigMeterFill   = document.getElementById('big-meter-fill');
+let bigOverlayTimer;
+function showBigOverlay(label, value, ratio, withMeter){
+    bigLabel.textContent = label;
+    bigValue.textContent = value;
+    bigOverlay.classList.toggle('has-meter', !!withMeter);
+    if(withMeter){
+        bigMeterFill.style.width = Math.round(Math.max(0, Math.min(1, ratio)) * 100) + '%';
+    }
+    bigOverlay.classList.add('show');
+    clearTimeout(bigOverlayTimer);
+    bigOverlayTimer = setTimeout(() => bigOverlay.classList.remove('show'), 1100);
+}
+
+/* ---------- 12. TOAST ---------------------------------------- */
+let toastTimer;
+function toast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+/* ---------- 13. BOOT ----------------------------------------- */
+function boot(){
+    resizeStage();
+    resizeCam();
+    buildParticles();
+    requestAnimationFrame(drawFrame);
+    setTimeout(() => document.getElementById('loader').classList.add('hide'), 700);
+    setTimeout(() => {
+        toast('Tip: Upload a song, then press Camera to control with your hands.');
+    }, 1600);
+
+    if(window.__mpFail){
+        setTimeout(() => toast('Hand tracking model could not load. Manual controls remain active.'), 3200);
+    }
+}
+boot();
+</script>
+</body>
+</html>

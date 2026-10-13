@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Career Intelligence Platform</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #0d1117;
+            --secondary-color: #161b22;
+            --accent-color: #58a6ff;
+            --text-color: #c9d1d9;
+            --card-bg: rgba(22, 27, 34, 0.6);
+            --border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Glassmorphism Card */
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Hero Section */
+        #hero {
+            background-image: linear-gradient(135deg, #0d1117 0%, #1a2a45 100%);
+            text-align: center;
+            padding: 5rem 2rem;
+            position: relative;
+        }
+
+        #hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            font-weight: 800;
+        }
+
+        #hero p {
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+            color: #8b949e;
+        }
+
+        .input-group {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .input-group input {
+            padding: 0.8rem 1.2rem;
+            font-size: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 5px 0 0 5px;
+            background: var(--secondary-color);
+            color: var(--text-color);
+            width: 400px;
+        }
+
+        .input-group button {
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            border: none;
+            border-radius: 0 5px 5px 0;
+            background-color: var(--accent-color);
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .input-group button:hover {
+            background-color: #2f81f7;
+        }
+        
+        .skill-tags {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .skill-tags button {
+            background: var(--secondary-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .skill-tags button:hover {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        section {
+            padding: 4rem 0;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        
+        section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        /* Results Section */
+        #results .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .match-score {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+
+        .skills-list {
+            list-style: none;
+            padding: 0;
+        }
+        .skills-list li {
+            margin-bottom: 0.5rem;
+        }
+
+        .skills-list .matching { color: #2ea043; }
+        .skills-list .missing { color: #f85149; }
+
+
+        /* Roadmap */
+        #roadmap .timeline {
+            position: relative;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        #roadmap .timeline::after {
+            content: '';
+            position: absolute;
+            width: 4px;
+            background-color: var(--border-color);
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            margin-left: -2px;
+            z-index: -1;
+            animation: move-down 4s ease-in-out forwards;
+        }
+        
+        @keyframes move-down {
+          0% { height: 0; }
+          100% { height: 100%; }
+        }
+
+        #roadmap .timeline-item {
+            padding: 1rem 2rem;
+            position: relative;
+            background-color: inherit;
+            width: 50%;
+        }
+        
+        #roadmap .timeline-item:nth-child(odd) {
+            left: 0;
+            padding-left: 50px;
+        }
+        
+        #roadmap .timeline-item:nth-child(even) {
+            left: 50%;
+            padding-right: 50px;
+        }
+
+        #roadmap .timeline-item::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            right: -10px;
+            background-color: white;
+            border: 4px solid var(--accent-color);
+            top: 25px;
+            border-radius: 50%;
+            z-index: 1;
+            cursor: pointer;
+        }
+
+        #roadmap .timeline-item:nth-child(even)::after {
+            left: -10px;
+        }
+        
+        .timeline-content {
+          padding: 20px;
+        }
+
+        /* Projects */
+        #projects .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* Dashboard */
+        #dashboard .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            text-align: center;
+        }
+        .counter {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+
+        #dashboard .chart-container {
+            margin-top: 3rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        /* Stories */
+        #stories {
+          position: relative;
+          overflow: hidden;
+        }
+        .carousel {
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+        }
+        .carousel-item {
+            min-width: 100%;
+            padding: 1rem;
+            box-sizing: border-box;
+        }
+
+        /* Job Market */
+        .progress-bar {
+            width: 100%;
+            background-color: var(--secondary-color);
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+        .progress-bar-inner {
+            height: 20px;
+            border-radius: 5px;
+            background-color: var(--accent-color);
+            width: 0;
+            animation: fill-bar 2s forwards;
+        }
+
+        /* Readiness Score */
+        .meter-container {
+            width: 200px;
+            height: 100px;
+            position: relative;
+            margin: 2rem auto;
+        }
+        
+        .meter-bg, .meter-fg {
+            fill: none;
+            stroke-width: 20;
+            stroke-linecap: round;
+        }
+        
+        .meter-bg { stroke: var(--secondary-color); }
+        .meter-fg { 
+            stroke: var(--accent-color); 
+            stroke-dasharray: 314;
+            stroke-dashoffset: 314;
+            animation: fill-meter 2s forwards;
+            transform-origin: 50% 50%;
+            transform: rotate(-90deg);
+        }
+
+        /* Career Growth */
+        #growth .timeline-vertical {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+        .growth-item {
+            position: relative;
+            padding: 2rem 0;
+            width: 100%;
+            text-align: center;
+        }
+        .growth-item::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            bottom: -20px;
+            height: 40px;
+            width: 2px;
+            background: var(--accent-color);
+            transform: translateX(-50%);
+        }
+        .growth-item:last-child::after {
+            display: none;
+        }
+
+        /* AI Mentor */
+        #ai-mentor {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 300px;
+            z-index: 1000;
+        }
+
+        .mentor-response {
+            background: var(--secondary-color);
+            padding: 1rem;
+            border-radius: 5px;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        /* Weekly Analytics */
+        #analytics .grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 1.5rem;
+          text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <header id="hero">
+        <div class="container">
+            <h1>Career Intelligence Platform</h1>
+            <p>Find career paths from your skills and see real roadmap outcomes</p>
+            <div class="input-group">
+                <input type="text" id="skill-input" placeholder="I know Java, SQL, Git">
+                <button>Analyze Skills</button>
+            </div>
+             <div class="skill-tags">
+                <button>Java</button>
+                <button>Python</button>
+                <button>SQL</button>
+                <button>React</button>
+                <button>Node.js</button>
+                <button>Git</button>
+                <button>C++</button>
+                <button>AI</button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section id="results" class="container">
+            <h2>Skill → Career Mapping Results</h2>
+            <div class="grid">
+                <div class="card">
+                    <h3>Java Developer</h3>
+                    <p class="match-score">91%</p>
+                    <ul class="skills-list">
+                        <li class="matching">✓ Java</li>
+                        <li class="matching">✓ SQL</li>
+                        <li class="matching">✓ Git</li>
+                        <li class="missing">✗ Spring Boot</li>
+                        <li class="missing">✗ REST APIs</li>
+                        <li class="missing">✗ Microservices</li>
+                    </ul>
+                    <p><strong>Estimated learning time:</strong> 2–3 months</p>
+                </div>
+                 <div class="card">
+                    <h3>Backend Developer</h3>
+                    <p class="match-score">73%</p>
+                    <ul class="skills-list">
+                         <li class="missing">✗ Node.js</li>
+                         <li class="missing">✗ APIs</li>
+                         <li class="missing">✗ Authentication</li>
+                    </ul>
+                     <p><strong>Estimated learning time:</strong> 3–4 months</p>
+                </div>
+                <div class="card">
+                    <h3>Software Engineer</h3>
+                    <p class="match-score">84%</p>
+                    <ul class="skills-list">
+                         <li class="missing">✗ DSA</li>
+                         <li class="missing">✗ System Design</li>
+                    </ul>
+                     <p><strong>Estimated learning time:</strong> 4–6 months</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="roadmap" class="container">
+            <h2>Personalized Roadmap</h2>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-content card"><h3>Java</h3></div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-content card"><h3>OOP</h3></div>
+                </div>
+                 <div class="timeline-item">
+                    <div class="timeline-content card"><h3>SQL</h3></div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-content card"><h3>Spring Boot</h3></div>
+                </div>
+                 <div class="timeline-item">
+                    <div class="timeline-content card"><h3>REST APIs</h3></div>
+                </div>
+                 <div class="timeline-item">
+                    <div class="timeline-content card"><h3>Microservices</h3></div>
+                </div>
+                 <div class="timeline-item">
+                    <div class="timeline-content card"><h3>Deployment</h3></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="projects" class="container">
+            <h2>Projects Recommendation</h2>
+            <div class="grid">
+                <div class="card">
+                    <h4>Beginner</h4>
+                    <h3>To-do App</h3>
+                    <p>Skills: HTML, CSS, JS</p>
+                    <p>Time: 1 week</p>
+                </div>
+                <div class="card">
+                    <h4>Intermediate</h4>
+                    <h3>Blog API</h3>
+                    <p>Skills: Node.js, Express, MongoDB</p>
+                    <p>Time: 2-3 weeks</p>
+                </div>
+                <div class="card">
+                    <h4>Advanced</h4>
+                    <h3>E-commerce Backend</h3>
+                    <p>Skills: Java, Spring Boot, SQL</p>
+                    <p>Time: 1-2 months</p>
+                </div>
+            </div>
+        </section>
+        
+        <section id="dashboard" class="container">
+            <h2>Success Data Dashboard</h2>
+            <div class="grid">
+                <div>
+                    <div class="counter" data-target="12452">0</div>
+                    <p>Users Analyzed</p>
+                </div>
+                 <div>
+                    <div class="counter" data-target="52">0</div>
+                    <p>Completion Rate (%)</p>
+                </div>
+                 <div>
+                    <div class="counter" data-target="7.3">0</div>
+                    <p>Average Completion (months)</p>
+                </div>
+                <div>
+                    <div class="counter" data-target="49">0</div>
+                    <p>Internship Success (%)</p>
+                </div>
+            </div>
+            <div class="chart-container">
+                 <div class="card"><canvas id="completionChart"></canvas></div>
+                 <div class="card"><canvas id="salaryChart"></canvas></div>
+            </div>
+        </section>
+
+         <section id="stories" class="container">
+            <h2>Real Journey Stories</h2>
+            <div class="carousel">
+                <div class="carousel-item">
+                    <div class="card">
+                        <h3>Student A</h3>
+                        <p><strong>Started:</strong> Beginner</p>
+                        <p><strong>Built:</strong> ✓ Blog API, ✓ Chat App, ✓ E-commerce Backend</p>
+                        <p><strong>Outcome:</strong> Internship at startup</p>
+                        <p><strong>Salary:</strong> ₹25k/month</p>
+                    </div>
+                </div>
+                 <div class="carousel-item">
+                    <div class="card">
+                        <h3>Student B</h3>
+                        <p><strong>Started:</strong> Intermediate</p>
+                        <p><strong>Built:</strong> ✓ Full-stack social media app</p>
+                        <p><strong>Outcome:</strong> SDE 1 at a product company</p>
+                        <p><strong>Salary:</strong> ₹12 LPA</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="market" class="container">
+          <h2>Job Market Insights</h2>
+           <div class="card">
+              <p><strong>Current Openings:</strong> 7840</p>
+              <p><strong>Top Required Skills:</p>
+              <p>Java</p>
+              <div class="progress-bar"><div class="progress-bar-inner" style="width: 90%;"></div></div>
+              <p>SQL</p>
+              <div class="progress-bar"><div class="progress-bar-inner" style="width: 85%;"></div></div>
+              <p>Spring</p>
+              <div class="progress-bar"><div class="progress-bar-inner" style="width: 75%;"></div></div>
+           </div>
+        </section>
+
+        <section id="readiness" class="container" style="text-align: center;">
+            <h2>Job Readiness Score</h2>
+            <div class="meter-container">
+                <svg width="200" height="100" viewBox="0 0 200 100">
+                    <path class="meter-bg" d="M 10,100 A 90,90 0 0 1 190,100"></path>
+                    <path class="meter-fg" d="M 10,100 A 90,90 0 0 1 190,100" style="stroke-dashoffset: 97.34;"></path>
+                </svg>
+                 <div style="position: absolute; top: 60%; left: 50%; transform: translate(-50%, -50%); font-size: 2rem; font-weight: bold;">68%</div>
+            </div>
+            <p>Suggested next action: Learn Spring Boot (+12%)</p>
+        </section>
+
+        <section id="growth" class="container">
+            <h2>Career Growth Tree</h2>
+            <div class="timeline-vertical">
+                <div class="growth-item card">Junior Java Developer</div>
+                <div class="growth-item card">Software Engineer</div>
+                <div class="growth-item card">Senior Engineer</div>
+                <div class="growth-item card">Tech Lead</div>
+            </div>
+        </section>
+        
+        <aside id="ai-mentor">
+             <div class="card">
+                 <h4>AI Mentor</h4>
+                 <select id="mentor-question" class="input-group" style="width:100%; padding: 10px; margin-bottom: 10px;">
+                     <option>What should I learn next?</option>
+                     <option>Explain REST APIs</option>
+                 </select>
+                 <div id="mentor-response" class="mentor-response"></div>
+             </div>
+        </aside>
+
+        <section id="analytics" class="container">
+             <h2>Weekly Analytics</h2>
+             <div class="grid">
+                <div class="card"><h3>18 hrs</h3><p>Study Time</p></div>
+                <div class="card"><h3>6</h3><p>Topics Completed</p></div>
+                <div class="card"><h3>74%</h3><p>Quiz Score</p></div>
+                <div class="card"><h3>5.8 months</h3><p>Completion Prediction</p></div>
+             </div>
+        </section>
+    </main>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Fade-in sections on scroll
+        const sections = document.querySelectorAll('section');
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+        sections.forEach(section => observer.observe(section));
+
+        // Animated counters
+        const counters = document.querySelectorAll('.counter');
+        counters.forEach(counter => {
+            const target = +counter.getAttribute('data-target');
+            const duration = 2000;
+            const stepTime = 20;
+            const steps = duration / stepTime;
+            const increment = target / steps;
+            
+            let current = 0;
+            const updateCounter = () => {
+                current += increment;
+                if(current < target) {
+                    counter.innerText = Math.ceil(current);
+                    setTimeout(updateCounter, stepTime)
+                } else {
+                    counter.innerText = target;
+                }
+            }
+            updateCounter();
+        });
+
+        // Chart.js
+        const completionCtx = document.getElementById('completionChart')?.getContext('2d');
+        if(completionCtx) {
+            new Chart(completionCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Completion Rate',
+                        data: [12, 19, 3, 5, 2, 3],
+                        borderColor: 'rgba(88, 166, 255, 1)',
+                        tension: 0.1
+                    }]
+                }
+            });
+        }
+
+        const salaryCtx = document.getElementById('salaryChart')?.getContext('2d');
+        if(salaryCtx) {
+            new Chart(salaryCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['<5LPA', '5-10', '10-15', '15+'],
+                    datasets: [{
+                        label: 'Salary Distribution',
+                        data: [25, 45, 20, 10],
+                        backgroundColor: 'rgba(88, 166, 255, 0.5)',
+                    }]
+                }
+            });
+        }
+        
+        // AI Mentor
+        const mentorQuestion = document.getElementById('mentor-question');
+        const mentorResponse = document.getElementById('mentor-response');
+        mentorQuestion.addEventListener('change', (e) => {
+            const responses = {
+                "What should I learn next?": "Based on your profile, focusing on Spring Boot would significantly boost your job readiness.",
+                "Explain REST APIs": "REST APIs are a way for different systems to talk to each other over the internet, using standard HTTP methods."
+            };
+            mentorResponse.innerText = responses[e.target.value] || "Sorry, I can't answer that.";
+            mentorResponse.style.display = 'block';
+        });
+
+    });
+    </script>
+</body>
+</html>

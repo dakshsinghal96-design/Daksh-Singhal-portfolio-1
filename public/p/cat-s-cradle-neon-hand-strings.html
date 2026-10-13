@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CAT'S CRADLE — Neon Hand Strings</title>
+
+  <!-- MediaPipe Hands -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+
+  <!-- p5.js -->
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #020918;
+      overflow: hidden;
+      font-family: 'Share Tech Mono', 'Courier New', monospace;
+      width: 100vw; height: 100vh;
+    }
+
+    /* Hidden video — only used for MediaPipe input */
+    #inputVideo {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    /* p5 canvas sits here */
+    #canvas-container {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+    }
+    #canvas-container canvas { display: block; }
+
+    /* CRT scanline overlay */
+    #crt {
+      position: fixed; inset: 0;
+      pointer-events: none; z-index: 50;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 0, 0, 0.06) 2px,
+        rgba(0, 0, 0, 0.06) 4px
+      );
+      animation: flicker 8s infinite;
+    }
+
+    /* Vignette */
+    #vignette {
+      position: fixed; inset: 0;
+      pointer-events: none; z-index: 49;
+      background: radial-gradient(ellipse at center, transparent 45%, rgba(0, 2, 14, 0.82) 100%);
+    }
+
+    /* Top HUD */
+    #hud-top {
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 200;
+      padding: 18px 28px;
+      display: flex; align-items: center; justify-content: space-between;
+      pointer-events: none;
+      border-bottom: 1px solid rgba(0, 255, 255, 0.07);
+    }
+    .hud-title {
+      font-size: 1.05rem;
+      letter-spacing: 0.45em;
+      color: #00ffff;
+      text-shadow: 0 0 8px #00ffff, 0 0 22px rgba(0,255,255,0.5);
+    }
+    .hud-sub {
+      font-size: 0.55rem;
+      letter-spacing: 0.22em;
+      color: rgba(0, 255, 255, 0.3);
+      margin-top: 3px;
+    }
+    .hud-corners {
+      display: flex; gap: 6px; align-items: center;
+    }
+    .hud-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: #00ffff;
+      box-shadow: 0 0 8px #00ffff;
+      animation: pulse-dot 1.8s ease-in-out infinite;
+    }
+    .hud-dot:nth-child(2) { animation-delay: 0.3s; background: #ff00ff; box-shadow: 0 0 8px #ff00ff; }
+    .hud-dot:nth-child(3) { animation-delay: 0.6s; background: #ffff00; box-shadow: 0 0 8px #ffff00; }
+
+    /* Bottom status bar */
+    #status-bar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      z-index: 200;
+      padding: 10px 28px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-top: 1px solid rgba(0, 255, 255, 0.07);
+      pointer-events: none;
+    }
+    #status-text {
+      font-size: 0.55rem;
+      letter-spacing: 0.25em;
+      color: rgba(0, 255, 255, 0.45);
+      transition: color 0.4s;
+    }
+    #status-text.active { color: rgba(255, 0, 255, 0.7); }
+    .hud-coords {
+      font-size: 0.5rem;
+      letter-spacing: 0.15em;
+      color: rgba(0, 255, 255, 0.2);
+    }
+
+    /* Corner brackets */
+    .corner {
+      position: fixed; width: 22px; height: 22px; z-index: 200; pointer-events: none;
+      opacity: 0.5;
+    }
+    .corner::before, .corner::after {
+      content: ''; position: absolute; background: #00ffff;
+    }
+    .corner::before { width: 100%; height: 1px; top: 0; left: 0; }
+    .corner::after  { width: 1px; height: 100%; top: 0; left: 0; }
+    .corner-tl { top: 10px; left: 10px; }
+    .corner-tr { top: 10px; right: 10px; transform: scaleX(-1); }
+    .corner-bl { bottom: 10px; left: 10px; transform: scaleY(-1); }
+    .corner-br { bottom: 10px; right: 10px; transform: scale(-1); }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.3; transform: scale(0.6); }
+    }
+    @keyframes flicker {
+      0%,100% { opacity: 1; }
+      92%      { opacity: 1; }
+      93%      { opacity: 0.85; }
+      94%      { opacity: 1; }
+      96%      { opacity: 0.9; }
+      97%      { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Hidden webcam source -->
+  <video id="inputVideo" playsinline autoplay muted></video>
+
+  <!-- p5 renders here -->
+  <div id="canvas-container"></div>
+
+  <!-- Overlays -->
+  <div id="crt"></div>
+  <div id="vignette"></div>
+
+  <!-- Corner decorations -->
+  <div class="corner corner-tl"></div>
+  <div class="corner corner-tr"></div>
+  <div class="corner corner-bl"></div>
+  <div class="corner corner-br"></div>
+
+  <!-- HUD -->
+  <div id="hud-top">
+    <div>
+      <div class="hud-title">CAT'S CRADLE</div>
+      <div class="hud-sub">BIOMETRIC STRING WEAVER · v2.0</div>
+    </div>
+    <div class="hud-corners">
+      <div class="hud-dot"></div>
+      <div class="hud-dot"></div>
+      <div class="hud-dot"></div>
+    </div>
+  </div>
+
+  <div id="status-bar">
+    <div id="status-text">INITIALIZING SENSORS...</div>
+    <div class="hud-coords" id="hud-coords">X:— Y:—</div>
+  </div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+//  SHARED STATE
+// ═══════════════════════════════════════════════════════════════
+let handsData  = [];   // [{label:'Left'|'Right', landmarks:[{x,y,z}×21]}]
+let particles  = [];
+let trailBuffer = null; // p5.Graphics for motion trails
+
+// MediaPipe fingertip landmark indices
+const FINGERTIPS = [4, 8, 12, 16, 20];
+
+// All bone connections for the hand skeleton
+const CONNECTIONS = [
+  [0,1],[1,2],[2,3],[3,4],
+  [0,5],[5,6],[6,7],[7,8],
+  [5,9],[9,10],[10,11],[11,12],
+  [9,13],[13,14],[14,15],[15,16],
+  [13,17],[17,18],[18,19],[19,20],
+  [0,17]
+];
+
+// ═══════════════════════════════════════════════════════════════
+//  PARTICLE
+// ═══════════════════════════════════════════════════════════════
+class Particle {
+  constructor(x, y, col) {
+    this.x  = x; this.y  = y;
+    this.vx = (Math.random() - 0.5) * 10;
+    this.vy = (Math.random() - 0.5) * 10;
+    this.life  = 1.0;
+    this.decay = 0.025 + Math.random() * 0.035;
+    this.size  = 2.5 + Math.random() * 5;
+    this.col   = col; // [r,g,b]
+  }
+  update() {
+    this.x  += this.vx;
+    this.y  += this.vy;
+    this.vx *= 0.91;
+    this.vy *= 0.91;
+    this.life -= this.decay;
+  }
+  dead() { return this.life <= 0; }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════════════════════
+function lmToScreen(lm, w, h) {
+  // Mirror x so the display feels like a mirror
+  return { x: (1 - lm.x) * w, y: lm.y * h };
+}
+
+function distBetween(a, b) {
+  return Math.hypot(b.x - a.x, b.y - a.y);
+}
+
+// t ∈ [0,1]: cyan → magenta → yellow gradient
+function gradientColor(t) {
+  if (t < 0.5) {
+    const s = t / 0.5;
+    return [Math.round(s * 255), Math.round((1-s) * 255), 255];
+  } else {
+    const s = (t - 0.5) / 0.5;
+    return [255, Math.round(s * 255), Math.round((1-s) * 255)];
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  p5 SKETCH
+// ═══════════════════════════════════════════════════════════════
+const sketch = (p) => {
+  let W, H;
+  let touchedPairs = new Set();
+
+  p.setup = () => {
+    W = window.innerWidth;
+    H = window.innerHeight;
+    const cnv = p.createCanvas(W, H);
+    cnv.parent('canvas-container');
+    trailBuffer = p.createGraphics(W, H);
+    trailBuffer.colorMode(p.RGB);
+    p.colorMode(p.RGB);
+    p.noSmooth(); // crisp rendering
+  };
+
+  p.windowResized = () => {
+    W = window.innerWidth; H = window.innerHeight;
+    p.resizeCanvas(W, H);
+    trailBuffer.resizeCanvas(W, H);
+  };
+
+  p.draw = () => {
+    // Fade trail
+    p.background(2, 9, 24, 210);
+
+    if (!handsData.length) {
+      drawIdleAmbient(p, W, H);
+      renderParticles(p);
+      document.getElementById('hud-coords').textContent = 'X:— Y:—';
+      return;
+    }
+
+    let leftHand  = handsData.find(h => h.label === 'Left')  || null;
+    let rightHand = handsData.find(h => h.label === 'Right') || null;
+
+    // Update HUD coords from first hand's wrist
+    const wrist = lmToScreen(handsData[0].landmarks[0], W, H);
+    document.getElementById('hud-coords').textContent =
+      `X:${Math.round(wrist.x)} Y:${Math.round(wrist.y)}`;
+
+    // ── Hand silhouettes ──────────────────────────────────────
+    for (const hand of handsData) {
+      drawSilhouette(p, hand, W, H);
+    }
+
+    // ── Skeleton ──────────────────────────────────────────────
+    for (const hand of handsData) {
+      drawSkeleton(p, hand, W, H);
+    }
+
+    // ── Cat's cradle strings ──────────────────────────────────
+    if (leftHand && rightHand) {
+      touchedPairs.clear();
+      drawCradleStrings(p, leftHand, rightHand, W, H, touchedPairs);
+    }
+
+    // ── Joint glow dots ───────────────────────────────────────
+    for (const hand of handsData) {
+      drawJoints(p, hand, W, H);
+    }
+
+    // ── Particles ─────────────────────────────────────────────
+    renderParticles(p);
+  };
+
+  // ── IDLE ambient ──────────────────────────────────────────────
+  function drawIdleAmbient(p, W, H) {
+    const t = p.millis() * 0.001;
+    p.noFill(); p.textAlign(p.CENTER, p.CENTER);
+    for (let i = 0; i < 4; i++) {
+      const r = 60 + i * 35 + Math.sin(t * 0.6 + i * 1.3) * 18;
+      const alpha = 18 + Math.sin(t + i) * 10;
+      const [cr, cg, cb] = gradientColor(i / 3);
+      p.stroke(cr, cg, cb, alpha);
+      p.strokeWeight(0.8);
+      p.ellipse(W/2, H/2, r*2, r*2);
+    }
+    p.noStroke();
+    p.fill(0, 255, 255, 35 + Math.sin(t*2)*15);
+    p.textSize(10);
+    p.text('▸  PLACE BOTH HANDS IN FRAME  ◂', W/2, H/2 + 140);
+  }
+
+  // ── Translucent hand silhouette ───────────────────────────────
+  function drawSilhouette(p, hand, W, H) {
+    const lms = hand.landmarks;
+    const isLeft = hand.label === 'Left';
+    p.fill(isLeft ? 0 : 255, isLeft ? 255 : 0, 255, 10);
+    p.noStroke();
+    p.beginShape();
+    const hull = [0, 1, 2, 3, 4, 8, 12, 16, 20, 19, 18, 17, 0];
+    for (const i of hull) {
+      const pt = lmToScreen(lms[i], W, H);
+      p.vertex(pt.x, pt.y);
+    }
+    p.endShape(p.CLOSE);
+  }
+
+  // ── Hand bone skeleton ────────────────────────────────────────
+  function drawSkeleton(p, hand, W, H) {
+    const lms = hand.landmarks;
+    const isLeft = hand.label === 'Left';
+    const [r, g, b] = isLeft ? [0, 255, 255] : [255, 0, 255];
+
+    p.strokeWeight(0.8);
+    p.noFill();
+    p.drawingContext.shadowBlur = 5;
+    p.drawingContext.shadowColor = `rgba(${r},${g},${b},0.4)`;
+    p.stroke(r, g, b, 55);
+
+    for (const [a, b2] of CONNECTIONS) {
+      const pa = lmToScreen(lms[a], W, H);
+      const pb = lmToScreen(lms[b2], W, H);
+      p.line(pa.x, pa.y, pb.x, pb.y);
+    }
+    p.drawingContext.shadowBlur = 0;
+  }
+
+  // ── Joint glow dots ───────────────────────────────────────────
+  function drawJoints(p, hand, W, H) {
+    const lms = hand.landmarks;
+    const isLeft = hand.label === 'Left';
+    const [r, g, b] = isLeft ? [0, 255, 255] : [255, 0, 255];
+
+    for (let i = 0; i < lms.length; i++) {
+      const pt  = lmToScreen(lms[i], W, H);
+      const tip = FINGERTIPS.includes(i);
+      const sz  = tip ? 9 : 4.5;
+
+      // Outer glow ring
+      p.drawingContext.shadowBlur = tip ? 22 : 10;
+      p.drawingContext.shadowColor = `rgba(${r},${g},${b},0.9)`;
+      p.noStroke();
+      p.fill(r, g, b, tip ? 180 : 110);
+      p.ellipse(pt.x, pt.y, sz, sz);
+
+      // Bright white core
+      p.drawingContext.shadowBlur = 0;
+      p.fill(255, 255, 255, tip ? 230 : 160);
+      p.ellipse(pt.x, pt.y, sz * 0.38, sz * 0.38);
+    }
+    p.drawingContext.shadowBlur = 0;
+  }
+
+  // ── Cat's cradle strings ──────────────────────────────────────
+  function drawCradleStrings(p, leftH, rightH, W, H, touchedPairs) {
+    const lL = leftH.landmarks;
+    const lR = rightH.landmarks;
+    const diagLen = Math.hypot(W, H);
+
+    // Primary strings: matching fingertips L ↔ R
+    for (let i = 0; i < FINGERTIPS.length; i++) {
+      const ti = FINGERTIPS[i];
+      const ptL = lmToScreen(lL[ti], W, H);
+      const ptR = lmToScreen(lR[ti], W, H);
+      const d   = distBetween(ptL, ptR);
+      const t   = Math.min(d / (diagLen * 0.55), 1.0);
+      const col = gradientColor(t);
+      const thick = p.map(d, 0, diagLen * 0.55, 2.8, 0.6);
+      const glow  = p.map(d, 0, diagLen * 0.55, 28, 6);
+
+      drawLaser(p, ptL, ptR, col, thick, glow, i, p.millis() * 0.001);
+
+      // Collision
+      if (d < 28) {
+        const key = `f${i}`;
+        if (!touchedPairs.has(key)) {
+          touchedPairs.add(key);
+          spawnBurst((ptL.x + ptR.x)/2, (ptL.y + ptR.y)/2, col);
+        }
+      }
+    }
+
+    // Cross-weave strings (cat's cradle pattern)
+    const crosses = [
+      [FINGERTIPS[1], FINGERTIPS[3], 0.3], // index L ↔ ring R
+      [FINGERTIPS[3], FINGERTIPS[1], 0.3], // ring  L ↔ index R
+      [FINGERTIPS[2], FINGERTIPS[4], 0.2], // middle L ↔ pinky R
+      [FINGERTIPS[4], FINGERTIPS[2], 0.2], // pinky  L ↔ middle R
+    ];
+    for (let c = 0; c < crosses.length; c++) {
+      const [li, ri, alpha] = crosses[c];
+      const ptL = lmToScreen(lL[li], W, H);
+      const ptR = lmToScreen(lR[ri], W, H);
+      drawLaser(p, ptL, ptR, [255, 255, 0], 0.5, 5, c + 10, p.millis() * 0.001, alpha);
+    }
+  }
+
+  // ── Single laser beam string ──────────────────────────────────
+  function drawLaser(p, ptA, ptB, col, thick, glowBlur, idx, t, masterAlpha = 1.0) {
+    const [r, g, b] = col;
+    const mx = (ptA.x + ptB.x) / 2;
+    const my = (ptA.y + ptB.y) / 2;
+
+    // Elastic perpendicular wobble
+    let pX = -(ptB.y - ptA.y);
+    let pY =  (ptB.x - ptA.x);
+    const pLen = Math.hypot(pX, pY) || 1;
+    const wave = Math.sin(t * 2.2 + idx * 0.9) * 6;
+    pX = (pX / pLen) * wave;
+    pY = (pY / pLen) * wave;
+
+    const ctrlX = mx + pX, ctrlY = my + pY;
+
+    // Layer 1: wide atmospheric glow
+    p.drawingContext.shadowBlur = glowBlur * 4;
+    p.drawingContext.shadowColor = `rgba(${r},${g},${b},${0.25 * masterAlpha})`;
+    p.stroke(r, g, b, 22 * masterAlpha);
+    p.strokeWeight(thick * 5);
+    p.noFill();
+    drawCurve(p, ptA, ctrlX, ctrlY, ptB);
+
+    // Layer 2: mid glow
+    p.drawingContext.shadowBlur = glowBlur;
+    p.drawingContext.shadowColor = `rgba(${r},${g},${b},${0.8 * masterAlpha})`;
+    p.stroke(r, g, b, 130 * masterAlpha);
+    p.strokeWeight(thick);
+    drawCurve(p, ptA, ctrlX, ctrlY, ptB);
+
+    // Layer 3: white-hot core
+    p.drawingContext.shadowBlur = 0;
+    p.stroke(255, 255, 255, 100 * masterAlpha);
+    p.strokeWeight(thick * 0.28);
+    drawCurve(p, ptA, ctrlX, ctrlY, ptB);
+
+    p.drawingContext.shadowBlur = 0;
+  }
+
+  function drawCurve(p, ptA, cx, cy, ptB) {
+    p.beginShape();
+    p.curveVertex(ptA.x, ptA.y);
+    p.curveVertex(ptA.x, ptA.y);
+    p.curveVertex(cx, cy);
+    p.curveVertex(ptB.x, ptB.y);
+    p.curveVertex(ptB.x, ptB.y);
+    p.endShape();
+  }
+
+  // ── Burst particles ───────────────────────────────────────────
+  function spawnBurst(x, y, col) {
+    for (let i = 0; i < 18; i++) {
+      particles.push(new Particle(x, y, col));
+    }
+  }
+
+  // ── Render & age particles ────────────────────────────────────
+  function renderParticles(p) {
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const par = particles[i];
+      par.update();
+      if (par.dead()) { particles.splice(i, 1); continue; }
+
+      const [r, g, b] = par.col;
+      p.drawingContext.shadowBlur = 12;
+      p.drawingContext.shadowColor = `rgba(${r},${g},${b},${par.life * 0.8})`;
+      p.noStroke();
+      p.fill(r, g, b, par.life * 240);
+      const sz = par.size * par.life;
+      p.ellipse(par.x, par.y, sz, sz);
+
+      // Bright core
+      p.fill(255, 255, 255, par.life * 180);
+      p.ellipse(par.x, par.y, sz * 0.3, sz * 0.3);
+    }
+    p.drawingContext.shadowBlur = 0;
+  }
+};
+
+// ═══════════════════════════════════════════════════════════════
+//  BOOT p5
+// ═══════════════════════════════════════════════════════════════
+new p5(sketch);
+
+// ═══════════════════════════════════════════════════════════════
+//  MEDIAPIPE HANDS + CAMERA
+// ═══════════════════════════════════════════════════════════════
+const videoEl  = document.getElementById('inputVideo');
+const statusEl = document.getElementById('status-text');
+
+const mpHands = new Hands({
+  locateFile: (f) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`
+});
+
+mpHands.setOptions({
+  maxNumHands:           2,
+  modelComplexity:       1,
+  minDetectionConfidence: 0.72,
+  minTrackingConfidence:  0.55,
+});
+
+mpHands.onResults((results) => {
+  handsData = [];
+  if (results.multiHandLandmarks && results.multiHandedness) {
+    for (let i = 0; i < results.multiHandLandmarks.length; i++) {
+      handsData.push({
+        label:     results.multiHandedness[i].label,  // 'Left' | 'Right'
+        landmarks: results.multiHandLandmarks[i]
+      });
+    }
+  }
+
+  // Update status bar
+  const count = handsData.length;
+  if (count === 0) {
+    statusEl.className = '';
+    statusEl.textContent = 'NO HANDS DETECTED · SHOW BOTH HANDS';
+  } else if (count === 1) {
+    statusEl.className = '';
+    statusEl.textContent = `${handsData[0].label.toUpperCase()} HAND LOCKED · AWAITING SECOND HAND`;
+  } else {
+    statusEl.className = 'active';
+    statusEl.textContent = 'BOTH HANDS LOCKED · WEAVING STRINGS';
+  }
+});
+
+const cam = new Camera(videoEl, {
+  onFrame: async () => { await mpHands.send({ image: videoEl }); },
+  width:  1280,
+  height: 720,
+});
+
+cam.start()
+  .then(() => { statusEl.textContent = 'CAMERA ACTIVE · SHOW YOUR HANDS'; })
+  .catch((err) => {
+    statusEl.textContent = 'CAMERA ERROR — CHECK PERMISSIONS';
+    console.error('[Cat\'s Cradle] Camera error:', err);
+  });
+</script>
+</body>
+</html>

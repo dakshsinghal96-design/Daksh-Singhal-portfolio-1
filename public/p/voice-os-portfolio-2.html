@@ -1,0 +1,1494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Voice OS — Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --surface-2: #161616;
+    --border: #222;
+    --border-bright: #2e2e2e;
+    --text: #f5f5f5;
+    --muted: #888;
+    --dim: #555;
+    --neon: #c6ff3d;
+    --neon-soft: rgba(198, 255, 61, 0.15);
+    --neon-glow: rgba(198, 255, 61, 0.4);
+    --magenta: #ff3da8;
+    --serif: 'Instrument Serif', serif;
+    --mono: 'JetBrains Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 14px;
+    line-height: 1.5;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  /* Grain overlay */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.04;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* Subtle dot grid background */
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background-image: radial-gradient(circle, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 24px 24px;
+    mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+  }
+
+  ::selection { background: var(--neon); color: var(--bg); }
+
+  a { color: inherit; text-decoration: none; }
+
+  /* ====== TOP BAR ====== */
+  .topbar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 32px;
+    background: rgba(10, 10, 10, 0.7);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .topbar .brand { display: flex; align-items: center; gap: 10px; color: var(--text); }
+  .topbar .brand .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--neon);
+    box-shadow: 0 0 10px var(--neon-glow);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  .topbar .meta { color: var(--muted); display: flex; gap: 24px; }
+  .topbar .meta span b { color: var(--text); font-weight: 500; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.85); }
+  }
+
+  /* ====== SIDE NAV ====== */
+  .sidenav {
+    position: fixed;
+    left: 32px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+  .sidenav a {
+    color: var(--muted);
+    padding: 6px 10px;
+    border-left: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .sidenav a::before {
+    content: attr(data-num);
+    color: var(--dim);
+    font-size: 9px;
+  }
+  .sidenav a:hover { color: var(--text); border-color: var(--border-bright); }
+  .sidenav a.active {
+    color: var(--neon);
+    border-left: 2px solid var(--neon);
+    padding-left: 14px;
+  }
+  .sidenav a.active::before { color: var(--neon); }
+
+  /* ====== MAIN ====== */
+  main {
+    position: relative;
+    z-index: 1;
+    padding: 100px 32px 200px 140px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .section {
+    display: none;
+    animation: bootIn 0.6s ease-out;
+  }
+  .section.active { display: block; }
+
+  @keyframes bootIn {
+    0% { opacity: 0; transform: translateY(20px); filter: blur(10px); }
+    100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+  }
+
+  .section-label {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-label::before {
+    content: "";
+    width: 24px;
+    height: 1px;
+    background: var(--neon);
+  }
+
+  /* ====== HOME ====== */
+  #home .hero {
+    min-height: 70vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  #home h1 {
+    font-family: var(--serif);
+    font-size: clamp(60px, 11vw, 180px);
+    line-height: 0.95;
+    font-weight: 400;
+    letter-spacing: -0.03em;
+    margin-bottom: 20px;
+  }
+  #home h1 .italic { font-style: italic; color: var(--neon); }
+  #home h1 .small { display: block; font-size: 0.4em; color: var(--muted); font-style: normal; letter-spacing: 0; margin-top: 10px; }
+
+  #home .tagline {
+    max-width: 600px;
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.7;
+    margin-bottom: 40px;
+  }
+  #home .tagline b { color: var(--text); font-weight: 500; }
+
+  #home .hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    border: 1px solid var(--border-bright);
+    border-radius: 4px;
+    font-size: 12px;
+    color: var(--muted);
+    background: var(--surface);
+  }
+  #home .hint kbd {
+    background: var(--bg);
+    border: 1px solid var(--border-bright);
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-family: var(--mono);
+    color: var(--neon);
+    font-size: 11px;
+  }
+
+  /* Floating system info card */
+  .specs {
+    position: absolute;
+    top: 40px;
+    right: 40px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    padding: 18px 22px;
+    font-size: 10px;
+    color: var(--muted);
+    line-height: 1.8;
+    min-width: 220px;
+  }
+  .specs .row { display: flex; justify-content: space-between; gap: 20px; }
+  .specs .row b { color: var(--text); font-weight: 500; }
+  .specs .row .ok { color: var(--neon); }
+  .specs .title {
+    color: var(--neon);
+    margin-bottom: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-size: 9px;
+  }
+
+  /* ====== ABOUT ====== */
+  #about .grid {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 60px;
+    align-items: start;
+  }
+  #about h2 {
+    font-family: var(--serif);
+    font-size: clamp(50px, 8vw, 110px);
+    line-height: 1;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+  }
+  #about h2 .italic { font-style: italic; color: var(--neon); }
+  #about .body p {
+    font-size: 16px;
+    line-height: 1.8;
+    color: var(--text);
+    margin-bottom: 20px;
+  }
+  #about .body p.muted { color: var(--muted); font-size: 14px; }
+  #about .body b { color: var(--neon); font-weight: 500; }
+
+  #about .stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    margin-top: 50px;
+    border: 1px solid var(--border);
+  }
+  #about .stat {
+    background: var(--bg);
+    padding: 24px;
+  }
+  #about .stat .num {
+    font-family: var(--serif);
+    font-size: 56px;
+    line-height: 1;
+    color: var(--neon);
+    font-style: italic;
+  }
+  #about .stat .lbl {
+    color: var(--muted);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-top: 8px;
+  }
+
+  /* ====== PROJECTS ====== */
+  #projects h2 {
+    font-family: var(--serif);
+    font-size: clamp(50px, 8vw, 110px);
+    line-height: 1;
+    font-weight: 400;
+    margin-bottom: 60px;
+    letter-spacing: -0.02em;
+  }
+  #projects h2 .italic { font-style: italic; color: var(--neon); }
+
+  .project-list { border-top: 1px solid var(--border); }
+  .project {
+    display: grid;
+    grid-template-columns: 60px 1.3fr 2fr 100px 80px;
+    gap: 24px;
+    padding: 28px 0;
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+  }
+  .project::before {
+    content: "";
+    position: absolute;
+    left: -32px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--neon);
+    transform: scaleY(0);
+    transform-origin: top;
+    transition: transform 0.3s;
+  }
+  .project:hover::before { transform: scaleY(1); }
+  .project:hover { background: var(--surface); padding-left: 16px; padding-right: 16px; }
+  .project:hover .title { color: var(--neon); }
+
+  .project .num {
+    font-family: var(--serif);
+    font-style: italic;
+    color: var(--dim);
+    font-size: 28px;
+  }
+  .project .title {
+    font-family: var(--serif);
+    font-size: 32px;
+    transition: color 0.3s;
+    line-height: 1.1;
+  }
+  .project .desc { color: var(--muted); font-size: 13px; line-height: 1.6; }
+  .project .year { color: var(--muted); font-size: 12px; letter-spacing: 0.1em; }
+  .project .status {
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--neon);
+    border: 1px solid var(--neon-soft);
+    padding: 4px 8px;
+    text-align: center;
+    background: var(--neon-soft);
+  }
+  .project .status.ship { color: var(--neon); }
+  .project .status.wip { color: var(--magenta); border-color: rgba(255, 61, 168, 0.2); background: rgba(255, 61, 168, 0.08); }
+
+  /* ====== SKILLS ====== */
+  #skills h2 {
+    font-family: var(--serif);
+    font-size: clamp(50px, 8vw, 110px);
+    line-height: 1;
+    font-weight: 400;
+    margin-bottom: 50px;
+    letter-spacing: -0.02em;
+  }
+  #skills h2 .italic { font-style: italic; color: var(--neon); }
+
+  .skill-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; }
+  .skill-col h3 {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .skill-col h3 span { color: var(--neon); }
+  .skill {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    font-size: 13px;
+  }
+  .skill .name { color: var(--text); }
+  .skill .bar {
+    width: 90px;
+    height: 4px;
+    background: var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .skill .bar::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--neon);
+    transform: scaleX(var(--lvl));
+    transform-origin: left;
+    box-shadow: 0 0 8px var(--neon-glow);
+  }
+
+  /* ====== CONTACT ====== */
+  #contact h2 {
+    font-family: var(--serif);
+    font-size: clamp(60px, 10vw, 160px);
+    line-height: 0.95;
+    font-weight: 400;
+    margin-bottom: 40px;
+    letter-spacing: -0.03em;
+  }
+  #contact h2 .italic { font-style: italic; color: var(--neon); }
+
+  .contact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    margin-top: 40px;
+  }
+  .contact-block .label {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .contact-block .val {
+    font-family: var(--serif);
+    font-size: 28px;
+    color: var(--text);
+    transition: color 0.2s;
+    display: inline-block;
+    border-bottom: 1px solid transparent;
+  }
+  .contact-block a.val:hover { color: var(--neon); border-bottom-color: var(--neon); }
+
+  .socials {
+    display: flex;
+    gap: 12px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+  .socials a {
+    padding: 8px 14px;
+    border: 1px solid var(--border-bright);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    transition: all 0.2s;
+  }
+  .socials a:hover {
+    color: var(--neon);
+    border-color: var(--neon);
+    background: var(--neon-soft);
+  }
+
+  /* ====== HELP MODAL (for "help" voice cmd) ====== */
+  .help-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(8px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .help-modal.show { display: flex; animation: fadeIn 0.3s; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .help-card {
+    background: var(--surface);
+    border: 1px solid var(--neon);
+    box-shadow: 0 0 60px var(--neon-glow);
+    max-width: 820px;
+    width: 100%;
+    padding: 36px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .help-card h3 {
+    font-family: var(--serif);
+    font-size: 36px;
+    margin-bottom: 8px;
+  }
+  .help-card h3 .italic { font-style: italic; color: var(--neon); }
+  .help-card .sub {
+    color: var(--muted);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+
+  .cmd-groups {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+    margin-bottom: 24px;
+  }
+  .cmd-group .cmd-group-title {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--neon);
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 10px;
+  }
+  .cmd { font-size: 12px; padding: 4px 0; line-height: 1.4; }
+  .cmd b { color: var(--text); font-weight: 500; }
+  .cmd span { color: var(--muted); display: block; font-size: 10px; margin-top: 1px; }
+
+  .help-card .close {
+    background: none;
+    border: 1px solid var(--border-bright);
+    color: var(--muted);
+    padding: 8px 16px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .help-card .close:hover { color: var(--neon); border-color: var(--neon); }
+
+  @media (max-width: 700px) {
+    .cmd-groups { grid-template-columns: 1fr 1fr; }
+  }
+
+  /* ====== MATRIX MODE ====== */
+  #matrixCanvas {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+  body.matrix #matrixCanvas { opacity: 0.55; }
+  body.matrix::after {
+    background-image:
+      radial-gradient(circle, rgba(198,255,61,0.07) 1px, transparent 1px),
+      linear-gradient(transparent 50%, rgba(198,255,61,0.025) 50%);
+    background-size: 24px 24px, 100% 3px;
+  }
+  body.matrix .topbar,
+  body.matrix .console { border-color: var(--neon); }
+
+  /* TTS speaking indicator */
+  .console.speaking .console-text .status::after {
+    content: " · SPEAKING";
+    color: var(--magenta);
+    margin-left: 6px;
+  }
+  .console.speaking { box-shadow: 0 0 0 1px var(--magenta), 0 0 30px rgba(255,61,168,0.3); border-color: var(--magenta); }
+
+  /* ====== VOICE CONSOLE ====== */
+  .console {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 99;
+    background: rgba(15, 15, 15, 0.92);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border-bright);
+    border-radius: 14px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-width: 540px;
+    max-width: 90vw;
+    transition: all 0.3s;
+  }
+  .console.listening {
+    border-color: var(--neon);
+    box-shadow: 0 0 0 1px var(--neon), 0 0 40px var(--neon-glow);
+  }
+
+  .mic-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--border-bright);
+    background: var(--bg);
+    color: var(--text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .mic-btn:hover { border-color: var(--neon); color: var(--neon); }
+  .console.listening .mic-btn {
+    background: var(--neon);
+    color: var(--bg);
+    border-color: var(--neon);
+    animation: micPulse 1.4s ease-in-out infinite;
+  }
+  @keyframes micPulse {
+    0%, 100% { box-shadow: 0 0 0 0 var(--neon-glow); }
+    50% { box-shadow: 0 0 0 10px transparent; }
+  }
+  .mic-btn svg { width: 18px; height: 18px; }
+
+  .visualizer {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    height: 36px;
+    flex-shrink: 0;
+  }
+  .visualizer .bar {
+    width: 3px;
+    background: var(--dim);
+    border-radius: 2px;
+    height: 4px;
+    transition: background 0.2s;
+  }
+  .console.listening .visualizer .bar {
+    background: var(--neon);
+    animation: barJump 0.9s ease-in-out infinite;
+  }
+  .visualizer .bar:nth-child(1) { animation-delay: 0.0s; }
+  .visualizer .bar:nth-child(2) { animation-delay: 0.1s; }
+  .visualizer .bar:nth-child(3) { animation-delay: 0.2s; }
+  .visualizer .bar:nth-child(4) { animation-delay: 0.3s; }
+  .visualizer .bar:nth-child(5) { animation-delay: 0.4s; }
+  .visualizer .bar:nth-child(6) { animation-delay: 0.5s; }
+  .visualizer .bar:nth-child(7) { animation-delay: 0.4s; }
+  .visualizer .bar:nth-child(8) { animation-delay: 0.3s; }
+  .visualizer .bar:nth-child(9) { animation-delay: 0.2s; }
+  .visualizer .bar:nth-child(10) { animation-delay: 0.1s; }
+
+  @keyframes barJump {
+    0%, 100% { height: 4px; }
+    50% { height: 28px; }
+  }
+
+  .console-text {
+    flex: 1;
+    overflow: hidden;
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+  .console-text .status {
+    color: var(--muted);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+  .console.listening .console-text .status { color: var(--neon); }
+  .console-text .transcript {
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-height: 18px;
+  }
+  .console-text .transcript .interim { color: var(--muted); font-style: italic; }
+  .console-text .transcript:empty::before {
+    content: "say a command…";
+    color: var(--dim);
+  }
+
+  .console-hint {
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: 0.1em;
+    flex-shrink: 0;
+    border-left: 1px solid var(--border);
+    padding-left: 14px;
+  }
+  .console-hint kbd {
+    background: var(--surface-2);
+    border: 1px solid var(--border-bright);
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: var(--text);
+    font-family: var(--mono);
+    margin-right: 4px;
+  }
+
+  /* Toast for command feedback */
+  .toast {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--bg);
+    border: 1px solid var(--neon);
+    color: var(--neon);
+    padding: 10px 20px;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    z-index: 95;
+    opacity: 0;
+    transition: all 0.3s;
+    box-shadow: 0 0 30px var(--neon-glow);
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.error { border-color: var(--magenta); color: var(--magenta); box-shadow: 0 0 30px rgba(255,61,168,0.3); }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    main { padding: 90px 24px 180px 24px; }
+    .sidenav { display: none; }
+    .specs { display: none; }
+    #about .grid, .skill-cols, .contact-grid { grid-template-columns: 1fr; gap: 30px; }
+    .project { grid-template-columns: 40px 1fr; gap: 12px; padding: 18px 0; }
+    .project .desc, .project .year, .project .status { display: none; }
+    .console { min-width: unset; width: calc(100vw - 24px); padding: 10px 12px; gap: 10px; }
+    .console-hint { display: none; }
+    .visualizer { display: none; }
+    .topbar .meta { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ====== TOP BAR ====== -->
+<div class="topbar">
+  <div class="brand">
+    <div class="dot"></div>
+    <span>Voice OS / v1.0</span>
+  </div>
+  <div class="meta">
+    <span>STATUS: <b id="topStatus">READY</b></span>
+    <span>LANG: <b>EN-US</b></span>
+    <span id="topTime">00:00:00</span>
+  </div>
+</div>
+
+<!-- ====== SIDE NAV ====== -->
+<nav class="sidenav">
+  <a data-num="01" data-section="home" class="active">HOME</a>
+  <a data-num="02" data-section="about">ABOUT</a>
+  <a data-num="03" data-section="projects">PROJECTS</a>
+  <a data-num="04" data-section="skills">SKILLS</a>
+  <a data-num="05" data-section="contact">CONTACT</a>
+</nav>
+
+<!-- ====== MAIN ====== -->
+<main>
+
+  <!-- HOME -->
+  <section id="home" class="section active">
+    <div class="specs">
+      <div class="title">// SYSTEM</div>
+      <div class="row"><span>Voice Engine</span><b class="ok">ONLINE</b></div>
+      <div class="row"><span>Build</span><b>2026.05</b></div>
+      <div class="row"><span>Latency</span><b class="ok">~80ms</b></div>
+      <div class="row"><span>Sessions</span><b>∞</b></div>
+    </div>
+
+    <div class="hero">
+      <div class="section-label">// 01 — INDEX</div>
+      <h1>
+        Hello, I&rsquo;m
+        <span class="italic">Obliq AI.</span>
+        <span class="small">— Developed by Digital Hammerr</span>
+      </h1>
+      <p class="tagline">
+        I build interfaces that feel <b>alive</b> &mdash; experiments at the edge of design,
+        sound, and code. This whole site listens. Try a command, or use the side nav.
+      </p>
+      <div class="hint">
+        <span style="color:var(--neon)">●</span>
+        Try <kbd>"projects"</kbd> &nbsp; <kbd>"who are you"</kbd> &nbsp; <kbd>"matrix mode"</kbd> &nbsp; — say <kbd>"help"</kbd> for all commands &middot; <kbd>space</kbd> toggles mic
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about" class="section">
+    <div class="section-label">// 02 — ABOUT</div>
+    <div class="grid">
+      <h2>About<br/><span class="italic">the voice.</span></h2>
+      <div class="body">
+        <p>
+          I&rsquo;m a designer-engineer who treats interfaces as <b>instruments</b> &mdash;
+          tactile, responsive, and a little strange. I&rsquo;ve spent the last few
+          years building tools, websites, and prototypes for early-stage teams.
+        </p>
+        <p class="muted">
+          My favorite kind of project sits at the intersection of <b>craft</b> and
+          <b>weird tech</b> &mdash; voice UI, generative graphics, real-time systems.
+          When I&rsquo;m not coding I&rsquo;m running, reading, or trying to make my
+          camera roll less embarrassing.
+        </p>
+        <p class="muted">
+          Currently open to freelance, contract, and full-time roles in product design
+          and frontend engineering.
+        </p>
+
+        <div class="stats">
+          <div class="stat"><div class="num">5+</div><div class="lbl">Years building</div></div>
+          <div class="stat"><div class="num">28</div><div class="lbl">Shipped projects</div></div>
+          <div class="stat"><div class="num">12</div><div class="lbl">Open-source repos</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROJECTS -->
+  <section id="projects" class="section">
+    <div class="section-label">// 03 — SELECTED WORK</div>
+    <h2>Selected <span class="italic">work.</span></h2>
+    <div class="project-list">
+      <div class="project">
+        <div class="num">01</div>
+        <div class="title">Resonance</div>
+        <div class="desc">A real-time audio-reactive instrument running entirely in the browser. WebAudio + WebGL synthesis.</div>
+        <div class="year">2026</div>
+        <div class="status ship">SHIPPED</div>
+      </div>
+      <div class="project">
+        <div class="num">02</div>
+        <div class="title">Telegraph</div>
+        <div class="desc">Minimalist writing app with focus modes, ambient soundscapes, and built-in publishing.</div>
+        <div class="year">2025</div>
+        <div class="status ship">SHIPPED</div>
+      </div>
+      <div class="project">
+        <div class="num">03</div>
+        <div class="title">Northwind UI</div>
+        <div class="desc">Open-source design system for tools-builders. Tokens, primitives, dark-first.</div>
+        <div class="year">2025</div>
+        <div class="status ship">SHIPPED</div>
+      </div>
+      <div class="project">
+        <div class="num">04</div>
+        <div class="title">Voice OS</div>
+        <div class="desc">The site you&rsquo;re on right now &mdash; a voice-controlled portfolio in a single HTML file.</div>
+        <div class="year">2026</div>
+        <div class="status wip">LIVE</div>
+      </div>
+      <div class="project">
+        <div class="num">05</div>
+        <div class="title">Cartograph</div>
+        <div class="desc">Generative travel posters from real GPS tracks. Print-on-demand storefront.</div>
+        <div class="year">2024</div>
+        <div class="status ship">SHIPPED</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SKILLS -->
+  <section id="skills" class="section">
+    <div class="section-label">// 04 — STACK</div>
+    <h2>The <span class="italic">stack.</span></h2>
+    <div class="skill-cols">
+      <div class="skill-col">
+        <h3><span>›</span> Frontend</h3>
+        <div class="skill"><span class="name">React / Next.js</span><span class="bar" style="--lvl: 0.95"></span></div>
+        <div class="skill"><span class="name">TypeScript</span><span class="bar" style="--lvl: 0.9"></span></div>
+        <div class="skill"><span class="name">CSS / Tailwind</span><span class="bar" style="--lvl: 0.95"></span></div>
+        <div class="skill"><span class="name">Svelte</span><span class="bar" style="--lvl: 0.7"></span></div>
+        <div class="skill"><span class="name">Three.js / WebGL</span><span class="bar" style="--lvl: 0.65"></span></div>
+      </div>
+      <div class="skill-col">
+        <h3><span>›</span> Backend</h3>
+        <div class="skill"><span class="name">Node.js</span><span class="bar" style="--lvl: 0.85"></span></div>
+        <div class="skill"><span class="name">Python</span><span class="bar" style="--lvl: 0.8"></span></div>
+        <div class="skill"><span class="name">PostgreSQL</span><span class="bar" style="--lvl: 0.75"></span></div>
+        <div class="skill"><span class="name">Go</span><span class="bar" style="--lvl: 0.5"></span></div>
+        <div class="skill"><span class="name">Rust</span><span class="bar" style="--lvl: 0.4"></span></div>
+      </div>
+      <div class="skill-col">
+        <h3><span>›</span> Design / Tools</h3>
+        <div class="skill"><span class="name">Figma</span><span class="bar" style="--lvl: 0.95"></span></div>
+        <div class="skill"><span class="name">Motion / Framer</span><span class="bar" style="--lvl: 0.85"></span></div>
+        <div class="skill"><span class="name">Blender</span><span class="bar" style="--lvl: 0.55"></span></div>
+        <div class="skill"><span class="name">Git / DevOps</span><span class="bar" style="--lvl: 0.85"></span></div>
+        <div class="skill"><span class="name">Ableton</span><span class="bar" style="--lvl: 0.6"></span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact" class="section">
+    <div class="section-label">// 05 — CONTACT</div>
+    <h2>Let&rsquo;s <span class="italic">talk.</span></h2>
+    <p style="color:var(--muted); max-width:560px; font-size:15px; line-height:1.7;">
+      Open to interesting work. Fastest reply is email. Say
+      <span style="color:var(--neon)">&ldquo;open github&rdquo;</span> or
+      <span style="color:var(--neon)">&ldquo;open email&rdquo;</span> to launch a link.
+    </p>
+    <div class="contact-grid">
+      <div class="contact-block">
+        <div class="label">// Email</div>
+        <a class="val" href="mailto:hello@example.com">hello@example.com</a>
+      </div>
+      <div class="contact-block">
+        <div class="label">// Location</div>
+        <div class="val">Jodhpur, IN &middot; UTC+5:30</div>
+      </div>
+    </div>
+    <div class="contact-block" style="margin-top:40px;">
+      <div class="label">// Elsewhere</div>
+      <div class="socials">
+        <a href="#" data-link="github">GitHub ↗</a>
+        <a href="#" data-link="twitter">Twitter ↗</a>
+        <a href="#" data-link="linkedin">LinkedIn ↗</a>
+        <a href="#" data-link="dribbble">Dribbble ↗</a>
+        <a href="#" data-link="readcv">Read.cv ↗</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ====== HELP MODAL ====== -->
+<div class="help-modal" id="helpModal">
+  <div class="help-card">
+    <h3>Voice <span class="italic">commands.</span></h3>
+    <div class="sub">// say any of these &middot; the system can also talk back</div>
+
+    <div class="cmd-groups">
+      <div class="cmd-group">
+        <div class="cmd-group-title">// navigation</div>
+        <div class="cmd"><b>"home"</b><span>landing page</span></div>
+        <div class="cmd"><b>"about"</b><span>bio section</span></div>
+        <div class="cmd"><b>"projects"</b><span>work</span></div>
+        <div class="cmd"><b>"skills"</b><span>tech stack</span></div>
+        <div class="cmd"><b>"contact"</b><span>reach out</span></div>
+        <div class="cmd"><b>"next" / "previous"</b><span>step through sections</span></div>
+      </div>
+
+      <div class="cmd-group">
+        <div class="cmd-group-title">// scroll & zoom</div>
+        <div class="cmd"><b>"scroll down"</b><span>scroll page down</span></div>
+        <div class="cmd"><b>"scroll up"</b><span>scroll page up</span></div>
+        <div class="cmd"><b>"top" / "bottom"</b><span>jump to ends</span></div>
+        <div class="cmd"><b>"open project one"</b><span>highlight 1–5</span></div>
+        <div class="cmd"><b>"read about"</b><span>read section aloud</span></div>
+        <div class="cmd"><b>"read this"</b><span>read current section</span></div>
+      </div>
+
+      <div class="cmd-group">
+        <div class="cmd-group-title">// conversation</div>
+        <div class="cmd"><b>"hello"</b><span>greeting</span></div>
+        <div class="cmd"><b>"who are you"</b><span>intro</span></div>
+        <div class="cmd"><b>"what time is it"</b><span>speaks the time</span></div>
+        <div class="cmd"><b>"what's the date"</b><span>speaks the date</span></div>
+        <div class="cmd"><b>"thank you"</b><span>polite reply</span></div>
+        <div class="cmd"><b>"repeat"</b><span>say last response again</span></div>
+      </div>
+
+      <div class="cmd-group">
+        <div class="cmd-group-title">// links</div>
+        <div class="cmd"><b>"open github"</b><span>github profile</span></div>
+        <div class="cmd"><b>"open email"</b><span>mail client</span></div>
+        <div class="cmd"><b>"open linkedin"</b><span>linkedin profile</span></div>
+        <div class="cmd"><b>"open twitter"</b><span>twitter / X</span></div>
+      </div>
+
+      <div class="cmd-group">
+        <div class="cmd-group-title">// system</div>
+        <div class="cmd"><b>"help"</b><span>this menu</span></div>
+        <div class="cmd"><b>"close"</b><span>close modal</span></div>
+        <div class="cmd"><b>"stop"</b><span>turn mic off</span></div>
+        <div class="cmd"><b>"be quiet"</b><span>mute the AI voice</span></div>
+        <div class="cmd"><b>"speak up"</b><span>unmute the AI voice</span></div>
+      </div>
+
+      <div class="cmd-group">
+        <div class="cmd-group-title">// fun</div>
+        <div class="cmd"><b>"matrix mode"</b><span>enable code rain</span></div>
+        <div class="cmd"><b>"normal mode"</b><span>disable matrix mode</span></div>
+        <div class="cmd"><b>"tell me a joke"</b><span>brief offering</span></div>
+      </div>
+    </div>
+
+    <button class="close" onclick="closeHelp()">CLOSE [esc]</button>
+  </div>
+</div>
+
+<!-- Matrix mode canvas -->
+<canvas id="matrixCanvas"></canvas>
+
+<!-- ====== VOICE CONSOLE ====== -->
+<div class="console" id="console">
+  <button class="mic-btn" id="micBtn" title="Toggle voice (space)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
+      <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+      <line x1="12" y1="19" x2="12" y2="23"/>
+      <line x1="8" y1="23" x2="16" y2="23"/>
+    </svg>
+  </button>
+  <div class="visualizer">
+    <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+    <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+  </div>
+  <div class="console-text">
+    <div class="status" id="cStatus">VOICE OS // tap mic to begin</div>
+    <div class="transcript" id="cTranscript"></div>
+  </div>
+  <div class="console-hint">
+    <kbd>SPACE</kbd> mic &middot; <kbd>?</kbd> help
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+  // -------- TIME IN TOPBAR --------
+  function tickClock() {
+    const t = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    document.getElementById('topTime').textContent =
+      `${pad(t.getHours())}:${pad(t.getMinutes())}:${pad(t.getSeconds())}`;
+  }
+  setInterval(tickClock, 1000); tickClock();
+
+  // -------- SECTION ROUTING --------
+  const sections = ['home', 'about', 'projects', 'skills', 'contact'];
+  function go(name) {
+    if (!sections.includes(name)) return false;
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById(name).classList.add('active');
+    document.querySelectorAll('.sidenav a').forEach(a => {
+      a.classList.toggle('active', a.dataset.section === name);
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    toast(`→ ${name.toUpperCase()}`);
+    return true;
+  }
+  document.querySelectorAll('.sidenav a').forEach(a => {
+    a.addEventListener('click', () => go(a.dataset.section));
+  });
+
+  // -------- TOAST --------
+  let toastTimer;
+  function toast(msg, isError = false) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.toggle('error', isError);
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 1800);
+  }
+
+  // -------- HELP MODAL --------
+  function openHelp() { document.getElementById('helpModal').classList.add('show'); }
+  function closeHelp() { document.getElementById('helpModal').classList.remove('show'); }
+  document.getElementById('helpModal').addEventListener('click', e => {
+    if (e.target.id === 'helpModal') closeHelp();
+  });
+
+  // -------- COMMAND PARSER --------
+  // Matches keywords loosely so "show me the projects please" still works
+  function parseCommand(raw) {
+    const t = raw.toLowerCase().trim();
+    if (!t) return null;
+
+    // ---- conversational (specific phrases first, before generic nav) ----
+    if (/\b(who are you|introduce yourself|what is this|what.s this|tell me about yourself)\b/.test(t)) return { type: 'intro' };
+    if (/\b(what time|current time|the time|tell me the time)\b/.test(t)) return { type: 'sayTime' };
+    if (/\b(what.?s the date|today.?s date|what day|the date)\b/.test(t)) return { type: 'sayDate' };
+    if (/^(hello|hi|hey|yo|sup|greetings)\b/.test(t)) return { type: 'greet' };
+    if (/\b(thank you|thanks|cheers|appreciate)\b/.test(t)) return { type: 'thanks' };
+    if (/\b(joke|funny|make me laugh)\b/.test(t)) return { type: 'joke' };
+    if (/\brepeat\b|\bsay (it |that )?again\b/.test(t)) return { type: 'repeat' };
+
+    // ---- TTS toggle ----
+    if (/\b(stop talking|stop speaking|be quiet|shut up|silence|don.t speak)\b/.test(t)) return { type: 'mute' };
+    if (/\b(speak up|talk to me|voice on|unmute|speak again|start talking)\b/.test(t)) return { type: 'unmute' };
+
+    // ---- read aloud (with optional section) ----
+    if (/\bread\b/.test(t)) {
+      for (const s of sections) if (t.includes(s)) return { type: 'read', target: s };
+      return { type: 'read', target: 'current' };
+    }
+
+    // ---- project N (before generic projects nav) ----
+    const projMatch = t.match(/\b(?:project|number)\s*(one|two|three|four|five|1|2|3|4|5)\b/) ||
+                      t.match(/\b(?:open|show|highlight|go to)\s+(?:project\s+)?(one|two|three|four|five|1|2|3|4|5)\b/);
+    if (projMatch) {
+      const map = { one:1, two:2, three:3, four:4, five:5, '1':1, '2':2, '3':3, '4':4, '5':5 };
+      return { type: 'project', n: map[projMatch[1]] };
+    }
+
+    // ---- scroll ----
+    if (/\b(scroll )?down\b/.test(t) && !/\bnone\b/.test(t)) return { type: 'scroll', dir: 'down' };
+    if (/\b(scroll )?up\b/.test(t)) return { type: 'scroll', dir: 'up' };
+    if (/\b(top|beginning of page)\b/.test(t)) return { type: 'scroll', dir: 'top' };
+    if (/\b(bottom|end of page)\b/.test(t)) return { type: 'scroll', dir: 'bottom' };
+
+    // ---- next / previous section ----
+    if (/\b(next|forward)\b/.test(t)) return { type: 'sectionStep', dir: 1 };
+    if (/\b(previous|prev|back)\b/.test(t)) return { type: 'sectionStep', dir: -1 };
+
+    // ---- matrix mode ----
+    if (/\b(matrix|hacker|code rain|glitch mode)\b/.test(t)) return { type: 'matrix', on: true };
+    if (/\b(normal mode|reset mode|default mode|exit matrix)\b/.test(t)) return { type: 'matrix', on: false };
+
+    // ---- open links ----
+    if (/\bgithub\b/.test(t)) return { type: 'link', target: 'github' };
+    if (/\b(twitter|x)\b/.test(t)) return { type: 'link', target: 'twitter' };
+    if (/\blinkedin\b/.test(t)) return { type: 'link', target: 'linkedin' };
+    if (/\bdribbble\b/.test(t)) return { type: 'link', target: 'dribbble' };
+    if (/\b(email|mail)\b/.test(t)) return { type: 'link', target: 'email' };
+
+    // ---- system ----
+    if (/\b(help|commands?|what can|menu|options)\b/.test(t)) return { type: 'help' };
+    if (/\b(close|dismiss|cancel|exit|escape)\b/.test(t)) return { type: 'close' };
+    if (/\b(stop|pause)\b/.test(t)) return { type: 'stop' };
+
+    // ---- navigation (last, broad keywords) ----
+    if (/\b(home|index|start|landing|main)\b/.test(t)) return { type: 'nav', target: 'home' };
+    if (/\b(about|bio|yourself)\b/.test(t)) return { type: 'nav', target: 'about' };
+    if (/\b(projects?|work|portfolio)\b/.test(t)) return { type: 'nav', target: 'projects' };
+    if (/\b(skills?|stack|tech|tools?)\b/.test(t)) return { type: 'nav', target: 'skills' };
+    if (/\b(contact|reach|hire|talk|message)\b/.test(t)) return { type: 'nav', target: 'contact' };
+
+    return null;
+  }
+
+  // -------- TEXT-TO-SPEECH (the system talks back) --------
+  let ttsEnabled = true;
+  let lastSpoken = '';
+  let preferredVoice = null;
+
+  function loadVoices() {
+    const voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
+    preferredVoice = voices.find(v => /Google US English|Samantha|Daniel|Karen|Alex|Jenny|Aria/i.test(v.name))
+                  || voices.find(v => v.lang && v.lang.startsWith('en'));
+  }
+  if (window.speechSynthesis) {
+    loadVoices();
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+  }
+
+  function speak(text) {
+    if (!text) return;
+    lastSpoken = text;
+    if (!ttsEnabled || !window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 1.05;
+    u.pitch = 1;
+    if (preferredVoice) u.voice = preferredVoice;
+    u.onstart = () => consoleEl.classList.add('speaking');
+    u.onend   = () => consoleEl.classList.remove('speaking');
+    u.onerror = () => consoleEl.classList.remove('speaking');
+    window.speechSynthesis.speak(u);
+  }
+
+  function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+  // -------- HELPERS --------
+  function currentSection() {
+    const a = document.querySelector('.section.active');
+    return a ? a.id : 'home';
+  }
+
+  function readSectionAloud(name) {
+    if (name === 'current') name = currentSection();
+    if (!sections.includes(name)) { toast('unknown section', true); return; }
+    if (currentSection() !== name) go(name);
+    setTimeout(() => {
+      const el = document.getElementById(name);
+      const parts = Array.from(el.querySelectorAll('h1, h2, p, .title, .desc, .stat .lbl'))
+        .map(e => e.textContent.replace(/\s+/g, ' ').trim())
+        .filter(Boolean);
+      const text = parts.join('. ').slice(0, 700);
+      speak(text);
+      toast(`→ READING ${name.toUpperCase()}`);
+    }, 250);
+  }
+
+  function highlightProject(n) {
+    const items = document.querySelectorAll('#projects .project');
+    if (n < 1 || n > items.length) { toast(`no project ${n}`, true); return; }
+    if (currentSection() !== 'projects') go('projects');
+    setTimeout(() => {
+      const p = items[n - 1];
+      p.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const oldBg = p.style.background, oldBorder = p.style.borderColor;
+      p.style.background = 'var(--neon-soft)';
+      p.style.borderTop = '1px solid var(--neon)';
+      p.style.borderBottom = '1px solid var(--neon)';
+      setTimeout(() => {
+        p.style.background = oldBg;
+        p.style.borderTop = '';
+        p.style.borderBottom = '';
+      }, 1800);
+      const title = p.querySelector('.title')?.textContent || `Project ${n}`;
+      const desc  = p.querySelector('.desc')?.textContent || '';
+      speak(`${title}. ${desc}`);
+      toast(`→ PROJECT ${n}`);
+    }, 280);
+  }
+
+  // -------- MATRIX MODE (canvas code rain) --------
+  let matrixRAF = null;
+  function setMatrixMode(on) {
+    document.body.classList.toggle('matrix', on);
+    if (on) startMatrixRain(); else stopMatrixRain();
+  }
+  function startMatrixRain() {
+    const canvas = document.getElementById('matrixCanvas');
+    const ctx = canvas.getContext('2d');
+    const resize = () => { canvas.width = innerWidth; canvas.height = innerHeight; };
+    resize();
+    window.addEventListener('resize', resize);
+    const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノ#$%&*+=<>';
+    const fontSize = 14;
+    const cols = Math.floor(canvas.width / fontSize);
+    const drops = Array(cols).fill(0).map(() => Math.random() * -canvas.height / fontSize);
+    function draw() {
+      ctx.fillStyle = 'rgba(10, 10, 10, 0.07)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#c6ff3d';
+      ctx.font = `${fontSize}px JetBrains Mono, monospace`;
+      for (let i = 0; i < drops.length; i++) {
+        const ch = chars[Math.floor(Math.random() * chars.length)];
+        ctx.fillText(ch, i * fontSize, drops[i] * fontSize);
+        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+        drops[i]++;
+      }
+      matrixRAF = requestAnimationFrame(draw);
+    }
+    draw();
+  }
+  function stopMatrixRain() {
+    if (matrixRAF) cancelAnimationFrame(matrixRAF);
+    matrixRAF = null;
+    const canvas = document.getElementById('matrixCanvas');
+    if (canvas) canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+  }
+
+  // -------- EXECUTE --------
+  function execute(cmd) {
+    if (!cmd) { toast('command not recognized', true); return; }
+    switch (cmd.type) {
+      case 'nav':   go(cmd.target); break;
+      case 'help':  openHelp(); toast('→ HELP'); break;
+      case 'close': closeHelp(); toast('→ CLOSED'); break;
+      case 'stop':  stopListening(); toast('→ MIC OFF'); break;
+
+      case 'sectionStep': {
+        const i = sections.indexOf(currentSection());
+        const j = i + cmd.dir;
+        if (j >= 0 && j < sections.length) go(sections[j]);
+        else toast(cmd.dir > 0 ? 'end of sections' : 'start of sections');
+        break;
+      }
+
+      case 'scroll': {
+        const step = innerHeight * 0.7;
+        if (cmd.dir === 'down') window.scrollBy({ top: step, behavior: 'smooth' });
+        else if (cmd.dir === 'up') window.scrollBy({ top: -step, behavior: 'smooth' });
+        else if (cmd.dir === 'top') window.scrollTo({ top: 0, behavior: 'smooth' });
+        else if (cmd.dir === 'bottom') window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        toast(`→ SCROLL ${cmd.dir.toUpperCase()}`);
+        break;
+      }
+
+      case 'read':    readSectionAloud(cmd.target); break;
+      case 'project': highlightProject(cmd.n); break;
+
+      case 'sayTime': {
+        const now = new Date();
+        const t = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+        speak(`It's ${t}.`);
+        toast(`→ ${t}`);
+        break;
+      }
+      case 'sayDate': {
+        const now = new Date();
+        const d = now.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+        speak(`Today is ${d}.`);
+        toast('→ DATE');
+        break;
+      }
+
+      case 'greet':
+        speak(pick([
+          'Hello there.',
+          'Hi! Try saying projects, or help.',
+          'Hey. What can I show you?',
+          'Greetings. The system is listening.'
+        ]));
+        toast('→ HELLO');
+        break;
+
+      case 'thanks':
+        speak(pick(['You are welcome.', 'Anytime.', 'My pleasure.', 'Of course.']));
+        toast('→ THANKS');
+        break;
+
+      case 'intro':
+        speak("I'm Obliq A.I., a voice-controlled portfolio developed by Digital Hammerr. Try saying projects, skills, or help.");
+        go('about');
+        toast('→ INTRO');
+        break;
+
+      case 'joke':
+        speak(pick([
+          "Why do programmers prefer dark mode? Because light attracts bugs.",
+          "I would tell you a UDP joke, but you might not get it.",
+          "There are 10 types of people in this world. Those who understand binary, and those who don't.",
+          "How many engineers does it take to change a lightbulb? None — that's a hardware problem."
+        ]));
+        toast('→ JOKE');
+        break;
+
+      case 'mute':
+        ttsEnabled = false;
+        if (window.speechSynthesis) window.speechSynthesis.cancel();
+        toast('→ VOICE MUTED');
+        break;
+      case 'unmute':
+        ttsEnabled = true;
+        speak('Voice on.');
+        toast('→ VOICE ON');
+        break;
+
+      case 'repeat':
+        if (lastSpoken) speak(lastSpoken);
+        else toast('nothing to repeat', true);
+        break;
+
+      case 'matrix':
+        setMatrixMode(cmd.on);
+        if (cmd.on) speak('Entering the matrix.');
+        toast(cmd.on ? '→ MATRIX MODE' : '→ NORMAL MODE');
+        break;
+
+      case 'link': {
+        toast(`→ OPEN ${cmd.target.toUpperCase()}`);
+        const urls = {
+          github:   'https://github.com/',
+          twitter:  'https://twitter.com/',
+          linkedin: 'https://linkedin.com/',
+          dribbble: 'https://dribbble.com/',
+          email:    'mailto:hello@example.com'
+        };
+        if (urls[cmd.target]) window.open(urls[cmd.target], '_blank', 'noopener');
+        break;
+      }
+    }
+  }
+
+  // -------- SPEECH RECOGNITION --------
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let recognition = null;
+  let listening = false;
+  let userToggled = false; // tracks whether user wants mic ON
+
+  const consoleEl = document.getElementById('console');
+  const micBtn    = document.getElementById('micBtn');
+  const cStatus   = document.getElementById('cStatus');
+  const cTrans    = document.getElementById('cTranscript');
+  const topStatus = document.getElementById('topStatus');
+
+  function setListeningUI(on) {
+    listening = on;
+    consoleEl.classList.toggle('listening', on);
+    cStatus.textContent = on ? 'LISTENING…' : 'VOICE OS // tap mic to begin';
+    topStatus.textContent = on ? 'LISTENING' : 'READY';
+  }
+
+  function initRecognition() {
+    if (!SR) return null;
+    const r = new SR();
+    r.continuous = true;
+    r.interimResults = true;
+    r.lang = 'en-US';
+
+    r.onstart = () => setListeningUI(true);
+    r.onend = () => {
+      setListeningUI(false);
+      // auto-restart if user wants it on (some browsers cut off after silence)
+      if (userToggled) {
+        try { r.start(); } catch (e) {}
+      }
+    };
+    r.onerror = (e) => {
+      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+        toast('mic permission denied', true);
+        userToggled = false;
+        setListeningUI(false);
+      } else if (e.error === 'no-speech') {
+        // ignore — common
+      } else {
+        toast(`error: ${e.error}`, true);
+      }
+    };
+
+    let finalBuffer = '';
+    r.onresult = (event) => {
+      let interim = '';
+      let final = '';
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) final += transcript;
+        else interim += transcript;
+      }
+
+      // live transcript display
+      cTrans.innerHTML = final
+        ? `<span>${escapeHtml(final)}</span>`
+        : `<span class="interim">${escapeHtml(interim)}</span>`;
+
+      if (final.trim()) {
+        const cmd = parseCommand(final);
+        execute(cmd);
+        // brief flash of what was heard
+        setTimeout(() => { cTrans.innerHTML = ''; }, 1500);
+      }
+    };
+    return r;
+  }
+
+  function escapeHtml(s) {
+    return s.replace(/[&<>"']/g, c => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[c]));
+  }
+
+  function startListening() {
+    if (!SR) {
+      toast('voice not supported in this browser — try chrome/edge', true);
+      return;
+    }
+    if (!recognition) recognition = initRecognition();
+    userToggled = true;
+    try { recognition.start(); } catch (e) { /* already started */ }
+  }
+  function stopListening() {
+    userToggled = false;
+    if (recognition) {
+      try { recognition.stop(); } catch (e) {}
+    }
+    setListeningUI(false);
+  }
+  function toggleListening() {
+    if (listening || userToggled) stopListening();
+    else startListening();
+  }
+
+  micBtn.addEventListener('click', toggleListening);
+
+  // -------- KEYBOARD SHORTCUTS --------
+  document.addEventListener('keydown', (e) => {
+    // ignore when typing in inputs
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+    if (e.code === 'Space') {
+      e.preventDefault();
+      toggleListening();
+    } else if (e.key === 'Escape') {
+      closeHelp();
+    } else if (e.key === '?') {
+      openHelp();
+    } else if (e.key === '1') go('home');
+    else if (e.key === '2') go('about');
+    else if (e.key === '3') go('projects');
+    else if (e.key === '4') go('skills');
+    else if (e.key === '5') go('contact');
+  });
+
+  // -------- BROWSER SUPPORT WARNING --------
+  if (!SR) {
+    setTimeout(() => {
+      toast('voice not supported — use chrome/edge for full experience', true);
+    }, 1200);
+    cStatus.textContent = 'VOICE UNSUPPORTED // use chrome or edge';
+    micBtn.style.opacity = 0.4;
+    micBtn.style.cursor = 'not-allowed';
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!--
+  ARCHIVE NOTE (added during the portfolio rebuild, 2026-09-06):
+  This is a PARTIAL build. Its shared assets live at /s/css/ and /s/js/
+  (bootstrap, jQuery, popper, config.js, loader.js, popup.js) and those paths
+  are absent from the deployed archive this copy was mirrored from, so they
+  cannot be recovered here. The references below are left INTACT and unmodified:
+  restoring the original /s/css and /s/js folders makes this build work again
+  with no further edits. Only index.html, login.html and register.html were
+  ever published; the record's original "7-page app" note overstated that and
+  has been corrected in src/data/projects.ts.
+-->
+
+<html lang="en" dir="ltr">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="stylesheet" href="../css/bootstrap.min.css">
+		<link rel="stylesheet" href="../css/main.css">
+
+
+		<!-- bootstrap file -->
+		<script type="text/javascript" src="../js/jquery-3.3.1.js"></script>
+		<script type="text/javascript" src="../js/popper.min.js"></script>
+		<script type="text/javascript" src="../js/bootstrap.min.js"></script>
+		<script src="../js/config.js"></script>	
+	</head>
+	<body>
+		<div class="header"></div>
+		<div class="container-fluid dataScrapSection" style="margin-top: 20px;">
+			<h5 class="heading">Enter Keywords
+				<!-- <a href="software.html" target="_blank" style="font-size: 15px; font-weight: bold; text-decoration: none; letter-spacing: 0.5px;" id="advanceSearch">More Tools >> </a>				 -->
+			</h5>
+			<div class="row">
+				<div class="col-md-12">
+					<div class="input-group mb-3">
+						<div class="input-group-prepend" style="box-shadow: 0 0 1px rgb(0 0 0 / 50%);">
+							<span class="input-group-text upload-btn" style="cursor: pointer;">Upload File</span>
+							<input type="file" style="display: none;" class="upload-file" accept=".txt">
+						</div>
+						<input type="text" class="keyword form-control" placeholder="Enter Multiple Keyword Seprate By ( , )" autocomplete="off" spellcheck="false" value>
+					</div>
+				</div>
+
+				<div class="col-md-12 button-section">
+					<button class="btn btn-primary" id="scrap">Collect Data </button>
+					<a href="register.html" class="btn btn-primary" id="register">Register </a>
+				</div>
+				<div class="col-md-12 button-section">
+					<a href="login.html" id="login">Already Registered? </a>
+				</div>
+			</div>
+		</div>
+		<div class="footer"></div>
+
+		<script type="text/javascript" src="../js/loader.js"></script>
+		<script type="text/javascript" src="../js/popup.js"></script>
+	
+  <style>
+    /* Injected by the portfolio archive restore — see README. */
+    #ds-archive-notice{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);
+      z-index:2147483647;max-width:min(92vw,680px);display:flex;gap:10px;align-items:flex-start;
+      padding:10px 14px;border-radius:10px;border:1px solid rgba(251,191,36,.45);
+      background:rgba(28,22,10,.94);color:#FDE68A;font:500 13px/1.45 ui-sans-serif,system-ui,sans-serif;
+      box-shadow:0 10px 34px rgba(0,0,0,.55);backdrop-filter:blur(6px)}
+    #ds-archive-notice b{color:#FCD34D;font-weight:700}
+    #ds-archive-notice button{margin-left:6px;flex:none;background:none;border:0;color:#FDE68A;
+      cursor:pointer;font-size:15px;line-height:1;padding:2px 4px;border-radius:4px}
+    #ds-archive-notice button:hover{background:rgba(253,230,138,.16)}
+    #ds-archive-notice button:focus-visible{outline:2px solid #FCD34D;outline-offset:2px}
+    @media (max-width:520px){#ds-archive-notice{font-size:12px;bottom:8px}}
+  </style>
+  <div id="ds-archive-notice" role="status">
+    <span><b>Archive notice:</b> Partial legacy build — original assets unavailable. Styling and scripts for this page were not published to the archive.</span>
+    <button type="button" aria-label="Dismiss notice"
+      onclick="this.parentNode.remove()">&times;</button>
+  </div>
+</body>
+</html>

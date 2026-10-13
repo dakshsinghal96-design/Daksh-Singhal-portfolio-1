@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Planning Dashboard — WedIn Udaipur</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Playfair+Display:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/tokens.css"><link rel="stylesheet" href="assets/css/main.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23C8643B'/%3E%3Cpath d='M8 22V13l8-5 8 5v9' fill='none' stroke='%23FFF8ED' stroke-width='2'/%3E%3C/svg%3E">
+</head>
+<body>
+<div class="dash-layout">
+  <!-- Sidebar -->
+  <aside class="dash-side">
+    <a href="index.html" class="logo" data-transition><svg class="logo-mark" viewBox="0 0 34 34" fill="none"><rect width="34" height="34" rx="9" fill="#C8643B"/><path d="M8 24V15l9-6 9 6v9" stroke="#FFF8ED" stroke-width="2" stroke-linejoin="round"/></svg><span>WedIn <b>Udaipur</b></span></a>
+    <nav class="dash-nav">
+      <a href="#" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Planning overview</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7.5-4.9-10-9.2C.2 8.4 1.8 4.8 5.3 4.8c2 0 3.4 1.1 4.7 2.8 1.3-1.7 2.7-2.8 4.7-2.8 3.5 0 5.1 3.6 3.3 7C19.5 16.1 12 21 12 21z"/></svg>Shortlisted venues</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0112 0"/><path d="M16 6h5M18.5 3.5v5"/></svg>Shortlisted vendors</a>
+      <a href="venues.html" data-transition><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>Venue comparison</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>Inquiry tracker</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>Payments</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/></svg>Profile settings</a>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <main class="dash-main">
+    <div class="dash-head">
+      <div>
+        <p class="eyebrow" style="margin-bottom:6px">Namaste, Aarav &amp; Meera</p>
+        <h2 style="font-size:2rem">Your Udaipur wedding · <span class="serif-accent">Nov 2026</span></h2>
+      </div>
+      <a href="venues.html" class="btn btn--primary" data-transition>+ Add venue</a>
+    </div>
+
+    <!-- Stat cards -->
+    <div class="dash-cards">
+      <div class="stat-card reveal"><div class="label">Shortlisted venues</div><div class="val" data-count="6">0</div><div class="delta">2 available on your date</div></div>
+      <div class="stat-card reveal" data-delay="1"><div class="label">Active inquiries</div><div class="val" data-count="4">0</div><div class="delta">1 quote received</div></div>
+      <div class="stat-card reveal" data-delay="2"><div class="label">Vendors saved</div><div class="val" data-count="11">0</div><div class="delta">Across 7 categories</div></div>
+      <div class="stat-card reveal" data-delay="3"><div class="label">Est. budget used</div><div class="val">38<span style="font-size:1.2rem">%</span></div><div class="delta">₹23L of ₹60L</div></div>
+    </div>
+
+    <!-- Inquiry tracker -->
+    <div class="panel reveal">
+      <h3>Inquiry tracker · Taj Lake Palace</h3>
+      <p class="muted" style="font-size:.9rem;margin:0">Your lead is moving through the WedIn concierge journey.</p>
+      <div class="tracker" id="tracker">
+        <div class="fill" id="trackFill" style="width:0"></div>
+        <div class="t-step done"><div class="t-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></div><div class="t-label">Submitted</div></div>
+        <div class="t-step done"><div class="t-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></div><div class="t-label">Contacted</div></div>
+        <div class="t-step done"><div class="t-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></div><div class="t-label">Quote Shared</div></div>
+        <div class="t-step active"><div class="t-dot"></div><div class="t-label">Consultation Booked</div></div>
+        <div class="t-step"><div class="t-dot"></div><div class="t-label">Payment</div></div>
+        <div class="t-step"><div class="t-dot"></div><div class="t-label">Confirmed</div></div>
+      </div>
+    </div>
+
+    <div class="grid" style="grid-template-columns:1.4fr 1fr;gap:24px">
+      <!-- Shortlisted venues -->
+      <div class="panel reveal">
+        <div class="flex aic jcb"><h3>Shortlisted venues</h3><a href="venues.html" class="muted" style="font-size:.85rem" data-transition>Manage →</a></div>
+        <div id="shortlist"></div>
+      </div>
+
+      <!-- Budget mini chart -->
+      <div class="panel reveal">
+        <h3>Budget by category</h3>
+        <div class="mini-chart" id="chart"></div>
+        <div class="flex jcb muted" style="font-size:.72rem;margin-top:8px"><span>Venue</span><span>Decor</span><span>Cater</span><span>Photo</span><span>Stay</span><span>Misc</span></div>
+      </div>
+    </div>
+
+    <!-- Payment history -->
+    <div class="panel reveal">
+      <div class="flex aic jcb"><h3>Payment history</h3><span class="muted" style="font-size:.85rem">2 transactions</span></div>
+      <table class="table" style="margin-top:12px">
+        <thead><tr><th>Date</th><th>To</th><th>Purpose</th><th>Amount</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>02 Jul 2026</td><td>Taj Lake Palace</td><td>Consultation hold</td><td><b>₹25,000</b></td><td><span class="status-tag paid">Paid</span></td></tr>
+          <tr><td>28 Jun 2026</td><td>Studio Kishan</td><td>Photography advance</td><td><b>₹80,000</b></td><td><span class="status-tag pending">Pending</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<script>
+const SL=[['Taj Lake Palace','ph-1','₹42L · avail'],['Jagmandir Island','ph-4','₹55L · avail'],['Devi Garh','ph-5','₹34L · on request']];
+const STAR='<svg viewBox="0 0 24 24" width="14" height="14" fill="var(--copper)"><path d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.8 5.9 20.4l1.4-6.8L2.2 9l6.9-.7z"/></svg>';
+document.getElementById('shortlist').innerHTML = SL.map(([n,p,meta])=>`
+  <div class="dash-list-row"><div class="thumb ph ${p}"></div>
+    <div style="flex:1"><b style="display:block">${n}</b><span class="muted" style="font-size:.82rem">${meta}</span></div>
+    <a href="venue-detail.html" class="btn btn--ghost btn--sm" data-transition>View</a></div>`).join('');
+
+// budget bars
+const vals=[80,45,60,35,50,25];
+document.getElementById('chart').innerHTML = vals.map(v=>`<div class="bar" style="height:0" data-h="${v}"></div>`).join('');
+
+// animate tracker + bars on load
+window.addEventListener('load',()=>{
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  setTimeout(()=>{ document.getElementById('trackFill').style.width = reduce? '60%':'60%'; },300);
+  document.querySelectorAll('#chart .bar').forEach((b,i)=> setTimeout(()=> b.style.height=b.dataset.h+'%', reduce?0:200+i*90));
+});
+</script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="A cinematic space-themed creative portfolio with realtime stars, project signals, and immersive digital work."
+    />
+    <title>PORTFOLIO.space - Creative Digital Experiences</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <canvas id="starfield" aria-hidden="true"></canvas>
+    <div class="scene-glow scene-glow-a" aria-hidden="true"></div>
+    <div class="scene-glow scene-glow-b" aria-hidden="true"></div>
+    <div class="scanlines" aria-hidden="true"></div>
+
+    <header class="site-header">
+      <a class="brand" href="#hero" aria-label="PORTFOLIO.space home">
+        <span>PORTFOLIO</span><span>.space</span>
+      </a>
+      <nav class="nav-links" aria-label="Primary navigation">
+        <a href="#work">Work</a>
+        <a href="#studio">Studio</a>
+        <a href="#contact">Contact</a>
+      </nav>
+      <a class="header-cta" href="#contact">Start a Project</a>
+    </header>
+
+    <aside class="scene-status" aria-hidden="true">
+      <span class="status-dot"></span>
+      <span>ACTIVE SCENE <strong id="scene-number">01</strong></span>
+      <span id="scene-label">/ HERO - 5 STAGES</span>
+    </aside>
+
+    <aside class="runtime-status" aria-hidden="true">
+      <span>REALTIME RENDER</span>
+      <span>INPUT: SCROLL / POINTER</span>
+    </aside>
+
+    <aside class="scene-index" aria-label="Portfolio sections">
+      <span class="index-title">INDEX</span>
+      <a class="index-item is-active" href="#hero" data-section-link="hero"><span>01</span>Hero</a>
+      <a class="index-item" href="#work" data-section-link="work"><span>02</span>Selected Work</a>
+      <a class="index-item" href="#studio" data-section-link="studio"><span>03</span>Studio System</a>
+      <a class="index-item" href="#contact" data-section-link="contact"><span>04</span>Contact Relay</a>
+    </aside>
+
+    <main>
+      <section class="panel hero-panel" id="hero" data-scene="01" data-label="/ HERO - 5 STAGES">
+        <div class="hero-copy">
+          <p class="micro-copy">PORTFOLIO.space - Creative Technology Studio</p>
+          <h1>
+            <span class="outline">Creative</span>
+            <span class="outline">Digital</span>
+            <span class="gradient-text">Experiences</span>
+          </h1>
+          <p class="hero-subtitle">
+            Immersive real-time worlds for the web, where brand, interface, and motion live inside one rendered space.
+          </p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="#work">View Work</a>
+            <a class="button button-ghost" href="#contact">Start a Project</a>
+          </div>
+        </div>
+
+        <div class="signal-orbit" aria-label="Project signal map">
+          <article class="signal-card signal-card-a" data-depth="24">
+            <span>01</span>
+            <strong>Synthetic Stage</strong>
+            <em>Interactive Launch</em>
+          </article>
+          <article class="signal-card signal-card-b" data-depth="38">
+            <span>02</span>
+            <strong>Lunar Commerce</strong>
+            <em>3D Storefront</em>
+          </article>
+          <article class="signal-card signal-card-c" data-depth="18">
+            <span>03</span>
+            <strong>Signal Garden</strong>
+            <em>Motion System</em>
+          </article>
+          <article class="signal-card signal-card-d" data-depth="30">
+            <span>04</span>
+            <strong>Neural Archive</strong>
+            <em>AI Interface</em>
+          </article>
+          <span class="orbit-line orbit-line-a" aria-hidden="true"></span>
+          <span class="orbit-line orbit-line-b" aria-hidden="true"></span>
+        </div>
+      </section>
+
+      <section class="panel work-panel" id="work" data-scene="02" data-label="/ WORK - SELECTED SIGNALS">
+        <div class="section-copy">
+          <p class="micro-copy">Selected Work</p>
+          <h2>Projects built as living spaces.</h2>
+        </div>
+        <div class="work-grid">
+          <article class="work-item">
+            <span>01</span>
+            <h3>Orbital Interface</h3>
+            <p>A launch surface with realtime product motion, spatial navigation, and cinematic scroll states.</p>
+          </article>
+          <article class="work-item">
+            <span>02</span>
+            <h3>Commerce Nebula</h3>
+            <p>An atmospheric storefront that turns product discovery into a guided constellation.</p>
+          </article>
+          <article class="work-item">
+            <span>03</span>
+            <h3>Signal OS</h3>
+            <p>A compact design system for teams that need dashboards, campaigns, and web experiences to share one language.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="panel studio-panel" id="studio" data-scene="03" data-label="/ STUDIO - CREATIVE SYSTEM">
+        <div class="studio-shell">
+          <div class="section-copy">
+            <p class="micro-copy">Studio System</p>
+            <h2>Design, code, and motion in the same loop.</h2>
+          </div>
+          <div class="system-rows" aria-label="Studio capabilities">
+            <div><span>Strategy</span><strong>Positioning, IA, launch paths</strong></div>
+            <div><span>Interface</span><strong>Product screens, systems, prototypes</strong></div>
+            <div><span>Runtime</span><strong>WebGL, animation, interaction states</strong></div>
+            <div><span>Delivery</span><strong>Responsive builds, QA, deployment prep</strong></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel contact-panel" id="contact" data-scene="04" data-label="/ CONTACT - TRANSMISSION READY">
+        <div class="contact-copy">
+          <p class="micro-copy">Contact Relay</p>
+          <h2>Start with a signal. Leave with a system.</h2>
+          <p>
+            Share the world you want to build, the launch date, and the level of motion you want the audience to feel.
+          </p>
+          <a class="button button-primary" href="mailto:hello@portfolio.space">hello@portfolio.space</a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="progress-readout" aria-hidden="true">
+      <span id="progress-value">000%</span>
+      <span class="progress-line"><span id="progress-bar"></span></span>
+    </footer>
+    <footer class="runtime-footer" aria-hidden="true">PORTFOLIO.space - WEB RUNTIME</footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>

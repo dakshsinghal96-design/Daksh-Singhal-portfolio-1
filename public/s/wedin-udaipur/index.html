@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WedIn Udaipur — Plan your palace, lake-view & heritage wedding</title>
+<meta name="description" content="Discover verified venues, trusted vendors, and curated wedding experiences in the City of Lakes — from one premium planning platform.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Playfair+Display:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/tokens.css">
+<link rel="stylesheet" href="assets/css/main.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23C8643B'/%3E%3Cpath d='M8 22V13l8-5 8 5v9' fill='none' stroke='%23FFF8ED' stroke-width='2'/%3E%3C/svg%3E">
+</head>
+<body>
+
+<!-- ============ HEADER ============ -->
+<header class="site-header">
+  <div class="wrap">
+    <a href="index.html" class="logo">
+      <svg class="logo-mark" viewBox="0 0 34 34" fill="none"><rect width="34" height="34" rx="9" fill="#C8643B"/><path d="M8 24V15l9-6 9 6v9" stroke="#FFF8ED" stroke-width="2" stroke-linejoin="round"/><path d="M14 24v-5h6v5" stroke="#F0B084" stroke-width="1.6"/></svg>
+      <span>WedIn <b>Udaipur</b></span>
+    </a>
+    <nav class="nav">
+      <a href="venues.html" data-transition>Venues</a>
+      <a href="index.html#vendors">Vendors</a>
+      <a href="index.html#weddings">Real Weddings</a>
+      <a href="index.html#guides">Guides</a>
+      <a href="dashboard.html" data-transition>Dashboard</a>
+    </nav>
+    <div class="header-cta">
+      <a href="dashboard.html" class="btn btn--ghost" data-transition>Sign in</a>
+      <a href="venues.html" class="btn btn--primary always" data-transition>Explore Venues</a>
+      <button class="hamburger" aria-label="Menu"><span></span></button>
+    </div>
+  </div>
+</header>
+
+<div class="mobile-menu" id="mobileMenu">
+  <a href="venues.html">Venues</a>
+  <a href="index.html#vendors">Vendors</a>
+  <a href="index.html#weddings">Real Weddings</a>
+  <a href="index.html#guides">Guides</a>
+  <a href="dashboard.html">Dashboard</a>
+</div>
+
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <div class="hero__scene">
+    <div class="hero__layer sky" data-parallax="0.3"></div>
+    <div class="sun hero__layer" data-parallax="0.4"></div>
+    <div class="hero__layer palace" data-parallax="0.6">
+      <svg viewBox="0 0 1440 520" preserveAspectRatio="xMidYMax meet" fill="none" stroke="#7d4a3f" stroke-width="2.2">
+        <!-- City Palace skyline line-art, draws in on load -->
+        <path class="draw" d="M0 520 V430 H90 V400 L120 380 L150 400 V430 H230 V360 L270 320 L310 360 V430 H420 V300 L470 250 L520 300 V430 H620 V360 L660 320 L700 360 V270 L760 210 L820 270 V360 L860 320 L900 360 V430 H1010 V300 L1060 250 L1110 300 V430 H1220 V360 L1260 320 L1300 360 V400 L1330 380 L1360 400 V430 H1440 V520 Z" fill="rgba(125,74,63,0.14)"/>
+        <path class="draw" d="M470 250 v-40 M760 210 v-46 M1060 250 v-40" stroke-linecap="round"/>
+        <circle class="draw" cx="470" cy="196" r="7"/><circle class="draw" cx="760" cy="150" r="8"/><circle class="draw" cx="1060" cy="196" r="7"/>
+        <path class="draw" d="M270 320 q0-26 18-40 q18 14 18 40 M660 320 q0-22 18-34 q18 12 18 34 M1260 320 q0-22 18-34 q18 12 18 34" fill="none"/>
+      </svg>
+    </div>
+    <svg class="boat hero__layer" data-parallax="0.9" viewBox="0 0 90 44" fill="#4A2418"><path d="M6 30h78l-10 12H16z"/><path d="M45 4v22" stroke="#4A2418" stroke-width="2"/><path d="M45 6l22 18H45z" fill="#C8643B"/></svg>
+    <div class="hero__layer lake" data-parallax="0.2"></div>
+  </div>
+
+  <div class="wrap">
+    <div class="hero__content">
+      <span class="eyebrow reveal">The City of Lakes · Est. Weddings</span>
+      <h1 class="reveal" data-delay="1">WedIn Udaipur
+        <span class="serif-accent display">Plan your palace, lake-view &amp; heritage wedding.</span>
+      </h1>
+      <p class="hero__copy reveal" data-delay="2">Discover verified venues, trusted vendors, and curated wedding experiences from one premium planning platform.</p>
+
+      <div class="search-card reveal" data-delay="3">
+        <div class="search-row">
+          <div class="search-field">
+            <label>Wedding date</label>
+            <input type="text" placeholder="Nov 2026" onfocus="(this.type='month')" onblur="if(!this.value)this.type='text'">
+          </div>
+          <div class="search-field">
+            <label>Guest count</label>
+            <select><option>100 – 250</option><option>250 – 500</option><option>500 – 800</option><option>800+</option></select>
+          </div>
+          <div class="search-field">
+            <label>Budget range</label>
+            <select><option>₹15L – ₹30L</option><option>₹30L – ₹60L</option><option>₹60L – ₹1Cr</option><option>₹1Cr+</option></select>
+          </div>
+          <div class="search-field">
+            <label>Venue type</label>
+            <select><option>Lake Palace</option><option>Heritage Haveli</option><option>Resort</option><option>Garden Lawn</option></select>
+          </div>
+        </div>
+        <div class="pop-chips">
+          <span class="chip active">Lake-view</span><span class="chip">Palace</span><span class="chip">Resort</span><span class="chip">Accommodation</span><span class="chip">Outdoor</span>
+        </div>
+        <div class="search-actions">
+          <a href="venues.html" class="btn btn--primary" data-transition>Explore Venues</a>
+          <a href="index.html#vendors" class="btn btn--secondary">Find Vendors</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WHY WEDIN ============ -->
+<section class="section" id="why">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Why WedIn Udaipur</span>
+      <h2>One premium platform for the whole <span class="serif-accent">celebration</span>.</h2>
+    </div>
+    <div class="grid value-grid">
+      <div class="value-card reveal" data-delay="1"><div class="value-ic">◎</div><h3>Udaipur-only curation</h3><p>Every venue and vendor is handpicked for the City of Lakes — no generic listings.</p></div>
+      <div class="value-card reveal" data-delay="2"><div class="value-ic">✓</div><h3>Verified venues &amp; vendors</h3><p>Site-visited, document-checked and rated by real couples.</p></div>
+      <div class="value-card reveal" data-delay="3"><div class="value-ic">⇄</div><h3>Compare before you book</h3><p>Side-by-side price, capacity and facilities in a clean dashboard.</p></div>
+      <div class="value-card reveal" data-delay="4"><div class="value-ic">◷</div><h3>Inquiry tracking</h3><p>Follow every lead from submitted to confirmed on one timeline.</p></div>
+      <div class="value-card reveal" data-delay="4"><div class="value-ic">✦</div><h3>Concierge consultation</h3><p>Talk to a Udaipur planning specialist whenever you need one.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FEATURED VENUES ============ -->
+<section class="section" id="venues" style="padding-top:0">
+  <div class="wrap">
+    <div class="section-head section-flex reveal">
+      <div>
+        <span class="eyebrow">Featured Venues</span>
+        <h2>Cinematic settings on the <span class="serif-accent">lake</span>.</h2>
+      </div>
+      <a href="venues.html" class="btn btn--ghost" data-transition>View all venues →</a>
+    </div>
+    <div class="grid venue-grid" id="featuredGrid"><!-- cards injected --></div>
+  </div>
+</section>
+
+<!-- ============ STATS ============ -->
+<section class="section" style="padding-top:0">
+  <div class="wrap">
+    <div class="stat-strip reveal">
+      <div class="stat"><b data-count="180" data-suffix="+">0</b><span>Verified venues</span></div>
+      <div class="stat"><b data-count="640" data-suffix="+">0</b><span>Trusted vendors</span></div>
+      <div class="stat"><b data-count="2400" data-suffix="+">0</b><span>Weddings planned</span></div>
+      <div class="stat"><b data-count="1" data-suffix=" city">0</b><span>Fully focused on Udaipur</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ VENDOR MARKETPLACE ============ -->
+<section class="section" id="vendors" style="background:var(--warm-sand)">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Vendor Marketplace</span>
+      <h2>Every specialist your wedding needs.</h2>
+      <p class="lead">Modern terracotta line-craft over Udaipur's artisan trades — from planners to mehendi.</p>
+    </div>
+    <div class="grid vendor-grid" id="vendorGrid"><!-- injected --></div>
+  </div>
+</section>
+
+<!-- ============ REAL WEDDINGS ============ -->
+<section class="section" id="weddings">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Real Weddings</span>
+      <h2>Stories from the <span class="serif-accent">City of Lakes</span>.</h2>
+    </div>
+    <div class="masonry">
+      <div class="story reveal" style="height:360px"><div class="ph ph-1 ph--palace" style="height:100%"></div><div class="cap"><span>Taj Lake Palace</span><h4>Lake Palace Wedding</h4></div></div>
+      <div class="story reveal" data-delay="1" style="height:260px"><div class="ph ph-4 ph--palace" style="height:100%"></div><div class="cap"><span>Jagmandir Island</span><h4>Sunset Mehendi</h4></div></div>
+      <div class="story reveal" data-delay="2" style="height:300px"><div class="ph ph-5 ph--palace" style="height:100%"></div><div class="cap"><span>City Palace Courtyard</span><h4>Royal Sangeet</h4></div></div>
+      <div class="story reveal" data-delay="1" style="height:300px"><div class="ph ph-2 ph--palace" style="height:100%"></div><div class="cap"><span>Devi Garh</span><h4>Heritage Courtyard Wedding</h4></div></div>
+      <div class="story reveal" data-delay="2" style="height:360px"><div class="ph ph-6 ph--palace" style="height:100%"></div><div class="cap"><span>Fateh Garh</span><h4>Aravalli Hilltop Vows</h4></div></div>
+      <div class="story reveal" data-delay="3" style="height:260px"><div class="ph ph-3 ph--palace" style="height:100%"></div><div class="cap"><span>Lakend</span><h4>Pichola Boat Baraat</h4></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ GUIDES ============ -->
+<section class="section" id="guides" style="padding-top:0">
+  <div class="wrap">
+    <div class="section-head section-flex reveal">
+      <div><span class="eyebrow">Wedding Guides</span><h2>Plan smarter, not harder.</h2></div>
+      <a href="#" class="btn btn--ghost">All guides →</a>
+    </div>
+    <div class="grid guide-grid">
+      <a class="guide-card reveal" href="#"><div class="ph ph-1"></div><div class="g-body"><span>Venues</span><h4>Best palace wedding venues in Udaipur</h4><p class="muted" style="font-size:.85rem;margin:0">8 min read</p></div></a>
+      <a class="guide-card reveal" data-delay="1" href="#"><div class="ph ph-3"></div><div class="g-body"><span>Planning</span><h4>How to plan a lake-view wedding</h4><p class="muted" style="font-size:.85rem;margin:0">6 min read</p></div></a>
+      <a class="guide-card reveal" data-delay="2" href="#"><div class="ph ph-4"></div><div class="g-body"><span>Travel</span><h4>Destination wedding guest stay guide</h4><p class="muted" style="font-size:.85rem;margin:0">5 min read</p></div></a>
+      <a class="guide-card reveal" data-delay="3" href="#"><div class="ph ph-2"></div><div class="g-body"><span>Checklist</span><h4>Wedding vendor booking checklist</h4><p class="muted" style="font-size:.85rem;margin:0">4 min read</p></div></a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CTA ============ -->
+<section class="section" style="padding-top:0">
+  <div class="wrap">
+    <div class="cta-band reveal">
+      <div class="sun" style="top:-40px;right:-40px;width:260px;height:260px"></div>
+      <span class="eyebrow" style="color:var(--sunset-peach)">Book Consultation</span>
+      <h2>Let's plan your Udaipur wedding together.</h2>
+      <p>Share your date, guest count and vision — a City-of-Lakes specialist will curate venues and vendors for you within 24 hours.</p>
+      <div class="flex aic gap-2" style="justify-content:center;flex-wrap:wrap">
+        <a href="dashboard.html" class="btn btn--primary" data-transition>Start planning free</a>
+        <a href="venues.html" class="btn btn--secondary" data-transition>Browse venues</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <div class="logo"><svg class="logo-mark" viewBox="0 0 34 34" fill="none"><rect width="34" height="34" rx="9" fill="#C8643B"/><path d="M8 24V15l9-6 9 6v9" stroke="#FFF8ED" stroke-width="2" stroke-linejoin="round"/></svg><span>WedIn <b style="color:var(--clay-orange)">Udaipur</b></span></div>
+        <p style="max-width:34ch;color:#c9ad93;font-size:.9rem">The luxury digital planning platform for palace, lake-view and heritage weddings in the City of Lakes.</p>
+      </div>
+      <div><h5>Discover</h5><ul><li><a href="venues.html">Venues</a></li><li><a href="#vendors">Vendors</a></li><li><a href="#weddings">Real Weddings</a></li><li><a href="#guides">Guides</a></li></ul></div>
+      <div><h5>Platform</h5><ul><li><a href="dashboard.html">User dashboard</a></li><li><a href="#">Vendor dashboard</a></li><li><a href="#">List your venue</a></li><li><a href="#">Consultation</a></li></ul></div>
+      <div><h5>Udaipur</h5><ul><li><a href="#">Travel &amp; stay</a></li><li><a href="#">Airport guidance</a></li><li><a href="#">Guest hotels</a></li><li><a href="#">Local experiences</a></li></ul></div>
+    </div>
+    <div class="footer-bottom"><span>© 2026 WedIn Udaipur — Made in the City of Lakes.</span><span>Privacy · Terms · Contact</span></div>
+  </div>
+</footer>
+
+<!-- Compare drawer (shared) -->
+<div class="compare-drawer" id="compareDrawer">
+  <div class="compare-inner">
+    <span class="cd-label">Compare (<span id="compareCount">0</span>)</span>
+    <div class="compare-slots" id="compareSlots"></div>
+    <button class="btn btn--ghost btn--sm" id="compareClear">Clear</button>
+    <a href="venues.html" class="btn btn--primary btn--sm" data-transition>Compare now</a>
+  </div>
+</div>
+
+<script>
+/* ---- Data-driven featured venues & vendor categories ---- */
+const VENUES = [
+  { id:'v1', name:'Taj Lake Palace', loc:'Pichola · Island', cap:'350', price:'₹42L', rating:'4.9', type:'Lake Palace', ph:'ph-1' },
+  { id:'v2', name:'Fateh Garh Resort', loc:'Aravalli Ridge', cap:'500', price:'₹28L', rating:'4.8', type:'Hilltop Resort', ph:'ph-2' },
+  { id:'v3', name:'Jagmandir Island', loc:'Lake Pichola', cap:'700', price:'₹55L', rating:'4.9', type:'Island Palace', ph:'ph-4' },
+];
+const VENDORS = [
+  ['Wedding Planners','◆'],['Decor & Styling','❁'],['Photography','◉'],['Videography','▷'],
+  ['Catering','♨'],['Makeup & Hair','✧'],['Mehendi Artists','۞'],['Bridal Wear','❖'],
+  ['Entertainment','♪'],['Transportation','⛃'],['Travel & Hospitality','⌂'],['Florals','✽']
+];
+const PIN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s7-6.5 7-12a7 7 0 10-14 0c0 5.5 7 12 7 12z"/><circle cx="12" cy="10" r="2.6"/></svg>';
+const HEART = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7.5-4.9-10-9.2C.2 8.4 1.8 4.8 5.3 4.8c2 0 3.4 1.1 4.7 2.8 1.3-1.7 2.7-2.8 4.7-2.8 3.5 0 5.1 3.6 3.3 7C19.5 16.1 12 21 12 21z"/></svg>';
+const STAR = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.8 5.9 20.4l1.4-6.8L2.2 9l6.9-.7z"/></svg>';
+const TICK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg>';
+
+document.getElementById('featuredGrid').innerHTML = VENUES.map(v => `
+  <div class="card-tilt reveal">
+    <article class="venue-card" data-venue data-tilt>
+      <div class="venue-card__media">
+        <div class="ph ${v.ph} ph--palace"></div>
+        <span class="badge badge--type">${v.type}</span>
+        <div class="venue-card__top">
+          <button class="icon-btn heart-btn" data-name="${v.name}" aria-label="Shortlist">${HEART}</button>
+        </div>
+      </div>
+      <div class="venue-card__body">
+        <div class="flex aic jcb"><h3>${v.name}</h3><span class="rating">${STAR}${v.rating}</span></div>
+        <span class="venue-loc">${PIN}${v.loc}</span>
+        <div class="venue-meta">
+          <div class="venue-price"><b>${v.price}</b><span>starting price</span></div>
+          <div class="venue-cap"><b>${v.cap}</b>guest capacity</div>
+        </div>
+        <div class="venue-card__foot">
+          <a href="venue-detail.html" class="btn btn--secondary btn--sm" data-transition style="flex:1">View Details</a>
+          <label class="compare-check"><input type="checkbox" value="${v.id}" data-name="${v.name}" data-ph="${v.ph}"><span class="box">${TICK}</span>Compare</label>
+        </div>
+      </div>
+    </article>
+  </div>`).join('');
+
+document.getElementById('vendorGrid').innerHTML = VENDORS.map(([name, ic]) => `
+  <a class="vendor-card reveal" href="#"><div class="vendor-ic">${ic}</div><div><h4>${name}</h4><span>Explore →</span></div></a>`).join('');
+</script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>

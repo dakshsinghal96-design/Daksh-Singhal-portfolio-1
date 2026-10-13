@@ -1,0 +1,65 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+html,body,iframe{margin:0;width:100%;height:100%;border:0;background:#02060d;overflow:hidden}
+pre{box-sizing:border-box;margin:0;padding:24px;white-space:pre-wrap;color:#dff9ff;background:#02060d;font:14px/1.5 Consolas,monospace}
+</style>
+</head>
+<body>
+<iframe id="app" src="../outputs/anatomix-v2.html" allow="camera; microphone"></iframe>
+<script>
+const frame=document.getElementById('app');
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+async function run(){
+  const errors=[];
+  const win=frame.contentWindow;
+  win.addEventListener('error',e=>errors.push(e.message||'error'));
+  win.addEventListener('unhandledrejection',e=>errors.push(String(e.reason&&e.reason.message||e.reason||'rejection')));
+  const doc=win.document;
+  await sleep(1300);
+  doc.getElementById('initBtn')?.click();
+  await sleep(3500);
+  doc.querySelector('[data-px-system="respiratory"]')?.click();
+  await sleep(250);
+  doc.querySelector('[data-px-scan="xray"]')?.click();
+  await sleep(250);
+  doc.querySelectorAll('.px-layer')[2]?.click();
+  await sleep(250);
+  const ask=doc.querySelector('#precisionUI .px-ask input');
+  if(ask){
+    ask.value='explain the liver';
+    ask.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true}));
+  }
+  await sleep(800);
+  const img=doc.querySelector('#precisionUI .px-anatomy');
+  if(img){
+    const r=img.getBoundingClientRect();
+    img.dispatchEvent(new MouseEvent('click',{bubbles:true,clientX:r.left+r.width*.5,clientY:r.top+r.height*.35}));
+  }
+  await sleep(500);
+  const ui=doc.getElementById('precisionUI');
+  const chat=doc.querySelector('.px-chat');
+  const result={
+    precisionVisible:getComputedStyle(ui).display!=='none',
+    bodyPrecision:doc.body.classList.contains('precision'),
+    activeSystem:doc.querySelector('[data-px-system].on')?.dataset.pxSystem||null,
+    activeScan:doc.querySelector('[data-px-scan].on')?.dataset.pxScan||null,
+    scanStatus:doc.querySelector('.px-scan .complete')?.textContent.trim()||null,
+    detailTitle:doc.querySelector('.px-heart h3')?.textContent.trim()||null,
+    skeletonLayerOff:doc.querySelectorAll('.px-layer')[2]?.querySelector('.px-toggle')?.classList.contains('off')||false,
+    viewMode:doc.querySelector('.px-view div span:first-child')?.textContent.trim()||null,
+    chatContainsLiver:/liver/i.test(chat?.textContent||''),
+    chatContainsScan:/x-ray|scan/i.test(chat?.textContent||''),
+    rootClasses:ui.className,
+    errors
+  };
+  document.body.innerHTML='<pre id="result">'+JSON.stringify(result,null,2)+'</pre>';
+}
+frame.addEventListener('load',()=>run().catch(err=>{
+  document.body.innerHTML='<pre id="result">'+JSON.stringify({harnessError:String(err&&err.stack||err)},null,2)+'</pre>';
+}));
+</script>
+</body>
+</html>

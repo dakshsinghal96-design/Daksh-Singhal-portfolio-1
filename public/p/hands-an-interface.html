@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>HANDS // an interface</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=Major+Mono+Display&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0d0a;
+    --bg-2: #0f1a14;
+    --fg: #d8ffd8;
+    --accent: #39ff7c;
+    --accent-2: #ff2d95;
+    --muted: #4a6b54;
+    --grid: rgba(57, 255, 124, 0.06);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: 'JetBrains Mono', monospace;
+    cursor: none;
+    user-select: none;
+  }
+  body {
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(to bottom,
+      transparent 0, transparent 2px,
+      rgba(0,0,0,0.18) 3px, transparent 4px);
+    pointer-events: none;
+    z-index: 1000;
+  }
+
+  /* INTRO */
+  #intro {
+    position: fixed; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    background: var(--bg);
+    z-index: 2000;
+    text-align: center;
+    padding: 24px;
+  }
+  #intro h1 {
+    font-family: 'Major Mono Display', monospace;
+    font-size: clamp(56px, 14vw, 168px);
+    line-height: 0.9;
+    letter-spacing: -0.04em;
+    color: var(--accent);
+    text-shadow: 0 0 30px rgba(57, 255, 124, 0.45);
+    margin-bottom: 16px;
+  }
+  #intro h1 span { color: var(--accent-2); }
+  #intro p {
+    font-family: 'VT323', monospace;
+    font-size: 22px;
+    color: var(--muted);
+    max-width: 580px;
+    margin-bottom: 32px;
+    line-height: 1.4;
+  }
+  #intro p.tiny {
+    margin-top: 28px; font-size: 16px;
+  }
+  #startBtn {
+    background: transparent;
+    border: 2px solid var(--accent);
+    color: var(--accent);
+    padding: 18px 52px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  #startBtn:hover {
+    background: var(--accent);
+    color: var(--bg);
+    box-shadow: 0 0 40px rgba(57,255,124,.55);
+  }
+
+  /* HUD */
+  .hud {
+    position: fixed;
+    font-family: 'VT323', monospace;
+    font-size: 20px;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+    z-index: 100;
+    pointer-events: none;
+    line-height: 1.2;
+  }
+  .hud.tl { top: 18px; left: 22px; }
+
+  /* WEBCAM PIP */
+  #pip {
+    position: fixed;
+    top: 18px; right: 22px;
+    width: 220px; height: 165px;
+    border: 1px solid var(--accent);
+    background: #000;
+    overflow: hidden;
+    z-index: 50;
+    box-shadow: 0 0 24px rgba(57,255,124,.18);
+  }
+  #pip .label {
+    position: absolute; top: 6px; left: 8px;
+    font-family: 'VT323', monospace;
+    font-size: 14px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    z-index: 2;
+    text-shadow: 0 0 6px rgba(0,0,0,0.8);
+  }
+  #video, #pipCanvas {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%;
+    transform: scaleX(-1);
+  }
+  #video { object-fit: cover; }
+
+  /* CURSOR */
+  #cursor {
+    position: fixed;
+    top: 0; left: 0;
+    width: 64px; height: 64px;
+    pointer-events: none;
+    z-index: 500;
+    transition: opacity .2s;
+    opacity: 0;
+    will-change: transform;
+  }
+  #cursor.active { opacity: 1; }
+  #cursor svg { width: 100%; height: 100%; overflow: visible; }
+  #cursor.pinch .ring { stroke: var(--accent-2); stroke-width: 2.5; }
+  #cursor.pinch .dot  { fill: var(--accent-2); }
+  #cursor.pinch .ring-outer { transform: scale(0.7); }
+
+  /* MAIN STAGE */
+  #stage {
+    position: fixed;
+    inset: 60px 22px 96px 22px;
+    display: grid;
+    grid-template-columns: 0.9fr 1.5fr 1fr;
+    gap: 24px;
+  }
+  .panel {
+    border: 1px solid var(--muted);
+    background: rgba(15, 26, 20, 0.55);
+    backdrop-filter: blur(8px);
+    padding: 24px 20px 18px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .panel::before {
+    content: attr(data-label);
+    position: absolute;
+    top: -10px; left: 16px;
+    background: var(--bg);
+    padding: 0 10px;
+    font-family: 'VT323', monospace;
+    font-size: 18px;
+    color: var(--accent);
+    letter-spacing: 0.2em;
+  }
+  .hint {
+    font-family: 'VT323', monospace;
+    font-size: 14px;
+    color: var(--muted);
+    margin-top: 10px;
+    letter-spacing: 0.18em;
+  }
+
+  /* PALETTE */
+  .swatch-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    flex: 1;
+  }
+  .swatch {
+    border: 2px solid transparent;
+    cursor: none;
+    transition: transform .15s, border-color .15s, box-shadow .15s;
+    position: relative;
+    min-height: 60px;
+  }
+  .swatch.active { border-color: var(--fg); box-shadow: 0 0 16px currentColor; }
+  .swatch.hover { transform: scale(1.08); }
+
+  /* CANVAS */
+  #drawCanvas {
+    flex: 1;
+    width: 100%;
+    background: var(--bg-2);
+    border: 1px solid var(--muted);
+    cursor: none;
+    min-height: 0;
+  }
+  .panel button.btn {
+    background: transparent;
+    border: 1px solid var(--muted);
+    color: var(--muted);
+    padding: 10px 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.24em;
+    margin-top: 12px;
+    cursor: none;
+    transition: all .15s;
+  }
+  .panel button.btn.hover {
+    color: var(--accent-2);
+    border-color: var(--accent-2);
+  }
+
+  /* SMASH */
+  .smash-zone {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 10px;
+  }
+  .smash {
+    border: 1px solid var(--muted);
+    background: transparent;
+    color: var(--fg);
+    font-family: 'Major Mono Display', monospace;
+    font-size: clamp(28px, 4vw, 44px);
+    cursor: none;
+    transition: transform .15s, background .15s, color .15s, border-color .15s;
+    position: relative;
+    overflow: hidden;
+  }
+  .smash.hover {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+    transform: scale(0.97);
+  }
+  .smash.smashed {
+    animation: smashed .4s ease-out;
+  }
+  @keyframes smashed {
+    0%   { transform: scale(1.18); background: var(--accent-2); color: var(--bg); border-color: var(--accent-2); box-shadow: 0 0 30px var(--accent-2); }
+    100% { transform: scale(1); }
+  }
+
+  /* COUNTER + STATUS */
+  #counter {
+    position: fixed;
+    bottom: 18px; right: 22px;
+    font-family: 'Major Mono Display', monospace;
+    font-size: 56px;
+    color: var(--accent);
+    letter-spacing: -0.04em;
+    z-index: 100;
+    text-shadow: 0 0 18px rgba(57,255,124,.4);
+    line-height: 1;
+    text-align: right;
+  }
+  #counter span {
+    font-family: 'VT323', monospace;
+    font-size: 16px;
+    color: var(--muted);
+    display: block;
+    letter-spacing: 0.3em;
+    margin-bottom: 4px;
+  }
+  #status {
+    position: fixed;
+    bottom: 22px; left: 22px;
+    font-family: 'VT323', monospace;
+    font-size: 20px;
+    color: var(--muted);
+    z-index: 100;
+  }
+  #status .led {
+    display: inline-block;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    margin-right: 8px;
+    box-shadow: 0 0 8px var(--accent);
+    animation: blink 1.6s infinite;
+    vertical-align: 1px;
+  }
+  @keyframes blink { 50% { opacity: 0.3; } }
+
+  @media (max-width: 900px) {
+    #stage { grid-template-columns: 1fr; inset: 200px 16px 96px 16px; overflow-y: auto; }
+    #pip { width: 160px; height: 120px; }
+    #counter { font-size: 40px; }
+  }
+</style>
+</head>
+<body>
+  <div id="intro">
+    <h1>HANDS<span>.</span></h1>
+    <p>// an interface controlled by your hands. point your index finger to move the cursor. pinch your thumb + index to click. that's it.</p>
+    <button id="startBtn">Allow Camera &amp; Begin</button>
+    <p class="tiny">requires webcam · everything runs locally in your browser</p>
+  </div>
+
+  <div class="hud tl">// HANDS_v1<br>STATUS: <span id="trackingStatus">searching</span></div>
+
+  <div id="pip">
+    <div class="label">CAM_01</div>
+    <video id="video" autoplay playsinline muted></video>
+    <canvas id="pipCanvas"></canvas>
+  </div>
+
+  <div id="cursor">
+    <svg viewBox="-32 -32 64 64">
+      <circle class="ring ring-outer" cx="0" cy="0" r="26" fill="none" stroke="#39ff7c" stroke-width="1" opacity="0.5" style="transition: transform .15s; transform-origin: center"/>
+      <circle class="ring" cx="0" cy="0" r="18" fill="none" stroke="#39ff7c" stroke-width="1.5"/>
+      <circle class="dot" cx="0" cy="0" r="4" fill="#39ff7c"/>
+      <line x1="-30" y1="0" x2="-22" y2="0" stroke="#39ff7c" stroke-width="1.5"/>
+      <line x1="22"  y1="0" x2="30"  y2="0" stroke="#39ff7c" stroke-width="1.5"/>
+      <line x1="0" y1="-30" x2="0" y2="-22" stroke="#39ff7c" stroke-width="1.5"/>
+      <line x1="0" y1="22"  x2="0" y2="30"  stroke="#39ff7c" stroke-width="1.5"/>
+    </svg>
+  </div>
+
+  <div id="stage">
+    <div class="panel" data-label="// PALETTE">
+      <div class="swatch-grid" id="swatches"></div>
+      <div class="hint">PINCH TO SELECT</div>
+    </div>
+
+    <div class="panel" data-label="// CANVAS">
+      <canvas id="drawCanvas"></canvas>
+      <button class="btn" id="clearBtn">CLEAR ALL</button>
+      <div class="hint">PINCH AND DRAG TO DRAW</div>
+    </div>
+
+    <div class="panel" data-label="// SMASH">
+      <div class="smash-zone">
+        <button class="smash" data-tone="A">▲</button>
+        <button class="smash" data-tone="B">●</button>
+        <button class="smash" data-tone="C">■</button>
+        <button class="smash" data-tone="D">◆</button>
+      </div>
+      <div class="hint">PINCH TO ACTIVATE</div>
+    </div>
+  </div>
+
+  <div id="counter">
+    <span>// PINCHES</span>
+    <div id="counterValue">000</div>
+  </div>
+
+  <div id="status"><span class="led"></span>system online</div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+
+  <script>
+    const COLORS = ['#39ff7c','#ff2d95','#ffd84d','#4dc8ff','#ff7c39','#c44dff','#ffffff','#ff4d4d','#7cff39'];
+    let activeColor = COLORS[0];
+    let pinchCount = 0;
+    let isPinching = false;
+    let drawLastPos = null;
+
+    // build palette
+    const swatchContainer = document.getElementById('swatches');
+    COLORS.forEach((c, i) => {
+      const s = document.createElement('div');
+      s.className = 'swatch' + (i === 0 ? ' active' : '');
+      s.style.background = c;
+      s.style.color = c;
+      s.dataset.color = c;
+      swatchContainer.appendChild(s);
+    });
+
+    // canvases
+    const drawCanvas = document.getElementById('drawCanvas');
+    const dctx = drawCanvas.getContext('2d');
+    const pipCanvas = document.getElementById('pipCanvas');
+    const pctx = pipCanvas.getContext('2d');
+
+    function resizeAll() {
+      const r = drawCanvas.getBoundingClientRect();
+      const tmp = document.createElement('canvas');
+      tmp.width = drawCanvas.width; tmp.height = drawCanvas.height;
+      if (drawCanvas.width) tmp.getContext('2d').drawImage(drawCanvas, 0, 0);
+      drawCanvas.width = r.width; drawCanvas.height = r.height;
+      if (tmp.width) dctx.drawImage(tmp, 0, 0, drawCanvas.width, drawCanvas.height);
+
+      const p = pipCanvas.parentElement.getBoundingClientRect();
+      pipCanvas.width = p.width; pipCanvas.height = p.height;
+    }
+
+    // cursor
+    const cursor = document.getElementById('cursor');
+    let targetX = window.innerWidth / 2;
+    let targetY = window.innerHeight / 2;
+    let smoothX = targetX, smoothY = targetY;
+
+    function elementAtCursor() {
+      return document.elementFromPoint(smoothX, smoothY);
+    }
+    function updateHover() {
+      const el = elementAtCursor();
+      document.querySelectorAll('.hover').forEach(e => e.classList.remove('hover'));
+      if (!el) return null;
+      const target = el.closest('.swatch, .smash, .btn, #drawCanvas');
+      if (target) target.classList.add('hover');
+      return target;
+    }
+
+    function onPinchStart() {
+      const target = updateHover();
+      pinchCount++;
+      document.getElementById('counterValue').textContent = String(pinchCount).padStart(3, '0');
+      if (!target) return;
+
+      if (target.classList.contains('swatch')) {
+        document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+        target.classList.add('active');
+        activeColor = target.dataset.color;
+        playTone('A', 0.06, 'sine');
+      } else if (target.classList.contains('smash')) {
+        target.classList.remove('smashed');
+        void target.offsetWidth;
+        target.classList.add('smashed');
+        playTone(target.dataset.tone);
+      } else if (target.id === 'clearBtn') {
+        dctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+        playTone('D', 0.08, 'triangle');
+      } else if (target.id === 'drawCanvas') {
+        const r = drawCanvas.getBoundingClientRect();
+        drawLastPos = { x: smoothX - r.left, y: smoothY - r.top };
+      }
+    }
+
+    function onPinchMove() {
+      if (!drawLastPos) return;
+      const r = drawCanvas.getBoundingClientRect();
+      const x = smoothX - r.left;
+      const y = smoothY - r.top;
+      if (x < 0 || y < 0 || x > r.width || y > r.height) { drawLastPos = null; return; }
+      dctx.strokeStyle = activeColor;
+      dctx.lineWidth = 4;
+      dctx.lineCap = 'round';
+      dctx.lineJoin = 'round';
+      dctx.shadowColor = activeColor;
+      dctx.shadowBlur = 8;
+      dctx.beginPath();
+      dctx.moveTo(drawLastPos.x, drawLastPos.y);
+      dctx.lineTo(x, y);
+      dctx.stroke();
+      dctx.shadowBlur = 0;
+      drawLastPos = { x, y };
+    }
+    function onPinchEnd() { drawLastPos = null; }
+
+    // audio
+    let audioCtx = null;
+    const TONES = { A: 261.63, B: 329.63, C: 392.00, D: 523.25 };
+    function playTone(key, duration = 0.4, type = 'square') {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.frequency.value = TONES[key] || 440;
+      osc.type = type;
+      gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + duration);
+    }
+
+    // render loop
+    function loop() {
+      smoothX += (targetX - smoothX) * 0.4;
+      smoothY += (targetY - smoothY) * 0.4;
+      cursor.style.transform = `translate(${smoothX - 32}px, ${smoothY - 32}px)`;
+      if (isPinching) onPinchMove();
+      requestAnimationFrame(loop);
+    }
+
+    // MediaPipe
+    function start() {
+      document.getElementById('intro').style.display = 'none';
+      requestAnimationFrame(() => { resizeAll(); });
+
+      const video = document.getElementById('video');
+      const trackingStatus = document.getElementById('trackingStatus');
+
+      const hands = new Hands({
+        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+      });
+      hands.setOptions({
+        maxNumHands: 1,
+        modelComplexity: 1,
+        minDetectionConfidence: 0.6,
+        minTrackingConfidence: 0.5
+      });
+      hands.onResults(onResults);
+
+      const camera = new Camera(video, {
+        onFrame: async () => { await hands.send({ image: video }); },
+        width: 640, height: 480
+      });
+      camera.start();
+      loop();
+    }
+
+    function onResults(results) {
+      pctx.save();
+      pctx.clearRect(0, 0, pipCanvas.width, pipCanvas.height);
+
+      if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+        document.getElementById('trackingStatus').textContent = 'tracking';
+
+        const landmarks = results.multiHandLandmarks[0];
+        if (window.drawConnectors && window.HAND_CONNECTIONS) {
+          drawConnectors(pctx, landmarks, HAND_CONNECTIONS, { color: '#39ff7c', lineWidth: 2 });
+          drawLandmarks(pctx, landmarks, { color: '#ff2d95', lineWidth: 1, radius: 2.5 });
+        }
+
+        const indexTip = landmarks[8];
+        const thumbTip = landmarks[4];
+
+        // mirror x for natural movement
+        targetX = (1 - indexTip.x) * window.innerWidth;
+        targetY = indexTip.y * window.innerHeight;
+        cursor.classList.add('active');
+
+        const dx = indexTip.x - thumbTip.x;
+        const dy = indexTip.y - thumbTip.y;
+        const dz = (indexTip.z || 0) - (thumbTip.z || 0);
+        const dist = Math.hypot(dx, dy, dz);
+
+        const pinchOn = 0.055;
+        const pinchOff = 0.075;
+        if (dist < pinchOn && !isPinching) {
+          isPinching = true;
+          cursor.classList.add('pinch');
+          onPinchStart();
+        } else if (dist > pinchOff && isPinching) {
+          isPinching = false;
+          cursor.classList.remove('pinch');
+          onPinchEnd();
+        }
+        if (!isPinching) updateHover();
+      } else {
+        document.getElementById('trackingStatus').textContent = 'no hand';
+        cursor.classList.remove('active');
+        if (isPinching) { isPinching = false; cursor.classList.remove('pinch'); onPinchEnd(); }
+      }
+      pctx.restore();
+    }
+
+    document.getElementById('startBtn').addEventListener('click', start);
+    window.addEventListener('resize', resizeAll);
+  </script>
+</body>
+</html>

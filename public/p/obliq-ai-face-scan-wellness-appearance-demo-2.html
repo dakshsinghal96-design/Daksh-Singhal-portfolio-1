@@ -1,0 +1,2736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Obliq AI Face Scan — Wellness & Appearance Demo</title>
+<meta name="description" content="Obliq AI Face Scan — AI-powered camera wellness and appearance scan demo. No photos or biometric data stored." />
+<meta name="theme-color" content="#0a0f1f" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta property="og:title" content="Obliq AI Face Scan" />
+<meta property="og:description" content="AI-powered camera wellness and appearance scan demo. No data stored." />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230a0f1f'/><rect x='12' y='12' width='76' height='76' rx='16' fill='none' stroke='%232de2c3' stroke-width='6'/><circle cx='50' cy='50' r='14' fill='%232de2c3'/><circle cx='50' cy='50' r='6' fill='%230a0f1f'/></svg>" />
+<style>
+  /* ============================================================
+     OBLIQ AI FACE SCAN — Single-file demo
+     All HTML/CSS/JS contained in this document.
+     ============================================================ */
+
+  /* ---------- Reset & base ---------- */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-1: #0a0f1f;
+    --bg-2: #121a36;
+    --bg-3: #1b2150;
+    --accent: #2de2c3;       /* mint/teal */
+    --accent-2: #6c8cff;     /* periwinkle */
+    --accent-3: #b06cff;     /* violet */
+    --text: #e8eefc;
+    --muted: #9aa6c4;
+    --card: rgba(255,255,255,0.06);
+    --card-strong: rgba(255,255,255,0.09);
+    --card-border: rgba(255,255,255,0.12);
+    --good: #2de2c3;
+    --warn: #ffcb6b;
+    --bad:  #ff7b8a;
+    --neutral: #9aa6c4;
+    --shadow: 0 20px 60px rgba(0,0,0,0.45);
+  }
+
+  html, body { height: 100%; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                 Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+    color: var(--text);
+    background:
+      radial-gradient(1200px 600px at 10% -10%, rgba(108,140,255,0.18), transparent 60%),
+      radial-gradient(900px 500px at 110% 10%, rgba(176,108,255,0.18), transparent 55%),
+      radial-gradient(800px 600px at 50% 120%, rgba(45,226,195,0.14), transparent 60%),
+      linear-gradient(180deg, var(--bg-1), var(--bg-2) 60%, var(--bg-3));
+    min-height: 100%;
+    overflow-x: hidden;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Floating gradient orbs */
+  .bg-orbs { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+  .bg-orbs span {
+    position: absolute; width: 280px; height: 280px; border-radius: 50%;
+    filter: blur(60px); opacity: 0.35;
+    animation: float 18s ease-in-out infinite;
+  }
+  .bg-orbs span:nth-child(1){ background:#2de2c3; top:-80px; left:-80px; }
+  .bg-orbs span:nth-child(2){ background:#6c8cff; bottom:-60px; right:-60px; animation-delay:-6s;}
+  .bg-orbs span:nth-child(3){ background:#b06cff; top:40%; left:60%; animation-delay:-12s;}
+  @keyframes float {
+    0%,100% { transform: translate(0,0) scale(1); }
+    50%     { transform: translate(30px,-30px) scale(1.08); }
+  }
+
+  /* ---------- Layout container ---------- */
+  .app { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 28px 20px 48px; }
+
+  /* ---------- Header / brand ---------- */
+  .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
+  .brand-mark {
+    width: 38px; height: 38px; border-radius: 12px;
+    background: conic-gradient(from 210deg, var(--accent), var(--accent-2), var(--accent-3), var(--accent));
+    position: relative; box-shadow: 0 8px 24px rgba(45,226,195,0.25);
+  }
+  .brand-mark::after { content: ""; position: absolute; inset: 6px; border-radius: 8px; background: var(--bg-1); }
+  .brand-mark::before {
+    content: ""; position: absolute; inset: 12px; border-radius: 4px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  }
+  .brand-name { font-weight: 700; letter-spacing: 0.3px; font-size: 18px; }
+  .brand-name span { color: var(--accent); }
+
+  /* ---------- Screens ---------- */
+  .screen { display: none; animation: fadeIn .5s ease both; }
+  .screen.active { display: block; }
+  @keyframes fadeIn { from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:none;} }
+
+  /* ---------- Landing ---------- */
+  .hero { text-align: center; padding: 50px 16px 24px; }
+  .hero .pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 12px; font-size: 12px; letter-spacing: 0.4px;
+    background: rgba(45,226,195,0.12); color: var(--accent);
+    border: 1px solid rgba(45,226,195,0.3); border-radius: 999px;
+    text-transform: uppercase;
+  }
+  .hero .pill .dot { width:6px; height:6px; border-radius:50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+  .hero h1 {
+    font-size: clamp(32px, 6vw, 60px); line-height: 1.05; margin: 18px 0 10px; letter-spacing: -0.5px;
+    background: linear-gradient(135deg, #fff 0%, #cfe1ff 50%, #2de2c3 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .hero p.sub { color: var(--muted); font-size: clamp(15px, 2.2vw, 18px); max-width: 640px; margin: 0 auto 8px; }
+  .hero p.desc { color: #c6d0e8; font-size: 15px; max-width: 600px; margin: 0 auto 28px; }
+
+  /* Consent box */
+  .consent {
+    max-width: 560px; margin: 0 auto 18px; padding: 16px;
+    background: var(--card); border: 1px solid var(--card-border);
+    border-radius: 14px; backdrop-filter: blur(10px); text-align: left;
+    display: flex; align-items: flex-start; gap: 12px; cursor: pointer;
+    transition: border-color .2s, background .2s;
+  }
+  .consent:hover { border-color: rgba(45,226,195,0.35); background: rgba(45,226,195,0.04); }
+  .consent input[type=checkbox] {
+    appearance: none; width: 20px; height: 20px; flex-shrink:0; margin-top:2px;
+    border-radius: 6px; border: 2px solid var(--muted); cursor: pointer;
+    transition: all .15s; position: relative; background: transparent;
+  }
+  .consent input[type=checkbox]:checked {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    border-color: transparent;
+  }
+  .consent input[type=checkbox]:checked::after {
+    content:""; position:absolute; left:5px; top:1px; width:5px; height:11px;
+    border:solid #06121a; border-width: 0 2.5px 2.5px 0; transform: rotate(45deg);
+  }
+  .consent .text { font-size: 14px; color: #d8e3ff; }
+  .privacy-note {
+    max-width: 560px; margin: 0 auto 24px; padding: 10px 14px;
+    color: var(--muted); font-size: 12px; text-align: center;
+    border-radius: 12px; background: rgba(255,255,255,0.03);
+    border: 1px dashed rgba(255,255,255,0.08);
+  }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+    padding: 14px 26px; border-radius: 14px;
+    font-weight: 600; font-size: 15px; letter-spacing: 0.2px;
+    border: 1px solid transparent; cursor: pointer; user-select: none;
+    transition: transform .15s ease, box-shadow .2s ease, background .2s ease, opacity .2s;
+    font-family: inherit;
+  }
+  .btn:active { transform: translateY(1px); }
+  .btn-primary { color: #06121a; background: linear-gradient(135deg, var(--accent), var(--accent-2)); box-shadow: 0 12px 30px rgba(45,226,195,0.35); }
+  .btn-primary:hover:not([disabled]) { box-shadow: 0 16px 40px rgba(45,226,195,0.45); }
+  .btn-ghost { color: var(--text); background: rgba(255,255,255,0.06); border-color: var(--card-border); }
+  .btn-ghost:hover { background: rgba(255,255,255,0.10); }
+  .btn-danger { color: #fff; background: linear-gradient(135deg, #ff7b8a, #b06cff); box-shadow: 0 12px 30px rgba(176,108,255,0.30); }
+  .btn[disabled] { opacity: 0.45; cursor: not-allowed; }
+  .btn-sm { padding: 10px 18px; font-size: 13px; border-radius: 10px; }
+
+  /* Feature row */
+  .features {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px; margin: 36px auto 0; max-width: 900px;
+  }
+  .feature {
+    background: var(--card); border: 1px solid var(--card-border);
+    border-radius: 16px; padding: 18px; backdrop-filter: blur(10px); text-align: left;
+  }
+  .feature h4 { font-size: 14px; margin-bottom: 6px; color: #fff; }
+  .feature p  { font-size: 13px; color: var(--muted); }
+  .feature .ico {
+    width:34px; height:34px; border-radius:10px; margin-bottom: 10px;
+    background: linear-gradient(135deg, rgba(45,226,195,0.18), rgba(108,140,255,0.18));
+    display:flex; align-items:center; justify-content:center; color: var(--accent);
+    border: 1px solid var(--card-border);
+  }
+
+  /* ---------- Scan screen ---------- */
+  .scan-wrap { display: grid; grid-template-columns: 1.3fr 1fr; gap: 22px; align-items: stretch; }
+  @media (max-width: 880px) { .scan-wrap { grid-template-columns: 1fr; } }
+
+  .video-card {
+    position: relative; background: #000;
+    border-radius: 22px; overflow: hidden; aspect-ratio: 4/3;
+    border: 1px solid var(--card-border); box-shadow: var(--shadow);
+  }
+  #video {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+    transform: scaleX(-1); background: #000;
+  }
+
+  .video-overlay {
+    position: absolute; inset: 0; display: flex; align-items: center;
+    justify-content: center; flex-direction: column; gap: 10px;
+    color: var(--muted); padding: 20px; text-align: center;
+    background: linear-gradient(180deg, #0b1226, #0a0f1f);
+  }
+  .video-overlay.hidden { display: none; }
+  .video-overlay h3 { color:#fff; font-size:16px; }
+  .video-overlay p  { font-size: 13px; max-width: 360px; }
+
+  /* Scan frame & corners */
+  .scan-frame {
+    position: absolute; left: 50%; top: 50%;
+    width: 62%; height: 78%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+  .scan-frame .corner {
+    position: absolute; width: 36px; height: 36px;
+    border: 3px solid var(--accent);
+    box-shadow: 0 0 14px rgba(45,226,195,0.6);
+  }
+  .scan-frame .tl { top:0; left:0; border-right:none; border-bottom:none; border-top-left-radius: 10px;}
+  .scan-frame .tr { top:0; right:0; border-left:none;  border-bottom:none; border-top-right-radius: 10px;}
+  .scan-frame .bl { bottom:0; left:0; border-right:none; border-top:none; border-bottom-left-radius: 10px;}
+  .scan-frame .br { bottom:0; right:0; border-left:none;  border-top:none; border-bottom-right-radius: 10px;}
+  .scan-frame .ring {
+    position:absolute; inset:0;
+    border: 1px dashed rgba(45,226,195,0.35);
+    border-radius: 50% / 45%;
+    animation: pulseRing 2.4s ease-in-out infinite;
+  }
+  @keyframes pulseRing {
+    0%,100% { transform: scale(1);   opacity: 0.6; }
+    50%     { transform: scale(1.03); opacity: 1; }
+  }
+
+  .scan-line {
+    position: absolute; left: 6%; right: 6%; top: 12%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    box-shadow: 0 0 18px var(--accent);
+    opacity: 0; pointer-events: none;
+  }
+  .scanning .scan-line { opacity: 1; animation: scanMove 2.6s ease-in-out infinite; }
+  @keyframes scanMove {
+    0%   { top: 12%; }
+    50%  { top: 84%; }
+    100% { top: 12%; }
+  }
+
+  /* HUD chips */
+  .hud {
+    position: absolute; top: 12px; left: 12px; right: 12px;
+    display: flex; justify-content: space-between; gap: 8px; pointer-events: none;
+  }
+  .chip {
+    font-size: 11px; letter-spacing: 0.3px; padding: 6px 10px;
+    background: rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 999px; color: #d8e3ff; backdrop-filter: blur(8px);
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .chip .dot { width:6px; height:6px; border-radius:50%; background: var(--accent); box-shadow:0 0 10px var(--accent);}
+  .chip.rec .dot { background:#ff7b8a; box-shadow:0 0 10px #ff7b8a; animation: blink 1s infinite;}
+  @keyframes blink { 50%{opacity: 0.25;} }
+
+  /* Side panel */
+  .panel {
+    background: var(--card); border:1px solid var(--card-border);
+    border-radius: 22px; padding: 22px; backdrop-filter: blur(10px);
+    display: flex; flex-direction: column; gap: 18px; box-shadow: var(--shadow);
+  }
+  .panel h2 { font-size: 18px; }
+  .panel .small { color: var(--muted); font-size: 13px; }
+
+  /* Circular timer */
+  .timer-wrap { display:flex; align-items:center; gap: 16px; }
+  .timer { --size: 120px; width: var(--size); height: var(--size); position: relative; flex-shrink:0; }
+  .timer svg { width:100%; height:100%; transform: rotate(-90deg); }
+  .timer .track { stroke: rgba(255,255,255,0.08); }
+  .timer .bar   { stroke: url(#grad); stroke-linecap: round; transition: stroke-dashoffset .9s linear; }
+  .timer .label {
+    position:absolute; inset:0; display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+  }
+  .timer .label b { font-size: 26px; }
+  .timer .label small { color: var(--muted); font-size: 11px; letter-spacing: 1px;}
+
+  /* Linear progress (scan) */
+  .progress-wrap { display:flex; flex-direction:column; gap: 8px; }
+  .progress-meta { display:flex; justify-content:space-between; font-size: 12px; color: var(--muted); }
+  .progress-track {
+    width: 100%; height: 8px; background: rgba(255,255,255,0.06);
+    border-radius: 999px; overflow: hidden; position: relative;
+  }
+  .progress-fill {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    box-shadow: 0 0 12px rgba(45,226,195,0.6);
+    transition: width .9s linear;
+  }
+
+  /* Stage list */
+  .stages { display:flex; flex-direction:column; gap: 8px; }
+  .stage {
+    display:flex; align-items:center; gap: 10px;
+    padding: 10px 12px; border-radius: 12px;
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
+    font-size: 13px; color: var(--muted); transition: all .25s ease;
+  }
+  .stage .marker {
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.2); position: relative; flex-shrink:0;
+  }
+  .stage.active { color: #fff; background: rgba(45,226,195,0.08); border-color: rgba(45,226,195,0.35); }
+  .stage.active .marker { border-color: var(--accent); animation: spin 1s linear infinite; border-top-color: transparent; }
+  .stage.done { color:#fff; }
+  .stage.done .marker { border-color: var(--accent); background: var(--accent); }
+  .stage.done .marker::after{
+    content:""; position:absolute; left:4px; top:1px; width:4px; height:8px;
+    border:solid #06121a; border-width: 0 2px 2px 0; transform: rotate(45deg);
+  }
+  @keyframes spin { to { transform: rotate(360deg);} }
+
+  .status { font-size: 14px; min-height: 22px; color: #d8e3ff; }
+  .controls { display:flex; gap: 10px; flex-wrap: wrap; }
+
+  /* ============================================================
+     RESULTS — Wellness + Appearance Dashboard
+     ============================================================ */
+  .results-head {
+    display:flex; flex-wrap:wrap; gap: 16px; align-items:center; justify-content:space-between;
+    margin-bottom: 18px;
+  }
+  .results-head h2 { font-size: 24px; }
+  .score-badge {
+    display:inline-flex; align-items:center; gap: 12px;
+    padding: 10px 16px; border-radius: 999px;
+    background: linear-gradient(135deg, rgba(45,226,195,0.18), rgba(108,140,255,0.18));
+    border:1px solid var(--card-border);
+  }
+  .score-badge b { font-size: 22px; }
+
+  /* Section blocks */
+  .section {
+    margin-top: 26px; padding: 22px;
+    background: var(--card); border:1px solid var(--card-border);
+    border-radius: 22px; backdrop-filter: blur(10px); box-shadow: var(--shadow);
+  }
+  .section-head { display:flex; align-items:center; justify-content:space-between; gap: 12px; margin-bottom: 14px; flex-wrap:wrap;}
+  .section-head h3 {
+    display:flex; align-items:center; gap:10px;
+    font-size: 17px;
+  }
+  .section-head h3 .emoji {
+    width: 32px; height: 32px; border-radius: 10px;
+    background: linear-gradient(135deg, rgba(45,226,195,0.18), rgba(108,140,255,0.18));
+    border: 1px solid var(--card-border);
+    display:inline-flex; align-items:center; justify-content:center;
+    font-size: 16px;
+  }
+  .section-head .badge {
+    padding: 4px 10px; border-radius: 999px; font-size: 11px;
+    background: rgba(255,255,255,0.06); border: 1px solid var(--card-border);
+    color: var(--muted); letter-spacing: 0.3px; text-transform: uppercase; font-weight:600;
+  }
+  .section-note { color: var(--muted); font-size: 12px; margin-top: 10px; font-style: italic; }
+  .section-disclaimer {
+    margin-bottom: 14px; padding: 10px 12px; border-radius: 10px;
+    background: rgba(255,203,107,0.08); border: 1px solid rgba(255,203,107,0.25);
+    font-size: 12px; color: #ffe6b3; display:flex; gap:8px; align-items:flex-start;
+  }
+  .section-disclaimer svg { flex-shrink:0; margin-top:2px;}
+
+  /* Big result cards (wellness top section) */
+  .grid-wellness {
+    display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+  }
+  .card {
+    background: var(--card-strong); border:1px solid var(--card-border);
+    border-radius: 18px; padding: 18px; position: relative; overflow: hidden;
+  }
+  .card .label { color: var(--muted); font-size: 12px; letter-spacing: 0.4px; text-transform: uppercase; }
+  .card .value {
+    font-size: 30px; font-weight: 700; margin-top: 6px;
+    background: linear-gradient(135deg, #fff, #cfe1ff);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .card .unit { font-size: 13px; color: var(--muted); margin-left: 4px; font-weight: 500; }
+  .card .meta { font-size: 12px; color: var(--muted); margin-top: 8px; }
+  .card .ico {
+    position:absolute; right:14px; top:14px;
+    width:34px; height:34px; border-radius:10px;
+    background: rgba(255,255,255,0.05); border:1px solid var(--card-border);
+    display:flex; align-items:center; justify-content:center; color: var(--accent);
+  }
+
+  /* Pill tags */
+  .pill-tag {
+    display:inline-block; padding: 3px 10px; border-radius: 999px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.4px; text-transform: uppercase;
+  }
+  .pill-tag.good    { background: rgba(45,226,195,0.15); color: var(--good); border:1px solid rgba(45,226,195,0.35);}
+  .pill-tag.warn    { background: rgba(255,203,107,0.15); color: var(--warn); border:1px solid rgba(255,203,107,0.35);}
+  .pill-tag.bad     { background: rgba(255,123,138,0.15); color: var(--bad);  border:1px solid rgba(255,123,138,0.35);}
+  .pill-tag.neutral { background: rgba(154,166,196,0.12); color: var(--neutral); border:1px solid rgba(154,166,196,0.30);}
+
+  /* Compact info-card grid for appearance attributes */
+  .grid-info {
+    display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+  }
+  .info {
+    background: rgba(255,255,255,0.04); border: 1px solid var(--card-border);
+    border-radius: 14px; padding: 12px 14px;
+  }
+  .info .k { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom:6px; }
+  .info .v { font-size: 15px; color: #fff; font-weight: 600; }
+  .info .v small { font-weight: 400; color: var(--muted); font-size: 12px; }
+
+  /* Sub-score bars (appearance quality) */
+  .subscore {
+    display:grid; grid-template-columns: 1fr; gap: 10px;
+  }
+  .subscore .row {
+    background: rgba(255,255,255,0.04); border:1px solid var(--card-border);
+    padding: 12px 14px; border-radius: 12px;
+  }
+  .subscore .row .top {
+    display:flex; justify-content:space-between; align-items:center;
+    font-size: 13px; margin-bottom: 8px;
+  }
+  .subscore .row .top b { color: #fff; }
+  .subscore .row .top span { color: var(--muted); font-size: 12px; }
+  .bar {
+    height: 6px; background: rgba(255,255,255,0.06); border-radius: 999px; overflow: hidden;
+  }
+  .bar > span {
+    display:block; height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    width: 0%; transition: width 1s ease;
+  }
+  .bar.warn > span { background: linear-gradient(90deg, #ffcb6b, #ff9f6b);}
+  .bar.bad  > span { background: linear-gradient(90deg, #ff7b8a, #b06cff);}
+
+  /* User input fields (gender select, country) */
+  .form-row {
+    display:grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  }
+  @media (max-width: 720px){ .form-row { grid-template-columns: 1fr; } }
+  .field { display:flex; flex-direction:column; gap: 6px; }
+  .field label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; }
+  .field select, .field input {
+    background: rgba(255,255,255,0.05); color: var(--text);
+    border: 1px solid var(--card-border); border-radius: 10px;
+    padding: 10px 12px; font-size: 14px; font-family: inherit;
+    outline: none; transition: border-color .2s, background .2s;
+  }
+  .field select:focus, .field input:focus { border-color: var(--accent); background: rgba(45,226,195,0.06); }
+  .field select option { background: var(--bg-2); color: var(--text); }
+
+  /* Recommendation block */
+  .recommendation {
+    margin-top: 18px; padding: 18px; border-radius: 18px;
+    background: linear-gradient(135deg, rgba(45,226,195,0.10), rgba(108,140,255,0.10));
+    border:1px solid var(--card-border);
+  }
+  .recommendation h4 { margin-bottom: 8px; font-size: 15px; }
+  .tip-list { display:flex; flex-direction:column; gap: 6px; margin-top: 8px; }
+  .tip {
+    display:flex; gap: 10px; align-items:flex-start; font-size: 13.5px; color: #d8e3ff;
+    padding: 8px 10px; border-radius: 10px; background: rgba(255,255,255,0.04);
+    border: 1px solid var(--card-border);
+  }
+  .tip .check {
+    width:18px; height:18px; flex-shrink:0; border-radius:50%; margin-top: 1px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    display:inline-flex; align-items:center; justify-content:center;
+  }
+  .tip .check svg { color:#06121a; }
+
+  /* Disclaimer */
+  .disclaimer {
+    margin-top: 22px; padding: 14px 16px; border-radius: 14px;
+    background: rgba(255,123,138,0.08); border: 1px solid rgba(255,123,138,0.25);
+    color: #ffd2d8; font-size: 13px; display:flex; gap:10px; align-items:flex-start;
+  }
+  .disclaimer svg { flex-shrink:0; margin-top: 2px;}
+
+  /* Confidence / quality badge for appearance */
+  .conf-badge {
+    display:inline-flex; align-items:center; gap: 8px;
+    padding: 6px 12px; border-radius: 999px;
+    font-size: 12px; font-weight: 600; letter-spacing: 0.3px; text-transform: uppercase;
+  }
+  .conf-badge.low  { background: rgba(255,123,138,0.12); color: var(--bad);  border:1px solid rgba(255,123,138,0.35);}
+  .conf-badge.med  { background: rgba(255,203,107,0.12); color: var(--warn); border:1px solid rgba(255,203,107,0.35);}
+  .conf-badge.high { background: rgba(45,226,195,0.12);  color: var(--good); border:1px solid rgba(45,226,195,0.35);}
+
+  /* Footer */
+  footer { margin-top: 30px; text-align:center; color: var(--muted); font-size: 12px; }
+
+  .center-row { display:flex; justify-content:center; gap: 12px; flex-wrap:wrap;}
+  .mt-16 { margin-top:16px; } .mt-24 { margin-top:24px; }
+
+  /* ============================================================
+     MOBILE OPTIMISATION & PRODUCTION POLISH
+     ============================================================ */
+
+  /* Prevent iOS text-size boost & double-tap zoom */
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+  * { touch-action: manipulation; }
+
+  /* Screen-reader only utility */
+  .sr-only {
+    position:absolute; width:1px; height:1px; padding:0;
+    margin:-1px; overflow:hidden; clip:rect(0,0,0,0);
+    white-space:nowrap; border:0;
+  }
+
+  /* Safe-area insets for notch / Dynamic Island */
+  .app {
+    padding-left:  max(20px, env(safe-area-inset-left));
+    padding-right: max(20px, env(safe-area-inset-right));
+    padding-bottom: max(48px, env(safe-area-inset-bottom));
+  }
+
+  /* Ensure all interactive elements hit 44 px min */
+  .btn { min-height: 44px; }
+  .consent input[type=checkbox] { min-width: 22px; min-height: 22px; }
+
+  /* Prevent iOS zoom-on-focus (needs font-size ≥ 16px) */
+  .field select, .field input { font-size: 16px; }
+
+  /* Focus-visible ring */
+  .btn:focus-visible,
+  .consent:focus-within { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .btn:focus:not(:focus-visible) { outline: none; }
+
+  /* Prefers-reduced-motion */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* ---------- Camera switch button (mobile) ---------- */
+  .btn-switch {
+    position: absolute; bottom: 12px; right: 12px;
+    width: 44px; height: 44px; border-radius: 50%;
+    background: rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #fff; cursor: pointer;
+    display: none; align-items: center; justify-content: center;
+    backdrop-filter: blur(8px); z-index: 10; padding: 0;
+    font-family: inherit; transition: background .2s, transform .15s;
+  }
+  .btn-switch.visible { display: flex; }
+  .btn-switch:active { transform: scale(0.88); }
+
+  /* ---------- Tablet breakpoint 880px (already handled by scan-wrap) ---------- */
+
+  /* ---------- Mobile breakpoint 640px ---------- */
+  @media (max-width: 640px) {
+    .app { padding-top: max(18px, env(safe-area-inset-top)); padding-left: 14px; padding-right: 14px; }
+
+    .brand { margin-bottom: 14px; }
+
+    .hero { padding: 20px 0 14px; }
+
+    .features { grid-template-columns: 1fr; gap: 10px; margin-top: 24px; }
+
+    .grid-wellness { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .card { padding: 14px; }
+    .card .value { font-size: 22px; }
+    .card .ico { width: 28px; height: 28px; right: 10px; top: 10px; }
+
+    .grid-info { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .info { padding: 10px 12px; }
+    .info .v { font-size: 13px; }
+
+    .section { padding: 16px; margin-top: 14px; }
+    .section-head h3 { font-size: 15px; }
+
+    /* Compact scan panel on mobile to reduce vertical scroll */
+    .scan-wrap { gap: 14px; }
+    .panel { padding: 14px; gap: 12px; border-radius: 18px; }
+    .panel h2 { font-size: 16px; }
+    .panel .small { font-size: 12px; }
+
+    .timer-wrap { gap: 12px; }
+    .timer { --size: 76px; }
+    .timer .label b { font-size: 18px; }
+    .timer .label small { font-size: 9px; }
+
+    .progress-wrap { margin-top: 8px; gap: 6px; }
+
+    /* Hide the long stage-list on phones — the status line + timer + progress
+       already convey what's happening, and 6 rows of stages bloat the layout. */
+    .stages { display: none; }
+
+    .controls { flex-direction: column; gap: 8px; }
+    .controls .btn { width: 100%; justify-content: center; min-height: 48px; }
+
+    .center-row { flex-direction: column; align-items: stretch; padding: 0 4px; gap: 10px; }
+    .center-row .btn { width: 100%; justify-content: center; }
+
+    .results-head { flex-direction: column; gap: 10px; align-items: flex-start; }
+
+    .score-badge { align-self: flex-start; }
+
+    .disclaimer { font-size: 12px; padding: 10px 12px; }
+
+    .video-card { border-radius: 16px; aspect-ratio: 1 / 1.05; }
+
+    .tip { font-size: 13px; }
+
+    footer { margin-top: 20px; }
+
+    .form-row { grid-template-columns: 1fr; }
+
+    /* Make scan HUD bigger on mobile so graphics are clearly visible */
+    .scan-hud { width: 92%; }
+    .scan-hud .scan-label { font-size: 10px; padding: 4px 10px; bottom: -28px; }
+  }
+
+  /* ---------- Very small screens (≤ 380px) ---------- */
+  @media (max-width: 380px) {
+    .grid-wellness { grid-template-columns: 1fr; }
+    .grid-info     { grid-template-columns: 1fr; }
+    .hero h1       { font-size: 26px; }
+    .btn           { font-size: 14px; padding: 12px 18px; }
+  }
+
+  /* ---------- Landscape mobile ---------- */
+  @media (max-height: 500px) and (orientation: landscape) {
+    .hero { padding: 10px 0 8px; }
+    .scan-wrap { grid-template-columns: 1.3fr 1fr; }
+    .panel { gap: 8px; }
+    .stages { display: none; }
+  }
+
+  /* ============================================================
+     v2 — Consent shake (when Start Scan is clicked without consent)
+     ============================================================ */
+  @keyframes consentShake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-8px); }
+    40% { transform: translateX(8px); }
+    60% { transform: translateX(-6px); }
+    80% { transform: translateX(6px); }
+  }
+  .consent.shake {
+    animation: consentShake 0.45s ease;
+    border-color: var(--bad) !important;
+    background: rgba(255,123,138,0.06) !important;
+  }
+
+  /* ============================================================
+     v2 — PRE-SCAN FORM
+     ============================================================ */
+  .pre-scan-wrap {
+    max-width: 560px; margin: 0 auto; padding: 24px 4px;
+  }
+  .pre-scan-wrap .lead {
+    text-align: center; margin-bottom: 22px;
+  }
+  .pre-scan-wrap .lead h2 {
+    font-size: clamp(24px, 4.5vw, 34px);
+    background: linear-gradient(135deg, #fff 0%, #cfe1ff 50%, #2de2c3 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    margin-bottom: 8px;
+  }
+  .pre-scan-wrap .lead p { color: var(--muted); font-size: 14px; }
+  #preScanForm {
+    display: flex; flex-direction: column; gap: 16px;
+    background: var(--card); border: 1px solid var(--card-border);
+    border-radius: 22px; padding: 22px; backdrop-filter: blur(10px);
+    box-shadow: var(--shadow);
+  }
+  #preScanForm .pf-field { display: flex; flex-direction: column; gap: 6px; }
+  #preScanForm label {
+    font-size: 12px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.4px; font-weight: 600;
+  }
+  #preScanForm label .req { color: var(--accent); margin-left: 4px; }
+  #preScanForm input {
+    width: 100%; min-height: 52px;
+    background: rgba(255,255,255,0.05); color: var(--text);
+    border: 1.5px solid var(--card-border); border-radius: 12px;
+    padding: 14px 14px; font-size: 16px; font-family: inherit;
+    outline: none; transition: border-color .2s, background .2s, box-shadow .2s;
+  }
+  #preScanForm input:focus {
+    border-color: var(--accent);
+    background: rgba(45,226,195,0.06);
+    box-shadow: 0 0 0 4px rgba(45,226,195,0.12);
+  }
+  #preScanForm input[aria-invalid="true"] {
+    border-color: var(--bad);
+    background: rgba(255,123,138,0.06);
+  }
+  #preScanForm input[aria-invalid="true"]:focus {
+    box-shadow: 0 0 0 4px rgba(255,123,138,0.12);
+  }
+  .pf-error {
+    font-size: 12px; color: var(--bad);
+    min-height: 0; display: none;
+  }
+  .pf-error.shown { display: block; }
+  .pre-scan-actions {
+    display: flex; flex-direction: column; gap: 10px; margin-top: 6px;
+  }
+  .pre-scan-actions .btn { width: 100%; }
+
+  /* ============================================================
+     v2 — CONFIRMATION MODAL
+     ============================================================ */
+  .modal-backdrop {
+    position: fixed; inset: 0; z-index: 100;
+    background: rgba(6, 12, 26, 0.72);
+    backdrop-filter: blur(8px);
+    display: none;
+    align-items: center; justify-content: center;
+    padding: 20px;
+    animation: modalFade .25s ease;
+  }
+  .modal-backdrop.shown { display: flex; }
+  @keyframes modalFade { from { opacity: 0; } to { opacity: 1; } }
+  .modal {
+    width: 100%; max-width: 440px;
+    background: linear-gradient(180deg, var(--bg-2), var(--bg-3));
+    border: 1px solid var(--card-border);
+    border-radius: 22px; padding: 26px 22px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.55);
+    animation: modalIn .3s cubic-bezier(.2,.8,.2,1);
+    text-align: center;
+  }
+  @keyframes modalIn {
+    from { opacity: 0; transform: translateY(20px) scale(.96); }
+    to   { opacity: 1; transform: none; }
+  }
+  .modal-icon {
+    width: 56px; height: 56px; border-radius: 18px;
+    margin: 0 auto 14px;
+    background: linear-gradient(135deg, rgba(45,226,195,0.22), rgba(108,140,255,0.22));
+    border: 1px solid var(--card-border);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--accent);
+  }
+  .modal h3 { font-size: 20px; margin-bottom: 8px; color: #fff; }
+  .modal p  { font-size: 14px; color: var(--muted); margin-bottom: 22px; }
+  .modal-actions {
+    display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;
+  }
+  .modal-actions .btn { flex: 1; min-width: 130px; }
+  @media (max-width: 480px) {
+    .modal-backdrop { align-items: flex-end; padding: 0; }
+    .modal {
+      max-width: none; border-radius: 22px 22px 0 0;
+      padding: 22px 18px max(22px, env(safe-area-inset-bottom));
+      animation: modalSlide .3s cubic-bezier(.2,.8,.2,1);
+    }
+    @keyframes modalSlide {
+      from { transform: translateY(100%); }
+      to   { transform: none; }
+    }
+    .modal-actions { flex-direction: column-reverse; }
+    .modal-actions .btn { width: 100%; }
+  }
+
+  /* (Cinematic AI HUD CSS removed — reverted to v1 scan layout) */
+  /* Loader spin keyframe still used by the PDF download spinner */
+  @keyframes hudLoaderSpin { to { transform: rotate(360deg); } }
+
+  /* ============================================================
+     v2 — HYBRID APPEARANCE SECTIONS (headline + collapsible)
+     ============================================================ */
+  .appearance-card {
+    padding: 0;
+    overflow: hidden;
+  }
+  .appearance-headline {
+    display: flex; align-items: flex-start; gap: 16px;
+    padding: 20px 22px;
+  }
+  .appearance-headline .ico-large {
+    width: 52px; height: 52px; border-radius: 16px; flex-shrink: 0;
+    background: linear-gradient(135deg, rgba(45,226,195,0.20), rgba(108,140,255,0.20));
+    border: 1px solid var(--card-border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px;
+  }
+  .appearance-headline-text { flex: 1; min-width: 0; }
+  .appearance-headline .a-title {
+    font-size: 16px; font-weight: 700; color: #fff;
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    margin-bottom: 4px;
+  }
+  .appearance-headline .a-summary {
+    font-size: 14px; color: #d8e3ff; line-height: 1.5;
+  }
+  details.appearance-details {
+    border-top: 1px solid var(--card-border);
+    transition: background .15s;
+  }
+  details.appearance-details > summary {
+    list-style: none; cursor: pointer;
+    padding: 14px 22px; font-size: 13px; color: var(--accent);
+    font-weight: 600; letter-spacing: 0.3px;
+    display: flex; align-items: center; justify-content: space-between;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  details.appearance-details > summary::-webkit-details-marker { display: none; }
+  details.appearance-details > summary .chev {
+    width: 18px; height: 18px;
+    transition: transform .25s ease;
+  }
+  details.appearance-details[open] > summary .chev { transform: rotate(180deg); }
+  details.appearance-details > summary:hover { background: rgba(45,226,195,0.04); }
+  details.appearance-details > summary:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: -2px;
+  }
+  details.appearance-details .details-body {
+    padding: 4px 22px 22px;
+  }
+
+  /* ============================================================
+     v2 — Mobile tweaks for new components
+     ============================================================ */
+  @media (max-width: 640px) {
+    .appearance-headline { padding: 16px 16px; gap: 12px; }
+    .appearance-headline .ico-large { width: 44px; height: 44px; font-size: 22px; }
+    details.appearance-details > summary { padding: 12px 16px; }
+    details.appearance-details .details-body { padding: 4px 16px 16px; }
+    .pre-scan-wrap { padding: 12px 0 24px; }
+    #preScanForm { padding: 18px; border-radius: 18px; }
+  }
+
+  /* ============================================================
+     v2 — Print-only utility (forces details open, etc.)
+     This applies to in-app printing too; the standalone HTML
+     report has its own copy of these rules embedded inline.
+     ============================================================ */
+  @media print {
+    .bg-orbs, .modal-backdrop, .controls, .center-row, .scan-hud,
+    .video-card, footer, .btn-switch { display: none !important; }
+    details.appearance-details > .details-body { display: block !important; }
+    body { background: #fff; color: #000; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- ARIA live region for screen reader announcements -->
+  <div id="liveRegion" aria-live="polite" aria-atomic="true" class="sr-only"></div>
+
+  <div class="bg-orbs" aria-hidden="true">
+    <span></span><span></span><span></span>
+  </div>
+
+  <div class="app">
+
+    <!-- Brand header -->
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true"></div>
+      <div class="brand-name">Obliq <span>Ai</span> Face Scan</div>
+    </div>
+
+    <!-- ============================================================
+         SCREEN 1: LANDING
+         ============================================================ -->
+    <section id="landing" class="screen active">
+      <div class="hero">
+        <div class="pill"><span class="dot"></span> Wellness & Appearance Demo</div>
+        <h1>Obliq Ai Face Scan</h1>
+        <p class="sub">AI-powered camera wellness and appearance scan demo</p>
+        <p class="desc">Use your camera to simulate a quick wellness and visual scan.</p>
+
+        <!-- Consent checkbox -->
+        <label class="consent" for="consentCheck">
+          <input type="checkbox" id="consentCheck" />
+          <span class="text">I consent to local camera-based demo analysis.</span>
+        </label>
+
+        <div style="text-align:center;">
+          <button class="btn btn-primary" id="btnStart">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg>
+            Start Scan
+          </button>
+        </div>
+
+        <div class="privacy-note">
+          🔒 This demo does not store photos, videos, or biometric data.
+        </div>
+
+        <div class="features">
+          <div class="feature">
+            <div class="ico">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </div>
+            <h4>Wellness Snapshot</h4>
+            <p>Simulated heart rate, breathing, stress and energy estimates.</p>
+          </div>
+          <div class="feature">
+            <div class="ico">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/></svg>
+            </div>
+            <h4>Appearance Report</h4>
+            <p>Neutral, descriptive notes on visible features only.</p>
+          </div>
+          <div class="feature">
+            <div class="ico">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+            </div>
+            <h4>30-Second Scan</h4>
+            <p>Quick, contact-free demo. Stay still and well-lit for best results.</p>
+          </div>
+        </div>
+
+        <div class="disclaimer mt-24" style="max-width:760px; margin-left:auto; margin-right:auto; text-align:left;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span><strong>Disclaimer:</strong> Obliq Ai Face Scan is a demonstration only. It does not measure real medical vitals and should not be used for diagnosis, treatment, or medical decisions.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SCREEN 2: PRE-SCAN FORM (Name / Phone / Age)
+         ============================================================ -->
+    <section id="preScanScreen" class="screen">
+      <div class="pre-scan-wrap">
+        <div class="lead">
+          <h2>Tell us about you</h2>
+          <p>We'll include these details on your scan report. All fields are required.</p>
+        </div>
+
+        <form id="preScanForm" novalidate autocomplete="on">
+          <div class="pf-field">
+            <label for="inputName">Full Name <span class="req" aria-hidden="true">*</span></label>
+            <input id="inputName" name="name" type="text" required minlength="2" maxlength="60"
+                   autocomplete="name" placeholder="e.g. Priya Sharma" aria-describedby="errName" />
+            <span id="errName" class="pf-error" role="alert"></span>
+          </div>
+
+          <div class="pf-field">
+            <label for="inputPhone">Phone Number <span class="req" aria-hidden="true">*</span></label>
+            <input id="inputPhone" name="phone" type="tel" required
+                   inputmode="tel" autocomplete="tel"
+                   placeholder="e.g. +91 98765 43210" aria-describedby="errPhone" />
+            <span id="errPhone" class="pf-error" role="alert"></span>
+          </div>
+
+          <div class="pf-field">
+            <label for="inputAge">Age <span class="req" aria-hidden="true">*</span></label>
+            <input id="inputAge" name="age" type="number" required min="13" max="120"
+                   inputmode="numeric" placeholder="e.g. 28" aria-describedby="errAge" />
+            <span id="errAge" class="pf-error" role="alert"></span>
+          </div>
+
+          <div class="pre-scan-actions">
+            <button type="submit" class="btn btn-primary" id="btnPreScanContinue">
+              Continue to Scan
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </button>
+            <button type="button" class="btn btn-ghost" id="btnPreScanBack">Back</button>
+          </div>
+        </form>
+
+        <div class="privacy-note" style="margin-top:18px;">
+          🔒 Your details stay on your device — they're only added to your downloadable report.
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SCREEN 3: SCAN — v1 layout (corner brackets + side panel)
+         ============================================================ -->
+    <section id="scanScreen" class="screen">
+      <div class="scan-wrap">
+
+        <!-- Video card with overlays -->
+        <div class="video-card" id="videoCard">
+          <video id="video" autoplay playsinline muted></video>
+
+          <div class="hud">
+            <div class="chip"><span class="dot"></span> Live Camera</div>
+            <div class="chip rec" id="recChip" style="display:none;"><span class="dot"></span> Scanning</div>
+          </div>
+
+          <div class="scan-frame">
+            <div class="ring"></div>
+            <div class="corner tl"></div><div class="corner tr"></div>
+            <div class="corner bl"></div><div class="corner br"></div>
+          </div>
+
+          <div class="scan-line"></div>
+
+          <button class="btn-switch" id="btnSwitch" aria-label="Switch camera" title="Switch camera">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4v6h6"/><path d="M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+          </button>
+
+          <div class="video-overlay" id="videoOverlay">
+            <h3 id="overlayTitle">Requesting Camera…</h3>
+            <p id="overlayMsg">Camera permission is required to run the demo scan.</p>
+            <div class="controls" id="overlayActions" style="display:none;">
+              <button class="btn btn-ghost btn-sm" id="btnRetry">Try Again</button>
+              <button class="btn btn-ghost btn-sm" id="btnBack">Back</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Side panel: timer, progress, stages, controls -->
+        <aside class="panel">
+          <div>
+            <h2>Wellness Scan</h2>
+            <p class="small">Sit still, face the camera, and ensure your face is evenly lit.</p>
+          </div>
+
+          <div class="timer-wrap">
+            <div class="timer">
+              <svg viewBox="0 0 120 120">
+                <defs>
+                  <linearGradient id="grad" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%"  stop-color="#2de2c3"/>
+                    <stop offset="100%" stop-color="#6c8cff"/>
+                  </linearGradient>
+                </defs>
+                <circle class="track" cx="60" cy="60" r="52" fill="none" stroke-width="10"/>
+                <circle class="bar"   cx="60" cy="60" r="52" fill="none" stroke-width="10"
+                        stroke-dasharray="326.7" stroke-dashoffset="326.7" id="timerBar"/>
+              </svg>
+              <div class="label">
+                <b id="timerNum">30</b>
+                <small>SECONDS</small>
+              </div>
+            </div>
+            <div style="flex:1;">
+              <div class="status" id="statusMsg">Camera ready.</div>
+              <div class="progress-wrap mt-16">
+                <div class="progress-meta">
+                  <span>Progress</span>
+                  <span id="progressPct">0%</span>
+                </div>
+                <div class="progress-track">
+                  <div class="progress-fill" id="progressFill"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="stages" id="stages">
+            <div class="stage" data-stage="0"><div class="marker"></div><span>Detecting face position</span></div>
+            <div class="stage" data-stage="1"><div class="marker"></div><span>Checking lighting quality</span></div>
+            <div class="stage" data-stage="2"><div class="marker"></div><span>Analyzing visual signals</span></div>
+            <div class="stage" data-stage="3"><div class="marker"></div><span>Estimating wellness indicators</span></div>
+            <div class="stage" data-stage="4"><div class="marker"></div><span>Reviewing appearance features</span></div>
+            <div class="stage" data-stage="5"><div class="marker"></div><span>Preparing scan report</span></div>
+          </div>
+
+          <div class="controls">
+            <!-- Hidden — scan auto-starts after camera ready, no manual tap needed -->
+            <button class="btn btn-primary" id="btnScan" hidden></button>
+            <button class="btn btn-danger" id="btnStop">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="14" rx="2"/></svg>
+              Cancel Scan
+            </button>
+          </div>
+
+          <div class="disclaimer">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span><strong>Demo only.</strong> Obliq Ai Face Scan does not measure real medical vitals.</span>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SCREEN 3: RESULTS DASHBOARD
+         ============================================================ -->
+    <section id="resultsScreen" class="screen">
+
+      <div class="results-head">
+        <div>
+          <h2>Your Wellness & Appearance Snapshot</h2>
+          <p class="small" style="color:var(--muted);">Simulated results based on your 30-second scan.</p>
+        </div>
+        <div class="score-badge">
+          <span class="small" style="color:var(--muted);">Wellness Score</span>
+          <b id="scoreNum">—</b>
+        </div>
+      </div>
+
+      <!-- ======= WELLNESS RESULTS ======= -->
+      <div class="section">
+        <div class="section-head">
+          <h3><span class="emoji">💓</span>Wellness Results</h3>
+          <span class="badge">Simulated</span>
+        </div>
+
+        <div class="grid-wellness">
+          <div class="card">
+            <div class="ico">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </div>
+            <div class="label">Heart Rate</div>
+            <div class="value"><span id="rHr">—</span><span class="unit">bpm</span></div>
+            <div class="meta" id="rHrTag"></div>
+          </div>
+
+          <div class="card">
+            <div class="ico">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-9 4 18 3-9h4"/></svg>
+            </div>
+            <div class="label">Breathing Rate</div>
+            <div class="value"><span id="rBr">—</span><span class="unit">/min</span></div>
+            <div class="meta" id="rBrTag"></div>
+          </div>
+
+          <div class="card">
+            <div class="ico">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+            </div>
+            <div class="label">Stress Level</div>
+            <div class="value"><span id="rStress">—</span><span class="unit">%</span></div>
+            <div class="meta" id="rStressTag"></div>
+          </div>
+
+          <div class="card">
+            <div class="ico">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            </div>
+            <div class="label">Blood Pressure (est.)</div>
+            <div class="value" id="rBp">—</div>
+            <div class="meta" id="rBpTag"></div>
+          </div>
+
+          <div class="card">
+            <div class="ico">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+            </div>
+            <div class="label">Wellness Score</div>
+            <div class="value"><span id="rScore">—</span><span class="unit">/100</span></div>
+            <div class="meta" id="rScoreTag"></div>
+          </div>
+
+          <div class="card">
+            <div class="ico">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            </div>
+            <div class="label">Energy Level</div>
+            <div class="value" id="rEnergy">—</div>
+            <div class="meta" id="rEnergyTag"></div>
+          </div>
+
+          <div class="card">
+            <div class="ico">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12c0-5 4-9 9-9s9 4 9 9-4 9-9 9c-2 0-4-.5-5.5-1.5L3 21l1.5-3.5C3.5 16 3 14 3 12z"/></svg>
+            </div>
+            <div class="label">Relaxation Score</div>
+            <div class="value"><span id="rRelax">—</span><span class="unit">/100</span></div>
+            <div class="meta" id="rRelaxTag"></div>
+          </div>
+
+          <div class="card">
+            <div class="ico">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            </div>
+            <div class="label">Scan Quality Score</div>
+            <div class="value"><span id="rScanQ">—</span><span class="unit">/100</span></div>
+            <div class="meta" id="rScanQTag"></div>
+          </div>
+        </div>
+
+        <div class="disclaimer" style="margin-top:18px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span>Obliq Ai Face Scan is a demonstration only. It does not measure real medical vitals and should not be used for diagnosis, treatment, or medical decisions.</span>
+        </div>
+      </div>
+
+      <!-- ======= WELLNESS TIPS ======= -->
+      <div class="section">
+        <div class="section-head">
+          <h3><span class="emoji">💡</span>Wellness Tips</h3>
+        </div>
+        <div class="tip-list" id="wellnessTips"></div>
+      </div>
+
+      <!-- ======= APPEARANCE REPORT INTRO ======= -->
+      <div class="section">
+        <div class="section-head">
+          <h3><span class="emoji">🪞</span>Visual Wellness & Appearance Report</h3>
+          <span class="conf-badge" id="appearConfBadge">—</span>
+        </div>
+        <div class="section-disclaimer">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span>This appearance analysis is AI-simulated for demo purposes only. It may be inaccurate and should not be used for identity, medical, legal, hiring, insurance, or official decisions.</span>
+        </div>
+        <p style="font-size:13px; color:var(--muted); margin-top:8px;">
+          Three key visual highlights from your scan, each with a quick summary plus optional detailed breakdown.
+        </p>
+      </div>
+
+      <!-- ======= EYE & EYEBROW HEALTH (hybrid: headline + collapsible details) ======= -->
+      <div class="section appearance-card">
+        <div class="appearance-headline">
+          <div class="ico-large" aria-hidden="true">👁️</div>
+          <div class="appearance-headline-text">
+            <div class="a-title">Eye &amp; Eyebrow Health <span class="pill-tag" id="eyeRating">—</span></div>
+            <div class="a-summary" id="eyeSummary">—</div>
+          </div>
+        </div>
+        <details class="appearance-details">
+          <summary>
+            <span>View detailed breakdown</span>
+            <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </summary>
+          <div class="details-body">
+            <div class="grid-info">
+              <div class="info"><div class="k">Eye Size</div><div class="v" id="aEyeSize">—</div></div>
+              <div class="info"><div class="k">Eye Shape</div><div class="v" id="aEyeShape">—</div></div>
+              <div class="info"><div class="k">Eye Openness</div><div class="v" id="aEyeOpenness">—</div></div>
+              <div class="info"><div class="k">Eye Symmetry</div><div class="v" id="aEyeSym">—</div></div>
+              <div class="info"><div class="k">Blink Detected</div><div class="v" id="aBlink">—</div></div>
+              <div class="info"><div class="k">Eyes Open Status</div><div class="v" id="aEyeStatus">—</div></div>
+              <div class="info"><div class="k">Eyebrow Thickness</div><div class="v" id="aBrowThick">—</div></div>
+              <div class="info"><div class="k">Eyebrow Shape</div><div class="v" id="aBrowShape">—</div></div>
+              <div class="info"><div class="k">Eyebrow Symmetry</div><div class="v" id="aBrowSym">—</div></div>
+            </div>
+            <div class="section-note">Visual approximation only.</div>
+          </div>
+        </details>
+      </div>
+
+      <!-- ======= FACE STRUCTURE (hybrid) ======= -->
+      <div class="section appearance-card">
+        <div class="appearance-headline">
+          <div class="ico-large" aria-hidden="true">🧬</div>
+          <div class="appearance-headline-text">
+            <div class="a-title">Face Structure <span class="pill-tag" id="faceRating">—</span></div>
+            <div class="a-summary" id="faceSummary">—</div>
+          </div>
+        </div>
+        <details class="appearance-details">
+          <summary>
+            <span>View detailed breakdown</span>
+            <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </summary>
+          <div class="details-body">
+            <div class="grid-info">
+              <div class="info"><div class="k">Face Shape</div><div class="v" id="aFaceShape">—</div><div class="section-note" id="aFaceShapeDesc">—</div></div>
+              <div class="info"><div class="k">Overall Facial Balance</div><div class="v" id="aSymOverall">—</div></div>
+              <div class="info"><div class="k">Left–Right Alignment</div><div class="v" id="aSymAlign">—</div></div>
+              <div class="info"><div class="k">Jawline Visibility</div><div class="v" id="aJawVis">—</div></div>
+              <div class="info"><div class="k">Jawline Shape</div><div class="v" id="aJawShape">—</div></div>
+              <div class="info"><div class="k">Cheekbone Visibility</div><div class="v" id="aCheekVis">—</div></div>
+              <div class="info"><div class="k">Face Contour</div><div class="v" id="aContour">—</div></div>
+              <div class="info"><div class="k">Nose Visibility</div><div class="v" id="aNoseVis">—</div></div>
+              <div class="info"><div class="k">Nose Bridge</div><div class="v" id="aNoseBridge">—</div></div>
+              <div class="info"><div class="k">Nose Alignment</div><div class="v" id="aNoseAlign">—</div></div>
+              <div class="info"><div class="k">Lip Visibility</div><div class="v" id="aLipVis">—</div></div>
+              <div class="info"><div class="k">Lip Fullness</div><div class="v" id="aLipFull">—</div></div>
+              <div class="info"><div class="k">Lip Dryness</div><div class="v" id="aLipDry">—</div></div>
+              <div class="info"><div class="k">Forehead Visibility</div><div class="v" id="aForeVis">—</div></div>
+              <div class="info"><div class="k">Forehead Texture</div><div class="v" id="aForeTex">—</div></div>
+            </div>
+            <div class="section-note">Natural facial asymmetry is normal. Visual estimate only — not a health diagnosis.</div>
+          </div>
+        </details>
+      </div>
+
+      <!-- ======= SKIN APPEARANCE (hybrid) ======= -->
+      <div class="section appearance-card">
+        <div class="appearance-headline">
+          <div class="ico-large" aria-hidden="true">✨</div>
+          <div class="appearance-headline-text">
+            <div class="a-title">Skin Appearance <span class="pill-tag" id="skinRating">—</span></div>
+            <div class="a-summary" id="skinSummary">—</div>
+          </div>
+        </div>
+        <details class="appearance-details">
+          <summary>
+            <span>View detailed breakdown</span>
+            <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </summary>
+          <div class="details-body">
+            <div class="grid-info">
+              <div class="info"><div class="k">Skin Tone Description</div><div class="v" id="aSkinTone">—</div></div>
+              <div class="info"><div class="k">Skin Texture</div><div class="v" id="aSkinTex">—</div></div>
+              <div class="info"><div class="k">Redness Appearance</div><div class="v" id="aSkinRed">—</div></div>
+              <div class="info"><div class="k">Under-Eye Shadow</div><div class="v" id="aUnderEye">—</div></div>
+              <div class="info"><div class="k">Hydration Appearance</div><div class="v" id="aHydration">—</div></div>
+              <div class="info"><div class="k">Skin Shine / Oiliness</div><div class="v" id="aShine">—</div></div>
+              <div class="info"><div class="k">T-Zone Shine</div><div class="v" id="aTZone">—</div></div>
+              <div class="info"><div class="k">Fine-Line Visibility</div><div class="v" id="aFineLine">—</div></div>
+              <div class="info"><div class="k">Fine-Line Areas</div><div class="v" id="aFineLineArea">—</div></div>
+              <div class="info"><div class="k">Uneven Tone</div><div class="v" id="aPigmentTone">—</div></div>
+              <div class="info"><div class="k">Dark Spot Visibility</div><div class="v" id="aPigmentSpot">—</div></div>
+              <div class="info"><div class="k">Redness / Patchiness</div><div class="v" id="aPigmentPatch">—</div></div>
+            </div>
+            <div class="section-note">Not a dermatology or skin-disease diagnosis.</div>
+          </div>
+        </details>
+      </div>
+
+      <!-- ======= PERSONALIZED SCAN TIPS ======= -->
+      <div class="section">
+        <div class="section-head">
+          <h3><span class="emoji">🎯</span>Personalized Scan Tips</h3>
+        </div>
+        <div class="tip-list" id="scanTips"></div>
+      </div>
+
+      <!-- ======= ACTIONS ======= -->
+      <div class="center-row mt-24">
+        <button class="btn btn-primary" id="btnAgain">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          Scan Again
+        </button>
+        <button class="btn btn-ghost" id="btnDownload">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download Report
+        </button>
+        <button class="btn btn-ghost" id="btnHome">Back to Home</button>
+        <button class="btn btn-danger" id="btnStop2">Stop Camera</button>
+      </div>
+
+      <div class="disclaimer">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span><strong>Disclaimer:</strong> Obliq Ai Face Scan is a demonstration only. It does not measure real medical vitals and should not be used for diagnosis, treatment, or medical decisions. Always consult a qualified healthcare professional.</span>
+      </div>
+
+      <footer>© Obliq Ai Face Scan — AI camera wellness & appearance scan demo</footer>
+    </section>
+
+  </div>
+
+  <!-- ============================================================
+       CONFIRMATION MODAL (Are you sure you want to start the scan?)
+       ============================================================ -->
+  <div class="modal-backdrop" id="confirmModal" role="dialog" aria-modal="true"
+       aria-labelledby="confirmTitle" aria-describedby="confirmMsg" hidden>
+    <div class="modal" role="document">
+      <div class="modal-icon" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="6 12 10 16 18 8"/>
+        </svg>
+      </div>
+      <h3 id="confirmTitle">Are you sure you want to start the scan?</h3>
+      <p id="confirmMsg">The camera will turn on and a 30-second wellness scan will begin.</p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="btnConfirmNo">Not yet</button>
+        <button type="button" class="btn btn-primary" id="btnConfirmYes">
+          Yes, start scan
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* ============================================================
+   APP LOGIC
+   ============================================================ */
+// Surface any uncaught error visibly — better than the page silently doing nothing
+window.addEventListener('error', function (e) {
+  try {
+    var note = document.createElement('div');
+    note.setAttribute('role', 'alert');
+    note.style.cssText = 'position:fixed;left:8px;right:8px;bottom:8px;z-index:9999;padding:12px 14px;border-radius:12px;background:#3a0d18;color:#ffd2d8;border:1px solid #ff7b8a;font:13px/1.4 -apple-system,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,0.4);';
+    note.textContent = 'Script error: ' + (e.message || 'unknown') + ' (line ' + (e.lineno || '?') + ')';
+    document.body && document.body.appendChild(note);
+  } catch (_) {}
+});
+
+(function () {
+  // ---------- DOM helpers ----------
+  const $  = (id) => document.getElementById(id);
+  const screens = {
+    landing: $('landing'),
+    preScan: $('preScanScreen'),
+    scan:    $('scanScreen'),
+    results: $('resultsScreen'),
+  };
+  function show(name) {
+    Object.values(screens).forEach(s => s.classList.remove('active'));
+    screens[name].classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    const heading = screens[name].querySelector('h1,h2,h3');
+    if (heading) { heading.setAttribute('tabindex', '-1'); heading.focus({ preventScroll: true }); }
+  }
+
+  function announce(msg) {
+    const r = $('liveRegion');
+    if (r) { r.textContent = ''; requestAnimationFrame(() => { r.textContent = msg; }); }
+  }
+
+  // ---------- State ----------
+  let mediaStream  = null;
+  let scanTimer    = null;
+  let stageTimers  = [];
+  let scanning     = false;
+  let lastResults  = null;   // cache for download
+  let facingMode   = 'user'; // 'user' = front, 'environment' = rear
+  let scanUser     = null;   // { name, phone, age } from pre-scan form
+  let lastFocusedBeforeModal = null;
+
+  // ---------- Stage list ----------
+  const STAGES = [
+    { msg: "Detecting face position...",          dur: 4 },
+    { msg: "Checking lighting quality...",        dur: 4 },
+    { msg: "Analyzing visual signals...",         dur: 6 },
+    { msg: "Estimating wellness indicators...",   dur: 6 },
+    { msg: "Reviewing appearance features...",    dur: 5 },
+    { msg: "Preparing scan report...",            dur: 5 },
+  ]; // total = 30s
+
+  // ============================================================
+  // CAMERA HANDLING
+  // ============================================================
+  async function startCamera() {
+    const overlay = $('videoOverlay'),
+          overlayTtl = $('overlayTitle'),
+          overlayMsg = $('overlayMsg'),
+          overlayBtns = $('overlayActions');
+
+    overlay.classList.remove('hidden');
+    overlayBtns.style.display = 'none';
+    overlayTtl.textContent = 'Requesting Camera…';
+    overlayMsg.textContent = 'Camera permission is required to run the demo scan.';
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      overlayTtl.textContent = 'Camera Not Supported';
+      overlayMsg.textContent = 'Your browser does not support camera access (getUserMedia). Try Chrome, Edge, Firefox, or Safari over HTTPS.';
+      overlayBtns.style.display = 'flex';
+      return false;
+    }
+
+    try {
+      mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
+        audio: false,
+      });
+      const video = $('video');
+      video.srcObject = mediaStream;
+      video.style.transform = facingMode === 'user' ? 'scaleX(-1)' : 'scaleX(1)';
+      video.onloadedmetadata = () => {
+        overlay.classList.add('hidden');
+        announce('Camera ready. Starting scan.');
+      };
+      return true;
+    } catch (err) {
+      console.warn('Camera error:', err);
+      overlayBtns.style.display = 'flex';
+      if (err && (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError')) {
+        overlayTtl.textContent = 'Camera Permission Denied';
+        overlayMsg.textContent = 'Camera permission is required to run the demo scan. Please allow camera access in your browser settings, then try again.';
+      } else if (err && err.name === 'NotFoundError') {
+        overlayTtl.textContent = 'No Camera Found';
+        overlayMsg.textContent = 'We could not detect a camera on this device. Connect one and try again.';
+      } else if (err && err.name === 'NotReadableError') {
+        overlayTtl.textContent = 'Camera Unavailable';
+        overlayMsg.textContent = 'Another application may be using your camera. Close it and try again.';
+      } else {
+        overlayTtl.textContent = 'Camera Error';
+        overlayMsg.textContent = 'Something went wrong while accessing the camera. Please try again.';
+      }
+      return false;
+    }
+  }
+
+  function stopCamera() {
+    if (mediaStream) {
+      mediaStream.getTracks().forEach(t => t.stop());
+      mediaStream = null;
+    }
+    const video = $('video');
+    if (video) video.srcObject = null;
+  }
+
+  async function switchCamera() {
+    if (scanning) return;
+    facingMode = facingMode === 'user' ? 'environment' : 'user';
+    stopCamera();
+    await startCamera();
+  }
+
+  // ============================================================
+  // SCAN FLOW
+  // ============================================================
+  // ============================================================
+  // SCAN FLOW (v1 — corner brackets + side panel + circular timer + stages)
+  // ============================================================
+  function resetScanUI() {
+    const bar = $('timerBar');
+    if (bar) {
+      bar.style.transition = 'none';
+      bar.style.strokeDashoffset = '326.7';
+      void bar.getBoundingClientRect();
+      bar.style.transition = '';
+    }
+    const tn = $('timerNum'); if (tn) tn.textContent = '30';
+    const fill = $('progressFill');
+    if (fill) {
+      fill.style.transition = 'none';
+      fill.style.width = '0%';
+      void fill.getBoundingClientRect();
+      fill.style.transition = '';
+    }
+    const pp = $('progressPct'); if (pp) pp.textContent = '0%';
+    const sm = $('statusMsg');   if (sm) sm.textContent = 'Camera ready.';
+    const rc = $('recChip');     if (rc) rc.style.display = 'none';
+    const card = $('videoCard'); if (card) card.classList.remove('scanning');
+    document.querySelectorAll('.stage').forEach(s => s.classList.remove('active', 'done'));
+
+    if (scanTimer) clearInterval(scanTimer);
+    stageTimers.forEach(t => clearTimeout(t));
+    stageTimers = [];
+    scanning = false;
+  }
+
+  function startScan() {
+    if (!mediaStream) { const sm = $('statusMsg'); if (sm) sm.textContent = 'Camera not ready.'; return; }
+    if (scanning) return;
+    scanning = true;
+
+    $('recChip').style.display = 'inline-flex';
+    $('videoCard').classList.add('scanning');
+
+    // Circular ring countdown
+    const bar = $('timerBar');
+    bar.style.transition = 'stroke-dashoffset 30s linear';
+    requestAnimationFrame(() => { bar.style.strokeDashoffset = '0'; });
+
+    // Linear progress 0% → 100% over 30s
+    const fill = $('progressFill');
+    fill.style.transition = 'width 30s linear';
+    requestAnimationFrame(() => { fill.style.width = '100%'; });
+
+    // Update %label every 300ms (kept exactly as v1)
+    let pctTick = 0;
+    const pctTimer = setInterval(() => {
+      pctTick++;
+      const p = Math.min(100, Math.round(pctTick * 100 / 100));
+      $('progressPct').textContent = p + '%';
+      if (p >= 100) clearInterval(pctTimer);
+    }, 300);
+
+    // Numeric countdown
+    let remaining = 30;
+    $('timerNum').textContent = remaining;
+    scanTimer = setInterval(() => {
+      remaining--;
+      $('timerNum').textContent = Math.max(0, remaining);
+      if (remaining <= 0) clearInterval(scanTimer);
+    }, 1000);
+
+    // Stages
+    let elapsed = 0;
+    STAGES.forEach((stage, i) => {
+      const startAt = elapsed * 1000;
+      stageTimers.push(setTimeout(() => {
+        document.querySelectorAll('.stage').forEach((el, idx) => {
+          el.classList.remove('active');
+          if (idx < i) el.classList.add('done');
+        });
+        const cur = document.querySelector(`.stage[data-stage="${i}"]`);
+        if (cur) cur.classList.add('active');
+        $('statusMsg').textContent = stage.msg;
+        announce(stage.msg);
+      }, startAt));
+      elapsed += stage.dur;
+    });
+
+    // Finish
+    stageTimers.push(setTimeout(() => {
+      document.querySelectorAll('.stage').forEach(el => { el.classList.remove('active'); el.classList.add('done'); });
+      $('statusMsg').textContent = 'Analysis complete.';
+      announce('Analysis complete. Loading your results.');
+      finishScan();
+    }, 30000));
+  }
+
+  function finishScan() {
+    scanning = false;
+    $('videoCard').classList.remove('scanning');
+    $('recChip').style.display = 'none';
+    const r = generateResults();
+    lastResults = r;
+    showResults(r);
+    show('results');
+  }
+
+  // ============================================================
+  // RANDOM HELPERS
+  // ============================================================
+  const rand    = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+  const pick    = (arr) => arr[Math.floor(Math.random() * arr.length)];
+  const pickWeighted = (pairs) => {
+    // pairs: [[value, weight], ...]
+    const total = pairs.reduce((s, p) => s + p[1], 0);
+    let n = Math.random() * total;
+    for (const [v, w] of pairs) { if ((n -= w) <= 0) return v; }
+    return pairs[0][0];
+  };
+
+  // ============================================================
+  // RESULT GENERATION
+  // ============================================================
+  function generateResults() {
+    // Wellness
+    const hr = rand(60, 100);
+    const br = rand(12, 20);
+    // Stress as continuous percentage (20-85%) with derived category label
+    const stressPct   = rand(20, 85);
+    const stressLabel = stressPct < 40 ? 'Low' : stressPct < 65 ? 'Moderate' : 'High';
+    const sys = rand(108, 132), dia = rand(68, 86);
+    const conf = rand(78, 97);
+    let score = rand(70, 98);
+    if (stressLabel === 'High') score = Math.min(score, 82);
+    if (hr > 92) score = Math.min(score, 88);
+    if (sys > 128 || dia > 84) score = Math.min(score, 86);
+    const energy = pickWeighted([['Low', 2], ['Medium', 5], ['High', 3]]);
+    const relax  = rand(50, 95);
+    const scanQ  = rand(60, 99);
+
+    // Appearance — neutral, descriptive only
+    const a = {
+      ageRange:   pick(['18–24','25–34','35–44','45–54','55+']),
+      ageConf:    pickWeighted([['Low',2],['Medium',5],['High',3]]),
+
+      faceShape:  pick(['Oval','Round','Square','Heart','Diamond','Oblong']),
+
+      // Symmetry
+      symOverall: pickWeighted([['Balanced',5],['Slight asymmetry',4],['Noticeable asymmetry',1]]),
+      symAlign:   pickWeighted([['Good',5],['Moderate',3],['Low',1]]),
+
+      // Jaw / cheek / nose / lip / forehead
+      jawVis:     pick(['Low','Medium','High']),
+      jawShape:   pick(['Soft','Defined','Angular','Not clear']),
+      cheekVis:   pick(['Low','Medium','High']),
+      contour:    pick(['Soft','Moderate','Defined','Not clear']),
+      noseVis:    pick(['Clear','Partially visible','Not clear']),
+      noseBridge: pick(['Low','Medium','High']),
+      noseAlign:  pick(['Centered','Slightly angled','Not clear']),
+      lipVis:     pick(['Clear','Partially visible','Not clear']),
+      lipFull:    pick(['Thin','Medium','Full']),
+      lipDry:     pick(['Low','Medium','High']),
+      foreVis:    pick(['Clear','Partially covered','Covered by hair','Not clear']),
+      foreTex:    pick(['Smooth','Mild texture','Visible texture']),
+
+      // Eyes
+      eyeSize:    pick(['Small','Medium','Large']),
+      eyeShape:   pick(['Almond','Round','Hooded','Deep-set','Monolid','Not clear']),
+      eyeOpenness:pick(['Low','Medium','High']),
+      eyeSym:     pickWeighted([['Balanced',5],['Slight asymmetry',4],['Noticeable asymmetry',1]]),
+      blink:      pick(['Yes','No']),
+      eyeStatus:  pickWeighted([['Open',7],['Partially closed',2],['Closed',0.5],['Not clear',1]]),
+
+      browThick:  pick(['Thin','Medium','Thick','Not clear']),
+      browShape:  pick(['Straight','Arched','Rounded','Not clear']),
+      browSym:    pickWeighted([['Balanced',5],['Slight asymmetry',3],['Not clear',2]]),
+
+      // Hair / facial hair
+      hairVis:    pickWeighted([['Visible',6],['Partially visible',3],['Not visible',1]]),
+      hairDensity:pick(['Low','Medium','High','Not clear']),
+      hairline:   pick(['Even','Mature','Receding appearance','Not clear']),
+      hairGrowth: pick(['Short','Medium','Long','Covered','Not visible']),
+      hairTex:    pick(['Straight','Wavy','Curly','Coily','Not clear']),
+      facialHair: pick(['None visible','Light stubble','Beard','Mustache','Full facial hair','Not clear']),
+      facialHairDensity: pick(['Low','Medium','High','Not clear']),
+
+      // Skin
+      skinTone:   pick(['Very light','Light','Medium','Tan','Deep']),
+      skinTex:    pick(['Smooth','Mild texture','Visible texture']),
+      skinRed:    pick(['Low','Medium','High']),
+      underEye:   pick(['Low','Medium','High']),
+      hydration:  pick(['Low','Medium','High']),
+      shine:      pick(['Low','Medium','High']),
+      tZone:      pick(['Low','Medium','High','Not clear']),
+
+      // Lines & pigmentation
+      fineLine:   pick(['Low','Medium','High']),
+      fineLineArea: pick(['Forehead','Eye area','Smile lines','Not clear']),
+      pigmentTone:  pick(['Low','Medium','High']),
+      pigmentSpot:  pick(['Low','Medium','High']),
+      pigmentPatch: pick(['Low','Medium','High']),
+
+      // Expression / tiredness / makeup
+      expression: pick(['Neutral expression','Smiling appearance','Tired appearance','Focused appearance','Low visibility']),
+      tired:      pick(['Low','Medium','High']),
+      makeup:     pick(['None visible','Light','Moderate','Heavy','Not clear']),
+
+      // Body / posture
+      frame:      pick(['Slim appearance','Medium frame appearance','Broad frame appearance','Not enough visible data']),
+      align:      pickWeighted([['Centered',5],['Slightly tilted',3],['Off-center',2]]),
+      posture:    pick(['Straight','Tilted left','Tilted right','Looking down','Looking up']),
+      headAngle:  pick(['Front-facing','Slight left','Slight right','Looking up','Looking down']),
+      scanSuit:   pickWeighted([['Good',5],['Moderate',3],['Poor',1]]),
+
+      // Accessories / coverings
+      glasses:    pickWeighted([['Detected',3],['Not detected',6],['Not clear',1]]),
+      glare:      pick(['Low','Medium','High']),
+      covering:   pickWeighted([['None',7],['Mask detected',1],['Scarf detected',1],['Partially covered',1],['Not clear',1]]),
+
+      // Environment / camera
+      distance:   pickWeighted([['Ideal',5],['Too close',2],['Too far',2]]),
+      coverage:   pickWeighted([['Good',5],['Medium',3],['Low',1]]),
+      lighting:   pickWeighted([['Excellent',2],['Good',5],['Fair',2],['Poor',1]]),
+      bgDist:     pickWeighted([['Low',5],['Medium',3],['High',1]]),
+      bgBright:   pickWeighted([['Balanced',5],['Dark',2],['Too bright',2]]),
+      sharp:      pickWeighted([['Clear',5],['Slight blur',3],['Blurry',1]]),
+      motion:     pickWeighted([['Low',6],['Medium',2],['High',1]]),
+    };
+
+    // Visual confidence label (used by appearance intro badge)
+    const apprConf = conf >= 88 ? 'High Confidence'
+                   : conf >= 75 ? 'Medium Confidence'
+                                : 'Low Confidence';
+
+    return {
+      hr, br,
+      stressPct, stressLabel,
+      bp: `${sys}/${dia}`, sys, dia, score, conf,
+      energy, relax, scanQ,
+      a, apprConf
+    };
+  }
+
+  // ============================================================
+  // SECTION SUMMARIES (headline + rating for hybrid appearance cards)
+  // ============================================================
+  function ratingClass(score) {
+    if (score >= 75) return 'good';
+    if (score >= 55) return 'warn';
+    return 'bad';
+  }
+  function ratingLabel(score) {
+    if (score >= 75) return 'Good';
+    if (score >= 55) return 'Fair';
+    return 'Needs Attention';
+  }
+  // Each summarizer returns { score (0-100), summary, ratingText, ratingCls }
+  function summarizeEye(a) {
+    let s = 70;
+    if (a.eyeStatus === 'Open') s += 10;
+    else if (a.eyeStatus === 'Partially closed') s -= 8;
+    else if (a.eyeStatus === 'Closed') s -= 18;
+    if (a.eyeSym === 'Balanced') s += 8;
+    else if (a.eyeSym === 'Noticeable asymmetry') s -= 10;
+    if (a.browSym === 'Balanced') s += 5;
+    if (a.eyeOpenness === 'High') s += 4;
+    s = Math.max(20, Math.min(99, s + rand(-5, 5)));
+    const adjectives = [];
+    if (a.eyeStatus === 'Open') adjectives.push('bright');
+    if (a.eyeSym === 'Balanced') adjectives.push('well-balanced');
+    if (a.browShape === 'Arched' || a.browShape === 'Rounded') adjectives.push('softly defined');
+    if (a.eyeOpenness === 'High') adjectives.push('fully open');
+    if (adjectives.length < 2) adjectives.push('clearly visible');
+    const summary = adjectives.slice(0, 3).map(cap).join(', ') +
+      ` — ${a.eyeShape.toLowerCase()} eyes with ${a.browThick.toLowerCase()} brows.`;
+    return { score: s, summary, ratingText: ratingLabel(s), ratingCls: ratingClass(s) };
+  }
+  function summarizeFace(a) {
+    let s = 72;
+    if (a.symOverall === 'Balanced') s += 10;
+    else if (a.symOverall === 'Noticeable asymmetry') s -= 12;
+    if (a.symAlign === 'Good') s += 6;
+    else if (a.symAlign === 'Low') s -= 8;
+    if (a.contour === 'Defined') s += 4;
+    s = Math.max(20, Math.min(99, s + rand(-4, 6)));
+    const traits = [];
+    traits.push(`${a.faceShape.toLowerCase()} face shape`);
+    if (a.symOverall === 'Balanced') traits.push('balanced proportions');
+    else traits.push(a.symOverall.toLowerCase());
+    if (a.jawShape !== 'Not clear') traits.push(`${a.jawShape.toLowerCase()} jawline`);
+    const summary = cap(traits.join(', ')) + '.';
+    return { score: s, summary, ratingText: ratingLabel(s), ratingCls: ratingClass(s) };
+  }
+  function summarizeSkin(a) {
+    let s = 70;
+    if (a.skinTex === 'Smooth') s += 8;
+    else if (a.skinTex === 'Visible texture') s -= 8;
+    if (a.hydration === 'High') s += 6; else if (a.hydration === 'Low') s -= 8;
+    if (a.skinRed === 'Low') s += 4; else if (a.skinRed === 'High') s -= 6;
+    if (a.fineLine === 'Low') s += 4; else if (a.fineLine === 'High') s -= 5;
+    if (a.underEye === 'High') s -= 6;
+    s = Math.max(20, Math.min(99, s + rand(-4, 4)));
+    const adj = [];
+    if (a.skinTex === 'Smooth') adj.push('smooth');
+    if (a.hydration === 'High') adj.push('well-hydrated');
+    else if (a.hydration === 'Low') adj.push('slightly dehydrated');
+    if (a.skinRed === 'Low') adj.push('even-toned');
+    if (a.shine === 'Low') adj.push('matte');
+    else if (a.shine === 'High') adj.push('shiny');
+    if (adj.length < 2) adj.push('visible');
+    const summary = cap(adj.slice(0, 3).join(', ')) +
+      ` — ${a.skinTone.toLowerCase()} tone with ${a.fineLine.toLowerCase()} fine-line visibility.`;
+    return { score: s, summary, ratingText: ratingLabel(s), ratingCls: ratingClass(s) };
+  }
+  function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+  // ============================================================
+  // RENDERING HELPERS
+  // ============================================================
+  function tagFor(metric, value, extra) {
+    if (metric === 'hr') {
+      if (value < 70)  return { text: 'Resting & calm',         cls: 'good' };
+      if (value <= 85) return { text: 'Within normal range',    cls: 'good' };
+      if (value <= 95) return { text: 'Slightly elevated',      cls: 'warn' };
+      return                    { text: 'Elevated — consider relaxing', cls: 'bad' };
+    }
+    if (metric === 'br') {
+      if (value <= 14) return { text: 'Steady & relaxed',       cls: 'good' };
+      if (value <= 18) return { text: 'Within normal range',    cls: 'good' };
+      return                    { text: 'Slightly fast',        cls: 'warn' };
+    }
+    if (metric === 'stress') {
+      // value is the categorical label derived from the percentage
+      if (value === 'Low')      return { text: 'Low — you appear relaxed', cls: 'good' };
+      if (value === 'Moderate') return { text: 'Moderate — some tension',  cls: 'warn' };
+      return                          { text: 'High — take a break',       cls: 'bad'  };
+    }
+    if (metric === 'bp') {
+      const { sys, dia } = extra;
+      if (sys < 120 && dia < 80) return { text: 'Optimal range', cls: 'good' };
+      if (sys < 130 && dia < 85) return { text: 'Normal range',  cls: 'good' };
+      return                         { text: 'Mildly elevated',  cls: 'warn' };
+    }
+    if (metric === 'score' || metric === 'relax' || metric === 'scanQ') {
+      if (value >= 90) return { text: 'Excellent',         cls: 'good' };
+      if (value >= 80) return { text: 'Good — keep it up', cls: 'good' };
+      if (value >= 70) return { text: 'Fair',              cls: 'warn' };
+      return                  { text: 'Room to improve',   cls: 'warn' };
+    }
+    if (metric === 'energy') {
+      if (value === 'High')   return { text: 'High energy',     cls: 'good' };
+      if (value === 'Medium') return { text: 'Moderate energy', cls: 'warn' };
+      return                        { text: 'Low energy',       cls: 'bad'  };
+    }
+    return { text: '', cls: 'neutral' };
+  }
+  const pillHTML = (t) => `<span class="pill-tag ${t.cls}">${t.text}</span>`;
+
+  function setText(id, val) { const el = $(id); if (el) el.textContent = val; }
+
+  function faceShapeDescription(shape) {
+    const map = {
+      'Oval':    'Balanced length and width with softly curved jaw.',
+      'Round':   'Similar width and length with soft curves.',
+      'Square':  'Strong jawline and similar face width and height.',
+      'Heart':   'Wider forehead narrowing toward a softer chin.',
+      'Diamond': 'Narrow forehead and jaw with wider cheekbones.',
+      'Oblong':  'Longer face length than width with straight sides.',
+    };
+    return map[shape] || '';
+  }
+
+  // ============================================================
+  // SHOW RESULTS
+  // ============================================================
+  function showResults(r) {
+    // ----- Wellness top: stress hero + 7 secondary cards -----
+    setText('rHr',     r.hr);
+    setText('rBr',     r.br);
+    setText('rStress', r.stressPct);
+    $('rBp').innerHTML = `${r.bp}<span class="unit">mmHg</span>`;
+    setText('rScore',  r.score);
+    setText('rEnergy', r.energy);
+    setText('rRelax',  r.relax);
+    setText('rScanQ',  r.scanQ);
+    setText('scoreNum', r.score + '/100');
+
+    $('rHrTag').innerHTML     = pillHTML(tagFor('hr', r.hr));
+    $('rBrTag').innerHTML     = pillHTML(tagFor('br', r.br));
+    $('rStressTag').innerHTML = pillHTML(tagFor('stress', r.stressLabel));
+    $('rBpTag').innerHTML     = pillHTML(tagFor('bp', null, { sys: r.sys, dia: r.dia }));
+    $('rScoreTag').innerHTML  = pillHTML(tagFor('score', r.score));
+    $('rEnergyTag').innerHTML = pillHTML(tagFor('energy', r.energy));
+    $('rRelaxTag').innerHTML  = pillHTML(tagFor('relax', r.relax));
+    $('rScanQTag').innerHTML  = pillHTML(tagFor('scanQ', r.scanQ));
+
+    // ----- Wellness Tips -----
+    const wellnessTips = [];
+    if (r.stressLabel !== 'Low') wellnessTips.push('Practice slow, deep breathing for 2 minutes.');
+    if (r.hr > 92)            wellnessTips.push('Stay hydrated — sip water throughout the day.');
+    if (r.relax < 75)         wellnessTips.push('Rest your eyes — try the 20-20-20 rule.');
+    if (r.energy === 'Low')   wellnessTips.push('Improve your sleep routine for steadier energy.');
+    if (r.scanQ < 80)         wellnessTips.push('Maintain good lighting for better scans.');
+    if (wellnessTips.length < 3) wellnessTips.push('Maintain regular sleep, hydration, and movement.');
+    wellnessTips.push('Consult a qualified professional for any real health concerns.');
+    renderTipList('wellnessTips', wellnessTips);
+
+    const a = r.a;
+
+    // ----- Three hybrid appearance sections: headline + collapsible details -----
+    // Eye & Eyebrow Health
+    const eyeSum = summarizeEye(a);
+    setText('eyeSummary', eyeSum.summary);
+    $('eyeRating').textContent = eyeSum.ratingText;
+    $('eyeRating').className = 'pill-tag ' + eyeSum.ratingCls;
+    setText('aEyeSize',     a.eyeSize);
+    setText('aEyeShape',    a.eyeShape);
+    setText('aEyeOpenness', a.eyeOpenness);
+    setText('aEyeSym',      a.eyeSym);
+    setText('aBlink',       a.blink);
+    setText('aEyeStatus',   a.eyeStatus);
+    setText('aBrowThick',   a.browThick);
+    setText('aBrowShape',   a.browShape);
+    setText('aBrowSym',     a.browSym);
+
+    // Face Structure
+    const faceSum = summarizeFace(a);
+    setText('faceSummary', faceSum.summary);
+    $('faceRating').textContent = faceSum.ratingText;
+    $('faceRating').className = 'pill-tag ' + faceSum.ratingCls;
+    setText('aFaceShape',  a.faceShape);
+    setText('aFaceShapeDesc', faceShapeDescription(a.faceShape));
+    setText('aSymOverall', a.symOverall);
+    setText('aSymAlign',   a.symAlign);
+    setText('aJawVis',     a.jawVis);
+    setText('aJawShape',   a.jawShape);
+    setText('aCheekVis',   a.cheekVis);
+    setText('aContour',    a.contour);
+    setText('aNoseVis',    a.noseVis);
+    setText('aNoseBridge', a.noseBridge);
+    setText('aNoseAlign',  a.noseAlign);
+    setText('aLipVis',     a.lipVis);
+    setText('aLipFull',    a.lipFull);
+    setText('aLipDry',     a.lipDry);
+    setText('aForeVis',    a.foreVis);
+    setText('aForeTex',    a.foreTex);
+
+    // Skin Appearance
+    const skinSum = summarizeSkin(a);
+    setText('skinSummary', skinSum.summary);
+    $('skinRating').textContent = skinSum.ratingText;
+    $('skinRating').className = 'pill-tag ' + skinSum.ratingCls;
+    setText('aSkinTone',     a.skinTone);
+    setText('aSkinTex',      a.skinTex);
+    setText('aSkinRed',      a.skinRed);
+    setText('aUnderEye',     a.underEye);
+    setText('aHydration',    a.hydration);
+    setText('aShine',        a.shine);
+    setText('aTZone',        a.tZone);
+    setText('aFineLine',     a.fineLine);
+    setText('aFineLineArea', a.fineLineArea);
+    setText('aPigmentTone',  a.pigmentTone);
+    setText('aPigmentSpot',  a.pigmentSpot);
+    setText('aPigmentPatch', a.pigmentPatch);
+
+    // Cache section summaries on results object so downloadReport can reuse them
+    r.summaries = { eye: eyeSum, face: faceSum, skin: skinSum };
+
+    // Confidence badge in appearance intro
+    const confEl = $('appearConfBadge');
+    if (confEl) {
+      confEl.textContent = r.apprConf;
+      confEl.className = 'conf-badge ' + (r.apprConf.startsWith('High') ? 'high' : r.apprConf.startsWith('Medium') ? 'med' : 'low');
+    }
+
+    // ----- Personalized scan tips (still uses underlying generated env data) -----
+    const tips = [];
+    if (a.lighting === 'Poor' || a.lighting === 'Fair') tips.push('Improve lighting — face a soft, even light source.');
+    if (a.align !== 'Centered')                          tips.push('Keep your face centered in the frame.');
+    if (a.glare === 'High')                              tips.push('Remove glare — adjust angle or reduce reflections.');
+    if (a.motion !== 'Low' || a.sharp !== 'Clear')       tips.push('Hold the camera steady to reduce motion blur.');
+    if (a.bgDist !== 'Low')                              tips.push('Use a plain, calm background for better results.');
+    if (a.coverage !== 'Good')                           tips.push('Keep your full face visible inside the scan frame.');
+    if (a.headAngle !== 'Front-facing')                  tips.push('Look directly at the camera.');
+    if (a.eyeStatus !== 'Open')                          tips.push('Keep your eyes open during the scan.');
+    if (a.bgBright === 'Too bright')                     tips.push('Avoid strong backlight behind you.');
+    if (a.distance !== 'Ideal')                          tips.push('Position the camera at eye level, arm’s length away.');
+    if (tips.length === 0)                               tips.push('Great setup! Your scan environment looks well-balanced.');
+    renderTipList('scanTips', tips);
+  }
+
+  function renderTipList(id, tips) {
+    const html = tips.map(t => `
+      <div class="tip">
+        <span class="check">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </span>
+        <span>${t}</span>
+      </div>`).join('');
+    $(id).innerHTML = html;
+  }
+
+  // ============================================================
+  // DOWNLOAD REPORT — branded HTML, opens in new tab, auto-prints
+  // ============================================================
+  function escapeHTML(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+  function sanitizeFilename(s) {
+    return String(s || 'guest').replace(/[^a-z0-9\-]+/gi, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'guest';
+  }
+
+  function buildReportHTML(r, user) {
+    const ts = new Date().toLocaleString();
+
+    return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Face Scan Report — ${escapeHTML(user.name)} · Obliq AI Education Foundation</title>
+<style>
+  *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+  :root {
+    --bg-1:#0a0f1f; --bg-2:#121a36; --bg-3:#1b2150;
+    --accent:#2de2c3; --accent-2:#6c8cff; --accent-3:#b06cff;
+    --text:#e8eefc; --muted:#9aa6c4;
+    --card:rgba(255,255,255,0.06); --card-border:rgba(255,255,255,0.14);
+  }
+  html,body { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  body {
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:var(--text); line-height:1.5;
+    background:
+      radial-gradient(900px 500px at 0% -10%, rgba(108,140,255,0.22), transparent 55%),
+      radial-gradient(800px 480px at 100% 10%, rgba(176,108,255,0.20), transparent 55%),
+      radial-gradient(700px 500px at 50% 110%, rgba(45,226,195,0.18), transparent 55%),
+      linear-gradient(180deg,var(--bg-1),var(--bg-2) 60%,var(--bg-3));
+    min-height:100vh;
+    padding: 28px 16px 48px;
+  }
+  /* Background mesh / graphics */
+  .bg-mesh {
+    position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden;
+  }
+  .bg-mesh svg { position:absolute; inset:0; width:100%; height:100%; opacity:0.18; }
+  .wrap { position:relative; z-index:1; max-width:760px; margin:0 auto; }
+
+  /* Header */
+  .header {
+    display:flex; align-items:center; gap:16px;
+    background:var(--card); border:1px solid var(--card-border);
+    border-radius:22px; padding:20px 22px; margin-bottom:18px;
+    backdrop-filter:blur(10px);
+  }
+  .logo { width:54px; height:54px; flex-shrink:0; }
+  .header-text h1 {
+    font-size:22px; font-weight:800; letter-spacing:-0.3px;
+    background:linear-gradient(135deg,#fff 0%,#cfe1ff 50%,#2de2c3 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .header-text .sub { color:var(--muted); font-size:12px; margin-top:2px; }
+  .actions { margin-left:auto; display:flex; gap:8px; }
+  .actions button, .actions a {
+    appearance:none; cursor:pointer; font:inherit;
+    padding:8px 14px; border-radius:10px; font-size:12px; font-weight:600;
+    color:#06121a; background:linear-gradient(135deg,var(--accent),var(--accent-2));
+    border:none; text-decoration:none; display:inline-flex; align-items:center; gap:6px;
+  }
+  .actions button.secondary, .actions a.secondary {
+    color:var(--text); background:rgba(255,255,255,0.08);
+    border:1px solid var(--card-border);
+  }
+
+  /* Cards */
+  .card {
+    background:var(--card); border:1px solid var(--card-border);
+    border-radius:20px; padding:20px 22px; margin-bottom:14px;
+    backdrop-filter:blur(10px);
+  }
+  .card h2 {
+    font-size:13px; color:var(--accent);
+    text-transform:uppercase; letter-spacing:1.2px; font-weight:700;
+    margin-bottom:12px; display:flex; align-items:center; gap:8px;
+  }
+  .card h2 .dot { width:8px; height:8px; border-radius:50%; background:var(--accent); box-shadow:0 0 8px var(--accent); }
+
+  /* User info */
+  .user-grid {
+    display:grid; grid-template-columns:repeat(3,1fr); gap:12px;
+  }
+  @media (max-width:560px) { .user-grid { grid-template-columns:1fr; } }
+  .user-grid .item {
+    background:rgba(255,255,255,0.04); border:1px solid var(--card-border);
+    border-radius:14px; padding:12px 14px;
+  }
+  .user-grid .item .k {
+    font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.4px; margin-bottom:4px;
+  }
+  .user-grid .item .v {
+    font-size:16px; font-weight:700; color:#fff; word-break:break-word;
+  }
+
+  /* Wellness summary grid */
+  .well-grid {
+    display:grid; grid-template-columns:repeat(3,1fr); gap:10px;
+    margin-top:8px;
+  }
+  @media (max-width:560px) { .well-grid { grid-template-columns:repeat(2,1fr); } }
+  .well-grid .item {
+    background:rgba(255,255,255,0.04); border:1px solid var(--card-border);
+    border-radius:12px; padding:10px 12px;
+  }
+  .well-grid .item .k { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.3px; margin-bottom:2px; }
+  .well-grid .item .v { font-size:15px; color:#fff; font-weight:700; }
+  .well-grid .item .v small { font-weight:500; color:var(--muted); font-size:11px; margin-left:2px; }
+
+  /* Footer */
+  .footer-disclaim {
+    margin-top:14px; padding:14px 18px; border-radius:14px;
+    background:rgba(255,123,138,0.10); border:1px solid rgba(255,123,138,0.30);
+    color:#ffd2d8; font-size:11.5px; line-height:1.55;
+  }
+  .footer-meta {
+    text-align:center; font-size:11px; color:var(--muted); margin-top:18px;
+  }
+
+  /* Print */
+  @page { size:A4; margin:14mm; }
+  @media print {
+    body { padding:0; background:#0a0f1f !important; }
+    .bg-mesh { position:absolute; }
+    .actions { display:none !important; }
+    .card, .header { box-shadow:none !important; page-break-inside:avoid; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-mesh" aria-hidden="true">
+  <svg viewBox="0 0 800 1100" preserveAspectRatio="xMidYMid slice">
+    <defs>
+      <linearGradient id="meshLine" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#2de2c3" stop-opacity="0.6"/>
+        <stop offset="100%" stop-color="#6c8cff" stop-opacity="0.3"/>
+      </linearGradient>
+    </defs>
+    <g stroke="url(#meshLine)" stroke-width="0.6" fill="none">
+      ${Array.from({length: 14}, (_, i) =>
+        `<line x1="${-100 + i*70}" y1="-50" x2="${300 + i*70}" y2="1200"/>`).join('')}
+      ${Array.from({length: 18}, (_, i) =>
+        `<line x1="-50" y1="${i*70}" x2="900" y2="${i*70 + 200}"/>`).join('')}
+    </g>
+    <circle cx="650" cy="120" r="160" fill="rgba(45,226,195,0.06)"/>
+    <circle cx="120" cy="800" r="180" fill="rgba(108,140,255,0.06)"/>
+  </svg>
+</div>
+
+<div class="wrap">
+
+  <div class="header">
+    <svg class="logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="logoG" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%"   stop-color="#2de2c3"/>
+          <stop offset="50%"  stop-color="#6c8cff"/>
+          <stop offset="100%" stop-color="#b06cff"/>
+        </linearGradient>
+      </defs>
+      <rect x="2" y="2" width="96" height="96" rx="22" fill="url(#logoG)"/>
+      <rect x="14" y="14" width="72" height="72" rx="16" fill="#0a0f1f"/>
+      <rect x="22" y="22" width="56" height="56" rx="11" fill="none" stroke="url(#logoG)" stroke-width="3.5"/>
+      <circle cx="50" cy="50" r="11" fill="url(#logoG)"/>
+      <circle cx="50" cy="50" r="4.5" fill="#0a0f1f"/>
+    </svg>
+    <div class="header-text">
+      <div style="font-size:10px; letter-spacing:1.6px; color:#2de2c3; text-transform:uppercase; font-weight:700; margin-bottom:2px;">Obliq AI Education Foundation</div>
+      <h1>Face Scan Report</h1>
+      <div class="sub">Generated ${escapeHTML(ts)} · Wellness &amp; Appearance Demo</div>
+    </div>
+    <div class="actions">
+      <button onclick="window.print()" type="button">Save as PDF</button>
+      <a class="secondary" id="dlHtmlLink" href="#" download>Save HTML</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="dot"></span> Scan recipient</h2>
+    <div class="user-grid">
+      <div class="item"><div class="k">Name</div><div class="v">${escapeHTML(user.name)}</div></div>
+      <div class="item"><div class="k">Phone</div><div class="v">${escapeHTML(user.phone)}</div></div>
+      <div class="item"><div class="k">Age</div><div class="v">${escapeHTML(user.age)} years</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="dot"></span> Wellness summary</h2>
+    <div class="well-grid">
+      <div class="item"><div class="k">Stress Level</div><div class="v">${r.stressPct}<small>%</small></div></div>
+      <div class="item"><div class="k">Heart Rate</div><div class="v">${r.hr}<small>bpm</small></div></div>
+      <div class="item"><div class="k">Breathing</div><div class="v">${r.br}<small>/min</small></div></div>
+      <div class="item"><div class="k">Blood Pressure</div><div class="v">${escapeHTML(r.bp)}<small>mmHg</small></div></div>
+      <div class="item"><div class="k">Wellness Score</div><div class="v">${r.score}<small>/100</small></div></div>
+      <div class="item"><div class="k">Energy</div><div class="v">${escapeHTML(r.energy)}</div></div>
+      <div class="item"><div class="k">Relaxation</div><div class="v">${r.relax}<small>/100</small></div></div>
+      <div class="item"><div class="k">Scan Quality</div><div class="v">${r.scanQ}<small>/100</small></div></div>
+    </div>
+  </div>
+
+  <div class="footer-disclaim">
+    <strong>Disclaimer:</strong> This report is issued by <strong>Obliq AI Education Foundation</strong> as a
+    demonstration only. It does not measure real medical vitals and should not be used for diagnosis, treatment,
+    or medical decisions. The analysis is AI-simulated for educational purposes only and may be inaccurate.
+  </div>
+
+  <div class="footer-meta">
+    © Obliq AI Education Foundation · ${escapeHTML(ts)}
+  </div>
+</div>
+
+<\script>
+  // Wire up "Save HTML" link to download a copy of this document
+  (function(){
+    var blob = new Blob([document.documentElement.outerHTML], { type: 'text/html;charset=utf-8' });
+    var url  = URL.createObjectURL(blob);
+    var link = document.getElementById('dlHtmlLink');
+    if (link) {
+      link.href = url;
+      link.download = 'Obliq-FaceScan-${sanitizeFilename(user.name)}-${Date.now()}.html';
+    }
+  })();
+  // Auto-trigger print once the page has fully loaded
+  window.addEventListener('load', function () {
+    setTimeout(function () { try { window.print(); } catch (e) {} }, 350);
+  });
+<\/script>
+</body>
+</html>`;
+  }
+
+  // Lazy-load html2pdf (jsPDF + html2canvas bundle) for direct PDF download
+  let _html2pdfPromise = null;
+  function loadHtml2Pdf() {
+    if (window.html2pdf) return Promise.resolve(true);
+    if (_html2pdfPromise) return _html2pdfPromise;
+    _html2pdfPromise = new Promise((resolve) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.2/html2pdf.bundle.min.js';
+      s.crossOrigin = 'anonymous';
+      s.onload  = () => resolve(true);
+      s.onerror = () => resolve(false);
+      document.head.appendChild(s);
+    });
+    return _html2pdfPromise;
+  }
+
+  // Build the report as a DOM node (off-screen) for html2pdf to render
+  function buildReportNode(r, user) {
+    const ts = new Date().toLocaleString();
+    const node = document.createElement('div');
+    node.style.cssText = 'position:fixed; left:-99999px; top:0; width:760px; pointer-events:none;';
+    node.innerHTML = `
+      <style>
+        .pdf-r * { box-sizing: border-box; margin: 0; padding: 0; }
+        .pdf-r {
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+          color: #e8eefc; line-height: 1.5; padding: 28px 24px;
+          background:
+            radial-gradient(900px 500px at 0% -10%, rgba(108,140,255,0.22), transparent 55%),
+            radial-gradient(800px 480px at 100% 10%, rgba(176,108,255,0.20), transparent 55%),
+            radial-gradient(700px 500px at 50% 110%, rgba(45,226,195,0.18), transparent 55%),
+            linear-gradient(180deg, #0a0f1f, #121a36 60%, #1b2150);
+          width: 760px;
+        }
+        .pdf-r .pdf-header {
+          display: flex; align-items: center; gap: 16px;
+          background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14);
+          border-radius: 18px; padding: 18px 20px; margin-bottom: 16px;
+        }
+        .pdf-r .pdf-logo { width: 52px; height: 52px; flex-shrink: 0; }
+        .pdf-r .pdf-header h1 {
+          font-size: 22px; font-weight: 800; letter-spacing: -0.3px;
+          background: linear-gradient(135deg, #fff 0%, #cfe1ff 50%, #2de2c3 100%);
+          -webkit-background-clip: text; background-clip: text; color: transparent;
+        }
+        .pdf-r .pdf-header .sub { color: #9aa6c4; font-size: 12px; margin-top: 2px; }
+        .pdf-r .pdf-card {
+          background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14);
+          border-radius: 16px; padding: 18px 20px; margin-bottom: 14px;
+        }
+        .pdf-r .pdf-card h2 {
+          font-size: 12px; color: #2de2c3; text-transform: uppercase;
+          letter-spacing: 1.4px; font-weight: 700; margin-bottom: 12px;
+          display: flex; align-items: center; gap: 8px;
+        }
+        .pdf-r .pdf-card h2 .dot {
+          width: 7px; height: 7px; border-radius: 50%;
+          background: #2de2c3; box-shadow: 0 0 8px #2de2c3; display: inline-block;
+        }
+        .pdf-r .pdf-grid-3 {
+          display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+        }
+        .pdf-r .pdf-grid-3 .item {
+          background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.14);
+          border-radius: 12px; padding: 11px 13px;
+        }
+        .pdf-r .pdf-grid-3 .k {
+          font-size: 9px; color: #9aa6c4; text-transform: uppercase;
+          letter-spacing: 0.4px; margin-bottom: 4px;
+        }
+        .pdf-r .pdf-grid-3 .v {
+          font-size: 15px; font-weight: 700; color: #fff; word-break: break-word;
+        }
+        .pdf-r .pdf-well-grid {
+          display: grid; grid-template-columns: repeat(4, 1fr); gap: 9px;
+        }
+        .pdf-r .pdf-well-grid .item {
+          background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.14);
+          border-radius: 11px; padding: 10px 12px;
+        }
+        .pdf-r .pdf-well-grid .k {
+          font-size: 9px; color: #9aa6c4; text-transform: uppercase;
+          letter-spacing: 0.3px; margin-bottom: 3px;
+        }
+        .pdf-r .pdf-well-grid .v {
+          font-size: 17px; color: #fff; font-weight: 800; line-height: 1;
+        }
+        .pdf-r .pdf-well-grid .v small {
+          font-weight: 500; color: #9aa6c4; font-size: 10px; margin-left: 2px;
+        }
+        .pdf-r .pdf-disclaim {
+          margin-top: 14px; padding: 12px 16px; border-radius: 12px;
+          background: rgba(255,123,138,0.10); border: 1px solid rgba(255,123,138,0.30);
+          color: #ffd2d8; font-size: 11px; line-height: 1.5;
+        }
+        .pdf-r .pdf-meta {
+          text-align: center; font-size: 10px; color: #9aa6c4; margin-top: 16px;
+        }
+      </style>
+      <div class="pdf-r">
+        <div class="pdf-header">
+          <svg class="pdf-logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="pdfLogoG" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%"   stop-color="#2de2c3"/>
+                <stop offset="50%"  stop-color="#6c8cff"/>
+                <stop offset="100%" stop-color="#b06cff"/>
+              </linearGradient>
+            </defs>
+            <rect x="2" y="2" width="96" height="96" rx="22" fill="url(#pdfLogoG)"/>
+            <rect x="14" y="14" width="72" height="72" rx="16" fill="#0a0f1f"/>
+            <rect x="22" y="22" width="56" height="56" rx="11" fill="none" stroke="url(#pdfLogoG)" stroke-width="3.5"/>
+            <circle cx="50" cy="50" r="11" fill="url(#pdfLogoG)"/>
+            <circle cx="50" cy="50" r="4.5" fill="#0a0f1f"/>
+          </svg>
+          <div>
+            <div style="font-size:10px; letter-spacing:1.6px; color:#2de2c3; text-transform:uppercase; font-weight:700; margin-bottom:2px;">Obliq AI Education Foundation</div>
+            <h1>Face Scan Report</h1>
+            <div class="sub">Generated ${escapeHTML(ts)} · Wellness Demo</div>
+          </div>
+        </div>
+
+        <div class="pdf-card">
+          <h2><span class="dot"></span> Scan recipient</h2>
+          <div class="pdf-grid-3">
+            <div class="item"><div class="k">Name</div><div class="v">${escapeHTML(user.name)}</div></div>
+            <div class="item"><div class="k">Phone</div><div class="v">${escapeHTML(user.phone)}</div></div>
+            <div class="item"><div class="k">Age</div><div class="v">${escapeHTML(user.age)} years</div></div>
+          </div>
+        </div>
+
+        <div class="pdf-card">
+          <h2><span class="dot"></span> Wellness summary</h2>
+          <div class="pdf-well-grid">
+            <div class="item"><div class="k">Stress Level</div><div class="v">${r.stressPct}<small>%</small></div></div>
+            <div class="item"><div class="k">Heart Rate</div><div class="v">${r.hr}<small>bpm</small></div></div>
+            <div class="item"><div class="k">Breathing</div><div class="v">${r.br}<small>/min</small></div></div>
+            <div class="item"><div class="k">Blood Pressure</div><div class="v">${escapeHTML(r.bp)}<small>mmHg</small></div></div>
+            <div class="item"><div class="k">Wellness Score</div><div class="v">${r.score}<small>/100</small></div></div>
+            <div class="item"><div class="k">Energy</div><div class="v">${escapeHTML(r.energy)}</div></div>
+            <div class="item"><div class="k">Relaxation</div><div class="v">${r.relax}<small>/100</small></div></div>
+            <div class="item"><div class="k">Scan Quality</div><div class="v">${r.scanQ}<small>/100</small></div></div>
+          </div>
+        </div>
+
+        <div class="pdf-disclaim">
+          <strong>Disclaimer:</strong> This report is issued by <strong>Obliq AI Education Foundation</strong> as
+          a demonstration only. It does not measure real medical vitals and should not be used for diagnosis,
+          treatment, or medical decisions. The analysis is AI-simulated for educational purposes only and may be inaccurate.
+        </div>
+
+        <div class="pdf-meta">© Obliq AI Education Foundation · ${escapeHTML(ts)}</div>
+      </div>
+    `;
+    return node;
+  }
+
+  // Visible toast (so users see what's happening — not just screen-reader announce)
+  function showToast(msg, kind) {
+    let t = $('appToast');
+    if (!t) {
+      t = document.createElement('div');
+      t.id = 'appToast';
+      t.style.cssText = 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:9999;max-width:90vw;padding:12px 18px;border-radius:12px;font:14px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#06121a;background:linear-gradient(135deg,#2de2c3,#6c8cff);box-shadow:0 10px 40px rgba(0,0,0,0.4);text-align:center;font-weight:600;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;';
+      document.body.appendChild(t);
+    }
+    if (kind === 'error') t.style.background = 'linear-gradient(135deg,#ff7b8a,#b06cff)';
+    else if (kind === 'info') t.style.background = 'linear-gradient(135deg,rgba(255,255,255,0.12),rgba(255,255,255,0.18))', t.style.color = '#fff';
+    else t.style.background = 'linear-gradient(135deg,#2de2c3,#6c8cff)', t.style.color = '#06121a';
+    t.textContent = msg;
+    requestAnimationFrame(() => { t.style.opacity = '1'; t.style.transform = 'translate(-50%, -8px)'; });
+    clearTimeout(t._hideT);
+    t._hideT = setTimeout(() => {
+      t.style.opacity = '0'; t.style.transform = 'translateX(-50%)';
+    }, 4500);
+  }
+
+  // iOS popup loader markup — shown while PDF generates so the user sees activity
+  const IOS_POPUP_HTML = `<!doctype html><html><head><meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generating PDF…</title>
+    <style>
+      *{box-sizing:border-box;margin:0;padding:0;}
+      html,body{height:100%;}
+      body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+        background:linear-gradient(180deg,#0a0f1f,#121a36 60%,#1b2150);
+        color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;
+        padding:32px;text-align:center;}
+      .ring{width:56px;height:56px;border:4px solid rgba(45,226,195,0.18);
+        border-top-color:#2de2c3;border-radius:50%;
+        animation:spin 1s linear infinite;margin-bottom:22px;}
+      @keyframes spin{to{transform:rotate(360deg)}}
+      h1{font-size:18px;font-weight:700;margin-bottom:6px;
+        background:linear-gradient(135deg,#fff 0%,#2de2c3 100%);
+        -webkit-background-clip:text;background-clip:text;color:transparent;}
+      p{color:#9aa6c4;font-size:13px;line-height:1.5;max-width:280px;}
+      .hint{margin-top:18px;padding:12px 16px;border-radius:12px;
+        background:rgba(45,226,195,0.08);border:1px solid rgba(45,226,195,0.25);
+        color:#cfe1ff;font-size:12px;max-width:300px;}
+    </style></head><body>
+      <div class="ring"></div>
+      <h1>Generating your PDF…</h1>
+      <p>This will take a few seconds.</p>
+      <div class="hint">Once it loads, tap the share icon (square with up-arrow) and choose <strong>Save to Files</strong>.</div>
+    </body></html>`;
+
+  function downloadReport(prepedPopup) {
+    if (!lastResults || !scanUser) {
+      if (prepedPopup) try { prepedPopup.close(); } catch (e) {}
+      showToast('Please complete a scan first.', 'error');
+      return;
+    }
+
+    const btn = $('btnDownload');
+    const origLabel = btn ? btn.innerHTML : null;
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = `<span style="display:inline-block;width:14px;height:14px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:hudLoaderSpin 0.8s linear infinite;"></span> Generating PDF…`;
+    }
+    showToast('Generating your PDF report…', 'info');
+
+    // Async-IIFE so the outer function can stay sync-callable from the click handler
+    (async () => {
+      try {
+        const ok = await loadHtml2Pdf();
+        if (!ok || !window.html2pdf) {
+          // CDN unreachable — close popup, fall back to HTML download
+          if (prepedPopup) try { prepedPopup.close(); } catch (e) {}
+          const html = buildReportHTML(lastResults, scanUser);
+          const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `Obliq-FaceScan-${sanitizeFilename(scanUser.name)}-${Date.now()}.html`;
+          document.body.appendChild(link); link.click(); document.body.removeChild(link);
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+          showToast('Network issue — downloaded HTML version (open it and Save as PDF).', 'error');
+          return;
+        }
+
+        const node = buildReportNode(lastResults, scanUser);
+        document.body.appendChild(node);
+
+        try {
+          const filename = `Obliq-FaceScan-${sanitizeFilename(scanUser.name)}-${Date.now()}.pdf`;
+          const opts = {
+            margin: [8, 8, 8, 8],
+            filename,
+            image:       { type: 'jpeg', quality: 0.96 },
+            html2canvas: { scale: 2, useCORS: true, backgroundColor: '#0a0f1f', letterRendering: true },
+            jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            pagebreak:   { mode: ['css', 'legacy'] },
+          };
+
+          // Generate the PDF as a Blob (so we control how it's delivered)
+          const blob = await window.html2pdf().set(opts).from(node).outputPdf('blob');
+          const url = URL.createObjectURL(blob);
+
+          if (prepedPopup && !prepedPopup.closed) {
+            // iOS path: navigate the pre-claimed popup to the PDF blob
+            try {
+              prepedPopup.location.replace(url);
+              showToast('PDF ready in the new tab — tap Share → Save to Files.', 'info');
+            } catch (e) {
+              // Cross-origin block — tear down popup and try same-window navigation
+              try { prepedPopup.close(); } catch (e2) {}
+              window.location.href = url;
+            }
+          } else {
+            // Desktop / Android: standard direct download via <a download>
+            const a = document.createElement('a');
+            a.href = url; a.download = filename;
+            a.style.display = 'none';
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            showToast('PDF downloaded.', 'success');
+          }
+          // Revoke after a minute (give the popup time to render the PDF)
+          setTimeout(() => URL.revokeObjectURL(url), 60000);
+        } catch (e) {
+          console.error('PDF generation error:', e);
+          if (prepedPopup) try { prepedPopup.close(); } catch (e2) {}
+          showToast('PDF generation failed. ' + (e && e.message ? e.message : 'Try again.'), 'error');
+        } finally {
+          node.remove();
+        }
+      } finally {
+        if (btn) { btn.disabled = false; btn.innerHTML = origLabel; }
+      }
+    })();
+  }
+
+  // ============================================================
+  // CONFIRMATION MODAL
+  // ============================================================
+  function openConfirmModal() {
+    lastFocusedBeforeModal = document.activeElement;
+    const m = $('confirmModal');
+    m.hidden = false;
+    m.classList.add('shown');
+    document.body.style.overflow = 'hidden';
+    requestAnimationFrame(() => $('btnConfirmYes').focus());
+    announce('Are you sure you want to start the scan?');
+  }
+  function closeConfirmModal() {
+    const m = $('confirmModal');
+    m.classList.remove('shown');
+    m.hidden = true;
+    document.body.style.overflow = '';
+    if (lastFocusedBeforeModal && lastFocusedBeforeModal.focus) {
+      try { lastFocusedBeforeModal.focus(); } catch (e) {}
+    }
+  }
+
+  // Backdrop click closes
+  $('confirmModal').addEventListener('click', (e) => {
+    if (e.target === $('confirmModal')) closeConfirmModal();
+  });
+  // Esc closes
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && $('confirmModal').classList.contains('shown')) {
+      closeConfirmModal();
+    }
+  });
+
+  $('btnConfirmNo').addEventListener('click', closeConfirmModal);
+  $('btnConfirmYes').addEventListener('click', async () => {
+    closeConfirmModal();
+    show('scan');
+    resetScanUI();
+    const ok = await startCamera();
+    if (ok) {
+      // Auto-start the scan after a short pause so the user sees the camera is on
+      setTimeout(() => { if (!scanning) startScan(); }, 700);
+    }
+  });
+
+  // ============================================================
+  // PRE-SCAN FORM
+  // ============================================================
+  function setFieldError(fieldId, errId, msg) {
+    const f = $(fieldId), e = $(errId);
+    if (msg) {
+      f.setAttribute('aria-invalid', 'true');
+      e.textContent = msg;
+      e.classList.add('shown');
+    } else {
+      f.removeAttribute('aria-invalid');
+      e.textContent = '';
+      e.classList.remove('shown');
+    }
+  }
+  function validatePreScan() {
+    const name  = $('inputName').value.trim();
+    const phone = $('inputPhone').value.trim();
+    const ageStr = $('inputAge').value.trim();
+    const age = parseInt(ageStr, 10);
+    let ok = true, firstBad = null;
+
+    if (!name || name.length < 2) {
+      setFieldError('inputName', 'errName', 'Please enter your full name (at least 2 characters).');
+      ok = false; firstBad = firstBad || 'inputName';
+    } else setFieldError('inputName', 'errName', '');
+
+    const phoneDigits = phone.replace(/[^0-9]/g, '');
+    if (!phone || phoneDigits.length < 7 || phoneDigits.length > 15) {
+      setFieldError('inputPhone', 'errPhone', 'Please enter a valid phone number (7–15 digits).');
+      ok = false; firstBad = firstBad || 'inputPhone';
+    } else setFieldError('inputPhone', 'errPhone', '');
+
+    if (!ageStr || isNaN(age) || age < 13 || age > 120) {
+      setFieldError('inputAge', 'errAge', 'Please enter an age between 13 and 120.');
+      ok = false; firstBad = firstBad || 'inputAge';
+    } else setFieldError('inputAge', 'errAge', '');
+
+    if (!ok && firstBad) $(firstBad).focus();
+    return ok ? { name, phone, age } : null;
+  }
+
+  $('preScanForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const result = validatePreScan();
+    if (!result) {
+      announce('Please correct the highlighted fields.');
+      return;
+    }
+    scanUser = result;
+    openConfirmModal();
+  });
+  // Live-clear errors as user types
+  ['inputName', 'inputPhone', 'inputAge'].forEach(id => {
+    $(id).addEventListener('input', () => {
+      const errId = id === 'inputName' ? 'errName' : id === 'inputPhone' ? 'errPhone' : 'errAge';
+      if ($(id).getAttribute('aria-invalid') === 'true') {
+        setFieldError(id, errId, '');
+      }
+    });
+  });
+  $('btnPreScanBack').addEventListener('click', () => show('landing'));
+
+  // ============================================================
+  // EVENTS
+  // ============================================================
+  // Consent toggles button visual state (button is always clickable now,
+  // so a missed/unchecked consent shows a friendly nudge instead of silently failing)
+  $('btnStart').disabled = false;
+  $('consentCheck').addEventListener('change', (e) => {
+    $('btnStart').classList.toggle('needs-consent', !e.target.checked);
+  });
+
+  // Landing → Pre-scan form
+  $('btnStart').addEventListener('click', () => {
+    if (!$('consentCheck').checked) {
+      // Visual nudge: shake + highlight the consent box, scroll to it, announce
+      const consentEl = document.querySelector('.consent');
+      if (consentEl) {
+        consentEl.classList.remove('shake');
+        // force reflow so the animation can replay
+        void consentEl.offsetWidth;
+        consentEl.classList.add('shake');
+        consentEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const cb = $('consentCheck');
+        try { cb.focus({ preventScroll: true }); } catch (e) { cb.focus(); }
+      }
+      announce('Please tick the consent box to continue.');
+      return;
+    }
+    show('preScan');
+    // Pre-fill if user already filled form earlier this session
+    if (scanUser) {
+      $('inputName').value = scanUser.name || '';
+      $('inputPhone').value = scanUser.phone || '';
+      $('inputAge').value = scanUser.age || '';
+    }
+    setTimeout(() => $('inputName').focus(), 200);
+  });
+
+  // Cancel scan / stop camera (scan screen) — return to landing
+  $('btnStop').addEventListener('click', () => {
+    stopCamera();
+    if (scanTimer) clearInterval(scanTimer);
+    stageTimers.forEach(t => clearTimeout(t));
+    stageTimers = [];
+    clearHudIntervals();
+    scanning = false;
+    show('landing');
+  });
+
+  // Stop camera (results screen)
+  $('btnStop2').addEventListener('click', () => { stopCamera(); show('landing'); });
+
+  // Retry / back from camera-error overlay
+  $('btnRetry').addEventListener('click', async () => { resetScanUI(); await startCamera(); });
+  $('btnBack').addEventListener('click', () => { stopCamera(); show('landing'); });
+
+  // Results → Scan again (reuse stored user details, but re-confirm)
+  $('btnAgain').addEventListener('click', () => {
+    if (!scanUser) {
+      // Edge case: user details lost — go back to form
+      show('preScan');
+      setTimeout(() => $('inputName').focus(), 200);
+      return;
+    }
+    openConfirmModal();
+  });
+
+  // Results → Home
+  $('btnHome').addEventListener('click', () => { stopCamera(); show('landing'); });
+
+  // Download report
+  // On iOS Safari, programmatic <a download> from an async chain is unreliable.
+  // We synchronously claim a popup window inside the click handler and pipe the
+  // generated PDF into it once ready.
+  $('btnDownload').addEventListener('click', () => {
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+                  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    let popup = null;
+    if (isIOS) {
+      try {
+        popup = window.open('', '_blank');
+        if (popup && popup.document) {
+          popup.document.open();
+          popup.document.write(IOS_POPUP_HTML);
+          popup.document.close();
+        }
+      } catch (e) { popup = null; }
+    }
+    downloadReport(popup);
+  });
+
+  // Camera switch
+  $('btnSwitch').addEventListener('click', switchCamera);
+
+  // Show camera switch button only if multiple cameras are available
+  if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+    navigator.mediaDevices.enumerateDevices().then(devices => {
+      if (devices.filter(d => d.kind === 'videoinput').length > 1) {
+        $('btnSwitch').classList.add('visible');
+      }
+    }).catch(() => {});
+  }
+
+  // Cleanup
+  window.addEventListener('beforeunload', stopCamera);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mining Surface Map Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f3efe6;
+    --paper-2:#ebe5d8;
+    --ink:#1c2126;
+    --ink-soft:#5a6068;
+    --line:#c9c0ad;
+    --accent:#0e7c8a;
+    --accent-dk:#0a5b65;
+    --red:#bb3a2e;
+    --blue:#3b6ea5;
+    --ochre:#c6952f;
+    --green:#5d7a3a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:'Archivo',sans-serif;
+    background:var(--paper);
+    background-image:
+      linear-gradient(rgba(0,0,0,.025) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(0,0,0,.025) 1px,transparent 1px);
+    background-size:26px 26px;
+    color:var(--ink);
+    min-height:100vh;
+  }
+  header{
+    border-bottom:2px solid var(--ink);
+    padding:22px 30px 18px;
+    display:flex;align-items:flex-end;justify-content:space-between;
+    flex-wrap:wrap;gap:12px;
+  }
+  header .brand h1{
+    font-size:26px;font-weight:800;letter-spacing:-.5px;text-transform:uppercase;
+  }
+  header .brand .accent{color:var(--accent);}
+  header .brand p{
+    font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-soft);
+    margin-top:4px;letter-spacing:.5px;
+  }
+  header .stamp{
+    font-family:'JetBrains Mono',monospace;font-size:10px;text-align:right;
+    color:var(--ink-soft);line-height:1.7;border:1px solid var(--line);
+    padding:6px 12px;background:var(--paper-2);
+  }
+  main{
+    display:flex;gap:24px;padding:24px 30px;flex-wrap:wrap;
+    align-items:flex-start;justify-content:center;
+  }
+  .panel{
+    background:var(--paper-2);
+    border:1.5px solid var(--ink);
+    width:300px;flex-shrink:0;
+  }
+  .panel h3{
+    font-size:12px;text-transform:uppercase;letter-spacing:1.5px;
+    background:var(--ink);color:var(--paper);padding:9px 14px;font-weight:600;
+  }
+  .panel-body{padding:16px 14px;}
+  label{
+    display:block;font-family:'JetBrains Mono',monospace;font-size:10px;
+    text-transform:uppercase;letter-spacing:.8px;color:var(--ink-soft);
+    margin:12px 0 4px;
+  }
+  label:first-child{margin-top:0;}
+  input,select{
+    width:100%;padding:8px 9px;border:1px solid var(--line);
+    background:var(--paper);font-family:'JetBrains Mono',monospace;
+    font-size:13px;color:var(--ink);border-radius:0;
+  }
+  input:focus,select:focus{outline:2px solid var(--accent);outline-offset:-1px;}
+  .row{display:flex;gap:10px;}
+  .row>div{flex:1;}
+  input[type=file]{padding:6px;font-size:10px;cursor:pointer;}
+  .btn{
+    width:100%;margin-top:18px;padding:11px;border:none;cursor:pointer;
+    background:var(--accent);color:#fff;font-family:'Archivo',sans-serif;
+    font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:1px;
+    transition:background .15s;
+  }
+  .btn:hover{background:var(--accent-dk);}
+  .btn.ghost{
+    background:transparent;color:var(--ink);border:1.5px solid var(--ink);
+    margin-top:8px;
+  }
+  .btn.ghost:hover{background:var(--ink);color:var(--paper);}
+  .status{
+    margin-top:14px;font-family:'JetBrains Mono',monospace;font-size:10px;
+    color:var(--ink-soft);border-top:1px dashed var(--line);padding-top:10px;
+    line-height:1.6;min-height:32px;
+  }
+  .status b{color:var(--accent-dk);}
+  .map-wrap{display:flex;flex-direction:column;gap:0;}
+  .canvas-frame{
+    border:1.5px solid var(--ink);background:#faf8f2;position:relative;
+  }
+  canvas{display:block;}
+  .coord-readout{
+    font-family:'JetBrains Mono',monospace;font-size:11px;
+    background:var(--ink);color:var(--paper);padding:7px 14px;
+    display:flex;justify-content:space-between;letter-spacing:.5px;
+  }
+  .legend{
+    background:var(--paper-2);border:1.5px solid var(--ink);border-top:none;
+    padding:12px 14px;display:flex;flex-wrap:wrap;gap:8px 20px;
+  }
+  .legend-item{
+    display:flex;align-items:center;gap:7px;
+    font-family:'JetBrains Mono',monospace;font-size:10px;
+    text-transform:uppercase;letter-spacing:.5px;
+  }
+  .swatch{width:16px;height:12px;border:1px solid var(--ink);flex-shrink:0;}
+  .swatch.line{height:0;border:none;border-top:2.5px solid;width:18px;}
+  .swatch.dot{width:11px;height:11px;border-radius:50%;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <h1>Mining Surface <span class="accent">Map</span> Generator</h1>
+    <p>// SET PARAMETERS OR UPLOAD SURVEY DATA — TOOL RENDERS THE SITE MAP</p>
+  </div>
+  <div class="stamp">
+    SHEET 01 / 01<br>
+    DRAWN BY: AUTO-PLOT<br>
+    SCALE: SEE BAR
+  </div>
+</header>
+
+<main>
+  <div class="panel">
+    <h3>Map Parameters</h3>
+    <div class="panel-body">
+      <div class="row">
+        <div>
+          <label>Area Width (m)</label>
+          <input type="number" id="areaWidth" value="200" min="10">
+        </div>
+        <div>
+          <label>Area Height (m)</label>
+          <input type="number" id="areaHeight" value="200" min="10">
+        </div>
+      </div>
+
+      <label>Mineral Type</label>
+      <select id="mineralType">
+        <option value="Limestone">Limestone</option>
+        <option value="Iron Ore">Iron Ore</option>
+        <option value="Bauxite">Bauxite</option>
+      </select>
+
+      <div class="row">
+        <div>
+          <label>Private Land (ha)</label>
+          <input type="number" id="privateLand" value="2.15" step="0.01" min="0">
+        </div>
+        <div>
+          <label>Govt Land (ha)</label>
+          <input type="number" id="govtLand" value="2.64" step="0.01" min="0">
+        </div>
+      </div>
+
+      <label>Contour Density</label>
+      <select id="contourDensity">
+        <option value="5">Low — 5 lines</option>
+        <option value="8" selected>Medium — 8 lines</option>
+        <option value="12">High — 12 lines</option>
+      </select>
+
+      <label>Upload Survey File (optional)</label>
+      <input type="file" id="surveyFile" accept=".csv,.json">
+
+      <button class="btn" onclick="generateMap()">Generate Map</button>
+      <button class="btn ghost" onclick="downloadMap()">Export PNG</button>
+
+      <div class="status" id="status">// READY. Adjust parameters and press generate.</div>
+    </div>
+  </div>
+
+  <div class="map-wrap">
+    <div class="canvas-frame">
+      <canvas id="mapCanvas" width="760" height="640"></canvas>
+    </div>
+    <div class="coord-readout">
+      <span id="coordText">CURSOR: — , —</span>
+      <span id="areaText">PLOT AREA: —</span>
+    </div>
+    <div class="legend">
+      <div class="legend-item"><span class="swatch" style="background:rgba(59,110,165,.35)"></span>Private Land</div>
+      <div class="legend-item"><span class="swatch" style="background:rgba(198,149,47,.4)"></span>Govt Land</div>
+      <div class="legend-item"><span class="swatch line" style="border-color:var(--green)"></span>Contour Line</div>
+      <div class="legend-item"><span class="swatch line" style="border-color:#7a5230"></span>Haul Road</div>
+      <div class="legend-item"><span class="swatch line" style="border-color:var(--red)"></span>Lease Boundary</div>
+      <div class="legend-item"><span class="swatch" style="background:#1fb5c9"></span>Water Tank</div>
+      <div class="legend-item"><span class="swatch dot" style="background:var(--red)"></span>TSB Borehole</div>
+      <div class="legend-item"><span class="swatch dot" style="background:var(--ink)"></span>Survey Point</div>
+    </div>
+  </div>
+</main>
+
+<script>
+const canvas = document.getElementById('mapCanvas');
+const ctx = canvas.getContext('2d');
+const status = document.getElementById('status');
+
+// inner drawing region (margins for title block / scale bar)
+const M = {l:55, t:55, r:55, b:75};
+const plotW = canvas.width  - M.l - M.r;
+const plotH = canvas.height - M.t - M.b;
+
+let surveyPoints = [];   // {x,y,label} in metres
+let lastParams = null;
+
+document.getElementById('surveyFile').addEventListener('change', handleFile);
+
+function handleFile(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try{
+      surveyPoints = parseSurvey(file.name, ev.target.result);
+      status.innerHTML = '// FILE LOADED: <b>' + file.name + '</b><br>// ' +
+        surveyPoints.length + ' survey point(s) parsed. Press generate.';
+    }catch(err){
+      surveyPoints = [];
+      status.innerHTML = '// PARSE ERROR — using parameters only.<br>// ' + err.message;
+    }
+  };
+  reader.readAsText(file);
+}
+
+// Accepts CSV with x,y[,label] columns or a JSON array [{x,y,label}]
+function parseSurvey(name, text){
+  if(name.toLowerCase().endsWith('.json')){
+    const arr = JSON.parse(text);
+    return arr.map(p => ({x:+p.x, y:+p.y, label:p.label||''}))
+              .filter(p => isFinite(p.x) && isFinite(p.y));
+  }
+  const rows = text.trim().split(/\r?\n/);
+  let header = rows[0].toLowerCase().split(/[,;\t]/).map(s=>s.trim());
+  let xi = header.indexOf('x'), yi = header.indexOf('y'),
+      li = header.indexOf('label');
+  let start = 1;
+  if(xi < 0 || yi < 0){ xi = 0; yi = 1; li = 2; start = 0; } // headerless
+  const pts = [];
+  for(let i=start;i<rows.length;i++){
+    const c = rows[i].split(/[,;\t]/);
+    const x = +c[xi], y = +c[yi];
+    if(isFinite(x) && isFinite(y))
+      pts.push({x, y, label: li>=0 && c[li] ? c[li].trim() : ''});
+  }
+  return pts;
+}
+
+function generateMap(){
+  const width   = Math.max(10, parseFloat(document.getElementById('areaWidth').value)  || 200);
+  const height  = Math.max(10, parseFloat(document.getElementById('areaHeight').value) || 200);
+  const priv    = Math.max(0,  parseFloat(document.getElementById('privateLand').value) || 0);
+  const govt    = Math.max(0,  parseFloat(document.getElementById('govtLand').value)   || 0);
+  const mineral = document.getElementById('mineralType').value;
+  const nC      = parseInt(document.getElementById('contourDensity').value, 10);
+  const totLand = (priv + govt) || 1;
+
+  lastParams = {width, height, mineral};
+
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  // --- paper tint inside frame ---
+  ctx.fillStyle = '#faf8f2';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  // --- land split fills (private | govt) ---
+  const splitX = M.l + plotW * (priv/totLand);
+  ctx.fillStyle = 'rgba(59,110,165,0.35)';            // private
+  ctx.fillRect(M.l, M.t, plotW*(priv/totLand), plotH);
+  ctx.fillStyle = 'rgba(198,149,47,0.40)';            // government
+  ctx.fillRect(splitX, M.t, plotW*(govt/totLand), plotH);
+
+  // --- coordinate grid ---
+  ctx.strokeStyle = 'rgba(28,33,38,0.16)';
+  ctx.lineWidth = 1;
+  ctx.font = '9px "JetBrains Mono", monospace';
+  ctx.fillStyle = 'rgba(28,33,38,0.55)';
+  const step = 50;
+  for(let i=0;i<=plotW;i+=step){
+    const x = M.l + i;
+    ctx.beginPath(); ctx.moveTo(x,M.t); ctx.lineTo(x,M.t+plotH); ctx.stroke();
+    ctx.fillText(Math.round(i/plotW*width)+'m', x+2, M.t-5);
+  }
+  for(let j=0;j<=plotH;j+=step){
+    const y = M.t + j;
+    ctx.beginPath(); ctx.moveTo(M.l,y); ctx.lineTo(M.l+plotW,y); ctx.stroke();
+    ctx.fillText(Math.round(j/plotH*height)+'m', 6, y+3);
+  }
+
+  // --- AI-simulated contours ---
+  ctx.strokeStyle = 'rgba(93,122,58,0.85)';
+  ctx.lineWidth = 1.4;
+  for(let i=0;i<nC;i++){
+    const baseY = M.t + (i+0.5) * (plotH/nC);
+    ctx.beginPath();
+    for(let x=M.l;x<=M.l+plotW;x+=12){
+      const y = baseY
+              + Math.sin(x/55 + i*0.7) * 16
+              + Math.sin(x/19 + i) * 4;
+      x===M.l ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+  }
+
+  // --- AI-simulated haul roads ---
+  ctx.strokeStyle = '#7a5230';
+  ctx.lineWidth = 2.4;
+  ctx.beginPath();
+  ctx.moveTo(M.l+10, M.t+plotH-15);
+  ctx.bezierCurveTo(M.l+plotW*0.4, M.t+plotH*0.7,
+                    M.l+plotW*0.55, M.t+plotH*0.25,
+                    M.l+plotW-20, M.t+30);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(M.l+20, M.t+10);
+  ctx.bezierCurveTo(M.l+plotW*0.45, M.t+plotH*0.35,
+                    M.l+plotW*0.6, M.t+plotH*0.6,
+                    M.l+plotW-15, M.t+plotH-25);
+  ctx.stroke();
+
+  // --- fixed site symbols ---
+  drawTank(M.l + plotW*0.28, M.t + plotH*0.30);
+  drawBorehole(M.l + plotW*0.62, M.t + plotH*0.58);
+
+  // --- uploaded survey points ---
+  if(surveyPoints.length){
+    surveyPoints.forEach(p=>{
+      const px = M.l + (p.x/width)  * plotW;
+      const py = M.t + (p.y/height) * plotH;
+      if(px<M.l||px>M.l+plotW||py<M.t||py>M.t+plotH) return;
+      ctx.fillStyle = 'var(--ink)';
+      ctx.fillStyle = '#1c2126';
+      ctx.beginPath(); ctx.arc(px,py,3.5,0,2*Math.PI); ctx.fill();
+      if(p.label){
+        ctx.font = '9px "JetBrains Mono", monospace';
+        ctx.fillText(p.label, px+6, py+3);
+      }
+    });
+  }
+
+  // --- lease boundary (drawn last, on top) ---
+  ctx.strokeStyle = '#bb3a2e';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(M.l, M.t, plotW, plotH);
+
+  // --- title block + map furniture ---
+  drawTitleBlock(mineral, width, height, priv, govt);
+  drawNorthArrow();
+  drawScaleBar(width);
+
+  document.getElementById('areaText').textContent =
+    'PLOT AREA: ' + width + ' x ' + height + ' m  |  ' + mineral.toUpperCase();
+  status.innerHTML = '// MAP GENERATED.<br>// ' + mineral +
+    ' lease — ' + (priv+govt).toFixed(2) + ' ha total' +
+    (surveyPoints.length ? ' + ' + surveyPoints.length + ' survey pts.' : '.');
+}
+
+function drawTank(x,y){
+  ctx.fillStyle = '#1fb5c9';
+  ctx.strokeStyle = '#0a5b65';
+  ctx.lineWidth = 1.5;
+  ctx.fillRect(x-10,y-10,20,20);
+  ctx.strokeRect(x-10,y-10,20,20);
+  ctx.fillStyle = '#1c2126';
+  ctx.font = '600 9px "JetBrains Mono", monospace';
+  ctx.fillText('EXISTING TANK', x-30, y-15);
+}
+
+function drawBorehole(x,y){
+  ctx.fillStyle = '#bb3a2e';
+  ctx.beginPath(); ctx.arc(x,y,7,0,2*Math.PI); ctx.fill();
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.arc(x,y,3,0,2*Math.PI); ctx.stroke();
+  ctx.fillStyle = '#1c2126';
+  ctx.font = '600 9px "JetBrains Mono", monospace';
+  ctx.fillText('TSB BOREHOLE', x-22, y-12);
+}
+
+function drawNorthArrow(){
+  const x = canvas.width - 32, y = M.t + 30;
+  ctx.fillStyle = '#1c2126';
+  ctx.beginPath();
+  ctx.moveTo(x, y-16); ctx.lineTo(x-7, y+8); ctx.lineTo(x, y+2);
+  ctx.lineTo(x+7, y+8); ctx.closePath(); ctx.fill();
+  ctx.font = '700 11px "Archivo", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('N', x, y-20);
+  ctx.textAlign = 'left';
+}
+
+function drawScaleBar(realWidth){
+  // a bar representing 50 m
+  const segMetres = 50;
+  const px = (segMetres/realWidth) * plotW;
+  const x0 = M.l, y0 = canvas.height - 42;
+  for(let i=0;i<4;i++){
+    ctx.fillStyle = i%2 ? '#faf8f2' : '#1c2126';
+    ctx.fillRect(x0 + i*px/2, y0, px/2, 7);
+  }
+  ctx.strokeStyle = '#1c2126'; ctx.lineWidth = 1;
+  ctx.strokeRect(x0, y0, px*2, 7);
+  ctx.fillStyle = '#1c2126';
+  ctx.font = '9px "JetBrains Mono", monospace';
+  ctx.fillText('0', x0-2, y0+20);
+  ctx.fillText(segMetres*2 + ' m', x0 + px*2 - 12, y0+20);
+}
+
+function drawTitleBlock(mineral, w, h, priv, govt){
+  const bw = 210, bh = 50;
+  const x = canvas.width - M.r - bw, y = canvas.height - 58;
+  ctx.fillStyle = '#ebe5d8';
+  ctx.fillRect(x, y, bw, bh);
+  ctx.strokeStyle = '#1c2126'; ctx.lineWidth = 1.5;
+  ctx.strokeRect(x, y, bw, bh);
+  ctx.beginPath(); ctx.moveTo(x, y+18); ctx.lineTo(x+bw, y+18); ctx.stroke();
+  ctx.fillStyle = '#1c2126';
+  ctx.font = '700 10px "Archivo", sans-serif';
+  ctx.fillText('SURFACE MINING PLAN — ' + mineral.toUpperCase(), x+8, y+13);
+  ctx.font = '9px "JetBrains Mono", monospace';
+  ctx.fillText('AREA: ' + w + 'x' + h + 'm', x+8, y+33);
+  ctx.fillText('PVT: ' + priv.toFixed(2) + ' ha', x+8, y+45);
+  ctx.fillText('GOVT: ' + govt.toFixed(2) + ' ha', x+110, y+33);
+  ctx.fillText('TOT: ' + (priv+govt).toFixed(2) + ' ha', x+110, y+45);
+}
+
+// live coordinate readout
+canvas.addEventListener('mousemove', e=>{
+  const r = canvas.getBoundingClientRect();
+  const mx = (e.clientX - r.left) * (canvas.width / r.width);
+  const my = (e.clientY - r.top)  * (canvas.height / r.height);
+  const out = document.getElementById('coordText');
+  if(lastParams && mx>=M.l && mx<=M.l+plotW && my>=M.t && my<=M.t+plotH){
+    const rx = ((mx-M.l)/plotW * lastParams.width).toFixed(1);
+    const ry = ((my-M.t)/plotH * lastParams.height).toFixed(1);
+    out.textContent = 'CURSOR: ' + rx + ' m E , ' + ry + ' m S';
+  }else{
+    out.textContent = 'CURSOR: — , —';
+  }
+});
+
+function downloadMap(){
+  if(!lastParams){ generateMap(); }
+  const a = document.createElement('a');
+  a.download = 'mining-surface-map.png';
+  a.href = canvas.toDataURL('image/png');
+  a.click();
+}
+
+// render once on load
+generateMap();
+</script>
+</body>
+</html>

@@ -1,0 +1,97 @@
+/* ============================================================
+   WedIn Udaipur — Design Tokens (01 — Design Tokens)
+   Beige + terracotta Udaipur-sunset system
+   ============================================================ */
+
+:root {
+  /* ---- Color: Surfaces ---- */
+  --canvas-beige: #F4E7D3;
+  --soft-ivory:   #FFF8ED;
+  --warm-sand:    #E8D2B8;
+
+  /* ---- Color: Terracotta system ---- */
+  --terracotta:   #C8643B;
+  --burnt-sienna: #A94824;
+  --clay-orange:  #D98255;
+  --sunset-peach: #F0B084;
+
+  /* ---- Color: Ink ---- */
+  --espresso:     #2B1A14;
+  --raisin:       #4A2418;
+
+  /* ---- Color: Accents ---- */
+  --lake-teal:    #1F6F6B;
+  --mist-blue:    #D8E8E5;
+  --copper:       #B87333;
+
+  /* ---- Color: Semantic ---- */
+  --error-rose:   #B43B3B;
+  --success-sage: #6D8B61;
+
+  /* ---- Derived / alpha ---- */
+  --ink:            var(--espresso);
+  --ink-soft:       #6a5647;
+  --ink-faint:      #9a8776;
+  --line:           rgba(43, 26, 20, 0.10);
+  --line-strong:    rgba(43, 26, 20, 0.16);
+  --glass:          rgba(255, 248, 237, 0.62);
+  --glass-strong:   rgba(255, 248, 237, 0.82);
+  --terracotta-12:  rgba(200, 100, 59, 0.12);
+  --terracotta-20:  rgba(200, 100, 59, 0.20);
+  --teal-12:        rgba(31, 111, 107, 0.12);
+
+  /* ---- Gradients ---- */
+  --grad-sunset:  linear-gradient(135deg, #F0B084 0%, #D98255 42%, #C8643B 100%);
+  --grad-sky:     linear-gradient(180deg, #FBE7CC 0%, #F0B084 46%, #D98255 100%);
+  --grad-ember:   linear-gradient(135deg, #C8643B 0%, #A94824 100%);
+  --grad-lake:    linear-gradient(180deg, #D98255 0%, #B95a3a 30%, #7d4a3f 70%, #3c2b28 100%);
+
+  /* ---- Radius ---- */
+  --r-xs: 8px;
+  --r-sm: 12px;
+  --r-md: 18px;
+  --r-lg: 26px;
+  --r-xl: 36px;
+  --r-pill: 999px;
+
+  /* ---- Spacing scale ---- */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-7: 48px;
+  --s-8: 64px;
+  --s-9: 96px;
+  --s-10: 128px;
+
+  /* ---- Shadows ---- */
+  --shadow-xs: 0 1px 2px rgba(43,26,20,0.06);
+  --shadow-sm: 0 6px 18px rgba(74,36,24,0.08);
+  --shadow-md: 0 14px 40px rgba(74,36,24,0.12);
+  --shadow-lg: 0 30px 70px rgba(74,36,24,0.20);
+  --shadow-glow: 0 18px 46px rgba(200,100,59,0.32);
+
+  /* ---- Type ---- */
+  --font-display: "Cormorant Garamond", "Playfair Display", Georgia, serif;
+  --font-head:    "Playfair Display", "Cormorant Garamond", Georgia, serif;
+  --font-body:    "Manrope", "Inter", system-ui, sans-serif;
+  --font-num:     "Manrope", "Inter", system-ui, sans-serif;
+
+  /* ---- Motion ---- */
+  --ease-out:  cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-soft: cubic-bezier(0.33, 1, 0.68, 1);
+  --dur-fast: 220ms;
+  --dur-med:  420ms;
+  --dur-slow: 720ms;
+
+  /* ---- Layout ---- */
+  --maxw: 1200px;
+  --header-h: 76px;
+}
+
+/* Reduced-motion mode (Motion Specs → Reduced Motion) */
+@media (prefers-reduced-motion: reduce) {
+  :root { --dur-fast: 1ms; --dur-med: 1ms; --dur-slow: 1ms; }
+}

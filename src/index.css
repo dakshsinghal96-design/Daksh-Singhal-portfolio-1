@@ -1,0 +1,213 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /*
+   * Surfaces live in CSS variables (as raw RGB triplets, so Tailwind's
+   * `<alpha-value>` syntax works) and the light theme simply reassigns them.
+   * Brand hues — shard, violet, azure, mint — stay constant across themes.
+   */
+  :root {
+    --c-base: 18 15 23; /* #120F17 */
+    --c-deep: 9 7 13; /* #09070D */
+    --c-raised: 24 18 32; /* #181220 */
+    --c-ink: 248 247 252; /* #F8F7FC */
+    --c-muted: 184 174 198; /* #B8AEC6 */
+    --c-line: 255 255 255;
+    --c-line-alpha: 0.1;
+
+    --shell-pad: 1.25rem;
+  }
+
+  html:not(.dark) {
+    --c-base: 247 245 250;
+    --c-deep: 255 255 255;
+    --c-raised: 255 255 255;
+    --c-ink: 26 20 36; /* AA-contrast ink on the light ground */
+    --c-muted: 88 76 106; /* 5.9:1 on --c-base */
+    --c-line: 26 20 36;
+    --c-line-alpha: 0.12;
+  }
+
+  * {
+    border-color: rgb(var(--c-line) / var(--c-line-alpha));
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    /* `clip` rather than `hidden`: it prevents any stray decorative bleed from
+       widening the document without turning <html> into a scroll container. */
+    overflow-x: clip;
+  }
+
+  body {
+    @apply bg-base font-sans text-ink antialiased;
+    /* The WebGL canvas paints the real ground; this is the pre-paint colour
+       and the fallback when WebGL is unavailable. */
+    min-height: 100dvh;
+    overflow-x: hidden;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display tracking-tight;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* A single, consistently visible focus ring everywhere. */
+  :focus-visible {
+    outline: 2px solid #a855f7;
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  /* Only suppress the ring for pointer users, never for keyboard users. */
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  ::selection {
+    background: rgb(168 85 247 / 0.35);
+    color: rgb(var(--c-ink));
+  }
+}
+
+@layer components {
+  .shell {
+    @apply mx-auto w-full max-w-shell px-5 sm:px-6 lg:px-8;
+  }
+
+  /* Translucent card used across projects, achievements, skills and stats. */
+  .surface {
+    @apply rounded-2xl border bg-raised/60 backdrop-blur-xl;
+  }
+
+  .surface-hover {
+    @apply transition duration-300 hover:border-violet/40 hover:bg-raised/80 hover:shadow-glow;
+  }
+
+  /*
+   * Readability scrim. AeroShards is bright in places, so paragraphs, forms
+   * and dense lists sit on a soft local radial darkening rather than relying
+   * on the global background alone.
+   */
+  .scrim {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .scrim::before {
+    content: '';
+    position: absolute;
+    /* Bleeds vertically only. A negative horizontal inset would make every
+       scrim 112% of its container and widen the whole document. The gradient
+       already fades out well before its own edge, so nothing is lost. */
+    inset: -8% 0;
+    z-index: -1;
+    pointer-events: none;
+    background: radial-gradient(
+      ellipse at center,
+      rgb(var(--c-base) / 0.92) 0%,
+      rgb(var(--c-base) / 0.72) 45%,
+      transparent 78%
+    );
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold
+      transition duration-200 disabled:cursor-not-allowed disabled:opacity-55;
+  }
+
+  .btn-primary {
+    @apply btn bg-violet text-white hover:bg-violet/85 hover:shadow-glow active:scale-[.98];
+  }
+
+  .btn-secondary {
+    @apply btn border bg-raised/70 text-ink backdrop-blur-md hover:border-violet/50 hover:bg-raised active:scale-[.98];
+  }
+
+  .btn-ghost {
+    @apply btn text-muted hover:text-ink;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium
+      text-muted transition duration-200 hover:border-violet/45 hover:text-ink;
+  }
+
+  .chip-on {
+    @apply border-violet/60 bg-violet/15 text-ink;
+  }
+
+  .field {
+    @apply w-full rounded-xl border bg-deep/60 px-4 py-3 text-sm text-ink placeholder:text-muted/60
+      transition duration-200 focus:border-violet/60;
+  }
+
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.18em] text-shard;
+  }
+}
+
+@layer utilities {
+  /*
+   * GradientText. The gradient is painted on the text itself via
+   * background-clip, so the heading stays real, selectable, searchable text.
+   */
+  .gradient-text {
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Fallback for engines without background-clip:text support. */
+  @supports not ((-webkit-background-clip: text) or (background-clip: text)) {
+    .gradient-text {
+      color: #a855f7;
+      -webkit-text-fill-color: #a855f7;
+      background: none;
+    }
+  }
+
+  .hero-gradient-text {
+    font-size: clamp(3rem, 8vw, 7.5rem);
+    line-height: 0.95;
+    letter-spacing: -0.035em;
+  }
+
+  /* Horizontal scroller for wide content; never lets the page itself scroll. */
+  .scroll-x {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+  }
+}
+
+/*
+ * Motion is opt-in. Everything decorative collapses to a static state, and
+ * AeroShards separately drops to a single rendered frame with no pointer
+ * interaction (see AeroShardsBackground).
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .gradient-text {
+    background-position: 0% 50% !important;
+  }
+}

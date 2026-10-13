@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Cross-Platform Gesture Solar System</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            overflow: hidden;
+            background-color: #020208;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        #canvas-container {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        /* Virtual Selection Ring Pointer */
+        #virtual-cursor {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            border: 2px solid #00ffcc;
+            border-radius: 50%;
+            background: rgba(0, 255, 204, 0.2);
+            pointer-events: none;
+            z-index: 99;
+            transform: translate(-50%, -50%);
+            display: none;
+            box-shadow: 0 0 15px #00ffcc;
+        }
+
+        /* Responsive Camera Feed Window */
+        #webcam-container {
+            position: absolute;
+            bottom: 16px;
+            right: 16px;
+            width: 140px;
+            height: 105px;
+            border-radius: 10px;
+            border: 2px solid rgba(0, 255, 204, 0.4);
+            overflow: hidden;
+            transform: scaleX(-1);
+            z-index: 20;
+            background: #000;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            transition: width 0.3s, height 0.3s;
+        }
+
+        #webcam {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Unified Command HUD Panel (Highly Mobile Responsive) */
+        #ui-interface {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            color: #ffffff;
+            z-index: 10;
+            background: rgba(10, 10, 25, 0.85);
+            padding: 16px;
+            border-radius: 12px;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            width: calc(100% - 32px);
+            max-width: 320px;
+            box-shadow: 0 16px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            font-size: 16px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+
+        .subtitle {
+            font-size: 10px;
+            color: #00ffcc;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .status-panel {
+            padding: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            font-size: 11px;
+            color: #9ca3af;
+            margin-bottom: 10px;
+        }
+
+        #status-text {
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .control-instructions {
+            display: block;
+        }
+
+        .control-item {
+            margin-bottom: 6px;
+            font-size: 11px;
+            color: #9ca3af;
+            line-height: 1.4;
+        }
+
+        .control-item strong {
+            color: #e5e7eb;
+        }
+
+        /* Planetary Information UI Card (Responsive Breakpoint Driven) */
+        #info-card {
+            position: absolute;
+            bottom: 135px;
+            /* Sits cleanly above the camera preview on mobile devices */
+            left: 16px;
+            width: calc(100% - 32px);
+            max-width: 320px;
+            color: white;
+            background: rgba(10, 10, 30, 0.9);
+            border-radius: 14px;
+            padding: 18px;
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(0, 255, 204, 0.3);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+            z-index: 10;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        #info-card h2 {
+            margin-0-0-6px-0;
+            font-size: 20px;
+            color: #00ffcc;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 6px;
+        }
+
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-size: 12px;
+        }
+
+        .data-label {
+            color: #9ca3af;
+        }
+
+        .data-value {
+            font-weight: 600;
+            color: #f3f4f6;
+        }
+
+        #planet-description {
+            margin-top: 10px;
+            font-size: 11px;
+            color: #d1d5db;
+            line-height: 1.4;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 8px;
+            border-radius: 6px;
+        }
+
+        /* Loading Screen Setup */
+        #loader {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #020208;
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .spinner {
+            width: 36px;
+            height: 36px;
+            border: 3px solid rgba(0, 255, 204, 0.2);
+            border-top-color: #00ffcc;
+            border-radius: 50%;
+            animation: spin 1s infinite linear;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Media Queries for Desktop Screen Environments */
+        @media (min-width: 768px) {
+            #webcam-container {
+                width: 180px;
+                height: 135px;
+                bottom: 24px;
+                right: 24px;
+            }
+
+            #ui-interface {
+                top: 24px;
+                left: 24px;
+                padding: 20px;
+            }
+
+            #info-card {
+                top: 24px;
+                right: 24px;
+                bottom: auto;
+                left: auto;
+                padding: 22px;
+                width: 340px;
+            }
+
+            h1 {
+                font-size: 18px;
+            }
+
+            .subtitle {
+                font-size: 11px;
+            }
+
+            .control-item {
+                font-size: 11.5px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="loader">
+        <div class="spinner"></div>
+        <div id="loader-text" style="letter-spacing: 2px; font-size: 11px; color: #9ca3af; text-transform: uppercase;">
+            Initializing Cross-Platform Engine...</div>
+    </div>
+
+    <div id="virtual-cursor"></div>
+
+    <div id="ui-interface">
+        <h1>Responsive Solar</h1>
+        <div class="subtitle">Universal Gesture Dashboard</div>
+        <div class="status-panel">System Status: <span id="status-text" style="color: #ef4444;">Waking Camera...</span>
+        </div>
+        <div class="control-instructions">
+            <div class="control-item"><strong>☝️ 1 Index Finger:</strong> Hover pointer to inspect planet.</div>
+            <div class="control-item"><strong>✌️ 2 Fingers Up:</strong> Drag to rotate full 3D viewport.</div>
+            <div class="control-item"><strong>🖐️ Open Hand:</strong> Hold open palm out to zoom in.</div>
+            <div class="control-item"><strong>✊ Closed Fist:</strong> Make a tight fist to zoom out.</div>
+        </div>
+    </div>
+
+    <div id="info-card">
+        <h2 id="planet-name">-</h2>
+        <div class="data-row"><span class="data-label">Classification:</span><span class="data-value"
+                id="planet-type">-</span></div>
+        <div class="data-row"><span class="data-label">Mean Distance:</span><span class="data-value"
+                id="planet-distance">-</span></div>
+        <div class="data-row"><span class="data-label">Orbital Period:</span><span class="data-value"
+                id="planet-period">-</span></div>
+        <div class="data-row"><span class="data-label">Satellites:</span><span class="data-value"
+                id="planet-moons">-</span></div>
+        <div id="planet-description">-</div>
+    </div>
+
+    <div id="webcam-container"><video id="webcam" autoplay playsinline muted></video></div>
+    <div id="canvas-container"></div>
+
+    <!-- Engine Dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+
+    <script>
+        // --- 1. STATE & INFRASTRUCTURE DATA MANAGEMENT ---
+        const container = document.getElementById('canvas-container');
+        const videoElement = document.getElementById('webcam');
+        const statusText = document.getElementById('status-text');
+        const cursorEl = document.getElementById('virtual-cursor');
+
+        const infoCard = document.getElementById('info-card');
+        const pName = document.getElementById('planet-name');
+        const pType = document.getElementById('planet-type');
+        const pDist = document.getElementById('planet-distance');
+        const pPeriod = document.getElementById('planet-period');
+        const pMoons = document.getElementById('planet-moons');
+        const pDesc = document.getElementById('planet-description');
+
+        let scene, camera, renderer, raycaster;
+        let pointer2D = new THREE.Vector2(-1, -1);
+        const planetObjects = [];
+        let cometDataRef = null;
+
+        // Dynamic 3D Camera Coordinate System Parameters
+        let targetRotationX = 0.6, targetRotationY = 0, targetRadius = 170;
+        let currentRotationX = 0.6, currentRotationY = 0, currentRadius = 260;
+        let lastHandX = null, lastHandY = null;
+
+        const celestialData = [
+            { name: "Mercury", size: 0.9, dist: 22, color: 0x9e9e9e, speed: 0.015, type: "Terrestrial Planet", realDist: "57.9M km", period: "88 Days", moons: "0", desc: "The smallest planet in our solar system and closest to the Sun." },
+            { name: "Venus", size: 1.4, dist: 32, color: 0xe5ba73, speed: 0.011, type: "Terrestrial Planet", realDist: "108.2M km", period: "225 Days", moons: "0", desc: "Trapped under a thick, runaway greenhouse atmosphere. Extremely hot." },
+            { name: "Earth", size: 1.5, dist: 44, color: 0x2563eb, speed: 0.008, type: "Terrestrial Planet", realDist: "149.6M km", period: "365.25 Days", moons: "1", desc: "Our home world. Supports liquid surface water and life." },
+            { name: "Mars", size: 1.1, dist: 56, color: 0xdc2626, speed: 0.006, type: "Terrestrial Planet", realDist: "227.9M km", period: "687 Days", moons: "2", desc: "The Red Planet. Covered in fine, iron-rich volcanic dust blankets." },
+            { name: "Jupiter", size: 3.5, dist: 86, color: 0xf59e0b, speed: 0.004, type: "Gas Giant", realDist: "778.5M km", period: "12 Years", moons: "95", desc: "Colossal gas world. Features the ancient spinning Great Red Spot storm." },
+            { name: "Saturn", size: 2.8, dist: 110, color: 0xfef08a, speed: 0.003, type: "Gas Giant", realDist: "1.4B km", period: "29 Years", moons: "146", desc: "Famous for its magnificent ring system made of billions of ice chunks." },
+            { name: "Uranus", size: 2.0, dist: 132, color: 0x22d3ee, speed: 0.002, type: "Ice Giant", realDist: "2.9B km", period: "84 Years", moons: "28", desc: "An ice giant that orbits completely tilted on its side." },
+            { name: "Neptune", size: 1.9, dist: 150, color: 0x1d4ed8, speed: 0.0015, type: "Ice Giant", realDist: "4.5B km", period: "165 Years", moons: "16", desc: "Cold and dark outer planet swept by supersonic freezing winds." },
+            { name: "Pluto", size: 0.6, dist: 170, color: 0xa1a1aa, speed: 0.001, type: "Dwarf Planet", realDist: "5.9B km", period: "248 Years", moons: "5", desc: "An icy world residing deep in the outer Kuiper Belt ring." },
+            { name: "Halley's Comet", size: 0.5, dist: 0, color: 0xffffff, speed: 0.01, type: "Periodic Comet", realDist: "Variable Elliptic", period: "75 Years", moons: "0", desc: "Famous periodic comet that vents gas and dust when nearing the Sun." }
+        ];
+
+        // --- 2. SETUP GRAPHICS ARCHITECTURE ---
+        function init3D() {
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x020208, 0.0012);
+
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            raycaster = new THREE.Raycaster();
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            container.appendChild(renderer.domElement);
+
+            scene.add(new THREE.AmbientLight(0x111122));
+            scene.add(new THREE.PointLight(0xffffff, 3.5, 600));
+
+            buildStarfield();
+            buildAsteroidBelt();
+
+            // Sun Core mesh
+            scene.add(new THREE.Mesh(new THREE.SphereGeometry(8, 32, 32), new THREE.MeshBasicMaterial({ color: 0xfff7ed })));
+
+            buildCelestialObjects();
+            window.addEventListener('resize', onWindowResize);
+
+            // Adjust camera immediately based on device profiles
+            adjustCameraForDevice();
+        }
+
+        function adjustCameraForDevice() {
+            // If phone portrait mode is active, pull camera back to prevent edge-clipping
+            if (window.innerWidth < 768) {
+                targetRadius = 220;
+                camera.fov = 65;
+            } else {
+                targetRadius = 160;
+                camera.fov = 60;
+            }
+            camera.updateProjectionMatrix();
+        }
+
+        function buildStarfield() {
+            const starGeometry = new THREE.BufferGeometry();
+            const count = 3000;
+            const positions = new Float32Array(count * 3);
+            for (let i = 0; i < count * 3; i += 3) {
+                const radius = 450 + Math.random() * 200;
+                const u = Math.random(); const v = Math.random();
+                const theta = u * 2.0 * Math.PI; const phi = Math.acos(2.0 * v - 1.0);
+                positions[i] = radius * Math.sin(phi) * Math.cos(theta);
+                positions[i + 1] = radius * Math.sin(phi) * Math.sin(theta);
+                positions[i + 2] = radius * Math.cos(phi);
+            }
+            starGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            scene.add(new THREE.Points(starGeometry, new THREE.PointsMaterial({ color: 0xffffff, size: 0.7, transparent: true, opacity: 0.6 })));
+        }
+
+        function buildAsteroidBelt() {
+            const count = 1500;
+            const geometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(count * 3);
+            for (let i = 0; i < count * 3; i += 3) {
+                const radius = 66 + Math.random() * 12;
+                const angle = Math.random() * Math.PI * 2;
+                positions[i] = Math.cos(angle) * radius;
+                positions[i + 1] = (Math.random() - 0.5) * 1.5;
+                positions[i + 2] = Math.sin(angle) * radius;
+            }
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            scene.add(new THREE.Points(geometry, new THREE.PointsMaterial({ color: 0x8b8b8b, size: 0.35, transparent: true, opacity: 0.5 })));
+        }
+
+        function buildCelestialObjects() {
+            celestialData.forEach(data => {
+                if (data.name === "Halley's Comet") {
+                    const mesh = new THREE.Mesh(new THREE.SphereGeometry(data.size, 16, 16), new THREE.MeshBasicMaterial({ color: 0xe0f2fe }));
+                    mesh.userData = data; scene.add(mesh);
+
+                    const trackGeo = new THREE.BufferGeometry();
+                    const points = []; const a = 90; const b = 35; const focusOffset = Math.sqrt(a * a - b * b);
+                    for (let i = 0; i <= 128; i++) {
+                        points.push(new THREE.Vector3((Math.cos((i / 128) * Math.PI * 2) * a) - focusOffset, 0, Math.sin((i / 128) * Math.PI * 2) * b));
+                    }
+                    trackGeo.setFromPoints(points);
+                    scene.add(new THREE.Line(trackGeo, new THREE.LineBasicMaterial({ color: 0x475569, transparent: true, opacity: 0.25 })));
+                    cometDataRef = { mesh, angle: 0, speed: data.speed, a, b, focusOffset };
+                    return;
+                }
+
+                const pivot = new THREE.Object3D(); scene.add(pivot);
+                const mesh = new THREE.Mesh(new THREE.SphereGeometry(data.size, 32, 32), new THREE.MeshStandardMaterial({ color: data.color, roughness: 0.5, metalness: 0.1 }));
+                mesh.position.x = data.dist; mesh.userData = data; pivot.add(mesh);
+
+                if (data.name === "Saturn") {
+                    const ringGeo = new THREE.RingGeometry(data.size + 0.8, data.size + 4, 64); ringGeo.rotateX(Math.PI / 2);
+                    mesh.add(new THREE.Mesh(ringGeo, new THREE.MeshStandardMaterial({ color: data.color, side: THREE.DoubleSide, transparent: true, opacity: 0.3 })));
+                }
+
+                const orbitGeo = new THREE.BufferGeometry(); const points = [];
+                for (let i = 0; i <= 128; i++) {
+                    points.push(new THREE.Vector3(Math.cos((i / 128) * Math.PI * 2) * data.dist, 0, Math.sin((i / 128) * Math.PI * 2) * data.dist));
+                }
+                orbitGeo.setFromPoints(points);
+                scene.add(new THREE.Line(orbitGeo, new THREE.LineBasicMaterial({ color: 0x374151, transparent: true, opacity: 0.2 })));
+                planetObjects.push({ pivot, mesh, speed: data.speed });
+            });
+        }
+
+        // --- 3. UNIVERSAL GESTURE INTERPRETATION MATRIX ---
+        function analyzeHandState(landmarks) {
+            const indexExtended = landmarks[8].y < landmarks[6].y;
+            const middleExtended = landmarks[12].y < landmarks[10].y;
+            const ringExtended = landmarks[16].y < landmarks[14].y;
+            const pinkyExtended = landmarks[20].y < landmarks[18].y;
+            const extendedCount = [indexExtended, middleExtended, ringExtended, pinkyExtended].filter(Boolean).length;
+
+            if (indexExtended && !middleExtended && !ringExtended && !pinkyExtended) return "SELECT";
+            if (indexExtended && middleExtended && !ringExtended && !pinkyExtended) return "ROTATE";
+            if (extendedCount === 0) return "ZOOM_OUT";
+            if (indexExtended && middleExtended && ringExtended && pinkyExtended) return "ZOOM_IN";
+            return "UNKNOWN";
+        }
+
+        function onHandResults(results) {
+            if (!results.multiHandLandmarks || results.multiHandLandmarks.length === 0) {
+                statusText.innerText = "Searching..."; statusText.style.color = "#ef4444";
+                cursorEl.style.display = "none"; pointer2D.set(-1, -1);
+                lastHandX = null; lastHandY = null; return;
+            }
+
+            const landmarks = results.multiHandLandmarks[0];
+            const gesture = analyzeHandState(landmarks);
+            const wrist = landmarks[0];
+
+            if (gesture === "SELECT") {
+                statusText.innerText = "☝️ Inspecting"; statusText.style.color = "#00ffcc";
+                cursorEl.style.display = "block"; lastHandX = null; lastHandY = null;
+
+                const indexTip = landmarks[8];
+                pointer2D.x = ((1 - indexTip.x) * 2) - 1;
+                pointer2D.y = -(indexTip.y * 2) + 1;
+
+                cursorEl.style.left = `${(1 - indexTip.x) * window.innerWidth}px`;
+                cursorEl.style.top = `${indexTip.y * window.innerHeight}px`;
+
+            } else if (gesture === "ROTATE") {
+                statusText.innerText = "✌️ Rotating View"; statusText.style.color = "#3b82f6";
+                cursorEl.style.display = "none"; pointer2D.set(-1, -1);
+
+                if (lastHandX !== null && lastHandY !== null) {
+                    targetRotationY -= (wrist.x - lastHandX) * 4.0;
+                    targetRotationX += (wrist.y - lastHandY) * 3.0;
+                    targetRotationX = Math.max(0.1, Math.min(Math.PI / 2 - 0.05, targetRotationX));
+                }
+                lastHandX = wrist.x; lastHandY = wrist.y;
+
+            } else if (gesture === "ZOOM_IN") {
+                statusText.innerText = "🖐️ Zooming In"; statusText.style.color = "#10b981";
+                cursorEl.style.display = "none"; pointer2D.set(-1, -1);
+                lastHandX = null; lastHandY = null;
+                targetRadius = Math.max(45, targetRadius - 2.5);
+
+            } else if (gesture === "ZOOM_OUT") {
+                statusText.innerText = "✊ Zooming Out"; statusText.style.color = "#f59e0b";
+                cursorEl.style.display = "none"; pointer2D.set(-1, -1);
+                lastHandX = null; lastHandY = null;
+                targetRadius = Math.min(350, targetRadius + 2.5);
+            }
+        }
+
+        // --- 4. ENGINE LIFECYCLE RENDER PIPELINE ---
+        let lastIntersectedObject = null;
+
+        function checkRaycastSelection() {
+            if (pointer2D.x === -1 && pointer2D.y === -1) return;
+
+            raycaster.setFromCamera(pointer2D, camera);
+            const meshesToTest = planetObjects.map(obj => obj.mesh);
+            if (cometDataRef) meshesToTest.push(cometDataRef.mesh);
+
+            const intersects = raycaster.intersectObjects(meshesToTest);
+
+            if (intersects.length > 0) {
+                const hitMesh = intersects[0].object;
+                if (lastIntersectedObject !== hitMesh) {
+                    if (lastIntersectedObject) lastIntersectedObject.material.emissive?.setHex(0x000000);
+                    lastIntersectedObject = hitMesh;
+                    if (hitMesh.material.emissive) hitMesh.material.emissive.setHex(0x004433);
+
+                    const data = hitMesh.userData;
+                    pName.innerText = data.name; pType.innerText = data.type;
+                    pDist.innerText = data.realDist; pPeriod.innerText = data.period;
+                    pMoons.innerText = data.moons; pDesc.innerText = data.desc;
+
+                    infoCard.style.display = "block";
+                    setTimeout(() => infoCard.style.opacity = "1", 10);
+                }
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            planetObjects.forEach(obj => {
+                obj.pivot.rotation.y += obj.speed; obj.mesh.rotation.y += 0.01;
+            });
+
+            if (cometDataRef) {
+                cometDataRef.angle += cometDataRef.speed;
+                cometDataRef.mesh.position.x = (Math.cos(cometDataRef.angle) * cometDataRef.a) - cometDataRef.focusOffset;
+                cometDataRef.mesh.position.z = Math.sin(cometDataRef.angle) * cometDataRef.b;
+            }
+
+            // Smooth interpolation positioning
+            currentRotationX += (targetRotationX - currentRotationX) * 0.08;
+            currentRotationY += (targetRotationY - currentRotationY) * 0.08;
+            currentRadius += (targetRadius - currentRadius) * 0.08;
+
+            camera.position.x = currentRadius * Math.sin(currentRotationX) * Math.sin(currentRotationY);
+            camera.position.y = currentRadius * Math.cos(currentRotationX);
+            camera.position.z = currentRadius * Math.sin(currentRotationX) * Math.cos(currentRotationY);
+            camera.lookAt(0, 0, 0);
+
+            checkRaycastSelection();
+            renderer.render(scene, camera);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            adjustCameraForDevice();
+        }
+
+        init3D();
+        animate();
+
+        // Connect MediaPipe Hand tracking configurations
+        const hands = new Hands({
+            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+        });
+        hands.setOptions({
+            maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.65, minTrackingConfidence: 0.65
+        });
+        hands.onResults(onHandResults);
+
+        // Responsive camera hardware initialization layer
+        const cameraUtils = new Camera(videoElement, {
+            onFrame: async () => { await hands.send({ image: videoElement }); },
+            width: { ideal: 320 },
+            height: { ideal: 240 },
+            facingMode: "user" // Ensures mobile devices invoke the front selfie array over rear lenses
+        });
+
+        cameraUtils.start().then(() => {
+            const loader = document.getElementById('loader');
+            loader.style.opacity = 0;
+            setTimeout(() => loader.remove(), 500);
+        }).catch(err => {
+            document.getElementById('loader-text').innerText = "Webcam required to run gesture tracking.";
+            document.getElementById('loader-text').style.color = "#ef4444";
+            console.error("Camera access rejection: ", err);
+        });
+    </script>
+</body>
+
+</html>

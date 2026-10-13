@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Venues — WedIn Udaipur</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Playfair+Display:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/tokens.css"><link rel="stylesheet" href="assets/css/main.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23C8643B'/%3E%3Cpath d='M8 22V13l8-5 8 5v9' fill='none' stroke='%23FFF8ED' stroke-width='2'/%3E%3C/svg%3E">
+</head>
+<body>
+
+<header class="site-header scrolled">
+  <div class="wrap">
+    <a href="index.html" class="logo" data-transition><svg class="logo-mark" viewBox="0 0 34 34" fill="none"><rect width="34" height="34" rx="9" fill="#C8643B"/><path d="M8 24V15l9-6 9 6v9" stroke="#FFF8ED" stroke-width="2" stroke-linejoin="round"/></svg><span>WedIn <b>Udaipur</b></span></a>
+    <nav class="nav"><a href="venues.html" class="active">Venues</a><a href="index.html#vendors">Vendors</a><a href="index.html#weddings">Real Weddings</a><a href="index.html#guides">Guides</a><a href="dashboard.html" data-transition>Dashboard</a></nav>
+    <div class="header-cta"><a href="dashboard.html" class="btn btn--ghost" data-transition>Sign in</a><a href="dashboard.html" class="btn btn--primary always" data-transition>Start planning</a><button class="hamburger" aria-label="Menu"><span></span></button></div>
+  </div>
+</header>
+<div class="mobile-menu" id="mobileMenu"><a href="venues.html">Venues</a><a href="index.html#vendors">Vendors</a><a href="index.html#weddings">Real Weddings</a><a href="index.html#guides">Guides</a><a href="dashboard.html">Dashboard</a></div>
+
+<main class="wrap page-top">
+  <div class="section-head" style="margin-bottom:20px">
+    <span class="eyebrow">Venue Marketplace</span>
+    <h2 style="font-size:clamp(1.8rem,3.6vw,2.6rem)">Find your Udaipur setting</h2>
+  </div>
+
+  <!-- Sticky command bar -->
+  <div class="command-bar">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--terracotta)" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+    <input type="text" placeholder="Search palace, resort, lawn, haveli…">
+    <span class="chip" id="filterNote">No filters applied</span>
+    <select id="sortSel"><option>Sort: Recommended</option><option>Price: Low to High</option><option>Price: High to Low</option><option>Rating</option><option>Capacity</option></select>
+  </div>
+
+  <div class="listing-layout">
+    <!-- Filter panel -->
+    <aside class="filter-panel">
+      <div class="filter-group">
+        <h5>Venue type</h5>
+        <div class="chip-row">
+          <span class="chip" data-filter-chip>Lake-view</span><span class="chip" data-filter-chip>Palace</span><span class="chip" data-filter-chip>Resort</span><span class="chip" data-filter-chip>Garden</span><span class="chip" data-filter-chip>Haveli</span>
+        </div>
+      </div>
+      <div class="filter-group">
+        <h5>Budget range</h5>
+        <div class="range"><input type="range" min="15" max="150" value="60" id="budgetRange"><div class="range-vals"><span>₹15L</span><span id="budgetVal">₹60L</span><span>₹1.5Cr</span></div></div>
+      </div>
+      <div class="filter-group">
+        <h5>Guest capacity</h5>
+        <div class="chip-row"><span class="chip" data-filter-chip>&lt;250</span><span class="chip" data-filter-chip>250–500</span><span class="chip" data-filter-chip>500–800</span><span class="chip" data-filter-chip>800+</span></div>
+      </div>
+      <div class="filter-group">
+        <h5>Features</h5>
+        <div class="chip-row"><span class="chip" data-filter-chip>Accommodation</span><span class="chip" data-filter-chip>Indoor</span><span class="chip" data-filter-chip>Outdoor</span><span class="chip" data-filter-chip>Parking</span><span class="chip" data-filter-chip>Rating 4.5+</span></div>
+      </div>
+      <div class="filter-group">
+        <h5>Availability</h5>
+        <input type="month" style="width:100%;padding:10px;border:1px solid var(--line);border-radius:12px;font-family:var(--font-body);color:var(--espresso)">
+      </div>
+    </aside>
+
+    <!-- Results -->
+    <section>
+      <div class="map-panel">
+        <div class="ph ph-3 ph--palace"></div>
+        <div class="map-pin pulse" style="top:30%;left:24%"></div>
+        <div class="map-pin pulse" style="top:54%;left:52%"></div>
+        <div class="map-pin pulse" style="top:40%;left:74%"></div>
+        <span class="badge badge--copper" style="position:absolute;top:14px;left:14px">Lake Pichola · Live map</span>
+      </div>
+      <div class="results-head"><strong id="resultCount">6</strong><span class="muted">venues match your search</span></div>
+      <div class="listing-grid" id="listGrid"></div>
+    </section>
+  </div>
+</main>
+
+<div class="compare-drawer" id="compareDrawer">
+  <div class="compare-inner">
+    <span class="cd-label">Compare (<span id="compareCount">0</span>)</span>
+    <div class="compare-slots" id="compareSlots"></div>
+    <button class="btn btn--ghost btn--sm" id="compareClear">Clear</button>
+    <a href="#" class="btn btn--primary btn--sm" onclick="window.WedIn.toast('Opening comparison dashboard…');return false;">Compare now</a>
+  </div>
+</div>
+
+<script>
+const V = [
+  { id:'v1', name:'Taj Lake Palace', loc:'Lake Pichola · Island', cap:'350', price:'₹42L', rating:'4.9', type:'Lake Palace', ph:'ph-1' },
+  { id:'v2', name:'Fateh Garh Resort', loc:'Aravalli Ridge', cap:'500', price:'₹28L', rating:'4.8', type:'Hilltop Resort', ph:'ph-2' },
+  { id:'v3', name:'Jagmandir Island', loc:'Lake Pichola', cap:'700', price:'₹55L', rating:'4.9', type:'Island Palace', ph:'ph-4' },
+  { id:'v4', name:'Devi Garh by Lebua', loc:'Delwara Village', cap:'260', price:'₹34L', rating:'4.7', type:'Heritage Palace', ph:'ph-5' },
+  { id:'v5', name:'Lakend Lakeside', loc:'Fateh Sagar', cap:'450', price:'₹22L', rating:'4.6', type:'Lakeside Resort', ph:'ph-3' },
+  { id:'v6', name:'Chunda Palace', loc:'City Ring Road', cap:'600', price:'₹19L', rating:'4.5', type:'Garden Lawn', ph:'ph-6' },
+];
+const PIN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s7-6.5 7-12a7 7 0 10-14 0c0 5.5 7 12 7 12z"/><circle cx="12" cy="10" r="2.6"/></svg>';
+const HEART='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7.5-4.9-10-9.2C.2 8.4 1.8 4.8 5.3 4.8c2 0 3.4 1.1 4.7 2.8 1.3-1.7 2.7-2.8 4.7-2.8 3.5 0 5.1 3.6 3.3 7C19.5 16.1 12 21 12 21z"/></svg>';
+const STAR='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.8 5.9 20.4l1.4-6.8L2.2 9l6.9-.7z"/></svg>';
+const TICK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg>';
+
+document.getElementById('listGrid').innerHTML = V.map((v,i)=>`
+  <div class="card-tilt reveal" data-delay="${i%3+1}">
+    <article class="venue-card" data-venue data-tilt>
+      <div class="venue-card__media"><div class="ph ${v.ph} ph--palace"></div><span class="badge badge--type">${v.type}</span>
+        <div class="venue-card__top"><button class="icon-btn heart-btn" data-name="${v.name}" aria-label="Shortlist">${HEART}</button></div></div>
+      <div class="venue-card__body">
+        <div class="flex aic jcb"><h3>${v.name}</h3><span class="rating">${STAR}${v.rating}</span></div>
+        <span class="venue-loc">${PIN}${v.loc}</span>
+        <div class="venue-meta"><div class="venue-price"><b>${v.price}</b><span>starting price</span></div><div class="venue-cap"><b>${v.cap}</b>guest capacity</div></div>
+        <div class="venue-card__foot"><a href="venue-detail.html" class="btn btn--secondary btn--sm" data-transition style="flex:1">View Details</a>
+          <label class="compare-check"><input type="checkbox" value="${v.id}" data-name="${v.name}" data-ph="${v.ph}"><span class="box">${TICK}</span>Compare</label></div>
+      </div>
+    </article>
+  </div>`).join('');
+
+const br=document.getElementById('budgetRange'), bv=document.getElementById('budgetVal');
+br && br.addEventListener('input',()=>{ const v=+br.value; bv.textContent = v>=100?('₹'+(v/100).toFixed(2)+'Cr'):('₹'+v+'L'); });
+</script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>

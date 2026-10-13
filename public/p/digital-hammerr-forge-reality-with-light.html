@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="description" content="Digital Hammerr — Forge reality with light. Interactive hand-tracked laser experience." />
+<meta name="theme-color" content="#060c1a" />
+<title>DIGITAL HAMMERR — Forge Reality With Light</title>
+
+<!-- Preconnect for faster CDN loads -->
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.3/p5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.js" crossorigin="anonymous"></script>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: #060c1a;
+    overflow: hidden;
+    font-family: 'Orbitron', monospace;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+
+  #app {
+    position: relative;
+    width: 100vw; height: 100vh;
+  }
+
+  /* Live camera feed — full-screen mirrored background */
+  #input-video {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transform: scaleX(-1);            /* mirror for selfie view */
+    z-index: 1;
+    pointer-events: none;
+    background: #060c1a;
+    /* Cinematic darken so lasers and HUD pop on top */
+    filter: brightness(0.62) contrast(1.12) saturate(0.88);
+  }
+
+  /* Soft vignette over video — no per-frame cost */
+  #video-tint {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2;
+    background:
+      radial-gradient(ellipse at center, transparent 30%, rgba(6, 12, 26, 0.55) 100%);
+  }
+
+  /* p5 canvas sits on top of video, transparent */
+  canvas {
+    position: absolute !important;
+    top: 0; left: 0;
+    width: 100% !important;
+    height: 100% !important;
+    display: block;
+    z-index: 5 !important;
+    background: transparent !important;
+  }
+
+  /* (canvas styled above with video) */
+
+  /* ═══════════════════════════════════════
+     CRT SCANLINE OVERLAY — lightweight
+  ═══════════════════════════════════════ */
+  #crt {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 12;
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0px,
+      transparent 2px,
+      rgba(0, 8, 30, 0.22) 2px,
+      rgba(0, 8, 30, 0.22) 3px
+    );
+  }
+
+  /* Screen-edge vignette — pure CSS, no animation cost */
+  #crt-burn {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 13;
+    background:
+      radial-gradient(ellipse 80% 80% at 50% 50%, transparent 60%, rgba(0,4,16,0.72) 100%);
+  }
+
+  /* ═══════════════════════════════════════
+     HUD
+  ═══════════════════════════════════════ */
+  #hud {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 14;
+  }
+
+  .brkt {
+    position: absolute;
+    width: 28px; height: 28px;
+    border-style: solid;
+    border-color: rgba(255, 140, 0, 0.55);
+  }
+  .brkt.tl { top: 20px; left: 20px; border-width: 1.5px 0 0 1.5px; }
+  .brkt.tr { top: 20px; right: 20px; border-width: 1.5px 1.5px 0 0; }
+  .brkt.bl { bottom: 20px; left: 20px; border-width: 0 0 1.5px 1.5px; }
+  .brkt.br { bottom: 20px; right: 20px; border-width: 0 1.5px 1.5px 0; }
+
+  /* Title — top centre */
+  #title {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 22px;
+    gap: 6px;
+  }
+
+  #title-main {
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: 10px;
+    color: rgba(255, 165, 0, 0.95);
+    text-shadow: 0 0 12px rgba(255,140,0,0.6), 0 0 30px rgba(255,90,0,0.25);
+    text-transform: uppercase;
+  }
+
+  #title-sub {
+    font-size: 8px;
+    letter-spacing: 6px;
+    color: rgba(255, 180, 80, 0.45);
+    text-transform: uppercase;
+  }
+
+  #title-tagline {
+    font-size: 7px;
+    letter-spacing: 4px;
+    color: rgba(0, 210, 255, 0.40);
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  /* Horizontal rule under title */
+  #title-rule {
+    position: absolute;
+    top: 76px; left: 50%;
+    transform: translateX(-50%);
+    width: 180px; height: 1px;
+    background: linear-gradient(to right, transparent, rgba(255,140,0,0.4), transparent);
+  }
+
+  /* Combo */
+  #combo {
+    position: absolute;
+    top: 90px; left: 50%;
+    transform: translateX(-50%);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 6px;
+    color: #ffe040;
+    text-shadow: 0 0 14px rgba(255,210,0,0.8), 0 0 40px rgba(255,210,0,0.3);
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.12s;
+  }
+
+  /* FPS readout — tiny, top-left under bracket */
+  #fps {
+    position: absolute;
+    top: 24px; left: 60px;
+    font-size: 8px;
+    letter-spacing: 3px;
+    color: rgba(255,140,0,0.55);
+    text-transform: uppercase;
+  }
+
+  /* Status bar — bottom centre */
+  #status-bar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-bottom: 22px;
+    gap: 16px;
+  }
+
+  .status-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: rgba(255,140,0,0.6);
+    box-shadow: 0 0 6px rgba(255,140,0,0.6);
+    animation: blink 2s ease-in-out infinite;
+  }
+
+  #status-text {
+    font-size: 8px;
+    letter-spacing: 5px;
+    color: rgba(255, 180, 80, 0.65);
+    text-transform: uppercase;
+  }
+
+  /* Bottom-left brand mark — marketing footer */
+  #brand-footer {
+    position: absolute;
+    bottom: 22px; left: 60px;
+    font-size: 7px;
+    letter-spacing: 4px;
+    color: rgba(255,140,0,0.45);
+    text-transform: uppercase;
+  }
+  #brand-footer b { color: rgba(255,180,80,0.85); letter-spacing: 5px; }
+
+  /* Bottom-right tag */
+  #brand-tag {
+    position: absolute;
+    bottom: 22px; right: 60px;
+    font-size: 7px;
+    letter-spacing: 4px;
+    color: rgba(0,210,255,0.45);
+    text-transform: uppercase;
+  }
+
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+  /* ═══════════════════════════════════════
+     START / LOADING SCREEN
+  ═══════════════════════════════════════ */
+  #gate {
+    position: absolute;
+    inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    background: radial-gradient(ellipse at center, #0a1428 0%, #060c1a 70%);
+    z-index: 30;
+    gap: 18px;
+    transition: opacity 0.7s ease;
+    padding: 20px;
+    text-align: center;
+  }
+  #gate.gone { opacity: 0; pointer-events: none; }
+
+  #gate-brand {
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: 14px;
+    color: rgba(255, 165, 0, 0.95);
+    text-shadow: 0 0 18px rgba(255,140,0,0.5), 0 0 50px rgba(255,90,0,0.25);
+    margin-bottom: 4px;
+  }
+  #gate-sub {
+    font-size: 9px;
+    letter-spacing: 8px;
+    color: rgba(255, 180, 80, 0.55);
+    margin-bottom: 26px;
+  }
+  #gate-rule {
+    width: 200px; height: 1px;
+    background: linear-gradient(to right, transparent, rgba(255,140,0,0.5), transparent);
+    margin-bottom: 26px;
+  }
+
+  #start-btn {
+    appearance: none;
+    background: linear-gradient(180deg, rgba(255,140,0,0.18), rgba(255,80,0,0.08));
+    border: 1.5px solid rgba(255,140,0,0.55);
+    color: rgba(255, 200, 120, 0.95);
+    font-family: 'Orbitron', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 6px;
+    padding: 14px 32px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s ease;
+    text-shadow: 0 0 10px rgba(255,140,0,0.5);
+    box-shadow: 0 0 20px rgba(255,140,0,0.15), inset 0 0 12px rgba(255,140,0,0.08);
+    border-radius: 2px;
+  }
+  #start-btn:hover, #start-btn:focus {
+    background: linear-gradient(180deg, rgba(255,140,0,0.32), rgba(255,80,0,0.16));
+    border-color: rgba(255,180,80,0.9);
+    box-shadow: 0 0 30px rgba(255,140,0,0.35), inset 0 0 18px rgba(255,140,0,0.15);
+    outline: none;
+  }
+  #start-btn:active { transform: scale(0.98); }
+  #start-btn:disabled {
+    opacity: 0.5;
+    cursor: wait;
+  }
+
+  #gate-hint {
+    margin-top: 18px;
+    font-size: 8px;
+    letter-spacing: 4px;
+    color: rgba(255,180,80,0.45);
+    max-width: 360px;
+    line-height: 1.7;
+  }
+
+  #gate-error {
+    margin-top: 12px;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: rgba(255, 80, 80, 0.85);
+    max-width: 380px;
+    line-height: 1.6;
+    display: none;
+  }
+  #gate-error.show { display: block; }
+
+  .ld-ring {
+    width: 56px; height: 56px;
+    border: 1.5px solid rgba(255,140,0,0.18);
+    border-top-color: rgba(255,140,0,0.9);
+    border-radius: 50%;
+    animation: spin 1.1s linear infinite;
+    box-shadow: 0 0 18px rgba(255,140,0,0.2);
+    display: none;
+    margin: 8px 0;
+  }
+  .ld-ring.show { display: block; }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <video id="input-video" playsinline autoplay muted></video>
+  <div id="video-tint"></div>
+
+  <!-- CRT layers -->
+  <div id="crt"></div>
+  <div id="crt-burn"></div>
+
+  <!-- HUD -->
+  <div id="hud">
+    <div class="brkt tl"></div>
+    <div class="brkt tr"></div>
+    <div class="brkt bl"></div>
+    <div class="brkt br"></div>
+
+    <div id="title">
+      <div id="title-main">Digital Hammerr</div>
+      <div id="title-sub">Forge Reality With Light</div>
+      <div id="title-tagline">// Hand-Tracked Photon Engine //</div>
+    </div>
+    <div id="title-rule"></div>
+
+    <div id="combo"></div>
+
+    <div id="fps">— FPS</div>
+
+    <div id="brand-footer"><b>DIGITAL HAMMERR</b> · Shape · Build · Strike</div>
+    <div id="brand-tag">// Powered by DIGITAL HAMMERR</div>
+
+    <div id="status-bar">
+      <div class="status-dot"></div>
+      <div id="status-text">System Ready</div>
+      <div class="status-dot"></div>
+    </div>
+  </div>
+
+  <!-- Start gate (replaces auto-start to fix camera reliability) -->
+  <div id="gate">
+    <div id="gate-brand">DIGITAL HAMMERR</div>
+    <div id="gate-sub">FORGE · SHAPE · STRIKE</div>
+    <div id="gate-rule"></div>
+    <button id="start-btn" type="button">▶ ENGAGE CAMERA</button>
+    <div class="ld-ring" id="gate-ring"></div>
+    <div id="gate-hint">Allow camera access when prompted.<br/>Move both hands in front of the camera to forge laser strings.</div>
+    <div id="gate-error"></div>
+  </div>
+
+</div><!-- #app -->
+
+<script>
+/* ═══════════════════════════════════════════════════════
+   DIGITAL HAMMERR — optimized engine
+   ─────────────────────────────────────────────────────
+   Performance fixes vs. original:
+     • MediaPipe modelComplexity: 0 (lite)  — 2–3× faster
+     • Camera resolution: 640×480 (was 1280×720) — 4× fewer pixels
+     • pixelDensity capped at 1 (was up to 2) — 4× fewer canvas pixels
+     • Frame-skip lock: never queue a 2nd inference
+     • Reduced laser-beam paint passes (5 → 3)
+     • Reduced silhouette passes (3 → 2)
+     • Static dot grid (was per-frame noise on every dot)
+     • Smaller shadow-blur radii throughout
+     • Particle/shockwave caps to prevent runaway lists
+   Camera fix: explicit user-gesture start + clear error UI
+   ═══════════════════════════════════════════════════════ */
+
+const state = { hands: [], handedness: [], videoReady: false, processing: false };
+
+const videoEl   = document.getElementById('input-video');
+const statusEl  = document.getElementById('status-text');
+const gateEl    = document.getElementById('gate');
+const startBtn  = document.getElementById('start-btn');
+const gateRing  = document.getElementById('gate-ring');
+const gateError = document.getElementById('gate-error');
+const comboEl   = document.getElementById('combo');
+const fpsEl     = document.getElementById('fps');
+
+let mpHands = null;
+let inferenceRunning = false;
+
+/* ────────────────────────────────────────
+   USER-GESTURE CAMERA START (reliability fix)
+   We avoid @mediapipe/camera_utils entirely — it hides errors
+   and does an open→close→reopen dance that fails on many devices.
+   Direct getUserMedia + rAF loop is far more reliable.
+   ──────────────────────────────────────── */
+async function startEngine() {
+  startBtn.disabled = true;
+  startBtn.textContent = 'INITIALISING…';
+  gateRing.classList.add('show');
+  gateError.classList.remove('show');
+
+  try {
+    // 1. Hard requirements check — most common cause of "camera not working"
+    if (!window.isSecureContext) {
+      throw new Error(
+        'Camera requires HTTPS or localhost. ' +
+        'Opening this file directly (file://) will not work — ' +
+        'serve it from a local web server instead.'
+      );
+    }
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      throw new Error('This browser does not support camera access. Try Chrome, Edge, or Firefox.');
+    }
+
+    // 2. Wait for CDN libraries
+    startBtn.textContent = 'LOADING ENGINE…';
+    await waitForLibs();
+
+    // 3. Request camera directly
+    startBtn.textContent = 'REQUESTING CAMERA…';
+    let stream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          width:  { ideal: 640 },
+          height: { ideal: 480 },
+          facingMode: 'user',
+          frameRate: { ideal: 30, max: 30 }
+        },
+        audio: false
+      });
+    } catch (permErr) {
+      const map = {
+        NotAllowedError:      'Camera permission denied. Allow camera access in your browser and retry.',
+        PermissionDeniedError:'Camera permission denied. Allow camera access in your browser and retry.',
+        NotFoundError:        'No camera found on this device.',
+        DevicesNotFoundError: 'No camera found on this device.',
+        NotReadableError:     'Camera is in use by another app. Close it and retry.',
+        TrackStartError:      'Camera could not start. Close other camera apps and retry.',
+        OverconstrainedError: 'Camera does not support the requested settings.',
+        SecurityError:        'Camera access blocked by security settings.',
+        AbortError:           'Camera request was aborted. Please retry.'
+      };
+      throw new Error(map[permErr.name] || ('Camera unavailable: ' + (permErr.message || permErr.name)));
+    }
+
+    // 4. Wire stream to video element, wait for first frame
+    startBtn.textContent = 'STARTING VIDEO…';
+    videoEl.srcObject = stream;
+    videoEl.muted = true;
+    videoEl.playsInline = true;
+
+    await new Promise((resolve, reject) => {
+      const fail = setTimeout(
+        () => reject(new Error('Camera video did not start within 10 seconds.')),
+        10000
+      );
+      videoEl.onloadedmetadata = () => {
+        videoEl.play()
+          .then(() => { clearTimeout(fail); resolve(); })
+          .catch(err => { clearTimeout(fail); reject(new Error('Cannot play video: ' + err.message)); });
+      };
+      videoEl.onerror = () => {
+        clearTimeout(fail);
+        reject(new Error('Video element error — stream rejected.'));
+      };
+    });
+
+    // Wait until the video actually has decoded data
+    await new Promise(resolve => {
+      if (videoEl.readyState >= 2) return resolve();
+      const tick = () => (videoEl.readyState >= 2 ? resolve() : requestAnimationFrame(tick));
+      tick();
+    });
+
+    // 5. Initialise MediaPipe Hands
+    startBtn.textContent = 'LOADING HAND MODEL…';
+    mpHands = new Hands({
+      locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${f}`
+    });
+    mpHands.setOptions({
+      maxNumHands: 2,
+      modelComplexity: 0,
+      minDetectionConfidence: 0.6,
+      minTrackingConfidence: 0.5
+    });
+    mpHands.onResults(r => {
+      state.hands      = r.multiHandLandmarks || [];
+      state.handedness = (r.multiHandedness || []).map(h => h.label);
+      state.processing = false;
+    });
+    // Force model download up-front so we don't lag on first real frame
+    await mpHands.initialize().catch(() => { /* lazy init still works on send() */ });
+
+    // 6. Done — hide the gate, start the inference loop
+    state.videoReady = true;
+    statusEl.textContent = 'Photon Engine Online';
+    gateEl.classList.add('gone');
+    setTimeout(() => { try { gateEl.remove(); } catch (e) {} }, 800);
+
+    // Manual rAF inference loop with frame-skip lock
+    inferenceRunning = true;
+    async function inferenceLoop() {
+      if (!inferenceRunning) return;
+      if (!document.hidden && !state.processing && videoEl.readyState >= 2) {
+        state.processing = true;
+        try {
+          await mpHands.send({ image: videoEl });
+        } catch (e) {
+          state.processing = false;
+        }
+      }
+      requestAnimationFrame(inferenceLoop);
+    }
+    requestAnimationFrame(inferenceLoop);
+
+  } catch (err) {
+    console.error('[Digital Hammerr] start failed:', err);
+    // Clean up any half-acquired stream
+    if (videoEl.srcObject) {
+      try { videoEl.srcObject.getTracks().forEach(t => t.stop()); } catch (e) {}
+      videoEl.srcObject = null;
+    }
+    gateRing.classList.remove('show');
+    startBtn.disabled = false;
+    startBtn.textContent = '▶ RETRY';
+    gateError.textContent = err.message || 'Initialisation failed. Please retry.';
+    gateError.classList.add('show');
+    statusEl.textContent = 'Camera Offline';
+  }
+}
+
+function waitForLibs(timeoutMs = 10000) {
+  return new Promise((resolve, reject) => {
+    const t0 = performance.now();
+    (function check() {
+      if (typeof Hands !== 'undefined' && typeof p5 !== 'undefined') {
+        return resolve();
+      }
+      if (performance.now() - t0 > timeoutMs) {
+        return reject(new Error('Engine libraries failed to load. Check your internet connection.'));
+      }
+      setTimeout(check, 50);
+    })();
+  });
+}
+
+startBtn.addEventListener('click', startEngine);
+
+// Inference loop already checks document.hidden, so no separate handler needed.
+
+/* ────────────────────────────────────────
+   Constants (shared with sketch below)
+   ──────────────────────────────────────── */
+const FINGER_TIPS = [4, 8, 12, 16, 20];
+const CONNECTIONS = [
+  [0,1],[1,2],[2,3],[3,4],
+  [0,5],[5,6],[6,7],[7,8],
+  [5,9],[9,10],[10,11],[11,12],
+  [9,13],[13,14],[14,15],[15,16],
+  [13,17],[17,18],[18,19],[19,20],
+  [0,17]
+];
+
+// Per-finger laser hues — Digital Hammerr palette (warm/forge accents)
+const BEAM_HUES = [25, 200, 55, 145, 295];
+
+const MAX_PARTICLES  = 220;        // hard cap — prevents runaway lists
+const MAX_SHOCKWAVES = 24;
+
+/* ────────────────────────────────────────
+   Particle (lightweight)
+   ──────────────────────────────────────── */
+class Particle {
+  constructor(x, y, hue, sk) {
+    this.sk = sk; this.x = x; this.y = y; this.hue = hue;
+    const a = sk.random(sk.TWO_PI), v = sk.random(2.5, 10);
+    this.vx = Math.cos(a) * v; this.vy = Math.sin(a) * v;
+    this.life = 1; this.decay = sk.random(0.022, 0.05);
+    this.size = sk.random(3, 8);
+    this.lastX = x; this.lastY = y;
+    this.spark = sk.random() < 0.3;
+  }
+  update() {
+    this.lastX = this.x; this.lastY = this.y;
+    this.vx *= 0.92; this.vy = this.vy * 0.92 + 0.22;
+    this.x += this.vx; this.y += this.vy;
+    this.life -= this.decay;
+  }
+  draw(ctx, sk) {
+    if (this.life <= 0) return;
+    const a = this.life * 100, sz = this.size * this.life;
+    if (this.spark) {
+      ctx.save();
+      ctx.shadowColor = `hsla(${this.hue},100%,70%,${this.life})`;
+      ctx.shadowBlur = 8;
+      sk.stroke(this.hue, 90, 100, a * 0.9);
+      sk.strokeWeight(sz * 0.45);
+      sk.line(this.lastX, this.lastY, this.x, this.y);
+      ctx.restore();
+    } else {
+      ctx.save();
+      ctx.shadowColor = `hsla(${this.hue},100%,70%,${this.life})`;
+      ctx.shadowBlur = sz * 2;
+      sk.noStroke();
+      sk.fill(this.hue, 80, 100, a * 0.85); sk.ellipse(this.x, this.y, sz * 2);
+      sk.fill(0, 0, 100, a * 0.55);         sk.ellipse(this.x, this.y, sz * 0.6);
+      ctx.restore();
+    }
+  }
+  isDead() { return this.life <= 0; }
+}
+
+/* ────────────────────────────────────────
+   Shockwave
+   ──────────────────────────────────────── */
+class Shockwave {
+  constructor(x, y, hue, sk) {
+    this.sk = sk; this.x = x; this.y = y; this.hue = hue;
+    this.r = 5; this.maxR = sk.random(50, 120); this.life = 1;
+  }
+  update() { this.r = this.sk.lerp(this.r, this.maxR, 0.16); this.life -= 0.05; }
+  draw(ctx, sk) {
+    if (this.life <= 0) return;
+    const a = this.life * 70;
+    ctx.save();
+    ctx.shadowColor = `hsla(${this.hue},100%,70%,${this.life * 0.7})`;
+    ctx.shadowBlur = 16;
+    sk.noFill();
+    sk.stroke(this.hue, 100, 100, a); sk.strokeWeight(2.2 * this.life);
+    sk.ellipse(this.x, this.y, this.r * 2);
+    ctx.restore();
+  }
+  isDead() { return this.life <= 0; }
+}
+
+/* ────────────────────────────────────────
+   p5 sketch
+   ──────────────────────────────────────── */
+new p5((s) => {
+
+  let pg;
+  let particles  = [];
+  let shockwaves = [];
+  let colorCycle = 0;
+
+  const TOUCH_PX   = 40;
+  const COOLDOWN_F = 24;
+  let cooldown = [0,0,0,0,0];
+  let totalHits = 0, comboTimer = 0;
+
+  // Background palette — midnight blue
+  const BG_H = 222, BG_S = 72, BG_B = 8;
+
+  // FPS tracker
+  let fpsAcc = 0, fpsFrames = 0, fpsLast = performance.now();
+
+  s.setup = () => {
+    const c = s.createCanvas(s.windowWidth, s.windowHeight);
+    c.parent('app');
+    s.colorMode(s.HSB, 360, 100, 100, 100);
+    s.pixelDensity(1);                     // ← capped (was up to 2) — 4× fewer pixels
+
+    pg = s.createGraphics(s.windowWidth, s.windowHeight);
+    pg.colorMode(s.HSB, 360, 100, 100, 100);
+    pg.pixelDensity(1);
+
+    s.frameRate(60);
+  };
+
+  s.windowResized = () => {
+    s.resizeCanvas(s.windowWidth, s.windowHeight);
+    pg.resizeCanvas(s.windowWidth, s.windowHeight);
+  };
+
+  const L = (lm) => ({ x: (1 - lm.x) * s.width, y: lm.y * s.height });
+
+  s.draw = () => {
+    // FPS readout (every ~30 frames)
+    fpsFrames++;
+    const now = performance.now();
+    fpsAcc += now - fpsLast; fpsLast = now;
+    if (fpsFrames >= 30) {
+      const fps = Math.round(1000 / (fpsAcc / fpsFrames));
+      fpsEl.textContent = fps + ' FPS';
+      fpsAcc = 0; fpsFrames = 0;
+    }
+
+    colorCycle = (colorCycle + 0.4) % 360;
+
+    // 1. Clear canvas — video underneath shows through
+    s.clear();
+
+    // 2. Fade trail buffer toward transparent (not toward solid blue)
+    //    destination-out erases pixels at low alpha each frame
+    const pgCtx = pg.drawingContext;
+    pgCtx.save();
+    pgCtx.globalCompositeOperation = 'destination-out';
+    pgCtx.fillStyle = 'rgba(0,0,0,0.07)';
+    pgCtx.fillRect(0, 0, pg.width, pg.height);
+    pgCtx.restore();
+
+    // 3. Resolve hands — coords are mirrored in L() so swap handedness
+    let leftLm = null, rightLm = null;
+    state.hands.forEach((lm, i) => {
+      if (state.handedness[i] === 'Left')  rightLm = lm;
+      else                                 leftLm  = lm;
+    });
+
+    // (Silhouettes removed — your real hand is the silhouette now)
+
+    // 4. Laser strings
+    if (leftLm && rightLm) drawCradle(leftLm, rightLm);
+    else if (leftLm || rightLm) drawSolo(leftLm || rightLm);
+
+    // 5. Joint dots on top of real hand
+    state.hands.forEach((lm, hi) => drawJoints(lm, hi));
+
+    // 6. Blit trail
+    s.image(pg, 0, 0);
+
+    // 7. Particles & shockwaves with hard caps
+    if (particles.length > MAX_PARTICLES) {
+      particles.splice(0, particles.length - MAX_PARTICLES);
+    }
+    if (shockwaves.length > MAX_SHOCKWAVES) {
+      shockwaves.splice(0, shockwaves.length - MAX_SHOCKWAVES);
+    }
+    for (let i = particles.length - 1; i >= 0; i--) {
+      particles[i].update();
+      particles[i].draw(s.drawingContext, s);
+      if (particles[i].isDead()) particles.splice(i, 1);
+    }
+    for (let i = shockwaves.length - 1; i >= 0; i--) {
+      shockwaves[i].update();
+      shockwaves[i].draw(s.drawingContext, s);
+      if (shockwaves[i].isDead()) shockwaves.splice(i, 1);
+    }
+
+    // 8. Tick cooldowns & combo
+    for (let i = 0; i < 5; i++) if (cooldown[i] > 0) cooldown[i]--;
+    if (comboTimer > 0) {
+      comboTimer--;
+      comboEl.style.opacity = Math.min(1, comboTimer / 16);
+    } else {
+      comboEl.style.opacity = 0;
+    }
+  };
+
+  // ── JOINT DOTS ──────────────────────────────────────
+  function drawJoints(lm, hi) {
+    const baseHue = hi === 0 ? 25 : 200;     // forge-orange / cyan
+    const ctx = s.drawingContext;
+    lm.forEach((pt, li) => {
+      const p   = L(pt);
+      const tip = FINGER_TIPS.includes(li);
+      const r   = tip ? 6.5 : 3;
+      const hue = (baseHue + li * 4) % 360;
+      ctx.save();
+      ctx.shadowColor = `hsla(${hue},100%,70%,0.85)`;
+      ctx.shadowBlur  = tip ? 14 : 6;
+      s.noStroke();
+      s.fill(hue, 90, 100, tip ? 90 : 60);
+      s.ellipse(p.x, p.y, r * 2);
+      s.fill(0, 0, 100, 85);
+      s.ellipse(p.x, p.y, r * 0.5);
+      ctx.restore();
+    });
+  }
+
+  // ── DIGITAL HAMMERR LASER WEAVE ─────────────────────
+  function drawCradle(leftLm, rightLm) {
+    const LL = FINGER_TIPS.map(i => L(leftLm[i]));
+    const RL = FINGER_TIPS.map(i => L(rightLm[i]));
+
+    // Primary same-finger beams
+    for (let i = 0; i < 5; i++) {
+      const pa = LL[i], pb = RL[i];
+      const dist = Math.hypot(pa.x-pb.x, pa.y-pb.y);
+      const t    = s.constrain(dist / (s.width * 0.85), 0, 1);
+      const intens = 1 - t * 0.4;
+
+      laserBeam(s,  pa, pb, BEAM_HUES[i], intens, true);
+      laserBeam(pg, pa, pb, BEAM_HUES[i], intens * 0.28, false);
+
+      if (dist < TOUCH_PX && cooldown[i] === 0) {
+        cooldown[i] = COOLDOWN_F;
+        const cx = (pa.x+pb.x)/2, cy = (pa.y+pb.y)/2;
+        spawnExplosion(cx, cy, BEAM_HUES[i]);
+        totalHits++;
+        comboEl.textContent = totalHits >= 5 ? `×${totalHits} HAMMER` : 'STRIKE';
+        comboTimer = 80;
+      }
+    }
+
+    // Cross-weave — reduced from 8 to 4 secondary beams
+    [[0,4],[1,3],[3,1],[4,0]].forEach(([li,ri], ci) => {
+      const pa = LL[li], pb = RL[ri];
+      const t  = s.constrain(Math.hypot(pa.x-pb.x,pa.y-pb.y)/(s.width*0.9), 0, 1);
+      laserBeam(s, pa, pb, (colorCycle + ci*45 + 30) % 360, (1-t)*0.28, false);
+    });
+  }
+
+  function drawSolo(lm) {
+    const palm = L(lm[0]);
+    FINGER_TIPS.forEach((ti, i) =>
+      laserBeam(s, palm, L(lm[ti]), BEAM_HUES[i], 0.5, false)
+    );
+  }
+
+  // ── LASER BEAM — 3 passes (was 5) ───────────────────
+  function laserBeam(g, pa, pb, hue, intensity, primary) {
+    if (intensity <= 0.02) return;
+    const ctx  = g.drawingContext;
+    const dist = Math.hypot(pa.x-pb.x, pa.y-pb.y);
+    const sag  = primary ? dist * 0.04 : 0;
+    const mx   = (pa.x+pb.x)/2, my = (pa.y+pb.y)/2 + sag;
+
+    // [shadowBlur, strokeWeight, sat, bri, alpha]
+    const passes = primary
+      ? [[28,12,100,70,30],[10,4,100,90,65],[3,1.2,0,100,95]]
+      : [[14,6,100,75,18],[5,1.6,0,100,55]];
+
+    passes.forEach(([blur, wt, sat, bri, al]) => {
+      ctx.save();
+      ctx.shadowColor = `hsla(${hue},100%,65%,${intensity*0.7})`;
+      ctx.shadowBlur  = blur;
+      g.stroke(sat===0 ? 0 : hue, sat, bri, al * intensity);
+      g.strokeWeight(wt);
+      g.noFill();
+      g.beginShape();
+      g.vertex(pa.x, pa.y);
+      g.quadraticVertex(mx, my, pb.x, pb.y);
+      g.endShape();
+      ctx.restore();
+    });
+  }
+
+  // ── EXPLOSION ──────────────────────────────────────
+  function spawnExplosion(x, y, hue) {
+    const burst = 30;
+    for (let i = 0; i < burst; i++) {
+      particles.push(new Particle(x, y, hue, s));
+      if (i % 5 === 0) particles.push(new Particle(x, y, (hue+45) % 360, s));
+    }
+    shockwaves.push(new Shockwave(x, y, hue, s));
+    shockwaves.push(new Shockwave(x, y, (hue+60) % 360, s));
+
+    const ctx = s.drawingContext;
+    ctx.save();
+    ctx.shadowColor = `hsla(${hue},100%,85%,1)`;
+    ctx.shadowBlur  = 60;
+    s.noStroke();
+    s.fill(0, 0, 100, 95);     s.ellipse(x, y, 22);
+    s.fill(hue, 100, 100, 65); s.ellipse(x, y, 48);
+    s.fill(hue, 60, 100, 22);  s.ellipse(x, y, 86);
+    ctx.restore();
+  }
+
+}); // end p5
+</script>
+</body>
+</html>

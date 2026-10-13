@@ -1,0 +1,51 @@
+<html lang="en" dir="ltr">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="stylesheet" href="../css/bootstrap.min.css">
+		<link rel="stylesheet" href="../css/main.css">
+		<link rel="stylesheet" href="../css/intlTelInput.css">
+		<!-- bootstrap file -->
+		<script type="text/javascript" src="../js/jquery-3.3.1.js"></script>
+		<script type="text/javascript" src="../js/popper.min.js"></script>
+		<script type="text/javascript" src="../js/bootstrap.min.js"></script>
+		<script src="../js/intlTelInput.js"></script>
+		<script src="../js/config.js"></script>	
+	</head>
+	<body class="register">
+		<div class="header"></div>
+
+		<div class="container-fluid registerSection">			
+			<form id="registerForm" method="POST" action=""  enctype="multipart/form-data">
+				<div class="form-group">
+					<label for="name">Name:</label>
+					<input type="text" class="form-control" id="name" placeholder="Enter Name here..." name="name" autocomplete="off">
+				</div>
+				<div class="form-group">
+					<label for="mobile">Mobile Number:</label>
+					<div class="input-group">
+						<input type="text" class="form-control" id="mobile" placeholder="Mobile Number" name="mobile" autocomplete="off">
+						<div class="input-group-prepend">
+							<input type="button" class="btn btn-primary otpButton" value="Send OTP" />
+						</div>
+					</div>
+				</div>
+				<div class="form-group otpbox">
+					<label for="name">Enter Otp:</label>
+					<input type="text" class="form-control" id="otp" placeholder="Enter OTP here..." name="otp" autocomplete="off" disabled>
+				</div>
+				<div class="form-group sponsorbox">
+					<label for="name">Sponsor Code: (optional)</label>
+					<input type="text" class="form-control" id="sponsor" placeholder="Enter Sponsor Code" name="sponsor" autocomplete="off">
+				</div>
+				<input type="submit" class="btn btn-primary" value="Submit" />
+				<a href="index.html" class="btn btn-primary">Return </a>
+			</form>
+		</div>
+
+		<div class="footer"></div>
+
+		<script type="text/javascript" src="../js/loader.js"></script>
+		<script type="text/javascript" src="../js/register.js"></script>
+	</body>
+</html>

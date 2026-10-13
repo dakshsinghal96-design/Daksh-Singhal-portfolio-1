@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Carbon Footprint Calculator | RSPCB Udaipur</title>
+  <style>
+    :root{
+      --green:#16834a;
+      --green-dark:#0f5f37;
+      --green-soft:#eaf8ef;
+      --green-light:#f5fcf7;
+      --text:#17211b;
+      --muted:#64736a;
+      --border:#dcebe2;
+      --warning:#ffb020;
+      --danger:#e55353;
+      --white:#ffffff;
+      --shadow:0 18px 45px rgba(15,95,55,.10);
+      --radius:22px;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      font-family:Inter, Poppins, Arial, sans-serif;
+      background:linear-gradient(180deg,#ffffff 0%,#f4fbf6 100%);
+      color:var(--text);
+    }
+    a{color:inherit;text-decoration:none}
+    .container{width:min(1180px,92%);margin:auto}
+    header{
+      position:sticky;top:0;z-index:20;
+      background:rgba(255,255,255,.9);
+      backdrop-filter:blur(14px);
+      border-bottom:1px solid var(--border);
+    }
+    .nav{min-height:76px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+    .brand{display:flex;align-items:center;gap:12px;font-weight:800}
+    .brand-mark{
+      width:46px;height:46px;border-radius:16px;background:var(--green-soft);
+      display:grid;place-items:center;color:var(--green);font-size:25px;
+      border:1px solid var(--border);flex:0 0 auto;
+    }
+    .brand small{display:block;color:var(--muted);font-weight:600;margin-top:2px}
+    .nav-links{display:flex;gap:18px;align-items:center;color:var(--muted);font-weight:700;font-size:14px}
+    .btn{
+      border:0;border-radius:999px;padding:13px 20px;font-weight:800;cursor:pointer;
+      background:var(--green);color:white;box-shadow:0 10px 20px rgba(22,131,74,.18);
+      transition:.2s ease;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;
+      min-height:46px;
+    }
+    .btn:hover{transform:translateY(-1px);background:var(--green-dark)}
+    .btn.secondary{background:white;color:var(--green);border:1px solid var(--border);box-shadow:none}
+    .btn.light{background:var(--green-soft);color:var(--green-dark);box-shadow:none}
+    .hero{padding:68px 0 42px}
+    .hero-grid{display:grid;grid-template-columns:1.08fr .92fr;gap:38px;align-items:center}
+    .tag{
+      display:inline-flex;gap:8px;align-items:center;
+      background:var(--green-soft);color:var(--green-dark);border:1px solid var(--border);
+      padding:10px 14px;border-radius:999px;font-weight:800;font-size:14px;
+    }
+    h1{font-size:clamp(38px,6vw,68px);line-height:1.02;margin:20px 0 18px;letter-spacing:-2px}
+    .lead{font-size:18px;line-height:1.7;color:var(--muted);max-width:680px}
+    .hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}
+    .hero-card{
+      background:white;border:1px solid var(--border);border-radius:34px;padding:26px;
+      box-shadow:var(--shadow);position:relative;overflow:hidden;
+    }
+    .hero-card:before{
+      content:"";position:absolute;width:220px;height:220px;border-radius:50%;right:-75px;top:-85px;
+      background:var(--green-soft);
+    }
+    .earth{
+      position:relative;min-height:330px;border-radius:28px;background:linear-gradient(135deg,#f7fff9,#e9f8ee);
+      display:grid;place-items:center;text-align:center;overflow:hidden;border:1px solid var(--border);
+    }
+    .earth .circle{
+      width:178px;height:178px;border-radius:50%;background:linear-gradient(135deg,#1c9a58,#b6ebc9);
+      display:grid;place-items:center;font-size:80px;box-shadow:0 28px 60px rgba(22,131,74,.24);
+    }
+    .mini-stat{
+      position:absolute;background:white;border:1px solid var(--border);border-radius:18px;padding:13px 15px;
+      box-shadow:0 12px 24px rgba(0,0,0,.06);font-weight:800;
+    }
+    .mini-stat span{display:block;color:var(--muted);font-weight:700;font-size:12px;margin-top:3px}
+    .s1{left:18px;top:28px}.s2{right:18px;bottom:24px}.s3{left:32px;bottom:36px}
+    section{padding:38px 0}
+    .section-title{font-size:34px;margin:0 0 12px;letter-spacing:-1px}
+    .section-sub{color:var(--muted);line-height:1.7;max-width:850px;margin:0 0 22px}
+    .info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+    .info-card,.form-card,.result-card{
+      background:white;border:1px solid var(--border);border-radius:var(--radius);padding:22px;box-shadow:0 12px 28px rgba(0,0,0,.04);
+    }
+    .info-card .icon{width:48px;height:48px;border-radius:16px;background:var(--green-soft);display:grid;place-items:center;font-size:23px;margin-bottom:13px}
+    .info-card h3{margin:0 0 8px;font-size:19px}.info-card p{margin:0;color:var(--muted);line-height:1.62}
+    .app-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:22px;align-items:start}
+    .form-card h3,.result-card h3{margin-top:0}
+    .field-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    label{display:block;font-size:13px;color:var(--muted);font-weight:800;margin-bottom:7px}
+    input,select{
+      width:100%;border:1px solid var(--border);border-radius:14px;padding:13px 14px;
+      outline:none;font-size:15px;background:#fff;color:var(--text);
+    }
+    input:focus,select:focus{border-color:var(--green);box-shadow:0 0 0 4px rgba(22,131,74,.09)}
+    .group-title{
+      margin:24px 0 12px;padding:10px 12px;border-radius:14px;
+      background:var(--green-light);color:var(--green-dark);font-weight:900;border:1px solid var(--border);
+    }
+    .result-top{
+      background:linear-gradient(135deg,var(--green),#29aa66);border-radius:24px;color:white;padding:24px;margin-bottom:16px;
+    }
+    .big-number{font-size:42px;font-weight:900;letter-spacing:-1px}.unit{opacity:.9;font-weight:700}
+    .metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}
+    .metric{background:var(--green-light);border:1px solid var(--border);border-radius:18px;padding:16px}
+    .metric b{font-size:22px;color:var(--green-dark)}.metric span{display:block;color:var(--muted);font-size:13px;margin-top:5px;font-weight:700}
+    .bar{height:12px;border-radius:999px;background:#e8eee9;overflow:hidden;margin-top:12px}
+    .bar-fill{height:100%;width:0;background:var(--green);transition:.4s ease}
+    .breakdown{margin-top:14px}
+    .break-row{display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding:11px 0;color:var(--muted)}
+    .break-row strong{color:var(--text)}
+    .suggestions{background:#fff;border:1px solid var(--border);border-radius:20px;padding:18px;margin-top:16px}
+    .suggestions ul{margin:10px 0 0;padding-left:20px;color:var(--muted);line-height:1.7}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+    .certificate{
+      display:none;background:white;border:10px solid var(--green-soft);outline:2px solid var(--green);
+      border-radius:22px;padding:34px;text-align:center;margin-top:18px;
+    }
+    .certificate h2{color:var(--green-dark);font-size:31px;margin:5px 0 6px}
+    .certificate .name{font-size:30px;font-weight:900;margin:14px 0;color:var(--green)}
+    .certificate p{color:var(--muted);line-height:1.7}
+    footer{padding:34px 0;color:var(--muted);font-size:13px;line-height:1.6}
+    .note{font-size:12px;color:var(--muted);line-height:1.6;margin-top:12px}
+    @media(max-width:900px){
+      .hero-grid,.app-grid,.info-grid{grid-template-columns:1fr}
+      .nav-links{display:none}
+      .field-grid,.metric-grid{grid-template-columns:1fr}
+      .hero{padding-top:38px}
+    }
+    @media(max-width:680px){
+      body{font-size:15px}
+      .container{width:min(100% - 28px,1180px)}
+      .nav{min-height:68px}
+      .brand{gap:10px;font-size:14px;line-height:1.25}
+      .brand small{font-size:11px;line-height:1.35}
+      .brand-mark{width:40px;height:40px;border-radius:14px;font-size:22px}
+      .hero{padding:30px 0 24px}
+      h1{font-size:36px;letter-spacing:-1px;margin:16px 0 12px}
+      .lead{font-size:15.5px;line-height:1.65}
+      .tag{font-size:12px;padding:8px 11px}
+      .hero-actions,.actions{display:grid;grid-template-columns:1fr;gap:10px}
+      .btn{width:100%;justify-content:center;padding:14px 16px}
+      .hero-card{padding:14px;border-radius:24px}
+      .earth{min-height:260px;border-radius:20px}
+      .earth .circle{width:132px;height:132px;font-size:58px}
+      .mini-stat{font-size:12px;padding:10px 11px;border-radius:14px}
+      .mini-stat span{font-size:10px}
+      .s1{left:10px;top:16px}.s2{right:10px;bottom:16px}.s3{left:12px;bottom:20px}
+      section{padding:26px 0}
+      .section-title{font-size:26px;line-height:1.2}
+      .section-sub{font-size:15px;line-height:1.65}
+      .info-card,.form-card,.result-card{padding:17px;border-radius:18px}
+      .info-card .icon{width:42px;height:42px;border-radius:14px;font-size:20px}
+      .field-grid{gap:11px}
+      label{font-size:12px}
+      input,select{font-size:16px;padding:13px 13px;border-radius:13px}
+      .group-title{font-size:14px;margin:20px 0 10px;padding:9px 10px}
+      .result-top{padding:18px;border-radius:19px}
+      .big-number{font-size:32px}
+      .metric{padding:14px;border-radius:15px}
+      .metric b{font-size:19px}
+      .break-row{font-size:14px;gap:14px}
+      .suggestions{padding:15px;border-radius:16px}
+      .suggestions ul{padding-left:18px;font-size:14px}
+      .certificate{padding:20px 14px;border-width:7px;border-radius:18px}
+      .certificate h2{font-size:22px}
+      .certificate .name{font-size:24px}
+      .certificate p{font-size:14px;line-height:1.6}
+      footer{font-size:12px;line-height:1.6;padding:26px 0}
+    }
+    @media(max-width:420px){
+      .container{width:min(100% - 22px,1180px)}
+      h1{font-size:31px}
+      .section-title{font-size:24px}
+      .brand{font-size:13px}
+      .brand small{font-size:10px}
+      .earth{min-height:230px}
+      .earth .circle{width:112px;height:112px;font-size:50px}
+      .mini-stat{max-width:118px}
+      .big-number{font-size:28px}
+      .unit{font-size:13px}
+      .result-card h3,.form-card h3{font-size:18px}
+    }
+    @media print{
+      header,.hero,.info-grid,.form-card,.actions,.suggestions,footer,#about,#why{display:none!important}
+      body{background:white}.container{width:100%}.app-grid{display:block}.result-card{box-shadow:none;border:0}
+      .certificate{display:block!important}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container nav">
+      <div class="brand">
+        <div class="brand-mark">🌿</div>
+        <div>
+          Carbon Footprint Calculator
+          <small>Rajasthan State Pollution Control Board, Udaipur</small>
+        </div>
+      </div>
+      <div class="nav-links">
+        <a href="#about">About</a>
+        <a href="#calculator">Calculator</a>
+        <a href="#result">Result</a>
+        <a class="btn light" href="#calculator">Start</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container hero-grid">
+        <div>
+          <div class="tag">🌱 Environment Awareness Initiative</div>
+          <h1>Calculate Your Carbon Footprint</h1>
+          <p class="lead">Understand how daily fuel, transport, electricity and household activities contribute to carbon emissions. Get your monthly CO₂ estimate, improvement score, green suggestions and awareness certificate.</p>
+          <div class="hero-actions">
+            <a class="btn" href="#calculator">Start Calculator →</a>
+            <a class="btn secondary" href="#about">Learn Why It Matters</a>
+          </div>
+        </div>
+        <div class="hero-card">
+          <div class="earth">
+            <div class="mini-stat s1">kg CO₂ <span>Monthly result</span></div>
+            <div class="mini-stat s2">Trees <span>Offset estimate</span></div>
+            <div class="mini-stat s3">Tips <span>Reduce footprint</span></div>
+            <div class="circle">🌍</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="about">
+      <div class="container">
+        <h2 class="section-title">What is Carbon Footprint?</h2>
+        <p class="section-sub">A carbon footprint is the estimated amount of carbon dioxide released because of our everyday activities. Vehicle fuel, petrol, diesel, electricity, LPG, public transport, waste and lifestyle choices all create an environmental impact.</p>
+        <div class="info-grid">
+          <div class="info-card"><div class="icon">🚗</div><h3>Transport Impact</h3><p>Petrol and diesel usage are major contributors to personal and city-level emissions.</p></div>
+          <div class="info-card"><div class="icon">⚡</div><h3>Energy Impact</h3><p>Electricity consumption creates indirect CO₂ emissions depending on the power source.</p></div>
+          <div class="info-card"><div class="icon">🌳</div><h3>Action Impact</h3><p>Simple choices like public transport, vehicle maintenance, energy saving and tree plantation can reduce emissions.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="why">
+      <div class="container">
+        <h2 class="section-title">Why This Is Important</h2>
+        <p class="section-sub">Carbon awareness helps citizens understand their role in clean air, climate protection, healthier cities and responsible development. This calculator is designed as an easy public education tool for all users.</p>
+      </div>
+    </section>
+
+    <section id="calculator">
+      <div class="container app-grid">
+        <div class="form-card">
+          <h3>Enter Your Details</h3>
+          <div class="field-grid">
+            <div><label>Name</label><input id="name" placeholder="Enter full name"></div>
+            <div><label>Mobile Number</label><input id="mobile" placeholder="Enter mobile number"></div>
+            <div><label>Email</label><input id="email" placeholder="Enter email"></div>
+            <div><label>City</label><input id="city" value="Udaipur"></div>
+            <div><label>User Type</label><select id="userType"><option>Citizen</option><option>Student</option><option>Office</option><option>Hotel</option><option>Industry</option><option>School</option><option>Other</option></select></div>
+            <div><label>Organisation Name</label><input id="org" placeholder="Optional"></div>
+          </div>
+
+          <div class="group-title">Vehicle Fuel Per Month</div>
+          <div class="field-grid">
+            <div><label>Petrol Used (Litres)</label><input type="number" id="petrol" min="0" value="0"></div>
+            <div><label>Diesel Used (Litres)</label><input type="number" id="diesel" min="0" value="0"></div>
+            <div><label>Vehicle Type</label><select id="vehicleType"><option>Two-wheeler</option><option>Car</option><option>Bus</option><option>Commercial Vehicle</option><option>No Vehicle</option></select></div>
+          </div>
+
+          <div class="group-title">Public Transport Per Month</div>
+          <div class="field-grid">
+            <div><label>Bus Travel (km)</label><input type="number" id="busKm" min="0" value="0"></div>
+            <div><label>Train Travel (km)</label><input type="number" id="trainKm" min="0" value="0"></div>
+            <div><label>Auto/Cab Travel (km)</label><input type="number" id="cabKm" min="0" value="0"></div>
+          </div>
+
+          <div class="group-title">Electricity, LPG & Waste Per Month</div>
+          <div class="field-grid">
+            <div><label>Electricity Units (kWh)</label><input type="number" id="electricity" min="0" value="0"></div>
+            <div><label>LPG Cylinders</label><input type="number" id="lpg" min="0" value="0"></div>
+            <div><label>Plastic Waste (kg)</label><input type="number" id="plastic" min="0" value="0"></div>
+            <div><label>Food Waste (kg)</label><input type="number" id="food" min="0" value="0"></div>
+            <div><label>Tree Plantation Activity</label><select id="treesActivity"><option>No</option><option>Yes</option></select></div>
+          </div>
+
+          <div class="actions">
+            <button class="btn" onclick="calculateFootprint()">Calculate Footprint</button>
+            <button class="btn secondary" onclick="resetForm()">Reset</button>
+          </div>
+          <p class="note">Note: This is an awareness calculator. Emission factors can be updated in the JavaScript constants as per official RSPCB/CEA/GHG guidance.</p>
+        </div>
+
+        <div class="result-card" id="result">
+          <h3>Your Carbon Dashboard</h3>
+          <div class="result-top">
+            <div class="unit">Total Monthly Footprint</div>
+            <div class="big-number"><span id="totalCo2">0</span> <span class="unit">kg CO₂</span></div>
+            <div class="bar"><div class="bar-fill" id="barFill"></div></div>
+          </div>
+
+          <div class="metric-grid">
+            <div class="metric"><b id="category">Not Calculated</b><span>Footprint Category</span></div>
+            <div class="metric"><b id="treesNeeded">0</b><span>Trees Required Approx.</span></div>
+            <div class="metric"><b id="mainSource">-</b><span>Highest Emission Area</span></div>
+            <div class="metric"><b id="annualCo2">0</b><span>kg CO₂ / Year</span></div>
+          </div>
+
+          <div class="breakdown">
+            <div class="break-row"><span>Petrol</span><strong id="petrolOut">0 kg</strong></div>
+            <div class="break-row"><span>Diesel</span><strong id="dieselOut">0 kg</strong></div>
+            <div class="break-row"><span>Public Transport</span><strong id="transportOut">0 kg</strong></div>
+            <div class="break-row"><span>Electricity</span><strong id="electricityOut">0 kg</strong></div>
+            <div class="break-row"><span>LPG</span><strong id="lpgOut">0 kg</strong></div>
+            <div class="break-row"><span>Waste</span><strong id="wasteOut">0 kg</strong></div>
+          </div>
+
+          <div class="suggestions">
+            <strong>Green Suggestions</strong>
+            <ul id="suggestionList">
+              <li>Fill the calculator to get personalised suggestions.</li>
+            </ul>
+          </div>
+
+          <div class="actions">
+            <button class="btn" onclick="downloadCertificate()">Download Certificate</button>
+            <button class="btn secondary" onclick="shareWhatsApp()">Share on WhatsApp</button>
+            <button class="btn secondary" onclick="shareScreen()">On-screen Share</button>
+          </div>
+
+          <div class="certificate" id="certificate">
+            <div style="font-size:46px">🌿</div>
+            <h2>Certificate of Environmental Awareness</h2>
+            <p>This certifies that</p>
+            <div class="name" id="certName">Participant</div>
+            <p>has calculated their carbon footprint through the Carbon Footprint Calculator initiative by <strong>Rajasthan State Pollution Control Board, Udaipur</strong> and has taken a step towards environmental responsibility.</p>
+            <p><strong>Total Footprint:</strong> <span id="certCo2">0</span> kg CO₂/month &nbsp; | &nbsp; <strong>Category:</strong> <span id="certCategory">-</span></p>
+            <p style="margin-top:24px">Date: <span id="certDate"></span></p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      Developed as a public awareness web application concept for Rajasthan State Pollution Control Board, Udaipur.
+      <br>Final official deployment should verify all emission values with RSPCB-approved factors.
+    </div>
+  </footer>
+
+  <script>
+    const FACTORS = {
+      petrol: 2.27193,
+      diesel: 2.6444,
+      electricity: 0.710,
+      busKm: 0.015161,
+      trainKm: 0.040,
+      cabKm: 0.160,
+      lpgCylinder: 42.5,
+      plasticKg: 6.0,
+      foodKg: 2.5,
+      treeAnnualAbsorption: 22
+    };
+
+    let latestResult = null;
+
+    function val(id){ return Number(document.getElementById(id).value) || 0; }
+    function text(id){ return document.getElementById(id).value.trim(); }
+    function round(n){ return Math.round(n * 10) / 10; }
+
+    function calculateFootprint(){
+      const petrol = val('petrol') * FACTORS.petrol;
+      const diesel = val('diesel') * FACTORS.diesel;
+      const transport = (val('busKm') * FACTORS.busKm) + (val('trainKm') * FACTORS.trainKm) + (val('cabKm') * FACTORS.cabKm);
+      const electricity = val('electricity') * FACTORS.electricity;
+      const lpg = val('lpg') * FACTORS.lpgCylinder;
+      const waste = (val('plastic') * FACTORS.plasticKg) + (val('food') * FACTORS.foodKg);
+      const total = petrol + diesel + transport + electricity + lpg + waste;
+      const annual = total * 12;
+      const treesNeeded = Math.ceil(annual / FACTORS.treeAnnualAbsorption);
+
+      let category = 'Low';
+      if(total > 800) category = 'Need Improvement';
+      else if(total > 400) category = 'High';
+      else if(total > 150) category = 'Moderate';
+
+      const parts = { Petrol: petrol, Diesel: diesel, 'Public Transport': transport, Electricity: electricity, LPG: lpg, Waste: waste };
+      const mainSource = Object.entries(parts).sort((a,b)=>b[1]-a[1])[0][0];
+
+      latestResult = { total, annual, treesNeeded, category, mainSource, parts };
+
+      document.getElementById('totalCo2').textContent = round(total);
+      document.getElementById('annualCo2').textContent = round(annual);
+      document.getElementById('treesNeeded').textContent = treesNeeded;
+      document.getElementById('category').textContent = category;
+      document.getElementById('mainSource').textContent = mainSource;
+      document.getElementById('petrolOut').textContent = round(petrol) + ' kg';
+      document.getElementById('dieselOut').textContent = round(diesel) + ' kg';
+      document.getElementById('transportOut').textContent = round(transport) + ' kg';
+      document.getElementById('electricityOut').textContent = round(electricity) + ' kg';
+      document.getElementById('lpgOut').textContent = round(lpg) + ' kg';
+      document.getElementById('wasteOut').textContent = round(waste) + ' kg';
+      document.getElementById('barFill').style.width = Math.min(100, (total / 1000) * 100) + '%';
+      document.getElementById('barFill').style.background = total > 800 ? 'var(--danger)' : total > 400 ? 'var(--warning)' : 'var(--green)';
+
+      updateSuggestions(mainSource, category);
+      updateCertificate();
+      document.getElementById('result').scrollIntoView({behavior:'smooth'});
+    }
+
+    function updateSuggestions(mainSource, category){
+      const list = [];
+      if(mainSource === 'Petrol' || mainSource === 'Diesel'){
+        list.push('Reduce unnecessary vehicle trips and plan routes efficiently.');
+        list.push('Use carpooling, public transport, cycling or walking for short distances.');
+        list.push('Maintain tyre pressure and regular vehicle servicing for better mileage.');
+      }
+      if(mainSource === 'Electricity'){
+        list.push('Switch to LED lights and energy-efficient appliances.');
+        list.push('Turn off lights, fans and AC when not in use.');
+        list.push('Use natural light and ventilation wherever possible.');
+      }
+      if(mainSource === 'Public Transport') list.push('Prefer shared buses or trains over individual cab rides where possible.');
+      if(mainSource === 'LPG') list.push('Use covered cooking, pressure cookers and efficient burners to save LPG.');
+      if(mainSource === 'Waste'){
+        list.push('Reduce single-use plastic and segregate dry and wet waste.');
+        list.push('Compost food waste where possible.');
+      }
+      list.push('Plant and protect trees to support long-term carbon absorption.');
+      if(category === 'Need Improvement') list.unshift('Your footprint is high. Start with the highest emission area first for maximum impact.');
+      document.getElementById('suggestionList').innerHTML = list.map(item => `<li>${item}</li>`).join('');
+    }
+
+    function updateCertificate(){
+      const name = text('name') || 'Participant';
+      document.getElementById('certName').textContent = name;
+      document.getElementById('certCo2').textContent = latestResult ? round(latestResult.total) : 0;
+      document.getElementById('certCategory').textContent = latestResult ? latestResult.category : '-';
+      document.getElementById('certDate').textContent = new Date().toLocaleDateString('en-IN');
+      document.getElementById('certificate').style.display = 'block';
+    }
+
+    function downloadCertificate(){
+      if(!latestResult) calculateFootprint();
+      updateCertificate();
+      setTimeout(() => window.print(), 200);
+    }
+
+    function shareWhatsApp(){
+      if(!latestResult) calculateFootprint();
+      const name = text('name') || 'I';
+      const message = `${name} calculated a monthly carbon footprint of ${round(latestResult.total)} kg CO₂ using the Carbon Footprint Calculator initiative by Rajasthan State Pollution Control Board, Udaipur. Category: ${latestResult.category}. Let us take steps for a cleaner environment.`;
+      window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+    }
+
+    async function shareScreen(){
+      if(!latestResult) calculateFootprint();
+      const shareText = `My monthly carbon footprint is ${round(latestResult.total)} kg CO₂. Category: ${latestResult.category}. Initiative by Rajasthan State Pollution Control Board, Udaipur.`;
+      if(navigator.share){
+        await navigator.share({title:'Carbon Footprint Result', text:shareText});
+      }else{
+        await navigator.clipboard.writeText(shareText);
+        alert('Result copied. You can paste and share it anywhere.');
+      }
+    }
+
+    function resetForm(){
+      document.querySelectorAll('input[type="number"]').forEach(i => i.value = 0);
+      ['name','mobile','email','org'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('city').value = 'Udaipur';
+      latestResult = null;
+      document.getElementById('totalCo2').textContent = 0;
+      document.getElementById('annualCo2').textContent = 0;
+      document.getElementById('treesNeeded').textContent = 0;
+      document.getElementById('category').textContent = 'Not Calculated';
+      document.getElementById('mainSource').textContent = '-';
+      document.getElementById('barFill').style.width = '0';
+      ['petrolOut','dieselOut','transportOut','electricityOut','lpgOut','wasteOut'].forEach(id => document.getElementById(id).textContent = '0 kg');
+      document.getElementById('suggestionList').innerHTML = '<li>Fill the calculator to get personalised suggestions.</li>';
+      document.getElementById('certificate').style.display = 'none';
+    }
+  </script>
+</body>
+</html>

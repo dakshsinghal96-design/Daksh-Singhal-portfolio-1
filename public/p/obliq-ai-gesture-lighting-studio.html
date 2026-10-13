@@ -1,0 +1,1553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#05060c" />
+<title>Obliq AI · Gesture Lighting Studio</title>
+
+<!-- Premium typography -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+/* ====================================================================
+   OBLIQ AI · GESTURE LIGHTING STUDIO
+   Powered by Digital Hammerr
+   ==================================================================== */
+
+:root{
+  /* Active theme variables (mutated by JS) */
+  --primary:   #00d4ff;
+  --secondary: #0066ff;
+  --accent:    #00ffe5;
+  --beam:      255, 255, 255;       /* rgb triplet for beams */
+  --tint:      0, 212, 255;
+  --tint2:     0, 102, 255;
+
+  /* Static brand */
+  --bg-0: #05060c;
+  --bg-1: #0a0c18;
+  --bg-2: #11142a;
+  --ink:  #e8ecff;
+  --ink-dim: #8b93b8;
+  --line: rgba(255,255,255,0.08);
+  --glass: rgba(255,255,255,0.04);
+  --glass-strong: rgba(255,255,255,0.06);
+
+  --radius: 16px;
+  --radius-sm: 10px;
+
+  --shadow-1: 0 10px 40px rgba(0,0,0,0.5);
+  --shadow-neon: 0 0 24px rgba(var(--tint), 0.45), 0 0 60px rgba(var(--tint), 0.25);
+}
+
+*{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body{ margin:0; padding:0; background:var(--bg-0); color:var(--ink);
+  font-family:'Outfit', system-ui, sans-serif; overflow-x:hidden;
+  min-height:100vh; min-height:100svh; }
+body{
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(var(--tint),0.18), transparent 60%),
+    radial-gradient(900px 700px at 0% 110%, rgba(var(--tint2),0.16), transparent 60%),
+    linear-gradient(180deg, #04050a 0%, #06081a 50%, #04050a 100%);
+  background-attachment: fixed;
+}
+
+/* Animated grain overlay */
+body::before{
+  content:""; position:fixed; inset:0; pointer-events:none; z-index:1;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.08 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  opacity:.5; mix-blend-mode:overlay;
+}
+
+/* Animated particle dots in background */
+.bg-particles{
+  position:fixed; inset:0; pointer-events:none; z-index:0;
+  background-image:
+    radial-gradient(1px 1px at 20% 30%, rgba(var(--tint),0.5), transparent),
+    radial-gradient(1px 1px at 70% 20%, rgba(255,255,255,0.35), transparent),
+    radial-gradient(1.5px 1.5px at 40% 80%, rgba(var(--tint),0.4), transparent),
+    radial-gradient(1px 1px at 90% 60%, rgba(255,255,255,0.3), transparent),
+    radial-gradient(1px 1px at 10% 90%, rgba(var(--tint2),0.5), transparent),
+    radial-gradient(2px 2px at 60% 50%, rgba(var(--tint),0.4), transparent);
+  background-size:100% 100%;
+  animation: drift 30s linear infinite;
+}
+@keyframes drift {
+  0%   { transform:translateY(0); }
+  100% { transform:translateY(-20px); }
+}
+
+/* ====================================================================
+   LOADING / INTRO
+   ==================================================================== */
+.loader{
+  position:fixed; inset:0; z-index:1000;
+  background:radial-gradient(ellipse at center, #0a0e22 0%, #04050a 60%, #000 100%);
+  display:flex; align-items:center; justify-content:center; flex-direction:column;
+  transition: opacity .8s ease, visibility .8s ease;
+}
+.loader.hidden{ opacity:0; visibility:hidden; }
+.loader-logo{
+  font-family:'Unbounded',sans-serif; font-weight:800;
+  font-size: clamp(28px, 6vw, 56px); letter-spacing:0.02em;
+  background: linear-gradient(135deg, #fff 0%, var(--primary) 50%, var(--accent) 100%);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  filter: drop-shadow(0 0 24px rgba(var(--tint),0.4));
+  animation: logoPulse 2.4s ease-in-out infinite;
+}
+@keyframes logoPulse {
+  0%,100%{ filter: drop-shadow(0 0 24px rgba(var(--tint),0.4)); transform:scale(1); }
+  50%   { filter: drop-shadow(0 0 48px rgba(var(--tint),0.8)); transform:scale(1.02); }
+}
+.loader-sub{
+  margin-top:18px; font-family:'JetBrains Mono',monospace; font-size:11px;
+  letter-spacing:0.3em; text-transform:uppercase; color:var(--ink-dim);
+}
+.loader-bar{
+  margin-top:32px; width:min(360px,70vw); height:2px;
+  background:rgba(255,255,255,0.08); border-radius:99px; overflow:hidden;
+}
+.loader-bar::after{
+  content:""; display:block; height:100%; width:0%;
+  background: linear-gradient(90deg, transparent, var(--primary), var(--accent), transparent);
+  animation: loadFill 2.4s ease forwards;
+  box-shadow: 0 0 12px var(--primary);
+}
+@keyframes loadFill { to { width:100%; } }
+.loader-steps{
+  margin-top:18px; font-family:'JetBrains Mono',monospace; font-size:10px;
+  color:var(--ink-dim); letter-spacing:0.15em; min-height:14px;
+}
+
+/* ====================================================================
+   APP SHELL
+   ==================================================================== */
+.app{ position:relative; z-index:2; min-height:100vh; min-height:100svh;
+  padding: clamp(16px, 2.4vw, 28px); display:flex; flex-direction:column; gap:18px; }
+
+/* HEADER */
+.header{
+  display:flex; align-items:center; justify-content:space-between; gap:16px;
+  padding: 14px 20px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
+  border:1px solid var(--line); border-radius: var(--radius);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  box-shadow: var(--shadow-1);
+}
+.brand{ display:flex; align-items:center; gap:14px; min-width:0; }
+.brand-mark{
+  width:42px; height:42px; flex:0 0 42px; border-radius:12px; position:relative;
+  background: conic-gradient(from 45deg, var(--primary), var(--accent), var(--secondary), var(--primary));
+  filter: drop-shadow(0 0 14px rgba(var(--tint),0.6));
+  display:flex; align-items:center; justify-content:center;
+  animation: markSpin 12s linear infinite;
+}
+.brand-mark::after{
+  content:""; position:absolute; inset:3px; border-radius:9px;
+  background: radial-gradient(circle at 30% 30%, #1a1f3d, #06081a);
+}
+.brand-mark span{
+  position:relative; z-index:2; font-family:'Unbounded',sans-serif;
+  font-weight:800; font-size:18px; color:#fff;
+  text-shadow: 0 0 12px rgba(var(--tint),0.9);
+}
+@keyframes markSpin{ to { transform:rotate(360deg); } }
+
+.brand-text{ display:flex; flex-direction:column; line-height:1.1; min-width:0; }
+.brand-name{ font-family:'Unbounded',sans-serif; font-weight:700;
+  font-size: clamp(15px, 1.8vw, 19px); letter-spacing:0.02em;
+  background: linear-gradient(120deg, #fff, var(--primary));
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.brand-tag{ font-family:'JetBrains Mono',monospace; font-size:10px;
+  color:var(--ink-dim); letter-spacing:0.18em; text-transform:uppercase;
+  margin-top:3px; }
+.brand-tag b{ color:var(--accent); font-weight:500; }
+
+.header-meta{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
+.pill{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:6px 12px; border-radius:99px;
+  background: var(--glass); border:1px solid var(--line);
+  font-family:'JetBrains Mono',monospace; font-size:10px;
+  letter-spacing:0.15em; text-transform:uppercase; color:var(--ink-dim);
+}
+.pill .dot{ width:6px; height:6px; border-radius:50%; background:#ff5b5b; box-shadow:0 0 8px #ff5b5b; }
+.pill.live .dot{ background:#00ff9d; box-shadow:0 0 8px #00ff9d; animation: blink 1.2s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+/* HERO */
+.hero{ display:flex; flex-direction:column; gap:6px; padding: 4px 4px 6px; }
+.hero h1{
+  margin:0; font-family:'Unbounded',sans-serif; font-weight:800;
+  font-size: clamp(26px, 4.4vw, 48px); line-height:1.05; letter-spacing:-0.01em;
+}
+.hero h1 .gx{
+  background: linear-gradient(120deg, var(--primary) 0%, var(--accent) 50%, var(--secondary) 100%);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+.hero p{ margin:0; color:var(--ink-dim); font-size: clamp(13px, 1.5vw, 15px); max-width: 760px; }
+
+/* CONTROL BAR */
+.controls{
+  display:flex; flex-wrap:wrap; gap:10px;
+  padding: 14px; background: var(--glass);
+  border:1px solid var(--line); border-radius: var(--radius);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+}
+.btn{
+  appearance:none; border:none; cursor:pointer;
+  font-family:'Outfit',sans-serif; font-weight:500; font-size:13px;
+  letter-spacing:0.04em; padding:11px 18px; border-radius: 11px;
+  display:inline-flex; align-items:center; gap:9px;
+  background: rgba(255,255,255,0.04); color:var(--ink);
+  border:1px solid rgba(255,255,255,0.1);
+  transition: all .25s ease;
+}
+.btn:hover{ background: rgba(255,255,255,0.08); transform: translateY(-1px); }
+.btn:active{ transform: translateY(0); }
+.btn svg{ width:14px; height:14px; }
+.btn.primary{
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color:#001220; font-weight:600; border-color: transparent;
+  box-shadow: 0 6px 24px rgba(var(--tint),0.35), inset 0 1px 0 rgba(255,255,255,0.3);
+}
+.btn.primary:hover{ box-shadow: 0 10px 32px rgba(var(--tint),0.5), inset 0 1px 0 rgba(255,255,255,0.3); }
+.btn.danger{ background: rgba(255,90,90,0.12); border-color: rgba(255,90,90,0.3); color: #ffb3b3; }
+.btn.danger:hover{ background: rgba(255,90,90,0.2); }
+.btn[disabled]{ opacity:0.4; cursor:not-allowed; transform:none; }
+
+/* ====================================================================
+   MAIN GRID
+   ==================================================================== */
+.grid{
+  display:grid; gap:18px;
+  grid-template-columns: minmax(0, 1fr) 320px;
+}
+@media (max-width: 1024px){
+  .grid{ grid-template-columns: 1fr; }
+}
+
+.stage-col{ display:flex; flex-direction:column; gap:18px; min-width:0; }
+
+/* Panels */
+.panel{
+  position:relative;
+  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
+  border:1px solid var(--line); border-radius: var(--radius);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  overflow:hidden;
+}
+.panel-head{
+  display:flex; align-items:center; justify-content:space-between;
+  padding: 12px 16px; border-bottom:1px solid var(--line);
+}
+.panel-title{
+  font-family:'JetBrains Mono',monospace; font-size:11px;
+  letter-spacing:0.22em; text-transform:uppercase; color:var(--ink-dim);
+}
+.panel-title b{ color:var(--ink); font-weight:500; }
+.panel-body{ padding:14px 16px; }
+
+/* ====================================================================
+   WEBCAM (TOP)
+   ==================================================================== */
+.webcam-wrap{ position:relative; aspect-ratio: 16 / 9; background:#000; overflow:hidden; }
+.webcam-wrap video,
+.webcam-wrap canvas{
+  position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+  transform: scaleX(-1);  /* mirror for natural feel */
+}
+.webcam-wrap canvas{ pointer-events:none; }
+
+.webcam-placeholder{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  flex-direction:column; gap:14px; padding:20px; text-align:center;
+  background:
+    radial-gradient(ellipse at 50% 40%, rgba(var(--tint),0.16), transparent 60%),
+    repeating-linear-gradient(135deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 1px, transparent 12px);
+  color:var(--ink-dim);
+}
+.webcam-placeholder svg{ width:44px; height:44px; opacity:0.7; }
+.webcam-placeholder h3{ margin:0; font-family:'Unbounded',sans-serif; font-weight:700; color:var(--ink); font-size:18px; }
+.webcam-placeholder p{ margin:0; font-size:13px; max-width:380px; line-height:1.5; }
+
+/* Corner brackets overlay */
+.brackets{ position:absolute; inset:14px; pointer-events:none; }
+.brackets::before, .brackets::after,
+.brackets > i::before, .brackets > i::after{
+  content:""; position:absolute; width:22px; height:22px;
+  border:1.5px solid var(--primary); opacity:0.7;
+}
+.brackets::before{ top:0; left:0; border-right:none; border-bottom:none; }
+.brackets::after{ top:0; right:0; border-left:none; border-bottom:none; }
+.brackets > i{ display:block; }
+.brackets > i::before{ bottom:0; left:0; border-right:none; border-top:none; position:absolute; }
+.brackets > i::after{ bottom:0; right:0; border-left:none; border-top:none; position:absolute; }
+
+/* HUD overlay (gesture + confidence) */
+.hud{
+  position:absolute; left:14px; bottom:14px; right:14px;
+  display:flex; justify-content:space-between; align-items:flex-end; gap:10px;
+  pointer-events:none;
+}
+.hud-card{
+  background: rgba(8,10,22,0.6);
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius: 12px; padding:10px 14px; backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.hud-label{ font-family:'JetBrains Mono',monospace; font-size:9px;
+  letter-spacing:0.22em; text-transform:uppercase; color:var(--ink-dim); }
+.hud-value{ font-family:'Unbounded',sans-serif; font-weight:700; font-size:16px;
+  color:var(--ink); margin-top:3px; line-height:1; letter-spacing:0.01em;
+  text-shadow: 0 0 12px rgba(var(--tint),0.6); }
+.hud-value.small{ font-family:'Outfit',sans-serif; font-weight:500; font-size:12px; text-shadow:none; }
+
+.conf-bar{
+  width:100px; height:4px; margin-top:8px; border-radius:99px;
+  background: rgba(255,255,255,0.1); overflow:hidden;
+}
+.conf-bar > i{ display:block; height:100%; width:0%;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  box-shadow: 0 0 8px var(--primary); transition: width .25s ease; }
+
+/* ====================================================================
+   LIGHTING SCENE (BOTTOM)
+   ==================================================================== */
+.scene-wrap{ position:relative; aspect-ratio: 16 / 9; overflow:hidden; background:#02030a; }
+
+.scene-svg{ position:absolute; inset:0; width:100%; height:100%; display:block; }
+
+/* Light layers stacked over the church svg */
+.scene-fx{ position:absolute; inset:0; pointer-events:none; mix-blend-mode: screen; }
+
+.beam{
+  position:absolute; top:6%; transform-origin: 50% 0%;
+  width: 80px; height: 90%;
+  background: linear-gradient(180deg,
+    rgba(var(--beam), 0.0) 0%,
+    rgba(var(--beam), 0.55) 10%,
+    rgba(var(--beam), 0.25) 60%,
+    rgba(var(--beam), 0.0) 100%);
+  filter: blur(14px);
+  opacity: 0;
+  transition: opacity .6s ease, transform .6s cubic-bezier(.2,.7,.2,1);
+  clip-path: polygon(40% 0, 60% 0, 100% 100%, 0% 100%);
+}
+.beam.b1{ left: 14%; transform: rotate(-18deg); }
+.beam.b2{ left: 30%; transform: rotate(-8deg); }
+.beam.b3{ left: 50%; transform: rotate(0deg); }
+.beam.b4{ left: 70%; transform: rotate(8deg); }
+.beam.b5{ left: 86%; transform: rotate(18deg); }
+
+/* Spotlight pools on the floor */
+.pool{
+  position:absolute; bottom:6%; width: 26%; height: 18%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center,
+    rgba(var(--beam),0.6) 0%,
+    rgba(var(--beam),0.25) 35%,
+    rgba(var(--beam),0) 70%);
+  filter: blur(8px);
+  opacity:0;
+  transition: opacity .5s ease, transform .6s cubic-bezier(.2,.7,.2,1);
+}
+.pool.p1{ left: 8%; }
+.pool.p2{ left: 36%; }
+.pool.p3{ left: 64%; }
+
+/* Haze/fog layer */
+.haze{
+  position:absolute; inset:0;
+  background:
+    radial-gradient(ellipse at 50% 80%, rgba(var(--beam),0.12), transparent 60%),
+    radial-gradient(ellipse at 30% 60%, rgba(var(--beam),0.06), transparent 60%);
+  filter: blur(20px);
+  opacity:0; transition: opacity .8s ease;
+}
+
+/* Pulsing rim around the stage */
+.rim{
+  position:absolute; left:8%; right:8%; bottom:5%;
+  height: 4px; border-radius:99px;
+  background: linear-gradient(90deg, transparent, rgba(var(--beam),0.9), transparent);
+  filter: blur(3px); opacity:0;
+  transition: opacity .4s ease;
+}
+
+/* Pointer spotlight (follows index finger) */
+.pointer-spot{
+  position:absolute; width: 30%; aspect-ratio:1; border-radius:50%;
+  background: radial-gradient(circle at center,
+    rgba(var(--beam),0.7) 0%,
+    rgba(var(--beam),0.3) 30%,
+    rgba(var(--beam),0) 60%);
+  filter: blur(6px);
+  pointer-events:none; opacity:0;
+  transform: translate(-50%, -50%);
+  transition: opacity .35s ease;
+}
+
+/* Watermark inside scene */
+.watermark{
+  position:absolute; left:50%; bottom:9px; transform:translateX(-50%);
+  font-family:'JetBrains Mono',monospace; font-size:9px;
+  letter-spacing:0.3em; text-transform:uppercase; color: rgba(255,255,255,0.4);
+  pointer-events:none; mix-blend-mode: difference; z-index:5;
+}
+.watermark b{ color: rgba(255,255,255,0.7); font-weight:500; }
+
+/* Scene tag */
+.scene-tag{
+  position:absolute; top:12px; left:12px; z-index:5;
+  display:flex; align-items:center; gap:8px;
+  padding:6px 12px; border-radius:99px;
+  background: rgba(8,10,22,0.55);
+  border:1px solid rgba(255,255,255,0.1);
+  backdrop-filter: blur(8px);
+  font-family:'JetBrains Mono',monospace; font-size:10px;
+  letter-spacing:0.18em; text-transform:uppercase; color:var(--ink);
+}
+.scene-tag i{ width:6px; height:6px; border-radius:50%;
+  background: var(--primary); box-shadow: 0 0 10px var(--primary);
+  animation: blink 1.4s infinite; }
+
+/* Pulse mode keyframes */
+@keyframes scenePulse {
+  0%,100%{ filter: brightness(1) saturate(1); }
+  50%   { filter: brightness(1.25) saturate(1.25); }
+}
+.scene-wrap.pulse .scene-fx{ animation: scenePulse 0.55s ease-in-out infinite; }
+
+/* Grand show mode */
+.scene-wrap.grand .scene-fx{ animation: scenePulse 0.4s ease-in-out infinite; }
+.scene-wrap.grand .beam{ filter: blur(18px); }
+
+/* ====================================================================
+   SIDE PANEL (status + gestures)
+   ==================================================================== */
+.side-col{ display:flex; flex-direction:column; gap:18px; min-width:0; }
+
+/* Status grid */
+.stat-grid{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; padding:14px; }
+.stat{
+  padding:12px; border-radius: var(--radius-sm);
+  background: rgba(255,255,255,0.025); border:1px solid var(--line);
+}
+.stat .k{ font-family:'JetBrains Mono',monospace; font-size:9px;
+  letter-spacing:0.2em; text-transform:uppercase; color:var(--ink-dim); }
+.stat .v{ font-family:'Unbounded',sans-serif; font-weight:700; font-size:15px;
+  margin-top:6px; color:var(--ink); letter-spacing:0.01em; }
+.stat.full{ grid-column: span 2; }
+.stat .bar{ margin-top:8px; height:4px; border-radius:99px;
+  background:rgba(255,255,255,0.08); overflow:hidden; }
+.stat .bar i{ display:block; height:100%; width:0%;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  box-shadow:0 0 8px var(--primary); transition: width .35s ease; }
+
+.swatches{ display:flex; gap:6px; margin-top:8px; }
+.swatch{ width:18px; height:18px; border-radius:6px; border:1px solid rgba(255,255,255,0.15);
+  transition: transform .2s, box-shadow .2s; }
+.swatch.active{ transform: scale(1.15); box-shadow: 0 0 12px currentColor; }
+
+/* Gesture guide list */
+.gesture-list{ display:flex; flex-direction:column; gap:6px; padding:10px; max-height: 360px; overflow:auto; }
+.gesture-list::-webkit-scrollbar{ width:6px; }
+.gesture-list::-webkit-scrollbar-thumb{ background:rgba(255,255,255,0.15); border-radius:99px; }
+
+.g-row{
+  display:grid; grid-template-columns: 36px 1fr auto; align-items:center; gap:10px;
+  padding: 9px 10px; border-radius: 10px;
+  border:1px solid transparent;
+  transition: background .25s ease, border-color .25s ease, transform .25s ease;
+}
+.g-row:hover{ background: rgba(255,255,255,0.03); }
+.g-row.active{
+  background: rgba(var(--tint), 0.12);
+  border-color: rgba(var(--tint), 0.4);
+  box-shadow: inset 0 0 0 1px rgba(var(--tint),0.15);
+}
+.g-icon{
+  width:36px; height:36px; border-radius:10px;
+  background: rgba(255,255,255,0.04); border:1px solid var(--line);
+  display:flex; align-items:center; justify-content:center;
+  font-size:18px;
+}
+.g-name{ font-size:13px; font-weight:500; color:var(--ink); }
+.g-name small{ display:block; font-size:11px; color:var(--ink-dim); font-weight:400; margin-top:1px; }
+.g-key{ font-family:'JetBrains Mono',monospace; font-size:9px;
+  color: var(--ink-dim); letter-spacing:0.1em; text-transform:uppercase;
+  padding:3px 7px; border-radius:6px; background:rgba(255,255,255,0.04);
+  border:1px solid var(--line); }
+
+/* Demo gestures grid */
+.demo-grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap:8px; padding:14px; }
+.demo-btn{
+  appearance:none; border:1px solid var(--line); cursor:pointer;
+  background: rgba(255,255,255,0.03);
+  padding: 10px 8px; border-radius: 10px;
+  font-family:'Outfit',sans-serif; font-size:11px; color:var(--ink);
+  display:flex; flex-direction:column; align-items:center; gap:4px;
+  transition: all .25s ease;
+}
+.demo-btn:hover{ background: rgba(var(--tint), 0.15); border-color: rgba(var(--tint),0.4); transform: translateY(-1px); }
+.demo-btn:active{ transform: translateY(0); }
+.demo-btn .e{ font-size:18px; }
+
+/* Footer */
+.footer{
+  text-align:center; padding: 16px 8px 8px;
+  font-family:'JetBrains Mono',monospace; font-size:10px;
+  letter-spacing:0.2em; text-transform:uppercase; color:var(--ink-dim);
+}
+.footer b{ color:var(--accent); font-weight:500; }
+
+/* Toast for errors */
+.toast{
+  position:fixed; bottom:20px; left:50%; transform: translate(-50%, 20px);
+  background: rgba(8,10,22,0.95); border:1px solid rgba(255,90,90,0.4);
+  padding: 12px 18px; border-radius: 12px;
+  font-size:13px; color:#ffdada; z-index:100;
+  opacity:0; pointer-events:none; transition: all .3s ease;
+  max-width: 90vw; text-align:center;
+  backdrop-filter: blur(12px);
+}
+.toast.show{ opacity:1; transform: translate(-50%, 0); pointer-events:auto; }
+
+/* Compact on mobile */
+@media (max-width: 640px){
+  .header{ flex-wrap:wrap; }
+  .header-meta{ width:100%; justify-content:flex-start; }
+  .stat-grid{ grid-template-columns:1fr 1fr; }
+  .btn{ flex:1; min-width: 130px; justify-content:center; }
+  .demo-grid{ grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Fullscreen pane */
+:fullscreen .header,
+:fullscreen .hero,
+:fullscreen .footer { display:none; }
+:fullscreen .app { padding: 10px; gap:10px; }
+:fullscreen .grid { grid-template-columns: 1fr; }
+
+</style>
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!-- LOADING SCREEN                                                 -->
+<!-- ============================================================ -->
+<div class="loader" id="loader">
+  <div class="loader-logo">OBLIQ&nbsp;AI</div>
+  <div class="loader-sub">Gesture Lighting Studio · Initializing</div>
+  <div class="loader-bar"></div>
+  <div class="loader-steps" id="loaderSteps">Booting neural runtime…</div>
+</div>
+
+<div class="bg-particles"></div>
+
+<!-- ============================================================ -->
+<!-- APP                                                            -->
+<!-- ============================================================ -->
+<div class="app">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="brand">
+      <div class="brand-mark"><span>◬</span></div>
+      <div class="brand-text">
+        <div class="brand-name">OBLIQ AI</div>
+        <div class="brand-tag">Powered by <b>Digital Hammerr</b></div>
+      </div>
+    </div>
+    <div class="header-meta">
+      <span class="pill live" id="pillSystem"><i class="dot"></i> System Ready</span>
+      <span class="pill" id="pillCamera"><i class="dot"></i> Camera Offline</span>
+      <span class="pill" id="pillFPS"><i class="dot"></i> 0 FPS</span>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <h1>Gesture <span class="gx">Lighting Studio</span></h1>
+    <p>Hand-Controlled Church &amp; Stage Lighting Experience — design cinematic light scenes in real time using only your hand movements. A premium computer-vision showcase by <b>Digital Hammerr</b>.</p>
+  </section>
+
+  <!-- CONTROLS -->
+  <section class="controls">
+    <button class="btn primary" id="btnStart">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3.5"/><path d="M2.5 12C5 7 8 5 12 5s7 2 9.5 7c-2.5 5-5.5 7-9.5 7s-7-2-9.5-7Z"/></svg>
+      Start Camera
+    </button>
+    <button class="btn danger" id="btnStop" disabled>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="5" width="14" height="14" rx="2"/></svg>
+      Stop Camera
+    </button>
+    <button class="btn" id="btnFull">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+      Fullscreen
+    </button>
+    <button class="btn" id="btnReset">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+      Reset Scene
+    </button>
+  </section>
+
+  <!-- MAIN GRID -->
+  <div class="grid">
+    <!-- STAGE COLUMN -->
+    <div class="stage-col">
+
+      <!-- WEBCAM PANEL -->
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title"><b>01.</b> &nbsp; Vision Layer · Hand Tracking</div>
+          <div class="panel-title" id="trackStatus" style="color:var(--ink)">Idle</div>
+        </div>
+        <div class="webcam-wrap" id="camWrap">
+          <video id="video" autoplay muted playsinline></video>
+          <canvas id="overlay"></canvas>
+          <div class="brackets"><i></i></div>
+
+          <div class="webcam-placeholder" id="camPlaceholder">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <path d="M2.5 12C5 7 8 5 12 5s7 2 9.5 7c-2.5 5-5.5 7-9.5 7s-7-2-9.5-7Z"/>
+              <circle cx="12" cy="12" r="3.5"/>
+            </svg>
+            <h3>Vision Layer Standby</h3>
+            <p>Click <b style="color:var(--ink)">Start Camera</b> to begin hand tracking, or use the gesture demo buttons below for a presentation-safe walkthrough.</p>
+          </div>
+
+          <div class="hud">
+            <div class="hud-card">
+              <div class="hud-label">Gesture</div>
+              <div class="hud-value" id="hudGesture">—</div>
+              <div class="conf-bar"><i id="confBar"></i></div>
+            </div>
+            <div class="hud-card" style="text-align:right">
+              <div class="hud-label">Hands</div>
+              <div class="hud-value" id="hudHands">0</div>
+              <div class="hud-value small" id="hudCoord" style="margin-top:4px">x · y</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LIGHTING SCENE PANEL -->
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title"><b>02.</b> &nbsp; Lighting Stage · Cathedral Concert</div>
+          <div class="panel-title" id="modeStatus" style="color:var(--accent)">AMBIENT</div>
+        </div>
+        <div class="scene-wrap" id="scene">
+          <div class="scene-tag"><i></i> LIVE RENDER</div>
+
+          <!-- SVG architecture (church + stage) -->
+          <svg class="scene-svg" id="sceneSvg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <!-- Floor reflection gradient -->
+              <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%"   stop-color="#0a0e25" stop-opacity="1"/>
+                <stop offset="60%"  stop-color="#040614" stop-opacity="1"/>
+                <stop offset="100%" stop-color="#000" stop-opacity="1"/>
+              </linearGradient>
+              <linearGradient id="floorGlow" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%"   style="stop-color:var(--primary)" stop-opacity="0.0"/>
+                <stop offset="50%"  style="stop-color:var(--primary)" stop-opacity="0.15"/>
+                <stop offset="100%" style="stop-color:var(--primary)" stop-opacity="0.0"/>
+              </linearGradient>
+              <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%"   stop-color="#0c1130"/>
+                <stop offset="100%" stop-color="#03050f"/>
+              </linearGradient>
+              <linearGradient id="pillar" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%"   stop-color="#040614"/>
+                <stop offset="30%"  stop-color="#0c1230"/>
+                <stop offset="50%"  stop-color="#171c44"/>
+                <stop offset="70%"  stop-color="#0c1230"/>
+                <stop offset="100%" stop-color="#040614"/>
+              </linearGradient>
+              <radialGradient id="vault" cx="50%" cy="100%" r="60%">
+                <stop offset="0%"  stop-color="#0e1335"/>
+                <stop offset="100%" stop-color="#03050f"/>
+              </radialGradient>
+              <radialGradient id="halo" cx="50%" cy="50%" r="50%">
+                <stop offset="0%"   style="stop-color:var(--primary)" stop-opacity="0.35"/>
+                <stop offset="60%"  style="stop-color:var(--primary)" stop-opacity="0.08"/>
+                <stop offset="100%" style="stop-color:var(--primary)" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+
+            <!-- Back wall + vault -->
+            <rect width="1600" height="900" fill="url(#wall)"/>
+            <ellipse cx="800" cy="900" rx="900" ry="700" fill="url(#vault)"/>
+
+            <!-- Far gothic arch (vanishing point) -->
+            <g opacity="0.9">
+              <path d="M 700 700 L 700 380 Q 800 220 900 380 L 900 700 Z" fill="#070a1c" stroke="#1a2050" stroke-width="2"/>
+              <path d="M 720 700 L 720 400 Q 800 260 880 400 L 880 700 Z" fill="#03050f"/>
+              <ellipse id="haloGlow" cx="800" cy="500" rx="160" ry="200" fill="url(#halo)"/>
+            </g>
+
+            <!-- Pillars row left -->
+            <g>
+              <rect x="80"  y="220" width="80"  height="600" fill="url(#pillar)"/>
+              <rect x="80"  y="200" width="80"  height="20"  fill="#1a2050"/>
+              <path d="M 60 220 Q 120 140 180 220 L 160 220 Q 120 170 100 220 Z" fill="#0a0f2a"/>
+
+              <rect x="240" y="260" width="60"  height="560" fill="url(#pillar)"/>
+              <rect x="240" y="240" width="60"  height="20"  fill="#1a2050"/>
+              <path d="M 224 260 Q 270 200 316 260 L 296 260 Q 270 224 244 260 Z" fill="#0a0f2a"/>
+
+              <rect x="380" y="300" width="44"  height="520" fill="url(#pillar)"/>
+              <rect x="380" y="285" width="44"  height="15"  fill="#1a2050"/>
+
+              <rect x="500" y="330" width="32"  height="490" fill="url(#pillar)"/>
+
+              <!-- Gothic arches above pillars (left) -->
+              <path d="M 120 220 Q 200 100 280 260" stroke="#222a5a" stroke-width="2" fill="none" opacity="0.7"/>
+              <path d="M 270 260 Q 340 160 400 300" stroke="#222a5a" stroke-width="2" fill="none" opacity="0.55"/>
+              <path d="M 400 300 Q 460 230 510 330" stroke="#222a5a" stroke-width="2" fill="none" opacity="0.4"/>
+            </g>
+
+            <!-- Pillars row right (mirror) -->
+            <g>
+              <rect x="1440" y="220" width="80"  height="600" fill="url(#pillar)"/>
+              <rect x="1440" y="200" width="80"  height="20"  fill="#1a2050"/>
+              <path d="M 1420 220 Q 1480 140 1540 220 L 1520 220 Q 1480 170 1460 220 Z" fill="#0a0f2a"/>
+
+              <rect x="1300" y="260" width="60"  height="560" fill="url(#pillar)"/>
+              <rect x="1300" y="240" width="60"  height="20"  fill="#1a2050"/>
+              <path d="M 1284 260 Q 1330 200 1376 260 L 1356 260 Q 1330 224 1304 260 Z" fill="#0a0f2a"/>
+
+              <rect x="1176" y="300" width="44"  height="520" fill="url(#pillar)"/>
+              <rect x="1176" y="285" width="44"  height="15"  fill="#1a2050"/>
+
+              <rect x="1068" y="330" width="32"  height="490" fill="url(#pillar)"/>
+
+              <path d="M 1320 220 Q 1400 100 1480 260" stroke="#222a5a" stroke-width="2" fill="none" opacity="0.7"/>
+              <path d="M 1200 260 Q 1260 160 1330 300" stroke="#222a5a" stroke-width="2" fill="none" opacity="0.55"/>
+              <path d="M 1090 300 Q 1140 230 1200 330" stroke="#222a5a" stroke-width="2" fill="none" opacity="0.4"/>
+            </g>
+
+            <!-- Stained-glass-style window behind altar -->
+            <g opacity="0.5" id="rose">
+              <circle cx="800" cy="350" r="60" fill="none" style="stroke:var(--primary)" stroke-width="2" opacity="0.5"/>
+              <circle cx="800" cy="350" r="40" fill="none" style="stroke:var(--accent)" stroke-width="1.5" opacity="0.4"/>
+              <circle cx="800" cy="350" r="22" style="fill:var(--primary)" opacity="0.18"/>
+              <line x1="800" y1="290" x2="800" y2="410" style="stroke:var(--primary)" stroke-width="1" opacity="0.3"/>
+              <line x1="740" y1="350" x2="860" y2="350" style="stroke:var(--primary)" stroke-width="1" opacity="0.3"/>
+              <line x1="758" y1="308" x2="842" y2="392" style="stroke:var(--primary)" stroke-width="1" opacity="0.3"/>
+              <line x1="842" y1="308" x2="758" y2="392" style="stroke:var(--primary)" stroke-width="1" opacity="0.3"/>
+            </g>
+
+            <!-- LED strips on pillars (animated via JS by changing stroke opacity through class) -->
+            <g id="leds" opacity="0.9">
+              <rect x="158"  y="240" width="3" height="560" style="fill:var(--accent)" opacity="0.7"/>
+              <rect x="78"   y="240" width="3" height="560" style="fill:var(--accent)" opacity="0.7"/>
+              <rect x="298"  y="280" width="2" height="520" style="fill:var(--accent)" opacity="0.6"/>
+              <rect x="238"  y="280" width="2" height="520" style="fill:var(--accent)" opacity="0.6"/>
+
+              <rect x="1438" y="240" width="3" height="560" style="fill:var(--accent)" opacity="0.7"/>
+              <rect x="1518" y="240" width="3" height="560" style="fill:var(--accent)" opacity="0.7"/>
+              <rect x="1298" y="280" width="2" height="520" style="fill:var(--accent)" opacity="0.6"/>
+              <rect x="1358" y="280" width="2" height="520" style="fill:var(--accent)" opacity="0.6"/>
+            </g>
+
+            <!-- Floor + floor reflective glow -->
+            <rect y="780" width="1600" height="120" fill="url(#floor)"/>
+            <rect y="780" width="1600" height="120" fill="url(#floorGlow)" id="floorRefl" opacity="0.6"/>
+
+            <!-- Stage platform -->
+            <rect x="500" y="760" width="600" height="40" fill="#0a0e22" stroke="#1a2050"/>
+            <rect x="500" y="760" width="600" height="4"  style="fill:var(--primary)" opacity="0.55" id="stageEdge"/>
+
+            <!-- Stage center "altar" pedestal -->
+            <rect x="760" y="700" width="80" height="60" fill="#0a0e22" stroke="#1a2050"/>
+            <rect x="760" y="700" width="80" height="3"  style="fill:var(--accent)" opacity="0.7"/>
+          </svg>
+
+          <!-- FX layers -->
+          <div class="scene-fx" id="fx">
+            <div class="haze"  id="haze"></div>
+            <div class="beam b1"></div>
+            <div class="beam b2"></div>
+            <div class="beam b3"></div>
+            <div class="beam b4"></div>
+            <div class="beam b5"></div>
+            <div class="pool p1"></div>
+            <div class="pool p2"></div>
+            <div class="pool p3"></div>
+            <div class="rim"   id="rim"></div>
+            <div class="pointer-spot" id="ptr"></div>
+          </div>
+
+          <div class="watermark">OBLIQ&nbsp;AI &nbsp;✕&nbsp; <b>DIGITAL HAMMERR</b></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SIDE COLUMN -->
+    <div class="side-col">
+
+      <!-- STATUS -->
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title"><b>03.</b> &nbsp; Live Telemetry</div>
+        </div>
+        <div class="stat-grid">
+          <div class="stat">
+            <div class="k">Camera</div>
+            <div class="v" id="sCam">Offline</div>
+          </div>
+          <div class="stat">
+            <div class="k">Hand</div>
+            <div class="v" id="sHand">Not Detected</div>
+          </div>
+          <div class="stat">
+            <div class="k">Gesture</div>
+            <div class="v" id="sGest">—</div>
+          </div>
+          <div class="stat">
+            <div class="k">Mode</div>
+            <div class="v" id="sMode">Ambient</div>
+          </div>
+          <div class="stat full">
+            <div class="k">Brightness · <span id="sBrightPct">60%</span></div>
+            <div class="bar"><i id="sBrightBar" style="width:60%"></i></div>
+          </div>
+          <div class="stat full">
+            <div class="k">Color Palette</div>
+            <div class="v" id="sPal" style="font-size:13px">Cyan / Sapphire</div>
+            <div class="swatches" id="swatches"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GESTURE GUIDE -->
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title"><b>04.</b> &nbsp; Gesture Vocabulary</div>
+          <div class="panel-title">11 SIGNS</div>
+        </div>
+        <div class="gesture-list" id="gestureList">
+          <!-- populated by JS -->
+        </div>
+      </div>
+
+      <!-- DEMO BUTTONS -->
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title"><b>05.</b> &nbsp; Demo Mode · Tap to Trigger</div>
+        </div>
+        <div class="demo-grid" id="demoGrid"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="footer">
+    OBLIQ AI <b>x</b> DIGITAL HAMMERR &nbsp;·&nbsp; Premium Computer Vision Lighting Showcase
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ============================================================ -->
+<!-- MEDIAPIPE HANDS                                                -->
+<!-- ============================================================ -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+
+<script>
+/* ========================================================================
+   OBLIQ AI · GESTURE LIGHTING STUDIO
+   ------------------------------------------------------------------------
+   Single-file demo. Webcam → MediaPipe Hands → gesture classifier →
+   lighting state → DOM/SVG/CSS scene.
+   ======================================================================== */
+
+(() => {
+'use strict';
+
+/* ---------------------------------------------------------------
+   1. COLOR PALETTES
+--------------------------------------------------------------- */
+const PALETTES = [
+  { name:'Cyan / Sapphire',   primary:'#00d4ff', secondary:'#0066ff', accent:'#00ffe5', beam:'180,235,255', tint:'0,212,255',  tint2:'0,102,255' },
+  { name:'Magenta / Violet',  primary:'#b537ff', secondary:'#ff2d92', accent:'#e600ff', beam:'255,180,255', tint:'181,55,255', tint2:'255,45,146' },
+  { name:'Gold / Amber',      primary:'#ffb800', secondary:'#ff7a00', accent:'#ffd966', beam:'255,210,140', tint:'255,184,0',  tint2:'255,122,0' },
+  { name:'Crimson / Rose',    primary:'#ff0844', secondary:'#ff5e7e', accent:'#ff2e63', beam:'255,140,170', tint:'255,8,68',   tint2:'255,94,126' },
+  { name:'Ice / Pearl',       primary:'#e0f7ff', secondary:'#b3e5fc', accent:'#ffffff', beam:'255,255,255', tint:'200,230,255',tint2:'180,210,240' }
+];
+let paletteIdx = 0;
+
+function applyPalette(p){
+  const root = document.documentElement.style;
+  root.setProperty('--primary',   p.primary);
+  root.setProperty('--secondary', p.secondary);
+  root.setProperty('--accent',    p.accent);
+  root.setProperty('--beam',      p.beam);
+  root.setProperty('--tint',      p.tint);
+  root.setProperty('--tint2',     p.tint2);
+  $('sPal').textContent = p.name;
+  drawSwatches();
+}
+function drawSwatches(){
+  const c = $('swatches'); c.innerHTML='';
+  PALETTES.forEach((p,i)=>{
+    const s = document.createElement('div');
+    s.className = 'swatch' + (i===paletteIdx ? ' active' : '');
+    s.style.background = `linear-gradient(135deg, ${p.primary}, ${p.accent})`;
+    s.style.color = p.primary;
+    s.title = p.name;
+    s.addEventListener('click', ()=>{ paletteIdx = i; applyPalette(p); });
+    c.appendChild(s);
+  });
+}
+
+/* ---------------------------------------------------------------
+   2. GESTURE DEFINITIONS
+--------------------------------------------------------------- */
+const GESTURES = [
+  { id:'open',     name:'Open Palm',        sub:'All lights ON · Wide ambient', emoji:'🖐️', key:'OPEN' },
+  { id:'fist',     name:'Closed Fist',      sub:'Dim · Low dramatic',           emoji:'✊', key:'FIST' },
+  { id:'up',       name:'Hand Up',          sub:'Increase brightness',          emoji:'⬆️', key:'UP'   },
+  { id:'down',     name:'Hand Down',        sub:'Decrease brightness',          emoji:'⬇️', key:'DOWN' },
+  { id:'left',     name:'Hand Left',        sub:'Beam toward stage left',       emoji:'⬅️', key:'LEFT' },
+  { id:'right',    name:'Hand Right',       sub:'Beam toward stage right',      emoji:'➡️', key:'RIGHT'},
+  { id:'pinch',    name:'Pinch',            sub:'Cycle color palette',          emoji:'🤏', key:'PINCH'},
+  { id:'two',      name:'Two Fingers',      sub:'Moving spotlights',            emoji:'✌️', key:'TWO'  },
+  { id:'three',    name:'Three Fingers',    sub:'Concert pulse mode',           emoji:'🤟', key:'THREE'},
+  { id:'point',    name:'Index Pointing',   sub:'Follow-spot tracks finger',    emoji:'☝️', key:'POINT'},
+  { id:'both',     name:'Both Hands',       sub:'Grand show · all beams',       emoji:'🙌', key:'BOTH' }
+];
+
+function renderGestureList(){
+  const c = $('gestureList'); c.innerHTML='';
+  GESTURES.forEach(g=>{
+    const row = document.createElement('div');
+    row.className='g-row';
+    row.id = 'g-'+g.id;
+    row.innerHTML = `
+      <div class="g-icon">${g.emoji}</div>
+      <div class="g-name">${g.name}<small>${g.sub}</small></div>
+      <div class="g-key">${g.key}</div>`;
+    c.appendChild(row);
+  });
+}
+function renderDemoButtons(){
+  const c = $('demoGrid'); c.innerHTML='';
+  GESTURES.forEach(g=>{
+    const b = document.createElement('button');
+    b.className = 'demo-btn';
+    b.innerHTML = `<span class="e">${g.emoji}</span>${g.name}`;
+    b.addEventListener('click', ()=> simulateGesture(g.id));
+    c.appendChild(b);
+  });
+}
+function setActiveGesture(id){
+  document.querySelectorAll('.g-row').forEach(r=>r.classList.remove('active'));
+  if(id){ const r = $('g-'+id); if(r) r.classList.add('active'); }
+}
+
+/* ---------------------------------------------------------------
+   3. LIGHTING STATE
+--------------------------------------------------------------- */
+const state = {
+  mode: 'ambient',        // ambient, bright, dim, spotlight, pulse, pointer, grand
+  brightness: 0.6,        // 0..1
+  beamDirection: 0,       // -1..1  (left .. right)
+  pointerX: 0.5,
+  pointerY: 0.5,
+  gesture: null,
+  confidence: 0,
+  twoHands: false,
+  pulseT: 0,
+};
+
+const fx = {
+  beams: null,
+  pools: null,
+  haze:  null,
+  rim:   null,
+  ptr:   null,
+  scene: null,
+};
+
+function initFX(){
+  fx.beams = document.querySelectorAll('.beam');
+  fx.pools = document.querySelectorAll('.pool');
+  fx.haze  = $('haze');
+  fx.rim   = $('rim');
+  fx.ptr   = $('ptr');
+  fx.scene = $('scene');
+}
+
+function setMode(m){
+  state.mode = m;
+  $('sMode').textContent = m[0].toUpperCase() + m.slice(1);
+  $('modeStatus').textContent = m.toUpperCase();
+  fx.scene.classList.toggle('pulse', m === 'pulse');
+  fx.scene.classList.toggle('grand', m === 'grand');
+}
+
+function setBrightness(v){
+  state.brightness = Math.max(0.08, Math.min(1, v));
+  const pct = Math.round(state.brightness*100);
+  $('sBrightPct').textContent = pct+'%';
+  $('sBrightBar').style.width = pct+'%';
+}
+
+/* ---------------------------------------------------------------
+   4. ANIMATION LOOP — render lighting from state
+--------------------------------------------------------------- */
+let lastT = performance.now();
+let frames = 0, fpsT = lastT, fps = 0;
+
+function tick(now){
+  const dt = (now - lastT) / 1000;
+  lastT = now;
+  frames++;
+  if(now - fpsT > 500){
+    fps = Math.round(frames * 1000 / (now - fpsT));
+    frames = 0; fpsT = now;
+    $('pillFPS').innerHTML = `<i class="dot"></i> ${fps} FPS`;
+  }
+
+  renderLighting(now, dt);
+  requestAnimationFrame(tick);
+}
+
+function renderLighting(now, dt){
+  const B   = state.brightness;
+  const mode = state.mode;
+  const dir = state.beamDirection;
+  state.pulseT += dt;
+
+  // ---- BEAMS ----
+  fx.beams.forEach((el, i)=>{
+    const positions = [-0.4, -0.2, 0, 0.2, 0.4]; // base angle bias
+    const baseRot = [-18, -8, 0, 8, 18][i];
+    let rot = baseRot + dir * 18;       // hand direction sway
+    let opacity = 0;
+
+    if(mode === 'ambient' || mode === 'bright' || mode === 'pointer'){
+      opacity = (mode === 'bright' ? 0.95 : 0.55) * B;
+    } else if(mode === 'dim'){
+      opacity = 0.18 * B;
+    } else if(mode === 'spotlight'){
+      // sweeping moving beams
+      const phase = state.pulseT * 0.6 + i * 0.5;
+      rot = baseRot + Math.sin(phase) * 25 + dir * 15;
+      opacity = (0.55 + 0.35 * Math.sin(phase*1.7)) * B;
+    } else if(mode === 'pulse'){
+      const phase = state.pulseT * 6 + i;
+      opacity = (0.4 + 0.5 * Math.abs(Math.sin(phase))) * B;
+      rot = baseRot + Math.sin(state.pulseT*2 + i)*8 + dir*15;
+    } else if(mode === 'grand'){
+      const phase = state.pulseT * 4 + i*0.8;
+      opacity = (0.6 + 0.4 * Math.abs(Math.sin(phase))) * B;
+      rot = baseRot + Math.sin(phase*0.7)*22 + dir*18;
+    }
+    el.style.opacity = opacity.toFixed(3);
+    el.style.transform = `rotate(${rot.toFixed(2)}deg)`;
+  });
+
+  // ---- POOLS ----
+  fx.pools.forEach((el, i)=>{
+    let opacity = 0;
+    let tx = 0;
+    if(mode === 'bright' || mode === 'ambient'){ opacity = 0.55 * B; }
+    else if(mode === 'dim'){ opacity = 0.18 * B; }
+    else if(mode === 'spotlight'){
+      const phase = state.pulseT*0.8 + i*1.3;
+      opacity = (0.5 + 0.4*Math.sin(phase))*B;
+      tx = Math.sin(phase) * 60;
+    } else if(mode === 'pulse'){
+      const phase = state.pulseT*6 + i*0.9;
+      opacity = (0.45 + 0.5*Math.abs(Math.sin(phase)))*B;
+    } else if(mode === 'grand'){
+      const phase = state.pulseT*4 + i;
+      opacity = (0.6 + 0.4*Math.abs(Math.sin(phase)))*B;
+    } else if(mode === 'pointer'){
+      opacity = 0.25 * B;
+    }
+    el.style.opacity = opacity.toFixed(3);
+    el.style.transform = `translateX(${tx.toFixed(1)}px)`;
+  });
+
+  // ---- HAZE ----
+  let hazeO = 0;
+  if(mode === 'bright')      hazeO = 0.55*B;
+  else if(mode === 'ambient')hazeO = 0.35*B;
+  else if(mode === 'dim')    hazeO = 0.15*B;
+  else if(mode === 'spotlight')hazeO = 0.45*B;
+  else if(mode === 'pulse')  hazeO = (0.4 + 0.25*Math.sin(state.pulseT*5))*B;
+  else if(mode === 'grand')  hazeO = (0.55+0.25*Math.sin(state.pulseT*3))*B;
+  else if(mode === 'pointer')hazeO = 0.25*B;
+  fx.haze.style.opacity = hazeO.toFixed(3);
+
+  // ---- RIM ----
+  let rimO = 0;
+  if(mode === 'bright' || mode === 'ambient') rimO = 0.6*B;
+  else if(mode === 'pulse')  rimO = (0.5 + 0.5*Math.abs(Math.sin(state.pulseT*8)))*B;
+  else if(mode === 'grand')  rimO = (0.7 + 0.3*Math.abs(Math.sin(state.pulseT*5)))*B;
+  else if(mode === 'spotlight') rimO = 0.4*B;
+  else if(mode === 'dim')   rimO = 0.15*B;
+  else if(mode === 'pointer') rimO = 0.5*B;
+  fx.rim.style.opacity = rimO.toFixed(3);
+
+  // ---- POINTER SPOT ----
+  if(mode === 'pointer'){
+    fx.ptr.style.opacity = (0.8*B).toFixed(3);
+    fx.ptr.style.left = (state.pointerX * 100).toFixed(1)+'%';
+    fx.ptr.style.top  = (state.pointerY * 100).toFixed(1)+'%';
+  } else {
+    fx.ptr.style.opacity = 0;
+  }
+}
+
+/* ---------------------------------------------------------------
+   5. HAND DETECTION (MediaPipe)
+--------------------------------------------------------------- */
+const video   = $('video');
+const overlay = $('overlay');
+const ctx     = overlay.getContext('2d');
+let hands = null;
+let camStream = null;
+let cameraLoopId = null;
+let isCamRunning = false;
+
+function resizeOverlay(){
+  const r = $('camWrap').getBoundingClientRect();
+  overlay.width  = r.width;
+  overlay.height = r.height;
+}
+window.addEventListener('resize', resizeOverlay);
+
+async function startCamera(){
+  if(isCamRunning) return;
+  hideToast();
+
+  if(typeof Hands === 'undefined'){
+    showToast('Hand tracking library failed to load. Use Demo Mode below to showcase gestures.');
+    return;
+  }
+
+  try{
+    camStream = await navigator.mediaDevices.getUserMedia({
+      video:{ width:{ ideal:640 }, height:{ ideal:480 }, facingMode:'user' },
+      audio:false
+    });
+  }catch(err){
+    console.warn(err);
+    showToast('Camera permission denied. You can still use Demo Mode buttons to showcase all gestures.');
+    return;
+  }
+
+  video.srcObject = camStream;
+  await video.play().catch(()=>{});
+
+  $('camPlaceholder').style.display = 'none';
+  $('pillCamera').innerHTML = '<i class="dot" style="background:#00ff9d;box-shadow:0 0 8px #00ff9d"></i> Camera Live';
+  $('sCam').textContent = 'Live';
+  $('trackStatus').textContent = 'Tracking…';
+
+  resizeOverlay();
+
+  if(!hands){
+    hands = new Hands({
+      locateFile: (file)=> `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+    });
+    hands.setOptions({
+      maxNumHands: 2,
+      modelComplexity: 0,
+      minDetectionConfidence: 0.6,
+      minTrackingConfidence: 0.5
+    });
+    hands.onResults(onResults);
+  }
+
+  isCamRunning = true;
+  $('btnStart').disabled = true;
+  $('btnStop').disabled  = false;
+
+  const loop = async ()=>{
+    if(!isCamRunning) return;
+    if(video.readyState >= 2){
+      try{ await hands.send({ image: video }); }
+      catch(e){ /* ignore frame errors */ }
+    }
+    cameraLoopId = requestAnimationFrame(loop);
+  };
+  loop();
+}
+
+function stopCamera(){
+  isCamRunning = false;
+  if(cameraLoopId) cancelAnimationFrame(cameraLoopId);
+  if(camStream){ camStream.getTracks().forEach(t=>t.stop()); camStream = null; }
+  video.srcObject = null;
+  ctx.clearRect(0,0,overlay.width, overlay.height);
+  $('camPlaceholder').style.display = 'flex';
+  $('pillCamera').innerHTML = '<i class="dot"></i> Camera Offline';
+  $('sCam').textContent = 'Offline';
+  $('sHand').textContent = 'Not Detected';
+  $('trackStatus').textContent = 'Idle';
+  $('hudGesture').textContent = '—';
+  $('hudHands').textContent = '0';
+  $('hudCoord').textContent = 'x · y';
+  $('confBar').style.width = '0%';
+  setActiveGesture(null);
+  $('btnStart').disabled = false;
+  $('btnStop').disabled  = true;
+}
+
+/* ---------------------------------------------------------------
+   6. HAND LANDMARK RENDERING + GESTURE CLASSIFIER
+--------------------------------------------------------------- */
+const FINGER_CONNECTIONS = [
+  [0,1],[1,2],[2,3],[3,4],            // thumb
+  [0,5],[5,6],[6,7],[7,8],            // index
+  [0,9],[9,10],[10,11],[11,12],       // middle
+  [0,13],[13,14],[14,15],[15,16],     // ring
+  [0,17],[17,18],[18,19],[19,20],     // pinky
+  [5,9],[9,13],[13,17],[5,17]         // palm
+];
+
+function onResults(res){
+  const W = overlay.width, H = overlay.height;
+  ctx.clearRect(0,0,W,H);
+
+  const hasHands = res.multiHandLandmarks && res.multiHandLandmarks.length>0;
+  $('hudHands').textContent = hasHands ? res.multiHandLandmarks.length : '0';
+  state.twoHands = hasHands && res.multiHandLandmarks.length >= 2;
+
+  if(!hasHands){
+    $('sHand').textContent = 'Not Detected';
+    $('hudGesture').textContent = '—';
+    $('hudCoord').textContent = 'x · y';
+    $('confBar').style.width = '0%';
+    setActiveGesture(null);
+    // gentle decay back to ambient if camera is on but no hand
+    if(state.mode !== 'ambient') decayToAmbient();
+    return;
+  }
+
+  $('sHand').textContent = 'Detected ('+res.multiHandLandmarks.length+')';
+
+  // Draw all hands
+  ctx.save();
+  ctx.scale(-1,1); ctx.translate(-W, 0);  // mirror to match video
+  for(const lm of res.multiHandLandmarks){
+    drawHand(lm, W, H);
+  }
+  ctx.restore();
+
+  // Use the FIRST hand for primary gesture
+  const main = res.multiHandLandmarks[0];
+  const cls = classifyGesture(main, state.twoHands);
+  state.gesture    = cls.id;
+  state.confidence = cls.conf;
+
+  // Position controls (mirrored)
+  const wrist = main[0];
+  const palmX = 1 - wrist.x; // mirrored to feel natural
+  const palmY = wrist.y;
+  state.beamDirection = (palmX - 0.5) * 2;       // -1..1
+  state.pointerX = palmX;
+  state.pointerY = palmY;
+  $('hudCoord').textContent = `x ${(palmX*100|0)}% · y ${(palmY*100|0)}%`;
+
+  // Apply gesture to lighting state
+  applyGesture(cls.id, main);
+
+  // UI updates
+  const g = GESTURES.find(x=>x.id===cls.id);
+  $('hudGesture').textContent = g ? g.name : '—';
+  $('sGest').textContent      = g ? g.name : '—';
+  $('confBar').style.width = Math.round(cls.conf*100)+'%';
+  setActiveGesture(cls.id);
+}
+
+function decayToAmbient(){
+  // soft brightness pull
+  state.brightness = state.brightness + (0.6 - state.brightness)*0.08;
+  $('sBrightPct').textContent = Math.round(state.brightness*100)+'%';
+  $('sBrightBar').style.width = Math.round(state.brightness*100)+'%';
+}
+
+function drawHand(lm, W, H){
+  // get current accent color (from CSS var) for the lines
+  const style = getComputedStyle(document.documentElement);
+  const accent  = style.getPropertyValue('--accent').trim()  || '#00ffe5';
+  const primary = style.getPropertyValue('--primary').trim() || '#00d4ff';
+
+  // Connections
+  ctx.lineWidth = 2.5;
+  ctx.strokeStyle = primary;
+  ctx.shadowColor = primary; ctx.shadowBlur = 8;
+  ctx.beginPath();
+  for(const [a,b] of FINGER_CONNECTIONS){
+    ctx.moveTo(lm[a].x*W, lm[a].y*H);
+    ctx.lineTo(lm[b].x*W, lm[b].y*H);
+  }
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+
+  // Points
+  for(let i=0;i<lm.length;i++){
+    const p = lm[i];
+    const isTip = [4,8,12,16,20].includes(i);
+    ctx.beginPath();
+    ctx.arc(p.x*W, p.y*H, isTip ? 5 : 3, 0, Math.PI*2);
+    ctx.fillStyle = isTip ? accent : '#ffffff';
+    ctx.shadowColor = isTip ? accent : '#ffffff'; ctx.shadowBlur = isTip ? 10 : 4;
+    ctx.fill();
+  }
+  ctx.shadowBlur = 0;
+}
+
+/* ---- gesture classifier ---------------------------------------- */
+function dist(a,b){ const dx=a.x-b.x, dy=a.y-b.y; return Math.hypot(dx,dy); }
+
+function fingerStates(lm){
+  // returns { thumb, index, middle, ring, pinky } as 1 = extended, 0 = curled
+  // For non-thumb fingers, tip.y < pip.y (because y grows downward) → extended
+  const ext = {};
+  ext.index  = lm[8].y  < lm[6].y  - 0.02 ? 1 : 0;
+  ext.middle = lm[12].y < lm[10].y - 0.02 ? 1 : 0;
+  ext.ring   = lm[16].y < lm[14].y - 0.02 ? 1 : 0;
+  ext.pinky  = lm[20].y < lm[18].y - 0.02 ? 1 : 0;
+  // Thumb: compare x position vs IP joint (different for left/right hand)
+  // Simple heuristic: thumb tip distance from index MCP
+  ext.thumb = dist(lm[4], lm[5]) > 0.10 ? 1 : 0;
+  return ext;
+}
+
+function classifyGesture(lm, twoHands){
+  if(twoHands) return { id:'both', conf: 0.95 };
+
+  const f = fingerStates(lm);
+  const pinch = dist(lm[4], lm[8]);          // thumb tip ↔ index tip
+  const total = f.thumb + f.index + f.middle + f.ring + f.pinky;
+
+  // Pinch: thumb + index tips very close & other fingers may be curled
+  if(pinch < 0.06 && f.middle + f.ring + f.pinky <= 1){
+    return { id:'pinch', conf: 0.92 };
+  }
+
+  // Open palm: ~all fingers extended
+  if(total >= 4){
+    return { id:'open', conf: 0.9 };
+  }
+
+  // Closed fist: nothing extended
+  if(total === 0){
+    return { id:'fist', conf: 0.9 };
+  }
+
+  // Pointing (index only)
+  if(f.index===1 && f.middle===0 && f.ring===0 && f.pinky===0){
+    return { id:'point', conf: 0.88 };
+  }
+
+  // Two fingers (peace)
+  if(f.index===1 && f.middle===1 && f.ring===0 && f.pinky===0){
+    return { id:'two', conf: 0.88 };
+  }
+
+  // Three fingers
+  if(f.index===1 && f.middle===1 && f.ring===1 && f.pinky===0){
+    return { id:'three', conf: 0.85 };
+  }
+
+  // Directional fallback based on motion of wrist
+  // We use position-only via the open/closed already; if ambiguous fingers,
+  // emit positional gesture from wrist:
+  const wrist = lm[0];
+  if(wrist.y < 0.30) return { id:'up',    conf: 0.7 };
+  if(wrist.y > 0.75) return { id:'down',  conf: 0.7 };
+  if((1-wrist.x) < 0.25) return { id:'left',  conf: 0.7 };
+  if((1-wrist.x) > 0.75) return { id:'right', conf: 0.7 };
+
+  return { id:'open', conf: 0.5 };
+}
+
+/* ---- apply gesture to lighting state --------------------------- */
+let pinchCooldown = 0;
+function applyGesture(id, lm){
+  switch(id){
+    case 'open':
+      setMode('bright');
+      setBrightness( lerp(state.brightness, 0.9, 0.15) );
+      break;
+    case 'fist':
+      setMode('dim');
+      setBrightness( lerp(state.brightness, 0.22, 0.15) );
+      break;
+    case 'up':
+      setMode('ambient');
+      setBrightness( lerp(state.brightness, 1.0, 0.12) );
+      break;
+    case 'down':
+      setMode('ambient');
+      setBrightness( lerp(state.brightness, 0.25, 0.12) );
+      break;
+    case 'left':
+    case 'right':
+      // beamDirection already updated from wrist.x — keep ambient bright
+      setMode('ambient');
+      break;
+    case 'pinch':
+      if(performance.now() > pinchCooldown){
+        paletteIdx = (paletteIdx + 1) % PALETTES.length;
+        applyPalette(PALETTES[paletteIdx]);
+        pinchCooldown = performance.now() + 900; // debounce
+      }
+      break;
+    case 'two':    setMode('spotlight'); break;
+    case 'three':  setMode('pulse');     break;
+    case 'point':  setMode('pointer');   break;
+    case 'both':   setMode('grand'); setBrightness( lerp(state.brightness, 1.0, 0.2) ); break;
+  }
+}
+
+function lerp(a,b,t){ return a + (b-a)*t; }
+
+/* ---------------------------------------------------------------
+   7. DEMO MODE (no camera required)
+--------------------------------------------------------------- */
+function simulateGesture(id){
+  setActiveGesture(id);
+  const g = GESTURES.find(x=>x.id===id);
+  $('hudGesture').textContent = g ? g.name : '—';
+  $('sGest').textContent      = g ? g.name : '—';
+  $('confBar').style.width = '95%';
+
+  // For demo, also simulate hand position effects
+  if(id === 'left')  state.beamDirection = -0.8;
+  if(id === 'right') state.beamDirection =  0.8;
+  if(id === 'up')    state.beamDirection =  0;
+  if(id === 'down')  state.beamDirection =  0;
+  if(id === 'point'){
+    // pointer slowly orbits to demonstrate
+    state.pointerX = 0.5 + Math.cos(performance.now()/1000)*0.35;
+    state.pointerY = 0.5 + Math.sin(performance.now()/1300)*0.25;
+  }
+
+  applyGesture(id, null);
+}
+
+/* ---------------------------------------------------------------
+   8. CONTROLS
+--------------------------------------------------------------- */
+function resetScene(){
+  setMode('ambient');
+  setBrightness(0.6);
+  state.beamDirection = 0;
+  paletteIdx = 0;
+  applyPalette(PALETTES[0]);
+  $('hudGesture').textContent = '—';
+  $('sGest').textContent = '—';
+  $('confBar').style.width = '0%';
+  setActiveGesture(null);
+}
+
+async function toggleFullscreen(){
+  try{
+    if(!document.fullscreenElement){
+      await document.documentElement.requestFullscreen();
+    } else {
+      await document.exitFullscreen();
+    }
+  }catch(e){
+    showToast('Fullscreen not supported on this device.');
+  }
+}
+
+/* ---------------------------------------------------------------
+   9. UTILITIES
+--------------------------------------------------------------- */
+function $(id){ return document.getElementById(id); }
+let toastT;
+function showToast(msg){
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastT);
+  toastT = setTimeout(()=> t.classList.remove('show'), 5500);
+}
+function hideToast(){ $('toast').classList.remove('show'); }
+
+/* ---------------------------------------------------------------
+   10. CINEMATIC LOADER SEQUENCE
+--------------------------------------------------------------- */
+function runLoader(){
+  const steps = [
+    'Booting neural runtime…',
+    'Loading hand-landmark model…',
+    'Calibrating optical sensors…',
+    'Composing cathedral geometry…',
+    'Linking gesture vocabulary…',
+    'System ready.'
+  ];
+  const el = $('loaderSteps');
+  let i = 0;
+  const iv = setInterval(()=>{
+    el.textContent = steps[i++];
+    if(i >= steps.length) clearInterval(iv);
+  }, 380);
+
+  setTimeout(()=>{
+    $('loader').classList.add('hidden');
+  }, 2400);
+}
+
+/* ---------------------------------------------------------------
+   11. INIT
+--------------------------------------------------------------- */
+function init(){
+  initFX();
+  renderGestureList();
+  renderDemoButtons();
+  applyPalette(PALETTES[0]);
+  setMode('ambient');
+  setBrightness(0.6);
+  resizeOverlay();
+
+  $('btnStart').addEventListener('click', startCamera);
+  $('btnStop' ).addEventListener('click', stopCamera);
+  $('btnFull' ).addEventListener('click', toggleFullscreen);
+  $('btnReset').addEventListener('click', resetScene);
+
+  // Keyboard shortcuts (handy during presentation)
+  window.addEventListener('keydown', (e)=>{
+    if(e.target.tagName === 'INPUT') return;
+    const map = { '1':'open','2':'fist','3':'up','4':'down','5':'left',
+                  '6':'right','7':'pinch','8':'two','9':'three','0':'point',
+                  'g':'both','G':'both' };
+    if(map[e.key]) simulateGesture(map[e.key]);
+    if(e.key === 'r' || e.key === 'R') resetScene();
+    if(e.key === 'f' || e.key === 'F') toggleFullscreen();
+  });
+
+  runLoader();
+  requestAnimationFrame(tick);
+}
+
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+
+})();
+</script>
+</body>
+</html>

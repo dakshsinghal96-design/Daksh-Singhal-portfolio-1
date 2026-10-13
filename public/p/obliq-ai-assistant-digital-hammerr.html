@@ -1,0 +1,1819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="theme-color" content="#05080f" />
+<title>Obliq AI Assistant — Digital Hammerr</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   Obliq AI — Voice Assistant
+   Obliq AI × Digital Hammerr
+   ============================================================ */
+
+:root{
+  --bg-0: #05080f;
+  --bg-1: #0a121f;
+  --bg-2: #0f1a2e;
+  --surface: rgba(14, 24, 42, 0.6);
+  --surface-2: rgba(20, 32, 54, 0.5);
+  --grid: rgba(120, 200, 255, 0.04);
+
+  --primary: #5cc8ff;
+  --primary-bright: #8de1ff;
+  --primary-deep: #1a6ea3;
+  --primary-glow: rgba(92, 200, 255, 0.18);
+  --accent: #7b9eff;
+  --good: #4ade80;
+  --warn: #fbbf24;
+  --bad: #f87171;
+
+  --text: #e8f1f8;
+  --text-dim: #8da4b8;
+  --text-faint: #4a5d70;
+  --border: rgba(120, 180, 220, 0.12);
+  --border-bright: rgba(92, 200, 255, 0.35);
+
+  --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="cyber"]{
+  --bg-0: #08051a;
+  --bg-1: #0e0a28;
+  --bg-2: #1a0f3a;
+  --surface: rgba(24, 14, 50, 0.6);
+  --surface-2: rgba(34, 20, 70, 0.5);
+  --grid: rgba(190, 140, 255, 0.04);
+
+  --primary: #b794f6;
+  --primary-bright: #d6bcfa;
+  --primary-deep: #6b46c1;
+  --primary-glow: rgba(183, 148, 246, 0.18);
+  --accent: #f687b3;
+
+  --text: #f0e8fa;
+  --text-dim: #b5a3d0;
+  --text-faint: #5a4a7a;
+  --border: rgba(180, 140, 230, 0.14);
+  --border-bright: rgba(183, 148, 246, 0.35);
+}
+
+*{ box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body{
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg-0);
+  color: var(--text);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-feature-settings: 'cv11', 'ss01';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  user-select: none;
+  letter-spacing: -0.01em;
+}
+
+button{ font-family: inherit; cursor: pointer; }
+select{ font-family: inherit; }
+
+/* ---------- ATMOSPHERE ---------- */
+.stage{
+  position: fixed; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 0%, rgba(30, 100, 180, 0.18), transparent 60%),
+    radial-gradient(ellipse 60% 50% at 100% 100%, rgba(60, 30, 140, 0.12), transparent 60%),
+    radial-gradient(ellipse at 50% 50%, var(--bg-1) 0%, var(--bg-0) 80%);
+}
+[data-theme="cyber"] .stage{
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 0%, rgba(120, 50, 200, 0.22), transparent 60%),
+    radial-gradient(ellipse 60% 50% at 100% 100%, rgba(220, 60, 180, 0.12), transparent 60%),
+    radial-gradient(ellipse at 50% 50%, var(--bg-1) 0%, var(--bg-0) 80%);
+}
+
+.grid-floor{
+  position: fixed; inset: 0; z-index: 1;
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: radial-gradient(ellipse 70% 60% at center, black 30%, transparent 90%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at center, black 30%, transparent 90%);
+}
+
+#particles{ position: fixed; inset: 0; z-index: 2; pointer-events: none; }
+
+.vignette{
+  position: fixed; inset: 0; z-index: 3; pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.55) 100%);
+}
+
+.scanline{ position: fixed; inset: 0; z-index: 4; pointer-events: none; overflow: hidden; }
+.scanline::before{
+  content: ''; position: absolute; left: 0; right: 0; height: 140px;
+  background: linear-gradient(to bottom, transparent, rgba(92,200,255,0.04), transparent);
+  animation: scan 11s linear infinite;
+}
+@keyframes scan{ 0%{ top: -15%; } 100%{ top: 110%; } }
+
+/* ---------- BOOT ---------- */
+.boot{
+  position: fixed; inset: 0; z-index: 999;
+  background: var(--bg-0);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 24px;
+  transition: opacity 0.8s ease, visibility 0.8s ease;
+}
+.boot.hidden{ opacity: 0; visibility: hidden; }
+.boot-logo{
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(30px, 5vw, 52px);
+  font-weight: 900; letter-spacing: 0.32em;
+  color: var(--primary);
+  margin-bottom: 8px;
+  animation: bootGlow 1.4s ease-out;
+  text-shadow: 0 0 24px var(--primary-glow);
+}
+.boot-tag{
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; letter-spacing: 0.5em;
+  color: var(--text-dim);
+  margin-bottom: 32px; text-transform: uppercase;
+}
+.boot-log{
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: var(--text-dim);
+  width: min(580px, 92vw); height: 168px; overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  padding: 16px 20px; line-height: 1.9;
+  border-radius: 2px;
+}
+.boot-log .line{ opacity: 0; animation: lineIn 0.3s forwards; }
+.boot-log .line.ok::after{ content: '   OK'; color: var(--good); font-weight: 500; }
+.boot-log .line.warn::after{ content: '   WARN'; color: var(--warn); font-weight: 500; }
+@keyframes lineIn{ to{ opacity: 1; } }
+@keyframes bootGlow{
+  0%{ opacity: 0; transform: scale(0.92); filter: blur(12px); }
+  100%{ opacity: 1; transform: scale(1); filter: blur(0); }
+}
+.boot-bar{
+  margin-top: 24px; width: min(580px, 92vw); height: 2px;
+  background: rgba(92, 200, 255, 0.1); position: relative; overflow: hidden; border-radius: 2px;
+}
+.boot-bar::after{
+  content: ''; position: absolute; top: 0; bottom: 0; width: 35%;
+  background: linear-gradient(90deg, transparent, var(--primary), transparent);
+  animation: bootBar 3.5s ease-in-out forwards;
+}
+@keyframes bootBar{ 0%{ left: -35%; } 100%{ left: 100%; } }
+
+/* ---------- LAYOUT ---------- */
+.app{
+  position: relative; z-index: 10;
+  height: 100vh; height: 100dvh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  padding: 16px;
+  gap: 14px;
+}
+
+/* ---------- HEADER ---------- */
+.header{
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 24px;
+  padding: 14px 22px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border-radius: 4px;
+  position: relative;
+}
+.header::before{
+  content: ''; position: absolute;
+  top: -1px; left: 24px; right: 24px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--primary), transparent);
+  opacity: 0.4;
+}
+
+.brand{ display: flex; align-items: center; gap: 12px; }
+.brand-logo{
+  width: 32px; height: 32px;
+  border: 1px solid var(--border-bright);
+  border-radius: 4px;
+  display: grid; place-items: center;
+  background: linear-gradient(135deg, var(--primary-glow), transparent);
+  position: relative;
+}
+.brand-logo svg{ width: 18px; height: 18px; color: var(--primary); }
+.brand-logo::after{
+  content: ''; position: absolute; inset: -3px;
+  border: 1px solid var(--primary);
+  border-radius: 6px; opacity: 0.3;
+}
+.brand-text{ display: flex; flex-direction: column; line-height: 1.1; }
+.brand-text .name{
+  font-family: 'Orbitron', sans-serif;
+  font-size: 13px; font-weight: 700;
+  letter-spacing: 0.22em;
+  color: var(--text);
+}
+.brand-text .sub{
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; letter-spacing: 0.22em;
+  color: var(--text-faint); margin-top: 3px;
+  text-transform: uppercase;
+}
+.brand-r{ justify-content: flex-end; }
+.brand-r .brand-text{ align-items: flex-end; }
+
+.hud{
+  display: flex; align-items: center; gap: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px; letter-spacing: 0.12em;
+  color: var(--text-dim);
+}
+.hud-item{
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 10px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: rgba(255,255,255,0.015);
+}
+.hud-label{ color: var(--text-faint); text-transform: uppercase; font-size: 9px; }
+.hud-value{ color: var(--text); font-weight: 500; }
+.hud-dot{
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--good); box-shadow: 0 0 8px var(--good);
+  animation: pulse 1.8s ease-in-out infinite;
+}
+.hud-clock{
+  color: var(--primary);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.1em;
+}
+
+@keyframes pulse{
+  0%, 100%{ opacity: 1; }
+  50%{ opacity: 0.4; }
+}
+
+/* ---------- MAIN ---------- */
+.main{
+  display: grid;
+  grid-template-columns: 300px 1fr 340px;
+  gap: 14px;
+  min-height: 0;
+}
+
+.panel{
+  border: 1px solid var(--border);
+  background: var(--surface);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+  display: flex; flex-direction: column;
+}
+.panel::before{
+  content: ''; position: absolute;
+  top: -1px; left: 16%; right: 16%; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--primary), transparent);
+  opacity: 0.5;
+}
+
+.panel-header{
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px 12px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.panel-title{
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: 0.28em;
+  color: var(--text-dim); text-transform: uppercase;
+  display: flex; align-items: center; gap: 8px;
+}
+.panel-title::before{
+  content: ''; width: 4px; height: 4px;
+  background: var(--primary);
+  box-shadow: 0 0 6px var(--primary);
+  border-radius: 50%;
+}
+.panel-meta{
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: var(--text-faint);
+  letter-spacing: 0.15em;
+}
+
+/* ---------- COMMAND LIST ---------- */
+.cmd-list{ overflow-y: auto; flex: 1; padding: 12px; }
+.cmd-list::-webkit-scrollbar{ width: 3px; }
+.cmd-list::-webkit-scrollbar-track{ background: transparent; }
+.cmd-list::-webkit-scrollbar-thumb{ background: var(--border-bright); border-radius: 2px; }
+
+.cmd-item{
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  padding: 9px 12px;
+  margin-bottom: 4px;
+  border: 1px solid transparent;
+  background: rgba(255,255,255,0.015);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.18s ease;
+  letter-spacing: 0.02em;
+  border-radius: 3px;
+  display: flex; align-items: center; gap: 10px;
+  position: relative;
+}
+.cmd-item::before{
+  content: ''; width: 3px; height: 14px;
+  background: var(--text-faint);
+  border-radius: 2px;
+  transition: all 0.18s;
+}
+.cmd-item:hover{
+  background: rgba(92, 200, 255, 0.06);
+  color: var(--text);
+  border-color: var(--border-bright);
+}
+.cmd-item:hover::before{
+  background: var(--primary);
+  box-shadow: 0 0 6px var(--primary);
+}
+.cmd-key{
+  font-size: 9px; color: var(--text-faint);
+  margin-left: auto; padding: 2px 6px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+}
+
+/* ---------- CENTER (ORB) ---------- */
+.center{
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  position: relative;
+  border: 1px solid var(--border);
+  background:
+    radial-gradient(ellipse at center, var(--primary-glow), transparent 60%),
+    var(--surface);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border-radius: 4px;
+  overflow: hidden;
+  padding: 28px;
+}
+.center::before{
+  content: ''; position: absolute;
+  top: -1px; left: 20%; right: 20%; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--primary), transparent);
+}
+
+.tick{ position: absolute; width: 18px; height: 18px; opacity: 0.6; }
+.tick.tl{ top: 14px; left: 14px; border-left: 1px solid var(--primary); border-top: 1px solid var(--primary); }
+.tick.tr{ top: 14px; right: 14px; border-right: 1px solid var(--primary); border-top: 1px solid var(--primary); }
+.tick.bl{ bottom: 14px; left: 14px; border-left: 1px solid var(--primary); border-bottom: 1px solid var(--primary); }
+.tick.br{ bottom: 14px; right: 14px; border-right: 1px solid var(--primary); border-bottom: 1px solid var(--primary); }
+
+.assistant-meta{
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 10px;
+}
+.assistant-meta .pill{
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px; letter-spacing: 0.22em;
+  color: var(--text-dim); text-transform: uppercase;
+  padding: 4px 9px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  display: flex; align-items: center; gap: 6px;
+}
+.assistant-meta .pill .d{
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--good); box-shadow: 0 0 6px var(--good);
+  animation: pulse 2s infinite;
+}
+.assistant-name{
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 900;
+  font-size: clamp(26px, 4vw, 42px);
+  letter-spacing: 0.24em;
+  color: var(--text);
+  margin-bottom: 6px;
+  background: linear-gradient(180deg, var(--primary-bright), var(--primary) 60%, var(--primary-deep));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 24px var(--primary-glow));
+}
+.assistant-sub{
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px; color: var(--text-faint);
+  letter-spacing: 0.28em; margin-bottom: 22px;
+  text-transform: uppercase;
+}
+
+/* ORB */
+.orb{
+  width: clamp(190px, 30vw, 300px);
+  height: clamp(190px, 30vw, 300px);
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 0 22px;
+}
+.orb svg{ position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.ring{ fill: none; stroke: var(--primary); }
+.ring-outer{ stroke-width: 0.8; opacity: 0.35; stroke-dasharray: 3 7; animation: spin 36s linear infinite; transform-origin: center; }
+.ring-mid{ stroke-width: 1; opacity: 0.55; stroke-dasharray: 1 5; animation: spin 24s linear infinite reverse; transform-origin: center; }
+.ring-inner{ stroke-width: 1.2; opacity: 0.7; stroke-dasharray: 18 3 2 3; animation: spin 14s linear infinite; transform-origin: center; }
+.ring-arc{ stroke-width: 1.5; opacity: 0.85; }
+
+@keyframes spin{ to{ transform: rotate(360deg); } }
+
+.orb-core{
+  width: 48%; height: 48%; border-radius: 50%;
+  background:
+    radial-gradient(circle at 32% 28%, var(--primary-bright), var(--primary) 38%, var(--primary-deep) 75%, rgba(0,0,0,0.7) 100%);
+  box-shadow:
+    0 0 50px var(--primary-glow),
+    0 0 120px var(--primary-glow),
+    inset 0 0 40px rgba(255,255,255,0.15);
+  animation: breathe 5s ease-in-out infinite;
+  position: relative;
+  transition: box-shadow 0.5s ease, background 0.5s ease;
+}
+.orb-core::after{
+  content: ''; position: absolute; inset: 10%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 28% 24%, rgba(255,255,255,0.55), transparent 45%);
+  filter: blur(3px);
+}
+@keyframes breathe{
+  0%, 100%{ transform: scale(1); }
+  50%{ transform: scale(1.04); }
+}
+
+.orb.listening .orb-core{
+  background: radial-gradient(circle at 32% 28%, #bff5d8, var(--good) 38%, #1d8050 75%, rgba(0,0,0,0.7) 100%);
+  box-shadow: 0 0 60px rgba(74,222,128,0.4), 0 0 140px rgba(74,222,128,0.3);
+  animation: listenPulse 0.85s ease-in-out infinite;
+}
+.orb.listening .ring{ stroke: var(--good); }
+@keyframes listenPulse{
+  0%, 100%{ transform: scale(1); }
+  50%{ transform: scale(1.1); }
+}
+
+.orb.speaking .orb-core{
+  background: radial-gradient(circle at 32% 28%, #d4dffd, var(--accent) 38%, #2d3a85 75%, rgba(0,0,0,0.7) 100%);
+  box-shadow: 0 0 60px rgba(123,158,255,0.4), 0 0 140px rgba(123,158,255,0.3);
+  animation: speakPulse 0.35s ease-in-out infinite;
+}
+.orb.speaking .ring{ stroke: var(--accent); }
+@keyframes speakPulse{
+  0%, 100%{ transform: scale(1); }
+  50%{ transform: scale(1.06); }
+}
+
+.orb.processing .orb-core{
+  background: radial-gradient(circle at 32% 28%, #fef0c4, var(--warn) 38%, #92681a 75%, rgba(0,0,0,0.7) 100%);
+  box-shadow: 0 0 60px rgba(251,191,36,0.4), 0 0 140px rgba(251,191,36,0.3);
+  animation: breathe 1s ease-in-out infinite;
+}
+.orb.processing .ring{ stroke: var(--warn); animation-duration: 5s !important; }
+
+/* Status */
+.status{
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+  letter-spacing: 0.28em;
+  color: var(--primary);
+  text-transform: uppercase;
+  min-height: 22px;
+  margin-bottom: 14px;
+  display: flex; align-items: center; gap: 10px;
+  font-weight: 500;
+}
+.status .stat-dot{
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--primary); box-shadow: 0 0 8px var(--primary);
+  animation: pulse 1.6s infinite;
+}
+.status.listening{ color: var(--good); }
+.status.listening .stat-dot{ background: var(--good); box-shadow: 0 0 8px var(--good); }
+.status.processing{ color: var(--warn); }
+.status.processing .stat-dot{ background: var(--warn); box-shadow: 0 0 8px var(--warn); }
+.status.speaking{ color: var(--accent); }
+.status.speaking .stat-dot{ background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+
+.wave{
+  display: flex; align-items: center; gap: 3px;
+  height: 32px; margin-bottom: 22px;
+}
+.wave .bar{
+  width: 2.5px; height: 4px;
+  background: var(--primary);
+  box-shadow: 0 0 4px var(--primary-glow);
+  border-radius: 1px;
+  transition: height 0.08s ease;
+}
+
+/* Controls */
+.controls{
+  display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+  margin-bottom: 12px;
+}
+.btn{
+  font-family: 'Inter', sans-serif;
+  letter-spacing: 0.08em; font-size: 11.5px; font-weight: 600;
+  text-transform: uppercase;
+  background: rgba(92,200,255,0.06);
+  color: var(--primary);
+  border: 1px solid var(--border-bright);
+  padding: 10px 18px;
+  border-radius: 3px;
+  transition: all 0.2s ease;
+  min-height: 40px;
+  white-space: nowrap;
+  display: inline-flex; align-items: center; gap: 7px;
+}
+.btn:hover{
+  background: rgba(92,200,255,0.12);
+  border-color: var(--primary);
+  box-shadow: 0 0 14px var(--primary-glow);
+}
+.btn.primary{
+  background: linear-gradient(180deg, var(--primary), var(--primary-deep));
+  color: #021018;
+  border-color: var(--primary);
+  font-weight: 700;
+  box-shadow: 0 4px 16px var(--primary-glow), inset 0 1px 0 rgba(255,255,255,0.25);
+}
+.btn.primary:hover{
+  box-shadow: 0 6px 24px var(--primary-glow), inset 0 1px 0 rgba(255,255,255,0.3);
+  transform: translateY(-1px);
+}
+.btn.danger{ color: var(--bad); border-color: rgba(248,113,113,0.4); background: rgba(248,113,113,0.06); }
+.btn.danger:hover{ background: rgba(248,113,113,0.15); border-color: var(--bad); box-shadow: 0 0 14px rgba(248,113,113,0.2); }
+.btn.ghost{
+  color: var(--text-dim);
+  border-color: var(--border);
+  background: rgba(255,255,255,0.02);
+}
+.btn.ghost:hover{
+  color: var(--text);
+  border-color: var(--border-bright);
+  background: rgba(255,255,255,0.05);
+  box-shadow: none;
+}
+.btn .ico{ font-size: 12px; opacity: 0.9; }
+
+.hint{
+  margin-top: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px; color: var(--text-faint);
+  letter-spacing: 0.12em; text-align: center;
+  line-height: 1.6;
+}
+
+/* CONVERSATION */
+.convo{
+  flex: 1; overflow-y: auto;
+  display: flex; flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+}
+.convo::-webkit-scrollbar{ width: 3px; }
+.convo::-webkit-scrollbar-thumb{ background: var(--border-bright); border-radius: 2px; }
+
+.msg{
+  font-family: 'Inter', sans-serif;
+  font-size: 13px; line-height: 1.55;
+  padding: 10px 12px 10px 14px;
+  border-left: 2px solid;
+  background: rgba(255,255,255,0.018);
+  animation: msgIn 0.3s ease;
+  border-radius: 0 3px 3px 0;
+}
+.msg .who{
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; letter-spacing: 0.22em;
+  display: block; margin-bottom: 5px;
+  text-transform: uppercase;
+  font-weight: 500;
+  opacity: 0.85;
+}
+.msg.user{ border-color: var(--accent); }
+.msg.user .who{ color: var(--accent); }
+.msg.user{ color: var(--text-dim); }
+.msg.assistant{ border-color: var(--primary); }
+.msg.assistant .who{ color: var(--primary); }
+.msg.assistant{ color: var(--text); }
+@keyframes msgIn{
+  from{ opacity: 0; transform: translateX(6px); }
+  to{ opacity: 1; transform: translateX(0); }
+}
+
+.cursor{
+  display: inline-block; width: 7px; height: 13px;
+  background: var(--primary); margin-left: 2px;
+  vertical-align: middle;
+  animation: blink 1s steps(1) infinite;
+}
+@keyframes blink{ 50%{ opacity: 0; } }
+
+.empty-convo{
+  text-align: center; color: var(--text-faint);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px; letter-spacing: 0.18em;
+  padding: 36px 10px;
+}
+
+/* DASHBOARD */
+.dash{
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 10px;
+}
+.card{
+  border: 1px solid var(--border);
+  background: var(--surface);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  padding: 12px 14px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.25s ease;
+  cursor: pointer;
+  border-radius: 4px;
+  min-height: 84px;
+  display: flex; flex-direction: column;
+  justify-content: space-between;
+}
+.card:hover{
+  border-color: var(--border-bright);
+  background: rgba(92,200,255,0.04);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.3), 0 0 0 1px var(--border-bright);
+}
+.card.active{
+  border-color: var(--primary);
+  background: rgba(92,200,255,0.08);
+  box-shadow: 0 0 16px var(--primary-glow);
+}
+.card.active::before{
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: var(--primary);
+  box-shadow: 0 0 6px var(--primary);
+  animation: cardActive 1.6s ease-in-out infinite;
+}
+@keyframes cardActive{
+  0%, 100%{ opacity: 0.5; } 50%{ opacity: 1; }
+}
+
+.card-top{ display: flex; justify-content: space-between; align-items: center; }
+.card-num{
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; color: var(--text-faint);
+  letter-spacing: 0.18em;
+}
+.card-icon{
+  width: 26px; height: 26px;
+  display: grid; place-items: center;
+  border: 1px solid var(--border-bright);
+  border-radius: 4px;
+  background: var(--primary-glow);
+  color: var(--primary);
+}
+.card-icon svg{ width: 14px; height: 14px; }
+.card-name{
+  font-family: 'Inter', sans-serif;
+  font-size: 11.5px; letter-spacing: 0.04em;
+  color: var(--text);
+  font-weight: 600;
+  margin-top: 8px;
+}
+.card-sub{
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px; color: var(--text-faint);
+  margin-top: 2px; letter-spacing: 0.1em;
+}
+
+/* OVERLAY */
+.overlay{
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(5,8,15,0.75);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: none;
+  align-items: center; justify-content: center;
+  padding: 24px;
+  animation: fade 0.3s ease;
+}
+.overlay.show{ display: flex; }
+@keyframes fade{ from{ opacity: 0; } to{ opacity: 1; } }
+
+.modal{
+  width: min(600px, 96vw);
+  max-height: 80vh;
+  border: 1px solid var(--border-bright);
+  background: var(--surface);
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  padding: 28px 30px;
+  position: relative;
+  box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255,255,255,0.05);
+  border-radius: 6px;
+  overflow-y: auto;
+  animation: modalIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.modal::before{
+  content: ''; position: absolute; top: -1px; left: 20%; right: 20%; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--primary), transparent);
+}
+@keyframes modalIn{
+  from{ opacity: 0; transform: scale(0.96) translateY(6px); }
+  to{ opacity: 1; transform: scale(1) translateY(0); }
+}
+.modal h2{
+  font-family: 'Orbitron', sans-serif;
+  font-size: 14px; letter-spacing: 0.26em;
+  color: var(--primary);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  font-weight: 700;
+}
+.modal .sub{
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px; color: var(--text-faint);
+  letter-spacing: 0.16em; margin-bottom: 22px;
+  text-transform: uppercase;
+}
+.modal ul{ list-style: none; }
+.modal li{
+  font-family: 'Inter', sans-serif;
+  font-size: 13.5px; padding: 12px 14px;
+  border-left: 2px solid var(--primary);
+  background: rgba(92,200,255,0.04);
+  margin-bottom: 6px;
+  display: flex; align-items: center; gap: 12px;
+  color: var(--text);
+  border-radius: 0 3px 3px 0;
+}
+.modal li .check{
+  width: 14px; height: 14px;
+  border: 1px solid var(--primary);
+  display: inline-block; flex-shrink: 0;
+  border-radius: 3px;
+  position: relative;
+}
+.modal li.done .check{ background: var(--primary); }
+.modal li.done .check::after{
+  content: '✓'; position: absolute; inset: 0;
+  display: grid; place-items: center;
+  color: #021018; font-size: 11px; font-weight: 700;
+}
+.modal li.done{ opacity: 0.55; }
+.modal li.done span:not(.check){ text-decoration: line-through; text-decoration-color: rgba(255,255,255,0.3); }
+
+.modal-close{
+  position: absolute; top: 14px; right: 16px;
+  background: transparent; border: 1px solid var(--border);
+  color: var(--text-dim); width: 30px; height: 30px;
+  font-size: 13px; border-radius: 3px;
+  transition: all 0.2s;
+}
+.modal-close:hover{ background: rgba(248,113,113,0.1); border-color: var(--bad); color: var(--bad); }
+
+.scan-bar{
+  width: 100%; height: 5px;
+  background: rgba(92,200,255,0.08);
+  position: relative;
+  margin: 16px 0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.scan-fill{
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: 0%;
+  background: linear-gradient(90deg, var(--primary-deep), var(--primary), var(--primary-bright));
+  box-shadow: 0 0 14px var(--primary-glow);
+  transition: width 0.06s linear;
+  border-radius: 3px;
+}
+.scan-pct{
+  font-family: 'Orbitron', sans-serif;
+  font-size: 36px; letter-spacing: 0.06em;
+  text-align: center;
+  margin: 8px 0;
+  font-weight: 700;
+  background: linear-gradient(180deg, var(--primary-bright), var(--primary-deep));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-variant-numeric: tabular-nums;
+}
+.scan-log{
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: var(--text-dim);
+  height: 144px; overflow: hidden;
+  border: 1px solid var(--border);
+  padding: 12px 14px;
+  background: rgba(0,0,0,0.3);
+  line-height: 1.85;
+  border-radius: 3px;
+}
+.scan-log .ok{ color: var(--good); font-weight: 500; }
+
+/* Settings */
+.settings-row{
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 14px;
+}
+.settings-row label{
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: var(--text-dim);
+  letter-spacing: 0.12em; min-width: 80px;
+  text-transform: uppercase;
+}
+.settings-row select, .settings-row input[type="range"]{
+  flex: 1;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--border-bright);
+  color: var(--text);
+  padding: 8px 10px;
+  border-radius: 3px;
+  font-size: 12.5px;
+  outline: none;
+}
+.settings-row select:focus{ border-color: var(--primary); }
+.settings-row input[type="range"]{ padding: 0; height: 28px; accent-color: var(--primary); }
+.settings-row .val{
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: var(--primary);
+  min-width: 36px; text-align: right;
+}
+.settings-note{
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px; color: var(--text-faint);
+  letter-spacing: 0.06em; line-height: 1.6;
+  padding: 10px 12px; margin-top: 12px;
+  border-left: 2px solid var(--warn);
+  background: rgba(251,191,36,0.05);
+  border-radius: 0 3px 3px 0;
+}
+
+/* RESPONSIVE */
+@media (max-width: 1100px){
+  .main{ grid-template-columns: 260px 1fr 300px; }
+  .dash{ grid-template-columns: repeat(4, 1fr); }
+  .hud{ gap: 10px; }
+  .hud-item:nth-child(2), .hud-item:nth-child(3){ display: none; }
+}
+@media (max-width: 860px){
+  html, body{ overflow-y: auto; }
+  .app{ height: auto; min-height: 100vh; padding: 12px; }
+  .header{ grid-template-columns: 1fr 1fr; padding: 10px 14px; gap: 8px; }
+  .hud{ display: none; }
+  .brand-text .sub{ display: none; }
+  .brand-logo{ width: 28px; height: 28px; }
+  .brand-text .name{ font-size: 11.5px; letter-spacing: 0.16em; }
+  .main{
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+  }
+  .panel.left, .panel.right{ max-height: 240px; }
+  .center{ order: -1; min-height: 480px; padding: 22px 18px; }
+  .dash{ grid-template-columns: repeat(2, 1fr); }
+  .controls{ gap: 8px; }
+  .btn{ padding: 9px 14px; font-size: 10.5px; }
+}
+@media (max-width: 440px){
+  .dash{ grid-template-columns: repeat(2, 1fr); }
+  .card-num{ display: none; }
+  .center{ min-height: 440px; }
+  .assistant-name{ font-size: 22px; letter-spacing: 0.26em; }
+  .header{ padding: 10px 12px; }
+  .modal{ padding: 22px 20px; }
+}
+
+.hidden{ display: none !important; }
+
+</style>
+</head>
+<body data-theme="">
+
+<div class="stage"></div>
+<div class="grid-floor"></div>
+<canvas id="particles"></canvas>
+<div class="scanline"></div>
+<div class="vignette"></div>
+
+<!-- BOOT -->
+<div class="boot" id="boot">
+  <div class="boot-logo">OBLIQ AI</div>
+  <div class="boot-tag">Obliq AI &nbsp;·&nbsp; Digital Hammerr</div>
+  <div class="boot-log" id="bootLog"></div>
+  <div class="boot-bar"></div>
+</div>
+
+<div class="app">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="brand brand-l">
+      <div class="brand-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="12" cy="12" r="9"/>
+          <circle cx="12" cy="12" r="4" fill="currentColor"/>
+          <line x1="12" y1="2" x2="12" y2="5"/>
+          <line x1="12" y1="19" x2="12" y2="22"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <span class="name">OBLIQ AI</span>
+        <span class="sub">Intelligence Layer</span>
+      </div>
+    </div>
+
+    <div class="hud">
+      <div class="hud-item">
+        <span class="hud-dot"></span>
+        <span class="hud-value">SYSTEM ONLINE</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label">CPU</span>
+        <span class="hud-value" id="hudCpu">42%</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label">NET</span>
+        <span class="hud-value" id="hudNet">STABLE</span>
+      </div>
+      <div class="hud-item hud-clock" id="clock">00:00:00</div>
+    </div>
+
+    <div class="brand brand-r">
+      <div class="brand-text">
+        <span class="name">DIGITAL HAMMERR</span>
+        <span class="sub">Execution Layer</span>
+      </div>
+      <div class="brand-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M6 4 L18 4 L18 9 L13 9 L13 20 L11 20 L11 9 L6 9 Z" fill="currentColor"/>
+        </svg>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <section class="panel left">
+      <div class="panel-header">
+        <span class="panel-title">Voice Commands</span>
+        <span class="panel-meta">13 ACTIVE</span>
+      </div>
+      <div class="cmd-list" id="cmdList">
+        <div class="cmd-item" data-cmd="hello">Hello<span class="cmd-key">01</span></div>
+        <div class="cmd-item" data-cmd="who are you">Who are you?<span class="cmd-key">02</span></div>
+        <div class="cmd-item" data-cmd="tell me the time">Tell me the time<span class="cmd-key">03</span></div>
+        <div class="cmd-item" data-cmd="open dashboard">Open dashboard<span class="cmd-key">04</span></div>
+        <div class="cmd-item" data-cmd="show tasks">Show tasks<span class="cmd-key">05</span></div>
+        <div class="cmd-item" data-cmd="show notes">Show notes<span class="cmd-key">06</span></div>
+        <div class="cmd-item" data-cmd="start system scan">Start system scan<span class="cmd-key">07</span></div>
+        <div class="cmd-item" data-cmd="change theme">Change theme<span class="cmd-key">08</span></div>
+        <div class="cmd-item" data-cmd="help me build a website">Build a website<span class="cmd-key">09</span></div>
+        <div class="cmd-item" data-cmd="about obliq ai">About Obliq AI<span class="cmd-key">10</span></div>
+        <div class="cmd-item" data-cmd="about digital hammerr">About Digital Hammerr<span class="cmd-key">11</span></div>
+        <div class="cmd-item" data-cmd="stop">Stop listening<span class="cmd-key">12</span></div>
+        <div class="cmd-item" data-cmd="clear">Clear conversation<span class="cmd-key">13</span></div>
+      </div>
+    </section>
+
+    <section class="center">
+      <span class="tick tl"></span>
+      <span class="tick tr"></span>
+      <span class="tick bl"></span>
+      <span class="tick br"></span>
+
+      <div class="assistant-meta">
+        <span class="pill"><span class="d"></span>SECURE</span>
+        <span class="pill">v2.6.0</span>
+      </div>
+
+      <h1 class="assistant-name">OBLIQ AI</h1>
+      <div class="assistant-sub">Voice Assistant</div>
+
+      <div class="orb" id="orb">
+        <svg viewBox="0 0 200 200" aria-hidden="true">
+          <circle class="ring ring-outer" cx="100" cy="100" r="96"></circle>
+          <circle class="ring ring-mid" cx="100" cy="100" r="82"></circle>
+          <circle class="ring ring-inner" cx="100" cy="100" r="66"></circle>
+          <path class="ring ring-arc" d="M 100 12 A 88 88 0 0 1 188 100" />
+          <path class="ring ring-arc" d="M 100 188 A 88 88 0 0 1 12 100" />
+          <g>
+            <line x1="100" y1="2" x2="100" y2="11" stroke="var(--primary)" stroke-width="1.2"/>
+            <line x1="100" y1="189" x2="100" y2="198" stroke="var(--primary)" stroke-width="1.2"/>
+            <line x1="2" y1="100" x2="11" y2="100" stroke="var(--primary)" stroke-width="1.2"/>
+            <line x1="189" y1="100" x2="198" y2="100" stroke="var(--primary)" stroke-width="1.2"/>
+          </g>
+        </svg>
+        <div class="orb-core"></div>
+      </div>
+
+      <div class="status" id="status">
+        <span class="stat-dot"></span>
+        <span id="statusText">READY · TAP START</span>
+      </div>
+
+      <div class="wave" id="wave"></div>
+
+      <div class="controls">
+        <button class="btn primary" id="btnStart"><span class="ico">▶</span>START</button>
+        <button class="btn danger hidden" id="btnStop"><span class="ico">■</span>STOP</button>
+        <button class="btn ghost" id="btnVoice"><span class="ico">⚙</span>Voice</button>
+        <button class="btn ghost" id="btnMute"><span class="ico" id="muteIco">🔊</span>Audio</button>
+        <button class="btn ghost" id="btnTheme"><span class="ico">◐</span>Theme</button>
+        <button class="btn ghost" id="btnFs"><span class="ico">⛶</span>Full</button>
+      </div>
+
+      <div class="hint">Click START · Allow microphone · Speak or press <b>Space</b><br>For most human voice, open <b>Voice</b> settings</div>
+    </section>
+
+    <section class="panel right">
+      <div class="panel-header">
+        <span class="panel-title">Communication Log</span>
+        <span class="panel-meta" id="msgCount">0 MSG</span>
+      </div>
+      <div class="convo" id="convo">
+        <div class="empty-convo">// awaiting input</div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- DASHBOARD -->
+  <footer class="dash">
+    <div class="card" data-action="assistant">
+      <div class="card-top">
+        <span class="card-num">01</span>
+        <span class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg></span>
+      </div>
+      <div><div class="card-name">AI Assistant</div><div class="card-sub">CORE</div></div>
+    </div>
+    <div class="card" data-action="voice">
+      <div class="card-top">
+        <span class="card-num">02</span>
+        <span class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></span>
+      </div>
+      <div><div class="card-name">Voice Command</div><div class="card-sub">ACTIVE</div></div>
+    </div>
+    <div class="card" data-action="notes">
+      <div class="card-top">
+        <span class="card-num">03</span>
+        <span class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 3h14v18l-7-4-7 4z"/></svg></span>
+      </div>
+      <div><div class="card-name">Smart Notes</div><div class="card-sub">4 ITEMS</div></div>
+    </div>
+    <div class="card" data-action="tasks">
+      <div class="card-top">
+        <span class="card-num">04</span>
+        <span class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h13M4 12h13M4 18h9"/><path d="M19 5l2 2 3-3" transform="translate(-2 1)"/></svg></span>
+      </div>
+      <div><div class="card-name">Task Manager</div><div class="card-sub">4 QUEUED</div></div>
+    </div>
+    <div class="card" data-action="calendar">
+      <div class="card-top">
+        <span class="card-num">05</span>
+        <span class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span>
+      </div>
+      <div><div class="card-name">Calendar</div><div class="card-sub">SYNC</div></div>
+    </div>
+    <div class="card" data-action="builder">
+      <div class="card-top">
+        <span class="card-num">06</span>
+        <span class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 13h6"/></svg></span>
+      </div>
+      <div><div class="card-name">Site Builder</div><div class="card-sub">READY</div></div>
+    </div>
+    <div class="card" data-action="scan">
+      <div class="card-top">
+        <span class="card-num">07</span>
+        <span class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg></span>
+      </div>
+      <div><div class="card-name">System Scan</div><div class="card-sub">IDLE</div></div>
+    </div>
+    <div class="card" data-action="automation">
+      <div class="card-top">
+        <span class="card-num">08</span>
+        <span class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg></span>
+      </div>
+      <div><div class="card-name">Automation</div><div class="card-sub">8 FLOWS</div></div>
+    </div>
+  </footer>
+
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal" id="modal">
+    <button class="modal-close" id="modalClose">✕</button>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<!-- Optional API hook -->
+<script>
+const OBLIQ_CONFIG = { apiProvider: '', apiKey: '', apiEndpoint: '', model: '' };
+</script>
+
+<script>
+/* =================================================================
+   Obliq AI Engine
+   ================================================================= */
+(() => {
+  'use strict';
+
+  /* BOOT */
+  const bootLines = [
+    { text: '> Initializing Obliq AI kernel', cls: 'ok' },
+    { text: '> Loading Obliq AI intelligence modules', cls: 'ok' },
+    { text: '> Connecting Digital Hammerr execution layer', cls: 'ok' },
+    { text: '> Calibrating neural voice synthesis', cls: 'ok' },
+    { text: '> Linking holographic interface', cls: 'ok' },
+    { text: '> Establishing secure command channel', cls: 'ok' },
+    { text: '> Loading user preferences', cls: 'warn' },
+    { text: '> All systems nominal. Awaiting operator', cls: 'ok' },
+  ];
+  const bootLog = document.getElementById('bootLog');
+  bootLines.forEach((l, i) => {
+    setTimeout(() => {
+      const div = document.createElement('div');
+      div.className = 'line ' + (l.cls || '');
+      div.textContent = l.text;
+      bootLog.appendChild(div);
+      if (bootLog.children.length > 7) bootLog.removeChild(bootLog.firstChild);
+    }, 250 + i * 360);
+  });
+  setTimeout(() => document.getElementById('boot').classList.add('hidden'), 3600);
+
+  /* CLOCK + HUD */
+  const clockEl = document.getElementById('clock');
+  const hudCpu = document.getElementById('hudCpu');
+  const hudNet = document.getElementById('hudNet');
+  const netStates = ['STABLE','STABLE','STABLE','98 MS','12 MS'];
+  let cpuVal = 42;
+  const updateClock = () => {
+    const d = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    clockEl.textContent = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  };
+  setInterval(() => {
+    updateClock();
+    cpuVal = Math.max(28, Math.min(62, cpuVal + (Math.random() - 0.5) * 6));
+    hudCpu.textContent = Math.round(cpuVal) + '%';
+    if (Math.random() < 0.15) hudNet.textContent = netStates[Math.floor(Math.random()*netStates.length)];
+  }, 1000);
+  updateClock();
+
+  /* PARTICLES */
+  const canvas = document.getElementById('particles');
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+  const resize = () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    const count = Math.min(70, Math.floor((canvas.width * canvas.height) / 28000));
+    particles = Array.from({ length: count }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 1.4 + 0.3,
+      vx: (Math.random() - 0.5) * 0.18,
+      vy: -Math.random() * 0.28 - 0.04,
+      a: Math.random() * 0.5 + 0.12,
+    }));
+  };
+  resize();
+  window.addEventListener('resize', resize);
+  const drawParticles = () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const cs = getComputedStyle(document.body);
+    const color = cs.getPropertyValue('--primary').trim() || '#5cc8ff';
+    particles.forEach(p => {
+      p.x += p.vx; p.y += p.vy;
+      if (p.y < -10) { p.y = canvas.height + 10; p.x = Math.random() * canvas.width; }
+      if (p.x < -10) p.x = canvas.width + 10;
+      if (p.x > canvas.width + 10) p.x = -10;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.globalAlpha = p.a;
+      ctx.shadowBlur = 6;
+      ctx.shadowColor = color;
+      ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+    requestAnimationFrame(drawParticles);
+  };
+  drawParticles();
+
+  /* WAVE */
+  const waveEl = document.getElementById('wave');
+  for (let i = 0; i < 32; i++) {
+    const b = document.createElement('div');
+    b.className = 'bar';
+    waveEl.appendChild(b);
+  }
+  const bars = [...waveEl.children];
+  let waveActive = false;
+  const animateWave = () => {
+    bars.forEach((b, i) => {
+      const target = waveActive
+        ? 4 + Math.random() * 26
+        : 3 + Math.sin(Date.now()/500 + i*0.35) * 1.5 + 1;
+      b.style.height = target + 'px';
+    });
+    requestAnimationFrame(animateWave);
+  };
+  animateWave();
+
+  /* REFS */
+  const orb = document.getElementById('orb');
+  const statusEl = document.getElementById('status');
+  const statusText = document.getElementById('statusText');
+  const convoEl = document.getElementById('convo');
+  const msgCountEl = document.getElementById('msgCount');
+  const btnStart = document.getElementById('btnStart');
+  const btnStop = document.getElementById('btnStop');
+  const btnVoice = document.getElementById('btnVoice');
+  const btnMute = document.getElementById('btnMute');
+  const muteIco = document.getElementById('muteIco');
+  const btnTheme = document.getElementById('btnTheme');
+  const btnFs = document.getElementById('btnFs');
+
+  /* STATE */
+  let state = 'idle';
+  let muted = false;
+  let recognition = null;
+  let isListening = false;
+  let manualStop = false;
+  let messageCount = 0;
+
+  const setState = (s, label) => {
+    state = s;
+    orb.classList.remove('listening','processing','speaking');
+    statusEl.classList.remove('listening','processing','speaking');
+    if (s !== 'idle') {
+      orb.classList.add(s);
+      statusEl.classList.add(s);
+    }
+    waveActive = (s === 'listening' || s === 'speaking');
+    const labels = {
+      idle: 'READY · TAP START',
+      listening: 'LISTENING',
+      processing: 'PROCESSING',
+      speaking: 'SPEAKING'
+    };
+    statusText.textContent = label || labels[s];
+  };
+
+  /* CONVO */
+  const addMessage = (who, text, typed = false) => {
+    const empty = convoEl.querySelector('.empty-convo');
+    if (empty) empty.remove();
+    const div = document.createElement('div');
+    div.className = 'msg ' + who;
+    div.innerHTML = `<span class="who">${who === 'user' ? '◢ Operator' : '◤ OBLIQ AI'}</span><span class="body"></span>`;
+    convoEl.appendChild(div);
+    convoEl.scrollTop = convoEl.scrollHeight;
+    const body = div.querySelector('.body');
+    if (typed) typeText(body, text); else body.textContent = text;
+    messageCount++;
+    msgCountEl.textContent = messageCount + ' MSG';
+    return div;
+  };
+
+  const typeText = (el, text) => {
+    el.textContent = '';
+    const cursor = document.createElement('span');
+    cursor.className = 'cursor';
+    el.appendChild(cursor);
+    let i = 0;
+    const tick = () => {
+      if (i < text.length) {
+        cursor.insertAdjacentText('beforebegin', text[i]);
+        i++;
+        convoEl.scrollTop = convoEl.scrollHeight;
+        setTimeout(tick, 14 + Math.random() * 14);
+      } else cursor.remove();
+    };
+    tick();
+  };
+
+  /* =================================================================
+     VOICE — natural neural voice selection + chunked speech
+     ================================================================= */
+  const synth = window.speechSynthesis;
+  let allVoices = [];
+  let preferredVoice = null;
+  let voiceRate = 1.0;
+  let voicePitch = 1.0;
+
+  const scoreVoice = (v) => {
+    if (!v) return -1;
+    const n = v.name;
+    let score = 0;
+    // Microsoft Edge "Natural" / "Online (Natural)" voices — best on Windows
+    if (/\(Natural\)/i.test(n)) score += 120;
+    if (/Online.*Natural/i.test(n)) score += 110;
+    if (/Microsoft.*Online/i.test(n)) score += 60;
+    if (/Microsoft.*(Aria|Jenny|Guy|Davis|Tony|Sara|Nancy|Brandon|Christopher|Eric|Michelle|Andrew|Emma|Ana|Brian)/i.test(n)) score += 40;
+    // Google high-quality (Chrome / Android)
+    if (/^Google US English$/i.test(n)) score += 85;
+    if (/Google UK English Female/i.test(n)) score += 78;
+    if (/Google UK English Male/i.test(n)) score += 75;
+    if (/Google.*(Wavenet|Studio|Neural)/i.test(n)) score += 95;
+    // Apple high-quality voices
+    if (/Samantha/i.test(n)) score += 70;
+    if (/Alex/i.test(n) && /en/i.test(v.lang)) score += 75;
+    if (/Daniel/i.test(n) && /en-GB/i.test(v.lang)) score += 72;
+    if (/Karen/i.test(n)) score += 60;
+    if (/Moira|Tessa|Fiona|Serena|Allison|Ava/i.test(n)) score += 55;
+    // Quality hints
+    if (/Premium|Enhanced|Neural/i.test(n)) score += 30;
+    // Penalize old/robotic
+    if (/Desktop/i.test(n)) score -= 25;
+    if (/Microsoft (David|Zira|Mark|Hazel)\b/i.test(n) && !/Online/i.test(n)) score -= 20;
+    if (/eSpeak|Festival/i.test(n)) score -= 50;
+    // Language
+    if (/en-US/i.test(v.lang)) score += 15;
+    else if (/en-GB/i.test(v.lang)) score += 12;
+    else if (/en/i.test(v.lang)) score += 8;
+    return score;
+  };
+
+  const loadVoices = () => {
+    if (!synth) return;
+    allVoices = (synth.getVoices() || []).filter(v => /en/i.test(v.lang));
+    if (!allVoices.length) return;
+    allVoices.sort((a, b) => scoreVoice(b) - scoreVoice(a));
+    if (!preferredVoice || !allVoices.includes(preferredVoice)) {
+      preferredVoice = allVoices[0];
+    }
+  };
+
+  if (synth) {
+    loadVoices();
+    synth.onvoiceschanged = loadVoices;
+    setTimeout(loadVoices, 250);
+    setTimeout(loadVoices, 1200);
+  }
+
+  // Speak with chunking and micro-pauses for natural cadence
+  const speak = (rawText, onEnd) => {
+    if (!synth) { onEnd && onEnd(); return; }
+    synth.cancel();
+    if (muted) { onEnd && onEnd(); return; }
+
+    const chunks = rawText
+      .replace(/\s+/g, ' ')
+      .split(/(?<=[.!?])\s+|(?<=,)\s+(?=\w{4,})/g)
+      .filter(Boolean);
+
+    setState('speaking');
+    let idx = 0;
+    const speakNext = () => {
+      if (idx >= chunks.length) {
+        if (state === 'speaking') setState(isListening ? 'listening' : 'idle');
+        onEnd && onEnd();
+        return;
+      }
+      const piece = chunks[idx++];
+      const u = new SpeechSynthesisUtterance(piece);
+      if (preferredVoice) u.voice = preferredVoice;
+      u.rate = voiceRate;
+      u.pitch = voicePitch;
+      u.volume = 1.0;
+      u.onend = () => {
+        const delay = /[.!?]$/.test(piece) ? 220 : 90;
+        setTimeout(speakNext, delay);
+      };
+      u.onerror = () => speakNext();
+      synth.speak(u);
+    };
+    speakNext();
+  };
+
+  /* COMMAND PROCESSING */
+  const fmtTime = () => {
+    const d = new Date();
+    let h = d.getHours();
+    const m = d.getMinutes();
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    return `${h}:${String(m).padStart(2,'0')} ${ampm}`;
+  };
+
+  const highlightCard = (action) => {
+    document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+    const target = document.querySelector(`.card[data-action="${action}"]`);
+    if (target) {
+      target.classList.add('active');
+      setTimeout(() => target.classList.remove('active'), 4000);
+    }
+  };
+
+  const openModal = (html) => {
+    document.getElementById('modalBody').innerHTML = html;
+    document.getElementById('overlay').classList.add('show');
+  };
+  const closeModal = () => document.getElementById('overlay').classList.remove('show');
+  document.getElementById('modalClose').addEventListener('click', closeModal);
+  document.getElementById('overlay').addEventListener('click', (e) => {
+    if (e.target.id === 'overlay') closeModal();
+  });
+
+  const TASKS = [
+    'Review business ideas',
+    'Prepare AI website concept',
+    'Check automation plan',
+    'Test voice commands',
+  ];
+  const NOTES = [
+    'Obliq AI project ideas',
+    'Digital Hammerr branding',
+    'Voice assistant improvements',
+    'Future API integration',
+  ];
+
+  const showTasks = () => {
+    openModal(`
+      <h2>Task Manager</h2>
+      <div class="sub">4 items in active queue</div>
+      <ul>${TASKS.map((t, i) => `<li class="${i===0?'done':''}"><span class="check"></span><span>${t}</span></li>`).join('')}</ul>
+    `);
+    highlightCard('tasks');
+  };
+
+  const showNotes = () => {
+    openModal(`
+      <h2>Smart Notes</h2>
+      <div class="sub">Synced · 4 entries</div>
+      <ul>${NOTES.map(n => `<li><span class="check"></span><span>${n}</span></li>`).join('')}</ul>
+    `);
+    highlightCard('notes');
+  };
+
+  const runScan = () => {
+    openModal(`
+      <h2>System Diagnostic</h2>
+      <div class="sub">Full integrity check · all modules</div>
+      <div class="scan-pct" id="scanPct">0%</div>
+      <div class="scan-bar"><div class="scan-fill" id="scanFill"></div></div>
+      <div class="scan-log" id="scanLog"></div>
+    `);
+    highlightCard('scan');
+    const fill = document.getElementById('scanFill');
+    const pct = document.getElementById('scanPct');
+    const log = document.getElementById('scanLog');
+    const steps = [
+      'Probing neural memory banks',
+      'Auditing voice recognition modules',
+      'Verifying Obliq AI intelligence core',
+      'Validating Digital Hammerr execution links',
+      'Checking network integrity',
+      'Scanning for anomalies — none detected',
+      'Optimizing response latency',
+      'Finalizing system report',
+    ];
+    let p = 0, i = 0;
+    const tick = () => {
+      p += 1.4;
+      if (p > 100) p = 100;
+      fill.style.width = p + '%';
+      pct.textContent = Math.floor(p) + '%';
+      if (i < steps.length && p > (i+1) * (100/steps.length)) {
+        const line = document.createElement('div');
+        line.innerHTML = `> ${steps[i]} <span class="ok">OK</span>`;
+        log.appendChild(line);
+        if (log.children.length > 7) log.removeChild(log.firstChild);
+        i++;
+      }
+      if (p < 100) requestAnimationFrame(tick);
+    };
+    tick();
+  };
+
+  const showVoiceSettings = () => {
+    loadVoices();
+    const options = allVoices.map(v => {
+      const sel = v === preferredVoice ? 'selected' : '';
+      const label = v.name
+        .replace(/^Microsoft\s+/, '')
+        .replace(/^Google\s+/, 'G· ');
+      const star = scoreVoice(v) >= 100 ? '★ ' : (scoreVoice(v) >= 70 ? '◆ ' : '');
+      return `<option value="${v.name}" ${sel}>${star}${label} — ${v.lang}</option>`;
+    }).join('');
+    openModal(`
+      <h2>Voice Settings</h2>
+      <div class="sub">Pick the most natural voice your device offers</div>
+      <div class="settings-row">
+        <label>Voice</label>
+        <select id="voiceSelect">${options || '<option>No voices found</option>'}</select>
+      </div>
+      <div class="settings-row">
+        <label>Rate</label>
+        <input type="range" id="rateRange" min="0.7" max="1.3" step="0.05" value="${voiceRate}">
+        <span class="val" id="rateVal">${voiceRate.toFixed(2)}×</span>
+      </div>
+      <div class="settings-row">
+        <label>Pitch</label>
+        <input type="range" id="pitchRange" min="0.7" max="1.3" step="0.05" value="${voicePitch}">
+        <span class="val" id="pitchVal">${voicePitch.toFixed(2)}</span>
+      </div>
+      <button class="btn primary" id="testVoice" style="margin-top:8px;width:100%;justify-content:center">Test voice</button>
+      <div class="settings-note">★ = Neural / Natural (most human-sounding). ◆ = High quality. Tip: in Microsoft Edge on Windows 11, look for voices ending in <b>(Natural)</b> — they sound nearly indistinguishable from a human.</div>
+    `);
+    const vs = document.getElementById('voiceSelect');
+    const rr = document.getElementById('rateRange');
+    const pr = document.getElementById('pitchRange');
+    const rv = document.getElementById('rateVal');
+    const pv = document.getElementById('pitchVal');
+    vs.addEventListener('change', () => {
+      preferredVoice = allVoices.find(v => v.name === vs.value) || preferredVoice;
+    });
+    rr.addEventListener('input', () => {
+      voiceRate = parseFloat(rr.value);
+      rv.textContent = voiceRate.toFixed(2) + '×';
+    });
+    pr.addEventListener('input', () => {
+      voicePitch = parseFloat(pr.value);
+      pv.textContent = voicePitch.toFixed(2);
+    });
+    document.getElementById('testVoice').addEventListener('click', () => {
+      speak('Voice calibration test. This is Obliq AI, your voice assistant, powered by Digital Hammerr.');
+    });
+  };
+
+  const cycleTheme = () => {
+    const cur = document.body.getAttribute('data-theme');
+    document.body.setAttribute('data-theme', cur === 'cyber' ? '' : 'cyber');
+  };
+
+  const processCommand = (raw) => {
+    const text = raw.toLowerCase().trim();
+
+    if (/\b(stop|pause|halt|sleep)\b/.test(text)) {
+      stopListening();
+      reply('Voice system paused. Tap start when you need me again.', false);
+      return;
+    }
+    if (text === 'clear' || /\b(clear|reset|wipe)\b.*(conversation|log|chat)/.test(text)) {
+      convoEl.innerHTML = '<div class="empty-convo">// awaiting input</div>';
+      messageCount = 0;
+      msgCountEl.textContent = '0 MSG';
+      reply('Conversation log cleared.');
+      return;
+    }
+    if (/\b(mute|silence)\b/.test(text)) {
+      muted = true; muteIco.textContent = '🔇';
+      reply('Voice output muted.');
+      return;
+    }
+    if (/\b(unmute|speak|talk)\b/.test(text) && muted) {
+      muted = false; muteIco.textContent = '🔊';
+      reply('Voice output restored.');
+      return;
+    }
+    if (/\b(hello|hi|hey|greetings)\b/.test(text)) {
+      reply('Hello sir. Obliq AI command system is now online.');
+      return;
+    }
+    if (/who are you|what are you|your name|introduce/.test(text)) {
+      reply('I am Obliq AI, your intelligent voice assistant, powered by Digital Hammerr. I am designed to help you control digital systems with voice.');
+      return;
+    }
+    if (/\btime\b|what time|current time|tell me the time/.test(text)) {
+      reply(`The current time is ${fmtTime()}.`);
+      return;
+    }
+    if (/open dashboard|show dashboard|dashboard/.test(text)) {
+      ['assistant','voice','notes','tasks','calendar','builder','scan','automation'].forEach((a, i) => {
+        setTimeout(() => highlightCard(a), i * 110);
+      });
+      reply('Dashboard opened. All eight modules are responsive.');
+      return;
+    }
+    if (/show tasks|my tasks|task list|task manager|^tasks/.test(text)) {
+      showTasks();
+      reply('Pulling up your active task queue now.');
+      return;
+    }
+    if (/show notes|my notes|^notes/.test(text)) {
+      showNotes();
+      reply('Here are your smart notes.');
+      return;
+    }
+    if (/system scan|run scan|diagnostic|start scan/.test(text)) {
+      runScan();
+      reply('System scan initiated. All core modules are functioning normally.');
+      return;
+    }
+    if (/change theme|switch theme|new theme|^theme/.test(text)) {
+      cycleTheme();
+      const t = document.body.getAttribute('data-theme') === 'cyber' ? 'cyber purple' : 'obliq blue';
+      reply(`Theme switched to ${t}.`);
+      return;
+    }
+    if (/build a website|^website|build a site|create a site|web site/.test(text)) {
+      highlightCard('builder');
+      reply('I can help you create a website concept, layout, branding, and user experience. Please describe your business idea.');
+      return;
+    }
+    if (/about obliq|obliq ai|tell me about obliq/.test(text)) {
+      highlightCard('assistant');
+      reply('Obliq AI represents futuristic, AI-powered digital experiences, automation, and intelligent interfaces.');
+      return;
+    }
+    if (/about digital hammerr|digital hammerr|hammerr|hammer/.test(text)) {
+      highlightCard('automation');
+      reply('Digital Hammerr represents powerful digital execution, branding, technology, and business growth.');
+      return;
+    }
+    if (/calendar|schedule|appointments/.test(text)) {
+      highlightCard('calendar');
+      reply('Calendar module is in demo mode. Connect an API to view real events.');
+      return;
+    }
+    if (/\bhelp\b|what can you do|commands/.test(text)) {
+      reply('Try saying: hello, who are you, tell me the time, open dashboard, show tasks, show notes, start system scan, change theme, about Obliq AI, or about Digital Hammerr.');
+      return;
+    }
+    reply('I heard you, but this command is not yet programmed in demo mode. You can try saying help, dashboard, tasks, notes, time, or system scan.');
+  };
+
+  const reply = (text, doSpeak = true) => {
+    setState('processing');
+    setTimeout(() => {
+      addMessage('assistant', text, true);
+      if (doSpeak) speak(text);
+      else setState(isListening ? 'listening' : 'idle');
+    }, 420 + Math.random() * 280);
+  };
+
+  /* SPEECH RECOGNITION */
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const supported = !!SR;
+
+  const initRecognition = () => {
+    if (!supported) return null;
+    const r = new SR();
+    r.continuous = true;
+    r.interimResults = true;
+    r.lang = 'en-US';
+
+    r.onstart = () => {
+      isListening = true;
+      manualStop = false;
+      setState('listening');
+    };
+
+    r.onresult = (event) => {
+      let finalText = '';
+      let interim = '';
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const res = event.results[i];
+        if (res.isFinal) finalText += res[0].transcript;
+        else interim += res[0].transcript;
+      }
+      if (interim) {
+        statusText.textContent = 'HEARING: ' + interim.trim().slice(0, 38).toUpperCase();
+      }
+      if (finalText.trim()) {
+        addMessage('user', finalText.trim());
+        processCommand(finalText.trim());
+      }
+    };
+
+    r.onerror = (e) => {
+      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+        addMessage('assistant', 'Microphone access denied. Please grant microphone permission and try again.', true);
+        stopListening();
+      }
+    };
+
+    r.onend = () => {
+      if (!manualStop && isListening) {
+        try { r.start(); } catch(_) {}
+      } else {
+        isListening = false;
+        if (state === 'listening') setState('idle');
+      }
+    };
+
+    return r;
+  };
+
+  const startListening = () => {
+    if (!supported) {
+      addMessage('assistant', 'Speech recognition is not supported in this browser. Please use Chrome on desktop or Android.', true);
+      return;
+    }
+    if (!recognition) recognition = initRecognition();
+    try {
+      recognition.start();
+      btnStart.classList.add('hidden');
+      btnStop.classList.remove('hidden');
+      if (convoEl.querySelector('.empty-convo')) {
+        addMessage('assistant', 'Obliq AI online. I am listening. Try saying hello, or click any command on the left.', true);
+        setTimeout(() => speak('Obliq AI online. I am listening.'), 300);
+      }
+    } catch(_) {}
+  };
+
+  const stopListening = () => {
+    manualStop = true;
+    isListening = false;
+    try { recognition && recognition.stop(); } catch(_) {}
+    btnStart.classList.remove('hidden');
+    btnStop.classList.add('hidden');
+    setState('idle');
+  };
+
+  /* WIRING */
+  btnStart.addEventListener('click', startListening);
+  btnStop.addEventListener('click', () => {
+    stopListening();
+    addMessage('assistant', 'Voice system paused.', true);
+  });
+  btnVoice.addEventListener('click', showVoiceSettings);
+  btnMute.addEventListener('click', () => {
+    muted = !muted;
+    muteIco.textContent = muted ? '🔇' : '🔊';
+    if (muted) synth && synth.cancel();
+  });
+  btnTheme.addEventListener('click', cycleTheme);
+  btnFs.addEventListener('click', () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen && document.documentElement.requestFullscreen();
+    } else {
+      document.exitFullscreen && document.exitFullscreen();
+    }
+  });
+
+  document.getElementById('cmdList').addEventListener('click', (e) => {
+    const item = e.target.closest('.cmd-item');
+    if (!item) return;
+    const cmd = item.getAttribute('data-cmd');
+    const label = item.firstChild.textContent.trim();
+    addMessage('user', label);
+    processCommand(cmd);
+  });
+
+  document.querySelectorAll('.card').forEach(card => {
+    card.addEventListener('click', () => {
+      const action = card.getAttribute('data-action');
+      const map = {
+        assistant: 'about obliq ai',
+        voice: 'help',
+        notes: 'show notes',
+        tasks: 'show tasks',
+        calendar: 'calendar',
+        builder: 'help me build a website',
+        scan: 'start system scan',
+        automation: 'about digital hammerr',
+      };
+      const label = card.querySelector('.card-name').textContent;
+      addMessage('user', `Open ${label}`);
+      processCommand(map[action] || 'help');
+    });
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' && e.target === document.body) {
+      e.preventDefault();
+      isListening ? stopListening() : startListening();
+    }
+    if (e.key === 'Escape') closeModal();
+  });
+
+  setTimeout(() => {
+    if (convoEl.querySelector('.empty-convo')) {
+      addMessage('assistant', 'Obliq AI standing by. Tap Start, allow your microphone, and begin voice control. For the most human-sounding voice, open Voice settings and pick a Natural or Neural option.', true);
+    }
+  }, 4100);
+
+})();
+</script>
+
+</body>
+</html>

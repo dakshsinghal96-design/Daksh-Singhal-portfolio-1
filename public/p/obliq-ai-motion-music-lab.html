@@ -1,0 +1,1800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Obliq AI Motion Music Lab</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&family=Share+Tech+Mono&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --purple: #9b30ff;
+    --purple-bright: #bf5fff;
+    --purple-dark: #5a0fc8;
+    --pink: #ff2d9b;
+    --blue: #00cfff;
+    --violet: #7b2fff;
+    --bg: #050508;
+    --glass: rgba(120,30,255,0.08);
+    --glass-border: rgba(155,48,255,0.25);
+    --text: #e8d8ff;
+    --text-dim: rgba(232,216,255,0.5);
+    --glow: 0 0 20px rgba(155,48,255,0.7), 0 0 40px rgba(155,48,255,0.3);
+    --glow-soft: 0 0 12px rgba(155,48,255,0.4);
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    overflow: hidden;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* ===== SCREEN 1: WELCOME ===== */
+  #welcome-screen {
+    position: fixed; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    z-index: 100;
+    background: var(--bg);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+  #welcome-screen.fade-out {
+    opacity: 0; transform: scale(1.04); pointer-events: none;
+  }
+
+  #welcome-bg-canvas {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    opacity: 0.6;
+  }
+
+  .welcome-content {
+    position: relative; z-index: 2;
+    display: flex; flex-direction: column;
+    align-items: center; text-align: center;
+    padding: 2rem;
+    max-width: 700px;
+  }
+
+  .brand-badge {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.35em;
+    color: var(--blue);
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    padding: 0.35rem 1rem;
+    border: 1px solid rgba(0,207,255,0.3);
+    border-radius: 2px;
+    background: rgba(0,207,255,0.05);
+    animation: pulse-badge 2s ease-in-out infinite;
+  }
+  @keyframes pulse-badge {
+    0%,100% { box-shadow: 0 0 8px rgba(0,207,255,0.3); }
+    50% { box-shadow: 0 0 20px rgba(0,207,255,0.7); }
+  }
+
+  .welcome-title {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: clamp(1.8rem, 5vw, 3.8rem);
+    line-height: 1.1;
+    background: linear-gradient(135deg, #fff 0%, var(--purple-bright) 40%, var(--pink) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 1rem;
+    filter: drop-shadow(0 0 30px rgba(155,48,255,0.5));
+    animation: title-glow 3s ease-in-out infinite;
+  }
+  @keyframes title-glow {
+    0%,100% { filter: drop-shadow(0 0 20px rgba(155,48,255,0.4)); }
+    50% { filter: drop-shadow(0 0 50px rgba(155,48,255,0.9)); }
+  }
+
+  .welcome-subtitle {
+    font-size: clamp(1rem, 2vw, 1.3rem);
+    font-weight: 300;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+    margin-bottom: 2.5rem;
+    max-width: 500px;
+    line-height: 1.6;
+  }
+
+  .powered-by {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    color: var(--purple-bright);
+    margin-bottom: 2.5rem;
+    text-shadow: var(--glow-soft);
+  }
+
+  .permission-ring {
+    width: 140px; height: 140px;
+    position: relative;
+    margin-bottom: 1.5rem;
+    cursor: pointer;
+  }
+  .permission-ring svg {
+    width: 100%; height: 100%;
+    animation: spin-ring 4s linear infinite;
+  }
+  @keyframes spin-ring {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  .permission-ring-inner {
+    position: absolute; inset: 20px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(155,48,255,0.3) 0%, transparent 70%);
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+    animation: orb-pulse 2s ease-in-out infinite;
+  }
+  @keyframes orb-pulse {
+    0%,100% { background: radial-gradient(circle, rgba(155,48,255,0.3) 0%, transparent 70%); }
+    50% { background: radial-gradient(circle, rgba(155,48,255,0.7) 0%, transparent 70%); }
+  }
+  .permission-ring-inner svg { animation: none; width: 40px; height: 40px; }
+
+  .start-hint {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    color: var(--text-dim);
+    animation: blink 1.5s ease-in-out infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  .permission-status {
+    margin-top: 1rem;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    color: var(--blue);
+    min-height: 1.2em;
+  }
+
+  /* ===== SCREEN 2: LIVE PERFORMANCE ===== */
+  #perf-screen {
+    position: fixed; inset: 0;
+    display: none;
+    flex-direction: column;
+    background: var(--bg);
+    overflow: hidden;
+  }
+  #perf-screen.active { display: flex; }
+
+  /* --- TOP BRANDING BAR --- */
+  .top-bar {
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 40px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 1rem;
+    z-index: 50;
+    background: linear-gradient(180deg, rgba(5,5,8,0.9) 0%, transparent 100%);
+  }
+  .top-brand {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    color: var(--purple-bright);
+    text-shadow: var(--glow-soft);
+  }
+  .top-indicators {
+    display: flex; gap: 0.6rem;
+    align-items: center;
+  }
+  .indicator {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 0.12em;
+    padding: 0.2rem 0.5rem;
+    border-radius: 2px;
+    border: 1px solid var(--glass-border);
+    background: var(--glass);
+    color: var(--text-dim);
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .indicator.active {
+    color: var(--purple-bright);
+    border-color: var(--purple);
+    box-shadow: var(--glow-soft);
+  }
+  .indicator span { color: var(--purple-bright); }
+
+  /* --- MAIN VISUAL CANVAS --- */
+  #visual-canvas {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    z-index: 1;
+  }
+
+  /* --- CAMERA VIEW --- */
+  .cam-container {
+    position: absolute;
+    bottom: 180px; right: 12px;
+    width: clamp(140px, 20vw, 220px);
+    aspect-ratio: 4/3;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 0 20px rgba(155,48,255,0.3);
+    z-index: 30;
+    background: #000;
+  }
+  #webcam-video {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transform: scaleX(-1);
+    opacity: 0.85;
+  }
+  #hand-canvas {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    transform: scaleX(-1);
+  }
+  .cam-label {
+    position: absolute; bottom: 4px; left: 6px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 0.1em;
+    color: var(--purple-bright);
+    text-shadow: 0 0 8px var(--purple);
+  }
+  .gesture-detected {
+    position: absolute; top: 4px; left: 6px; right: 6px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 0.08em;
+    color: var(--blue);
+    text-shadow: 0 0 8px var(--blue);
+    min-height: 1em;
+    text-align: center;
+  }
+
+  /* --- GESTURE GUIDE PANEL --- */
+  .gesture-guide {
+    position: absolute;
+    left: 8px; top: 50%;
+    transform: translateY(-50%);
+    width: clamp(120px, 16vw, 180px);
+    background: rgba(5,5,15,0.85);
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    padding: 0.6rem 0.5rem;
+    z-index: 30;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 0 30px rgba(155,48,255,0.15);
+  }
+  .guide-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.5rem;
+    letter-spacing: 0.2em;
+    color: var(--purple-bright);
+    text-align: center;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--glass-border);
+  }
+  .gesture-item {
+    display: flex; align-items: center; gap: 0.4rem;
+    padding: 0.22rem 0.3rem;
+    border-radius: 4px;
+    transition: all 0.15s;
+    margin-bottom: 0.1rem;
+  }
+  .gesture-item.active {
+    background: rgba(155,48,255,0.2);
+    box-shadow: 0 0 8px rgba(155,48,255,0.3);
+  }
+  .gesture-icon {
+    font-size: 0.85rem;
+    width: 20px; text-align: center;
+    filter: drop-shadow(0 0 4px rgba(155,48,255,0.6));
+  }
+  .gesture-item.active .gesture-icon {
+    filter: drop-shadow(0 0 8px var(--purple-bright));
+  }
+  .gesture-text {
+    flex: 1;
+  }
+  .gesture-name {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.5rem;
+    color: var(--text-dim);
+    display: block;
+    line-height: 1.2;
+  }
+  .gesture-item.active .gesture-name { color: var(--purple-bright); }
+  .gesture-action {
+    font-size: 0.48rem;
+    color: rgba(155,48,255,0.6);
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    display: block;
+    line-height: 1.1;
+  }
+  .gesture-item.active .gesture-action { color: var(--blue); }
+
+  /* --- BOTTOM CONTROLS --- */
+  .bottom-panel {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 170px;
+    background: linear-gradient(0deg, rgba(5,5,15,0.97) 0%, rgba(5,5,15,0.6) 80%, transparent 100%);
+    z-index: 30;
+    padding: 0.5rem 1rem 0.6rem;
+    display: flex; flex-direction: column; gap: 0.4rem;
+  }
+
+  /* Track info */
+  .track-info {
+    display: flex; align-items: center; gap: 0.8rem;
+    padding: 0 0.5rem;
+  }
+  .track-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--purple-bright);
+    box-shadow: var(--glow);
+    animation: dot-pulse 1s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+  @keyframes dot-pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.4)} }
+  .track-name {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    color: var(--text);
+    text-shadow: var(--glow-soft);
+    flex: 1;
+  }
+  .track-mode {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.55rem;
+    color: var(--blue);
+    letter-spacing: 0.1em;
+  }
+
+  /* Waveform analyzer */
+  #analyzer-canvas {
+    width: 100%;
+    height: 36px;
+    border-radius: 4px;
+    opacity: 0.85;
+  }
+
+  /* Controls row */
+  .controls-row {
+    display: flex; align-items: center; gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+
+  .ctrl-btn {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 0.1em;
+    padding: 0.35rem 0.7rem;
+    border-radius: 4px;
+    border: 1px solid var(--glass-border);
+    background: var(--glass);
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    backdrop-filter: blur(8px);
+  }
+  .ctrl-btn:hover, .ctrl-btn.active {
+    background: rgba(155,48,255,0.2);
+    border-color: var(--purple);
+    color: var(--purple-bright);
+    box-shadow: var(--glow-soft);
+  }
+  .ctrl-btn.play-btn {
+    background: rgba(155,48,255,0.25);
+    border-color: var(--purple-bright);
+    color: var(--purple-bright);
+    font-size: 0.7rem;
+    padding: 0.3rem 0.8rem;
+  }
+
+  .vol-wrap {
+    display: flex; align-items: center; gap: 0.4rem;
+    flex: 1; min-width: 100px;
+  }
+  .vol-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.5rem;
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
+  .vol-bar {
+    flex: 1; height: 4px;
+    background: rgba(155,48,255,0.2);
+    border-radius: 2px;
+    position: relative;
+    cursor: pointer;
+  }
+  .vol-fill {
+    height: 100%; border-radius: 2px;
+    background: linear-gradient(90deg, var(--purple-dark), var(--purple-bright));
+    box-shadow: 0 0 8px var(--purple);
+    transition: width 0.1s;
+  }
+  .vol-val {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.5rem;
+    color: var(--purple-bright);
+    width: 24px; text-align: right;
+  }
+
+  .upload-btn {
+    display: flex; align-items: center; gap: 0.3rem;
+    cursor: pointer;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.5rem;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+    border: 1px dashed var(--glass-border);
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    background: transparent;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .upload-btn:hover {
+    border-color: var(--purple);
+    color: var(--purple-bright);
+  }
+  #file-input { display: none; }
+
+  /* Music type selector */
+  .music-types {
+    display: flex; gap: 0.3rem; flex-wrap: wrap;
+    padding: 0 0.2rem;
+  }
+  .music-type-btn {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.48rem;
+    letter-spacing: 0.08em;
+    padding: 0.2rem 0.45rem;
+    border-radius: 3px;
+    border: 1px solid rgba(155,48,255,0.2);
+    background: transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .music-type-btn:hover, .music-type-btn.active {
+    background: rgba(155,48,255,0.2);
+    border-color: var(--purple);
+    color: var(--purple-bright);
+    box-shadow: 0 0 8px rgba(155,48,255,0.3);
+  }
+
+  /* Status overlay */
+  .status-overlay {
+    position: absolute; top: 46px; left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    color: var(--blue);
+    text-shadow: 0 0 12px var(--blue);
+    z-index: 40;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+    white-space: nowrap;
+  }
+  .status-overlay.show { opacity: 1; }
+
+  /* No-hand fallback */
+  .no-hand-hint {
+    position: absolute;
+    right: 10px; top: 46px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.5rem;
+    letter-spacing: 0.08em;
+    color: rgba(255,45,155,0.6);
+    text-align: right;
+    z-index: 40;
+    pointer-events: none;
+  }
+
+  /* Effect mode badge */
+  .effect-badge {
+    position: absolute;
+    top: 46px; left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.55rem;
+    letter-spacing: 0.2em;
+    padding: 0.3rem 0.8rem;
+    border-radius: 2px;
+    background: rgba(155,48,255,0.1);
+    border: 1px solid rgba(155,48,255,0.3);
+    color: var(--purple-bright);
+    z-index: 40;
+    pointer-events: none;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { display: none; }
+
+  /* Mobile adjustments */
+  @media (max-width: 600px) {
+    .gesture-guide {
+      top: auto; bottom: 180px; transform: none;
+      left: 4px; width: 110px;
+    }
+    .cam-container {
+      bottom: 182px; right: 4px;
+      width: 130px;
+    }
+    .top-indicators { display: none; }
+    .music-types { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== SCREEN 1: WELCOME ===== -->
+<div id="welcome-screen">
+  <canvas id="welcome-bg-canvas"></canvas>
+  <div class="welcome-content">
+    <div class="brand-badge">OBLIQ AI × DIGITAL HAMMERR</div>
+    <h1 class="welcome-title">Obliq AI<br>Motion Music Lab</h1>
+    <p class="welcome-subtitle">Interactive visuals and music performed live by hand gestures</p>
+    <div class="powered-by">Powered by Obliq AI × Digital Hammerr</div>
+    <div class="permission-ring" id="start-btn">
+      <svg viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="70" cy="70" r="65" stroke="url(#ring-grad)" stroke-width="1.5" stroke-dasharray="8 4"/>
+        <circle cx="70" cy="70" r="55" stroke="rgba(155,48,255,0.3)" stroke-width="0.5"/>
+        <defs>
+          <linearGradient id="ring-grad" x1="0" y1="0" x2="140" y2="140" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#00cfff"/>
+            <stop offset="50%" stop-color="#9b30ff"/>
+            <stop offset="100%" stop-color="#ff2d9b"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      <div class="permission-ring-inner">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 1C10.3 1 9 2.3 9 4v8c0 1.7 1.3 3 3 3s3-1.3 3-3V4c0-1.7-1.3-3-3-3z" stroke="#9b30ff" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M19 10v2c0 3.9-3.1 7-7 7s-7-3.1-7-7v-2" stroke="#9b30ff" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="12" y1="19" x2="12" y2="23" stroke="#9b30ff" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="8" y1="23" x2="16" y2="23" stroke="#9b30ff" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <span style="font-family:'Share Tech Mono',monospace;font-size:0.45rem;color:var(--purple-bright);letter-spacing:0.1em;margin-top:2px;">TAP</span>
+      </div>
+    </div>
+    <div class="start-hint">ALLOW CAMERA &amp; AUDIO ACCESS TO BEGIN</div>
+    <div class="permission-status" id="perm-status"></div>
+  </div>
+</div>
+
+<!-- ===== SCREEN 2: PERFORMANCE ===== -->
+<div id="perf-screen">
+  <!-- Main visual canvas -->
+  <canvas id="visual-canvas"></canvas>
+
+  <!-- Top bar -->
+  <div class="top-bar">
+    <div class="top-brand">OBLIQ AI MOTION MUSIC LAB</div>
+    <div class="top-indicators">
+      <div class="indicator" id="ind-vol">VOL <span id="ind-vol-val">75</span>%</div>
+      <div class="indicator" id="ind-rotate">ROT <span id="ind-rot-val">0</span>°</div>
+      <div class="indicator" id="ind-intensity">INT <span id="ind-int-val">50</span>%</div>
+      <div class="indicator" id="ind-beat">BEAT</div>
+      <div class="indicator" id="ind-track">TRACK <span id="ind-track-val">1</span></div>
+      <div class="indicator" id="ind-effect">FX <span id="ind-fx-val">BLOOM</span></div>
+    </div>
+    <div class="top-brand" style="color:var(--text-dim);font-size:0.5rem;">DIGITAL HAMMERR</div>
+  </div>
+
+  <!-- Effect mode badge -->
+  <div class="effect-badge" id="effect-badge">KALEIDOSCOPE</div>
+
+  <!-- Status overlay -->
+  <div class="status-overlay" id="status-overlay">GESTURE DETECTED</div>
+
+  <!-- No hand hint -->
+  <div class="no-hand-hint" id="no-hand-hint"></div>
+
+  <!-- Gesture Guide (always visible) -->
+  <div class="gesture-guide">
+    <div class="guide-title">GESTURE GUIDE</div>
+    <div class="gesture-item" data-g="idx-up">
+      <div class="gesture-icon">☝️</div>
+      <div class="gesture-text">
+        <span class="gesture-name">INDEX UP</span>
+        <span class="gesture-action">Volume Up</span>
+      </div>
+    </div>
+    <div class="gesture-item" data-g="idx-down">
+      <div class="gesture-icon">👇</div>
+      <div class="gesture-text">
+        <span class="gesture-name">INDEX DOWN</span>
+        <span class="gesture-action">Volume Down</span>
+      </div>
+    </div>
+    <div class="gesture-item" data-g="idx-left">
+      <div class="gesture-icon">👈</div>
+      <div class="gesture-text">
+        <span class="gesture-name">INDEX LEFT</span>
+        <span class="gesture-action">Rotate CCW</span>
+      </div>
+    </div>
+    <div class="gesture-item" data-g="idx-right">
+      <div class="gesture-icon">👉</div>
+      <div class="gesture-text">
+        <span class="gesture-name">INDEX RIGHT</span>
+        <span class="gesture-action">Rotate CW</span>
+      </div>
+    </div>
+    <div class="gesture-item" data-g="pinch">
+      <div class="gesture-icon">🤏</div>
+      <div class="gesture-text">
+        <span class="gesture-name">PINCH</span>
+        <span class="gesture-action">Play / Pause</span>
+      </div>
+    </div>
+    <div class="gesture-item" data-g="thumb-mid">
+      <div class="gesture-icon">🖐️</div>
+      <div class="gesture-text">
+        <span class="gesture-name">THUMB+MID</span>
+        <span class="gesture-action">Next Track</span>
+      </div>
+    </div>
+    <div class="gesture-item" data-g="thumb-ring">
+      <div class="gesture-icon">🤟</div>
+      <div class="gesture-text">
+        <span class="gesture-name">THUMB+RING</span>
+        <span class="gesture-action">Prev Track</span>
+      </div>
+    </div>
+    <div class="gesture-item" data-g="v-sign">
+      <div class="gesture-icon">✌️</div>
+      <div class="gesture-text">
+        <span class="gesture-name">V SIGN</span>
+        <span class="gesture-action">Visual Mode</span>
+      </div>
+    </div>
+    <div class="gesture-item" data-g="spread">
+      <div class="gesture-icon">🖖</div>
+      <div class="gesture-text">
+        <span class="gesture-name">SPREAD</span>
+        <span class="gesture-action">Expand Visual</span>
+      </div>
+    </div>
+    <div class="gesture-item" data-g="compress">
+      <div class="gesture-icon">🤙</div>
+      <div class="gesture-text">
+        <span class="gesture-name">COMPRESS</span>
+        <span class="gesture-action">Compress Visual</span>
+      </div>
+    </div>
+    <div class="gesture-item" data-g="mid-vert">
+      <div class="gesture-icon">🖕</div>
+      <div class="gesture-text">
+        <span class="gesture-name">MID VERT</span>
+        <span class="gesture-action">Bass/Filter</span>
+      </div>
+    </div>
+    <div class="gesture-item" data-g="beat-tap">
+      <div class="gesture-icon">👆</div>
+      <div class="gesture-text">
+        <span class="gesture-name">INDEX TAP</span>
+        <span class="gesture-action">Beat Pulse</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Webcam -->
+  <div class="cam-container">
+    <video id="webcam-video" autoplay muted playsinline></video>
+    <canvas id="hand-canvas"></canvas>
+    <div class="gesture-detected" id="gesture-label">READY</div>
+    <div class="cam-label">LIVE TRACKING</div>
+  </div>
+
+  <!-- Bottom Panel -->
+  <div class="bottom-panel">
+    <!-- Track info -->
+    <div class="track-info">
+      <div class="track-dot" id="track-dot"></div>
+      <div class="track-name" id="track-name">ELECTRONIC PULSE — OBLIQ AI</div>
+      <div class="track-mode" id="track-mode">PLAYING</div>
+    </div>
+    <!-- Analyzer -->
+    <canvas id="analyzer-canvas"></canvas>
+    <!-- Controls -->
+    <div class="controls-row">
+      <button class="ctrl-btn play-btn" id="play-btn">▶ PLAY</button>
+      <button class="ctrl-btn" id="prev-btn">⏮ PREV</button>
+      <button class="ctrl-btn" id="next-btn">NEXT ⏭</button>
+      <div class="vol-wrap">
+        <span class="vol-label">VOL</span>
+        <div class="vol-bar" id="vol-bar">
+          <div class="vol-fill" id="vol-fill" style="width:75%"></div>
+        </div>
+        <span class="vol-val" id="vol-disp">75</span>
+      </div>
+      <label class="upload-btn" for="file-input">⬆ UPLOAD</label>
+      <input type="file" id="file-input" accept="audio/*">
+      <button class="ctrl-btn" id="fx-btn">EFFECT ◈</button>
+    </div>
+    <!-- Music type selectors -->
+    <div class="music-types">
+      <button class="music-type-btn active" data-type="0">ELECTRONIC</button>
+      <button class="music-type-btn" data-type="1">LO-FI</button>
+      <button class="music-type-btn" data-type="2">DJ/CLUB</button>
+      <button class="music-type-btn" data-type="3">AMBIENT</button>
+      <button class="music-type-btn" data-type="4">CHILL</button>
+      <button class="music-type-btn" data-type="5">SYNTHWAVE</button>
+      <button class="music-type-btn" data-type="6">ENERGETIC</button>
+    </div>
+  </div>
+</div>
+
+<!-- MediaPipe -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/hands.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1640029074/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.3.1620248257/drawing_utils.js" crossorigin="anonymous"></script>
+
+<script>
+/* ============================================================
+   OBLIQ AI MOTION MUSIC LAB
+   © Obliq AI × Digital Hammerr
+   ============================================================ */
+
+// ─── WELCOME SCREEN BACKGROUND ───────────────────────────────
+(function welcomeAnim() {
+  const canvas = document.getElementById('welcome-bg-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, frame = 0;
+  const particles = [];
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize(); window.addEventListener('resize', resize);
+  for (let i = 0; i < 80; i++) {
+    particles.push({
+      x: Math.random() * 2000, y: Math.random() * 2000,
+      r: Math.random() * 1.5 + 0.3,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
+      alpha: Math.random() * 0.6 + 0.2
+    });
+  }
+  function draw() {
+    ctx.fillStyle = 'rgba(5,5,8,0.15)';
+    ctx.fillRect(0, 0, W, H);
+    frame++;
+    const cx = W / 2, cy = H / 2;
+    // Rotating rings
+    for (let r = 0; r < 5; r++) {
+      ctx.beginPath();
+      const radius = (r + 1) * 80 + Math.sin(frame * 0.01 + r) * 20;
+      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(155,48,255,${0.05 + r * 0.02})`;
+      ctx.lineWidth = 0.5;
+      ctx.stroke();
+    }
+    // Kaleidoscope lines
+    for (let i = 0; i < 12; i++) {
+      const angle = (i / 12) * Math.PI * 2 + frame * 0.003;
+      const len = 200 + Math.sin(frame * 0.02 + i) * 60;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx + Math.cos(angle) * len, cy + Math.sin(angle) * len);
+      ctx.strokeStyle = `rgba(155,48,255,${0.08 + Math.sin(frame * 0.05 + i) * 0.04})`;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+    // Particles
+    particles.forEach(p => {
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+      if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(155,48,255,${p.alpha})`;
+      ctx.fill();
+    });
+    // Central orb
+    const orbR = 80 + Math.sin(frame * 0.04) * 15;
+    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, orbR);
+    grad.addColorStop(0, 'rgba(155,48,255,0.25)');
+    grad.addColorStop(0.5, 'rgba(100,30,200,0.1)');
+    grad.addColorStop(1, 'transparent');
+    ctx.beginPath();
+    ctx.arc(cx, cy, orbR, 0, Math.PI * 2);
+    ctx.fillStyle = grad;
+    ctx.fill();
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// ─── APP STATE ────────────────────────────────────────────────
+const state = {
+  volume: 0.75,
+  intensity: 0.5,
+  rotation: 0,
+  rotSpeed: 0,
+  visualMode: 0,
+  isPlaying: false,
+  currentTrack: 0,
+  bassLevel: 0.5,
+  glowStrength: 0.5,
+  spread: 1.0,
+  beatPulse: 0,
+  activeGesture: '',
+  gestureTimer: null,
+  handPresent: false,
+  mpLoaded: false,
+  gestureHistory: [],
+  pinchActive: false,
+  thumbMidActive: false,
+  thumbRingActive: false,
+  prevIndexY: null,
+  prevIndexX: null,
+  prevMidY: null,
+  prevRingY: null,
+  prevSpread: null,
+  lastPinchTime: 0,
+  lastThumbMidTime: 0,
+  lastThumbRingTime: 0,
+  lastVSignTime: 0,
+  lastBeatTapTime: 0,
+  composeModeActive: false
+};
+
+// ─── MUSIC SYSTEM ────────────────────────────────────────────
+let audioCtx = null, gainNode = null, analyser = null;
+let currentSource = null, currentBuffer = null;
+let userAudioBuffer = null;
+let isUserAudio = false;
+
+const TRACK_NAMES = [
+  'ELECTRONIC PULSE',
+  'LO-FI DRIFT',
+  'DJ CLUB RAVE',
+  'FUTURISTIC AMBIENT',
+  'CHILL BEAT',
+  'SYNTH WAVE',
+  'ENERGETIC BEAT'
+];
+
+function initAudio() {
+  if (audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  gainNode = audioCtx.createGain();
+  gainNode.gain.value = state.volume;
+  analyser = audioCtx.createAnalyser();
+  analyser.fftSize = 256;
+  gainNode.connect(analyser);
+  analyser.connect(audioCtx.destination);
+}
+
+// Generate music buffers with Web Audio API synthesis
+function generateTrack(type) {
+  if (!audioCtx) return null;
+  const sr = audioCtx.sampleRate;
+  const dur = 8; // 8s loop
+  const len = sr * dur;
+  const buf = audioCtx.createBuffer(2, len, sr);
+
+  for (let ch = 0; ch < 2; ch++) {
+    const d = buf.getChannelData(ch);
+    const bpm = [130, 80, 140, 70, 95, 110, 150][type];
+    const bps = bpm / 60;
+    const beatLen = sr / bps;
+
+    for (let i = 0; i < len; i++) {
+      const t = i / sr;
+      let s = 0;
+      const beat = i % beatLen;
+      const beatNorm = beat / beatLen;
+
+      if (type === 0) { // Electronic
+        const kick = beat < beatLen * 0.05 ? Math.exp(-beat / (sr * 0.08)) * Math.sin(2 * Math.PI * 60 * (1 - beatNorm * 2) * t) : 0;
+        const bass = 0.25 * Math.sin(2 * Math.PI * 55 * t) * (0.5 + 0.5 * Math.sin(2 * Math.PI * bps * t));
+        const lead = 0.15 * Math.sin(2 * Math.PI * 440 * t) * (i % (beatLen * 2) < beatLen ? 0.8 : 0.3);
+        const pad = 0.08 * (Math.sin(2 * Math.PI * 220 * t) + Math.sin(2 * Math.PI * 330 * t));
+        s = kick * 0.6 + bass + lead + pad;
+      } else if (type === 1) { // Lo-fi
+        const bass = 0.3 * Math.sin(2 * Math.PI * 55 * t) * 0.7;
+        const mel = 0.12 * Math.sin(2 * Math.PI * 261.6 * t + Math.sin(2 * Math.PI * 2 * t) * 0.5);
+        const noise = (Math.random() - 0.5) * 0.02;
+        s = bass + mel + noise;
+      } else if (type === 2) { // DJ Club
+        const kick = beat < beatLen * 0.04 ? Math.exp(-beat / (sr * 0.05)) * 0.8 : 0;
+        const hihat = (i % (beatLen / 2)) < sr * 0.01 ? Math.random() * 0.15 : 0;
+        const bass = 0.3 * Math.sin(2 * Math.PI * 80 * t) * Math.sin(2 * Math.PI * bps * t * 0.5);
+        const synth = 0.12 * Math.sin(2 * Math.PI * 523 * t) * (Math.sin(2 * Math.PI * bps * 2 * t) > 0 ? 1 : 0);
+        s = kick + hihat + bass + synth;
+      } else if (type === 3) { // Ambient
+        const pad1 = 0.15 * Math.sin(2 * Math.PI * 110 * t + Math.sin(2 * Math.PI * 0.3 * t));
+        const pad2 = 0.1 * Math.sin(2 * Math.PI * 165 * t + Math.sin(2 * Math.PI * 0.2 * t));
+        const atmo = 0.05 * Math.sin(2 * Math.PI * 55 * t);
+        s = pad1 + pad2 + atmo;
+      } else if (type === 4) { // Chill
+        const kick = beat < beatLen * 0.04 ? Math.exp(-beat / (sr * 0.06)) * 0.4 : 0;
+        const bass = 0.2 * Math.sin(2 * Math.PI * 65 * t);
+        const mel = 0.1 * Math.sin(2 * Math.PI * 349 * t) * (Math.sin(2 * Math.PI * bps * t) > 0.3 ? 1 : 0.2);
+        s = kick + bass + mel;
+      } else if (type === 5) { // Synthwave
+        const bass = 0.25 * Math.sin(2 * Math.PI * 73 * t);
+        const arp1 = 0.12 * Math.sin(2 * Math.PI * 293 * t) * Math.max(0, Math.sin(2 * Math.PI * bps * 4 * t));
+        const arp2 = 0.1 * Math.sin(2 * Math.PI * 440 * t) * Math.max(0, Math.sin(2 * Math.PI * bps * 8 * t));
+        const kick = beat < beatLen * 0.03 ? Math.exp(-beat / (sr * 0.04)) * 0.5 : 0;
+        s = bass + arp1 + arp2 + kick;
+      } else { // Energetic
+        const kick = beat < beatLen * 0.03 ? Math.exp(-beat / (sr * 0.03)) * 0.9 : 0;
+        const snare = Math.abs(beat - beatLen * 0.5) < sr * 0.015 ? Math.random() * 0.4 : 0;
+        const bass = 0.3 * Math.sign(Math.sin(2 * Math.PI * 100 * t));
+        const lead = 0.15 * Math.sign(Math.sin(2 * Math.PI * 880 * t)) * (i % (beatLen / 2) < beatLen / 4 ? 1 : 0);
+        s = kick + snare + bass + lead;
+      }
+      d[i] = Math.max(-1, Math.min(1, s * 0.4));
+    }
+  }
+  return buf;
+}
+
+let trackBuffers = [];
+
+async function loadTrack(idx) {
+  if (!audioCtx) return;
+  if (!trackBuffers[idx]) {
+    trackBuffers[idx] = generateTrack(idx);
+  }
+  return trackBuffers[idx];
+}
+
+async function playTrack(idx) {
+  if (!audioCtx) { initAudio(); }
+  if (audioCtx.state === 'suspended') await audioCtx.resume();
+  stopCurrentTrack();
+  const buf = isUserAudio && userAudioBuffer ? userAudioBuffer : await loadTrack(idx);
+  if (!buf) return;
+  currentBuffer = buf;
+  currentSource = audioCtx.createBufferSource();
+  currentSource.buffer = buf;
+  currentSource.loop = true;
+  currentSource.connect(gainNode);
+  currentSource.start(0);
+  state.isPlaying = true;
+  updatePlayUI();
+  document.getElementById('track-name').textContent = (isUserAudio ? 'USER UPLOAD' : TRACK_NAMES[idx]) + ' — OBLIQ AI';
+}
+
+function stopCurrentTrack() {
+  if (currentSource) {
+    try { currentSource.stop(); currentSource.disconnect(); } catch(e) {}
+    currentSource = null;
+  }
+  state.isPlaying = false;
+}
+
+function togglePlay() {
+  if (!audioCtx) { initAudio(); }
+  if (state.isPlaying) {
+    stopCurrentTrack();
+    updatePlayUI();
+  } else {
+    playTrack(state.currentTrack);
+  }
+}
+
+function nextTrack() {
+  isUserAudio = false;
+  state.currentTrack = (state.currentTrack + 1) % TRACK_NAMES.length;
+  document.querySelectorAll('.music-type-btn').forEach((b, i) => b.classList.toggle('active', i === state.currentTrack));
+  playTrack(state.currentTrack);
+  updateTrackIndicator();
+  showStatus('▶▶ NEXT: ' + TRACK_NAMES[state.currentTrack]);
+}
+
+function prevTrack() {
+  isUserAudio = false;
+  state.currentTrack = (state.currentTrack - 1 + TRACK_NAMES.length) % TRACK_NAMES.length;
+  document.querySelectorAll('.music-type-btn').forEach((b, i) => b.classList.toggle('active', i === state.currentTrack));
+  playTrack(state.currentTrack);
+  updateTrackIndicator();
+  showStatus('◀◀ PREV: ' + TRACK_NAMES[state.currentTrack]);
+}
+
+function updatePlayUI() {
+  const btn = document.getElementById('play-btn');
+  const dot = document.getElementById('track-dot');
+  const mode = document.getElementById('track-mode');
+  btn.textContent = state.isPlaying ? '⏸ PAUSE' : '▶ PLAY';
+  dot.style.animationPlayState = state.isPlaying ? 'running' : 'paused';
+  mode.textContent = state.isPlaying ? 'PLAYING' : 'PAUSED';
+}
+
+function setVolume(v) {
+  state.volume = Math.max(0, Math.min(1, v));
+  if (gainNode) gainNode.gain.setTargetAtTime(state.volume, audioCtx.currentTime, 0.05);
+  const pct = Math.round(state.volume * 100);
+  document.getElementById('vol-fill').style.width = pct + '%';
+  document.getElementById('vol-disp').textContent = pct;
+  document.getElementById('ind-vol-val').textContent = pct;
+}
+
+function updateTrackIndicator() {
+  document.getElementById('ind-track-val').textContent = state.currentTrack + 1;
+}
+
+// ─── STATUS OVERLAY ───────────────────────────────────────────
+let statusTimer = null;
+function showStatus(msg) {
+  const el = document.getElementById('status-overlay');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(statusTimer);
+  statusTimer = setTimeout(() => el.classList.remove('show'), 1800);
+}
+
+// ─── VISUAL MODES ────────────────────────────────────────────
+const VISUAL_MODES = ['KALEIDOSCOPE', 'PARTICLE FIELD', 'TUNNEL', 'WAVEFORM', 'ENERGY ORB'];
+const EFFECT_NAMES = ['BLOOM', 'GLITCH', 'ECHO', 'NEON', 'PULSE'];
+let currentEffect = 0;
+
+function nextVisualMode() {
+  state.visualMode = (state.visualMode + 1) % VISUAL_MODES.length;
+  document.getElementById('effect-badge').textContent = VISUAL_MODES[state.visualMode];
+  showStatus('VISUAL: ' + VISUAL_MODES[state.visualMode]);
+}
+function nextEffect() {
+  currentEffect = (currentEffect + 1) % EFFECT_NAMES.length;
+  document.getElementById('ind-fx-val').textContent = EFFECT_NAMES[currentEffect];
+  showStatus('FX: ' + EFFECT_NAMES[currentEffect]);
+}
+
+// ─── VISUAL ENGINE ───────────────────────────────────────────
+const vCanvas = document.getElementById('visual-canvas');
+const vCtx = vCanvas.getContext('2d');
+let vW, vH, vFrame = 0;
+let particles = [];
+const NUM_PARTICLES = 200;
+
+function resizeCanvas() {
+  vW = vCanvas.width = window.innerWidth;
+  vH = vCanvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+// Init particles
+for (let i = 0; i < NUM_PARTICLES; i++) {
+  particles.push({
+    x: Math.random(), y: Math.random(),
+    vx: (Math.random() - 0.5) * 0.002,
+    vy: (Math.random() - 0.5) * 0.002,
+    r: Math.random() * 2 + 0.5,
+    hue: Math.random() * 60 + 250, // purple range
+    alpha: Math.random() * 0.7 + 0.3,
+    life: Math.random()
+  });
+}
+
+let freqData = new Uint8Array(128);
+let avgVol = 0, peakVol = 0, beatEnergy = 0;
+
+function getAudioData() {
+  if (!analyser) { avgVol = 0; peakVol = 0; return; }
+  analyser.getByteFrequencyData(freqData);
+  let sum = 0, peak = 0;
+  for (let i = 0; i < freqData.length; i++) {
+    sum += freqData[i];
+    if (freqData[i] > peak) peak = freqData[i];
+  }
+  avgVol = sum / freqData.length / 255;
+  peakVol = peak / 255;
+  // Bass energy (low freq)
+  let bass = 0;
+  for (let i = 0; i < 16; i++) bass += freqData[i];
+  beatEnergy = bass / 16 / 255;
+  if (beatEnergy > 0.7) state.beatPulse = Math.min(1, state.beatPulse + 0.4);
+}
+
+function drawVisual() {
+  vFrame++;
+  getAudioData();
+
+  const vol = avgVol * state.volume * 3 + 0.1;
+  const beat = beatEnergy * 2;
+  const pulse = state.beatPulse;
+  state.beatPulse *= 0.9;
+  state.rotSpeed *= 0.98;
+  state.rotation += state.rotSpeed;
+
+  const cx = vW / 2, cy = vH * 0.42;
+  const spread = state.spread;
+  const intensity = state.intensity;
+
+  // Background fade
+  vCtx.fillStyle = `rgba(5,5,8,${0.12 + intensity * 0.04})`;
+  vCtx.fillRect(0, 0, vW, vH);
+
+  const baseRadius = Math.min(vW, vH) * 0.28 * spread;
+
+  if (state.visualMode === 0) {
+    // KALEIDOSCOPE
+    drawKaleidoscope(cx, cy, baseRadius, vol, beat, pulse);
+  } else if (state.visualMode === 1) {
+    // PARTICLE FIELD
+    drawParticleField(cx, cy, baseRadius, vol, beat, pulse);
+  } else if (state.visualMode === 2) {
+    // TUNNEL
+    drawTunnel(cx, cy, baseRadius, vol, beat, pulse);
+  } else if (state.visualMode === 3) {
+    // WAVEFORM
+    drawWaveformMode(cx, cy, vol, beat, pulse);
+  } else {
+    // ENERGY ORB
+    drawEnergyOrb(cx, cy, baseRadius, vol, beat, pulse);
+  }
+
+  // Always draw orb center
+  drawCenterOrb(cx, cy, vol, beat, pulse);
+
+  // Beat pulse ring
+  if (pulse > 0.05) {
+    vCtx.beginPath();
+    vCtx.arc(cx, cy, baseRadius * (0.5 + pulse * 1.5), 0, Math.PI * 2);
+    vCtx.strokeStyle = `rgba(155,48,255,${pulse * 0.8})`;
+    vCtx.lineWidth = 2 + pulse * 6;
+    vCtx.stroke();
+  }
+
+  // Update indicators
+  document.getElementById('ind-int-val').textContent = Math.round(state.intensity * 100);
+  document.getElementById('ind-rot-val').textContent = Math.round(state.rotation % 360);
+  if (beat > 0.5) document.getElementById('ind-beat').classList.add('active');
+  else document.getElementById('ind-beat').classList.remove('active');
+}
+
+function drawKaleidoscope(cx, cy, R, vol, beat, pulse) {
+  const seg = 12;
+  const rot = state.rotation * Math.PI / 180;
+  vCtx.save();
+  vCtx.translate(cx, cy);
+  for (let i = 0; i < seg; i++) {
+    const angle = (i / seg) * Math.PI * 2 + rot;
+    vCtx.save();
+    vCtx.rotate(angle);
+    // Petal
+    vCtx.beginPath();
+    const pr = R * (0.4 + vol * 0.8 + beat * 0.3);
+    for (let j = 0; j <= 20; j++) {
+      const a = (j / 20) * Math.PI;
+      const r2 = pr * (0.5 + 0.5 * Math.sin(a * 3 + vFrame * 0.05));
+      const x = r2 * Math.cos(a - Math.PI / 2);
+      const y = r2 * Math.sin(a - Math.PI / 2);
+      j === 0 ? vCtx.moveTo(x, y) : vCtx.lineTo(x, y);
+    }
+    const hue = (250 + i * 15 + vFrame * 0.3) % 360;
+    vCtx.strokeStyle = `hsla(${hue},80%,65%,${0.4 + vol * 0.4})`;
+    vCtx.lineWidth = 1 + vol * 2;
+    vCtx.stroke();
+    // Ring arc
+    vCtx.beginPath();
+    vCtx.arc(0, 0, R * (0.6 + vol * 0.3 + Math.sin(vFrame * 0.04 + i) * 0.1 + beat * 0.2), -Math.PI / seg, Math.PI / seg);
+    vCtx.strokeStyle = `hsla(${280 + i * 10},70%,60%,${0.2 + vol * 0.3})`;
+    vCtx.lineWidth = 1;
+    vCtx.stroke();
+    vCtx.restore();
+  }
+  // Inner rings
+  for (let r = 0; r < 6; r++) {
+    vCtx.beginPath();
+    const rr = R * (0.1 + r * 0.15 + vol * 0.1 + beat * 0.05);
+    vCtx.arc(0, 0, rr, 0, Math.PI * 2);
+    vCtx.strokeStyle = `rgba(155,48,255,${0.08 + r * 0.03 + vol * 0.1})`;
+    vCtx.lineWidth = 0.5 + vol;
+    vCtx.stroke();
+  }
+  vCtx.restore();
+  // Outer glow ring
+  const grad = vCtx.createRadialGradient(cx, cy, R * 0.7, cx, cy, R * 1.3);
+  grad.addColorStop(0, `rgba(155,48,255,${0.08 + vol * 0.1})`);
+  grad.addColorStop(1, 'transparent');
+  vCtx.beginPath();
+  vCtx.arc(cx, cy, R * 1.3, 0, Math.PI * 2);
+  vCtx.fillStyle = grad;
+  vCtx.fill();
+}
+
+function drawParticleField(cx, cy, R, vol, beat, pulse) {
+  particles.forEach(p => {
+    p.x += p.vx * (1 + vol * 3 + beat);
+    p.y += p.vy * (1 + vol * 3 + beat);
+    p.life -= 0.003;
+    if (p.life < 0 || p.x < 0 || p.x > 1 || p.y < 0 || p.y > 1) {
+      const angle = Math.random() * Math.PI * 2;
+      const dist = 0.1 + Math.random() * 0.2;
+      p.x = 0.5 + Math.cos(angle) * dist;
+      p.y = 0.42 + Math.sin(angle) * dist * (vH / vW);
+      p.vx = (Math.random() - 0.5) * 0.003 * state.spread;
+      p.vy = (Math.random() - 0.5) * 0.003 * state.spread;
+      p.life = 0.5 + Math.random() * 0.5;
+      p.hue = 240 + Math.random() * 80;
+      p.alpha = 0.4 + Math.random() * 0.6;
+    }
+    const px = p.x * vW, py = p.y * vH;
+    const glow = vCtx.createRadialGradient(px, py, 0, px, py, p.r * (3 + vol * 8));
+    glow.addColorStop(0, `hsla(${p.hue},80%,65%,${p.alpha * (0.5 + vol)})`);
+    glow.addColorStop(1, 'transparent');
+    vCtx.beginPath();
+    vCtx.arc(px, py, p.r * (3 + vol * 8), 0, Math.PI * 2);
+    vCtx.fillStyle = glow;
+    vCtx.fill();
+  });
+}
+
+function drawTunnel(cx, cy, R, vol, beat, pulse) {
+  const rings = 16;
+  const rot = state.rotation * Math.PI / 180;
+  for (let i = rings; i >= 0; i--) {
+    const t = (i / rings + vFrame * 0.008) % 1;
+    const r = R * t * (0.5 + vol * 0.8 + spread * 0.3);
+    const alpha = (1 - t) * (0.15 + vol * 0.2);
+    const hue = (250 + i * 8 + vFrame * 0.4) % 360;
+    vCtx.beginPath();
+    // Distorted circle
+    for (let a = 0; a <= 32; a++) {
+      const angle = (a / 32) * Math.PI * 2 + rot;
+      const dr = r * (1 + 0.08 * Math.sin(angle * 5 + vFrame * 0.1));
+      const x = cx + Math.cos(angle) * dr;
+      const y = cy + Math.sin(angle) * dr;
+      a === 0 ? vCtx.moveTo(x, y) : vCtx.lineTo(x, y);
+    }
+    vCtx.closePath();
+    vCtx.strokeStyle = `hsla(${hue},75%,60%,${alpha})`;
+    vCtx.lineWidth = 1.5 + t * 2;
+    vCtx.stroke();
+  }
+  // Tunnel lines
+  for (let i = 0; i < 8; i++) {
+    const angle = (i / 8) * Math.PI * 2 + rot;
+    vCtx.beginPath();
+    vCtx.moveTo(cx, cy);
+    vCtx.lineTo(cx + Math.cos(angle) * R * 1.5, cy + Math.sin(angle) * R * 1.5);
+    vCtx.strokeStyle = `rgba(155,48,255,${0.06 + vol * 0.08})`;
+    vCtx.lineWidth = 1;
+    vCtx.stroke();
+  }
+}
+
+function drawWaveformMode(cx, cy, vol, beat, pulse) {
+  if (!analyser) return;
+  const waveData = new Uint8Array(analyser.fftSize);
+  analyser.getByteTimeDomainData(waveData);
+  const W2 = vW * 0.7, startX = cx - W2 / 2;
+  const H2 = vH * 0.3;
+  vCtx.save();
+  // Main waveform
+  vCtx.beginPath();
+  for (let i = 0; i < waveData.length; i++) {
+    const x = startX + (i / waveData.length) * W2;
+    const y = cy + ((waveData[i] / 128) - 1) * H2 * (1 + vol * 2);
+    i === 0 ? vCtx.moveTo(x, y) : vCtx.lineTo(x, y);
+  }
+  vCtx.strokeStyle = `rgba(155,48,255,${0.7 + vol * 0.3})`;
+  vCtx.lineWidth = 2 + vol * 3;
+  vCtx.shadowColor = '#9b30ff';
+  vCtx.shadowBlur = 15 + vol * 20;
+  vCtx.stroke();
+  // Mirror
+  vCtx.beginPath();
+  for (let i = 0; i < waveData.length; i++) {
+    const x = startX + (i / waveData.length) * W2;
+    const y = cy - ((waveData[i] / 128) - 1) * H2 * (1 + vol * 2);
+    i === 0 ? vCtx.moveTo(x, y) : vCtx.lineTo(x, y);
+  }
+  vCtx.strokeStyle = `rgba(191,95,255,${0.3 + vol * 0.2})`;
+  vCtx.lineWidth = 1 + vol;
+  vCtx.stroke();
+  vCtx.restore();
+  // Freq bars
+  const barW = vW / freqData.length;
+  for (let i = 0; i < freqData.length; i++) {
+    const h = (freqData[i] / 255) * vH * 0.25 * (state.intensity + 0.5);
+    const hue = 240 + (i / freqData.length) * 60;
+    vCtx.fillStyle = `hsla(${hue},70%,60%,0.4)`;
+    vCtx.fillRect(i * barW, vH - h - 170, barW - 1, h);
+  }
+}
+
+function drawEnergyOrb(cx, cy, R, vol, beat, pulse) {
+  // Layered energy field
+  for (let layer = 0; layer < 5; layer++) {
+    const r = R * (0.2 + layer * 0.2) * (1 + vol * 0.5 + beat * 0.3);
+    const grad = vCtx.createRadialGradient(
+      cx + Math.sin(vFrame * 0.02 + layer) * R * 0.1,
+      cy + Math.cos(vFrame * 0.03 + layer) * R * 0.1,
+      0, cx, cy, r
+    );
+    const hue = (260 + layer * 20 + vFrame * 0.5) % 360;
+    grad.addColorStop(0, `hsla(${hue},80%,60%,${0.12 + vol * 0.15})`);
+    grad.addColorStop(1, 'transparent');
+    vCtx.beginPath();
+    vCtx.arc(cx, cy, r, 0, Math.PI * 2);
+    vCtx.fillStyle = grad;
+    vCtx.fill();
+  }
+  // Tendrils
+  const numTendrils = 12;
+  const rot = state.rotation * Math.PI / 180;
+  for (let i = 0; i < numTendrils; i++) {
+    const baseAngle = (i / numTendrils) * Math.PI * 2 + rot;
+    vCtx.beginPath();
+    let px = cx, py = cy;
+    const steps = 20;
+    for (let s = 0; s < steps; s++) {
+      const t = s / steps;
+      const r = R * t * (0.8 + vol * 0.6 + beat * 0.3);
+      const waver = Math.sin(t * Math.PI * 4 + vFrame * 0.08 + i) * R * 0.15 * state.intensity;
+      const angle = baseAngle + Math.sin(t * 5 + vFrame * 0.05) * 0.4;
+      const nx = cx + Math.cos(angle) * r + Math.cos(angle + Math.PI / 2) * waver;
+      const ny = cy + Math.sin(angle) * r + Math.sin(angle + Math.PI / 2) * waver;
+      s === 0 ? vCtx.moveTo(nx, ny) : vCtx.lineTo(nx, ny);
+    }
+    const hue = (250 + i * 12 + vFrame * 0.5) % 360;
+    vCtx.strokeStyle = `hsla(${hue},70%,60%,${0.25 + vol * 0.3})`;
+    vCtx.lineWidth = 1 + vol * 2;
+    vCtx.stroke();
+  }
+}
+
+function drawCenterOrb(cx, cy, vol, beat, pulse) {
+  const r = 40 + vol * 60 + beat * 30 + pulse * 40;
+  const grad = vCtx.createRadialGradient(cx, cy, 0, cx, cy, r);
+  grad.addColorStop(0, `rgba(255,255,255,${0.1 + vol * 0.1})`);
+  grad.addColorStop(0.2, `rgba(191,95,255,${0.25 + vol * 0.2})`);
+  grad.addColorStop(0.6, `rgba(155,48,255,${0.1 + vol * 0.1})`);
+  grad.addColorStop(1, 'transparent');
+  vCtx.beginPath();
+  vCtx.arc(cx, cy, r, 0, Math.PI * 2);
+  vCtx.fillStyle = grad;
+  vCtx.fill();
+  // Core
+  vCtx.beginPath();
+  vCtx.arc(cx, cy, 8 + vol * 15 + beat * 8, 0, Math.PI * 2);
+  vCtx.fillStyle = `rgba(255,255,255,${0.15 + vol * 0.2})`;
+  vCtx.fill();
+}
+
+// ─── ANALYZER BAR ─────────────────────────────────────────────
+const aCanvas = document.getElementById('analyzer-canvas');
+const aCtx = aCanvas.getContext('2d');
+
+function drawAnalyzer() {
+  const W = aCanvas.offsetWidth, H = aCanvas.offsetHeight;
+  if (aCanvas.width !== W) aCanvas.width = W;
+  aCanvas.height = H;
+  aCtx.clearRect(0, 0, W, H);
+  if (!analyser) {
+    // Draw static placeholder
+    aCtx.fillStyle = 'rgba(155,48,255,0.15)';
+    for (let i = 0; i < 32; i++) {
+      const h = (Math.sin(i * 0.5 + vFrame * 0.05) * 0.5 + 0.5) * H * 0.7;
+      aCtx.fillRect(i * (W / 32), H - h, W / 32 - 1, h);
+    }
+    return;
+  }
+  const bars = 64;
+  const sliceW = W / bars;
+  for (let i = 0; i < bars; i++) {
+    const idx = Math.floor(i * freqData.length / bars);
+    const h = (freqData[idx] / 255) * H;
+    const hue = 240 + (i / bars) * 60;
+    aCtx.fillStyle = `hsla(${hue},75%,60%,0.8)`;
+    aCtx.fillRect(i * sliceW, H - h, sliceW - 1, h);
+  }
+}
+
+// ─── HAND TRACKING ───────────────────────────────────────────
+const video = document.getElementById('webcam-video');
+const handCanvas = document.getElementById('hand-canvas');
+const handCtx = handCanvas.getContext('2d');
+let hands = null, mpCamera = null;
+
+// Gesture history for direction detection
+const HISTORY_LEN = 12;
+let indexHistory = [];
+let midHistory = [];
+let ringHistory = [];
+let spreadHistory = [];
+
+function dist(a, b) {
+  return Math.hypot(a.x - b.x, a.y - b.y);
+}
+function fingerExtended(lm, tip, pip) {
+  return lm[tip].y < lm[pip].y;
+}
+
+function processHands(results) {
+  handCanvas.width = handCanvas.offsetWidth;
+  handCanvas.height = handCanvas.offsetHeight;
+  handCtx.clearRect(0, 0, handCanvas.width, handCanvas.height);
+
+  if (!results.multiHandLandmarks || results.multiHandLandmarks.length === 0) {
+    state.handPresent = false;
+    document.getElementById('gesture-label').textContent = 'NO HAND DETECTED';
+    document.getElementById('no-hand-hint').textContent = 'Use controls below';
+    clearActiveGestures();
+    return;
+  }
+
+  state.handPresent = true;
+  document.getElementById('no-hand-hint').textContent = '';
+
+  const lm = results.multiHandLandmarks[0];
+
+  // Draw skeleton
+  if (window.drawConnectors && window.HAND_CONNECTIONS) {
+    drawConnectors(handCtx, lm, HAND_CONNECTIONS, { color: 'rgba(155,48,255,0.6)', lineWidth: 1 });
+    drawLandmarks(handCtx, lm, { color: '#9b30ff', fillColor: 'rgba(155,48,255,0.4)', radius: 2 });
+  } else {
+    // Fallback skeleton
+    lm.forEach(p => {
+      handCtx.beginPath();
+      handCtx.arc(p.x * handCanvas.width, p.y * handCanvas.height, 3, 0, Math.PI * 2);
+      handCtx.fillStyle = '#9b30ff';
+      handCtx.fill();
+    });
+  }
+
+  // ── Key points
+  const indexTip = lm[8], indexPip = lm[6], indexMcp = lm[5];
+  const thumbTip = lm[4], thumbIp = lm[3];
+  const midTip = lm[12], midPip = lm[10];
+  const ringTip = lm[16], ringPip = lm[14];
+  const pinkyTip = lm[20], pinkyPip = lm[18];
+
+  // ── Finger states
+  const idxExt = fingerExtended(lm, 8, 6);
+  const midExt = fingerExtended(lm, 12, 10);
+  const ringExt = fingerExtended(lm, 16, 14);
+  const pinkyExt = fingerExtended(lm, 20, 18);
+
+  // ── Pinch distances
+  const pinchDist = dist(thumbTip, indexTip);
+  const thumbMidDist = dist(thumbTip, midTip);
+  const thumbRingDist = dist(thumbTip, ringTip);
+
+  // History update
+  indexHistory.push({ x: indexTip.x, y: indexTip.y, t: Date.now() });
+  midHistory.push({ x: midTip.x, y: midTip.y });
+  ringHistory.push({ x: ringTip.x, y: ringTip.y });
+  if (indexHistory.length > HISTORY_LEN) indexHistory.shift();
+  if (midHistory.length > HISTORY_LEN) midHistory.shift();
+  if (ringHistory.length > HISTORY_LEN) ringHistory.shift();
+
+  // Spread (index + middle distance)
+  const curSpread = dist(indexTip, midTip);
+  spreadHistory.push(curSpread);
+  if (spreadHistory.length > HISTORY_LEN) spreadHistory.shift();
+
+  let detectedGesture = '';
+  const now = Date.now();
+
+  // ── PINCH (thumb+index) — Play/Pause
+  if (pinchDist < 0.06) {
+    if (!state.pinchActive && now - state.lastPinchTime > 600) {
+      state.pinchActive = true;
+      state.lastPinchTime = now;
+      togglePlay();
+      detectedGesture = 'pinch';
+      showStatus(state.isPlaying ? '▶ PLAY' : '⏸ PAUSE');
+    }
+  } else {
+    state.pinchActive = false;
+  }
+
+  // ── THUMB+MIDDLE — Next Track
+  if (thumbMidDist < 0.06 && pinchDist > 0.08) {
+    if (!state.thumbMidActive && now - state.lastThumbMidTime > 800) {
+      state.thumbMidActive = true;
+      state.lastThumbMidTime = now;
+      nextTrack();
+      detectedGesture = 'thumb-mid';
+    }
+  } else {
+    state.thumbMidActive = false;
+  }
+
+  // ── THUMB+RING — Prev Track
+  if (thumbRingDist < 0.06 && pinchDist > 0.08 && thumbMidDist > 0.08) {
+    if (!state.thumbRingActive && now - state.lastThumbRingTime > 800) {
+      state.thumbRingActive = true;
+      state.lastThumbRingTime = now;
+      prevTrack();
+      detectedGesture = 'thumb-ring';
+    }
+  } else {
+    state.thumbRingActive = false;
+  }
+
+  // ── V SIGN — Change Visual Mode (index+middle extended, rest closed)
+  if (idxExt && midExt && !ringExt && !pinkyExt && pinchDist > 0.1) {
+    if (now - state.lastVSignTime > 1000) {
+      state.lastVSignTime = now;
+      nextVisualMode();
+      detectedGesture = 'v-sign';
+    }
+  }
+
+  // ── INDEX DIRECTION (only when index extended, no pinch)
+  if (idxExt && pinchDist > 0.08 && indexHistory.length >= 6) {
+    const old = indexHistory[0];
+    const cur = indexHistory[indexHistory.length - 1];
+    const dy = cur.y - old.y;
+    const dx = cur.x - old.x;
+    const moved = Math.hypot(dx, dy);
+
+    if (moved > 0.04) {
+      if (Math.abs(dy) > Math.abs(dx)) {
+        if (dy < -0.03) {
+          // Index UP — Volume Up
+          setVolume(state.volume + 0.015);
+          detectedGesture = 'idx-up';
+          state.intensity = Math.min(1, state.intensity + 0.005);
+        } else if (dy > 0.03) {
+          // Index DOWN — Volume Down
+          setVolume(state.volume - 0.015);
+          detectedGesture = 'idx-down';
+          state.intensity = Math.max(0.1, state.intensity - 0.005);
+        }
+      } else {
+        if (dx > 0.03) {
+          // Index RIGHT — Rotate CW
+          state.rotSpeed += 0.8;
+          detectedGesture = 'idx-right';
+        } else if (dx < -0.03) {
+          // Index LEFT — Rotate CCW
+          state.rotSpeed -= 0.8;
+          detectedGesture = 'idx-left';
+        }
+      }
+    }
+  }
+
+  // ── MIDDLE VERTICAL — Bass/Filter
+  if (midExt && !idxExt && midHistory.length >= 6) {
+    const old = midHistory[0];
+    const cur = midHistory[midHistory.length - 1];
+    const dy = cur.y - old.y;
+    if (Math.abs(dy) > 0.04) {
+      state.bassLevel = Math.max(0, Math.min(1, state.bassLevel - dy * 2));
+      detectedGesture = 'mid-vert';
+      showStatus('BASS: ' + Math.round(state.bassLevel * 100) + '%');
+    }
+  }
+
+  // ── RING VERTICAL — Glow/Bloom
+  if (ringExt && !idxExt && !midExt && ringHistory.length >= 6) {
+    const old = ringHistory[0];
+    const cur = ringHistory[ringHistory.length - 1];
+    const dy = cur.y - old.y;
+    if (Math.abs(dy) > 0.04) {
+      state.glowStrength = Math.max(0, Math.min(1, state.glowStrength - dy * 2));
+      detectedGesture = 'ring-vert';
+      showStatus('GLOW: ' + Math.round(state.glowStrength * 100) + '%');
+    }
+  }
+
+  // ── SPREAD/COMPRESS — Two fingers apart or together
+  if (idxExt && midExt && spreadHistory.length >= 6) {
+    const first = spreadHistory[0];
+    const last = spreadHistory[spreadHistory.length - 1];
+    const delta = last - first;
+    if (delta > 0.03) {
+      state.spread = Math.min(2.0, state.spread + 0.015);
+      detectedGesture = 'spread';
+    } else if (delta < -0.03) {
+      state.spread = Math.max(0.3, state.spread - 0.015);
+      detectedGesture = 'compress';
+    }
+  }
+
+  // ── BEAT TAP — index quick down-up
+  if (idxExt && !midExt && !ringExt && indexHistory.length >= 4) {
+    const recent = indexHistory.slice(-4);
+    const dy = recent[recent.length - 1].y - recent[0].y;
+    if (dy > 0.06 && now - state.lastBeatTapTime > 300) {
+      state.lastBeatTapTime = now;
+      state.beatPulse = 1.0;
+      detectedGesture = 'beat-tap';
+    }
+  }
+
+  // Update gesture label
+  const gestureLabels = {
+    'idx-up': '☝ VOLUME UP', 'idx-down': '👇 VOLUME DOWN',
+    'idx-left': '👈 ROTATE CCW', 'idx-right': '👉 ROTATE CW',
+    'pinch': '🤏 PLAY / PAUSE', 'thumb-mid': '🖐 NEXT TRACK',
+    'thumb-ring': '🤟 PREV TRACK', 'v-sign': '✌ VISUAL MODE',
+    'spread': '🖖 EXPAND', 'compress': '🤙 COMPRESS',
+    'mid-vert': '🖕 BASS', 'ring-vert': '💍 GLOW',
+    'beat-tap': '👆 BEAT PULSE'
+  };
+  if (detectedGesture) {
+    document.getElementById('gesture-label').textContent = gestureLabels[detectedGesture] || detectedGesture.toUpperCase();
+    highlightGesture(detectedGesture);
+  }
+}
+
+function highlightGesture(g) {
+  document.querySelectorAll('.gesture-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.g === g);
+  });
+}
+function clearActiveGestures() {
+  document.querySelectorAll('.gesture-item').forEach(el => el.classList.remove('active'));
+}
+
+async function initHandTracking() {
+  try {
+    hands = new Hands({ locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/${f}` });
+    hands.setOptions({
+      maxNumHands: 1,
+      modelComplexity: 1,
+      minDetectionConfidence: 0.6,
+      minTrackingConfidence: 0.5
+    });
+    hands.onResults(processHands);
+    mpCamera = new Camera(video, {
+      onFrame: async () => { await hands.send({ image: video }); },
+      width: 320, height: 240
+    });
+    await mpCamera.start();
+    state.mpLoaded = true;
+    document.getElementById('no-hand-hint').textContent = 'SHOW YOUR HAND';
+  } catch (e) {
+    console.warn('MediaPipe failed:', e);
+    document.getElementById('no-hand-hint').textContent = 'HAND TRACKING UNAVAILABLE — USE CONTROLS BELOW';
+    document.getElementById('gesture-label').textContent = 'FALLBACK MODE';
+  }
+}
+
+// ─── MAIN LOOP ────────────────────────────────────────────────
+function mainLoop() {
+  drawVisual();
+  drawAnalyzer();
+  requestAnimationFrame(mainLoop);
+}
+
+// ─── TRANSITION TO PERFORMANCE SCREEN ────────────────────────
+async function startExperience() {
+  try {
+    document.getElementById('perm-status').textContent = 'Requesting permissions...';
+    // Camera
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 320, height: 240 }, audio: false });
+    video.srcObject = stream;
+    await video.play();
+
+    // Init audio
+    initAudio();
+    await audioCtx.resume();
+
+    document.getElementById('perm-status').textContent = 'Starting...';
+
+    // Fade out welcome
+    const ws = document.getElementById('welcome-screen');
+    ws.classList.add('fade-out');
+    setTimeout(() => { ws.style.display = 'none'; }, 900);
+
+    // Show perf screen
+    const ps = document.getElementById('perf-screen');
+    ps.classList.add('active');
+    ps.style.opacity = '0';
+    setTimeout(() => { ps.style.transition = 'opacity 0.8s'; ps.style.opacity = '1'; }, 100);
+
+    // Try fullscreen
+    try {
+      if (document.documentElement.requestFullscreen) await document.documentElement.requestFullscreen();
+      else if (document.documentElement.webkitRequestFullscreen) await document.documentElement.webkitRequestFullscreen();
+    } catch(e) {}
+
+    // Start hand tracking
+    await initHandTracking();
+
+    // Start music
+    await playTrack(0);
+
+    // Main loop
+    mainLoop();
+
+  } catch (e) {
+    document.getElementById('perm-status').textContent = 'Camera denied. Tap to try without camera.';
+    console.warn(e);
+    // Still launch without camera
+    initAudio();
+    const ws = document.getElementById('welcome-screen');
+    ws.classList.add('fade-out');
+    setTimeout(() => { ws.style.display = 'none'; }, 900);
+    const ps = document.getElementById('perf-screen');
+    ps.classList.add('active');
+    ps.style.opacity = '0';
+    setTimeout(() => { ps.style.transition = 'opacity 0.8s'; ps.style.opacity = '1'; }, 100);
+    playTrack(0);
+    mainLoop();
+  }
+}
+
+// ─── BUTTON BINDINGS ─────────────────────────────────────────
+document.getElementById('start-btn').addEventListener('click', startExperience);
+document.getElementById('play-btn').addEventListener('click', () => { if (!audioCtx) initAudio(); togglePlay(); });
+document.getElementById('next-btn').addEventListener('click', nextTrack);
+document.getElementById('prev-btn').addEventListener('click', prevTrack);
+document.getElementById('fx-btn').addEventListener('click', nextEffect);
+
+// Volume bar drag
+const volBar = document.getElementById('vol-bar');
+function setVolFromBar(e) {
+  const rect = volBar.getBoundingClientRect();
+  const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+  setVolume(Math.max(0, Math.min(1, x / rect.width)));
+}
+volBar.addEventListener('mousedown', e => { setVolFromBar(e); const mv = e2 => setVolFromBar(e2); document.addEventListener('mousemove', mv); document.addEventListener('mouseup', () => document.removeEventListener('mousemove', mv), { once: true }); });
+volBar.addEventListener('touchstart', e => { setVolFromBar(e); }, { passive: true });
+volBar.addEventListener('touchmove', e => { setVolFromBar(e); e.preventDefault(); }, { passive: false });
+
+// File upload
+document.getElementById('file-input').addEventListener('change', async e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (!audioCtx) initAudio();
+  const ab = await file.arrayBuffer();
+  userAudioBuffer = await audioCtx.decodeAudioData(ab);
+  isUserAudio = true;
+  document.getElementById('track-name').textContent = file.name.replace(/\.[^.]+$/, '').toUpperCase() + ' — UPLOADED';
+  stopCurrentTrack();
+  playTrack(0);
+  showStatus('▶ UPLOADED: ' + file.name.replace(/\.[^.]+$/, '').substring(0, 20));
+});
+
+// Music type buttons
+document.querySelectorAll('.music-type-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const idx = parseInt(btn.dataset.type);
+    isUserAudio = false;
+    state.currentTrack = idx;
+    document.querySelectorAll('.music-type-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    playTrack(idx);
+    updateTrackIndicator();
+  });
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if (e.code === 'Space') { e.preventDefault(); if (!audioCtx) initAudio(); togglePlay(); }
+  if (e.code === 'ArrowRight') nextTrack();
+  if (e.code === 'ArrowLeft') prevTrack();
+  if (e.code === 'ArrowUp') setVolume(state.volume + 0.05);
+  if (e.code === 'ArrowDown') setVolume(state.volume - 0.05);
+  if (e.code === 'KeyV') nextVisualMode();
+  if (e.code === 'KeyF') { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen(); }
+});
+</script>
+</body>
+</html>

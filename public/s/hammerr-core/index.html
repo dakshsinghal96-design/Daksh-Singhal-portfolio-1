@@ -1,0 +1,1187 @@
+<!--
+  ARCHIVE NOTE (added during the portfolio rebuild, 2026-09-06):
+  This is a static export of an app that expected a server. It polls 15 /api/*
+  endpoints which 404 on the original deployment too, so there is no backend to
+  restore. The shim below intercepts those calls and answers 503 LOCALLY, which
+  stops a repeating poll from flooding the console with network errors.
+  It deliberately returns an explicit "backend unavailable" error and NEVER
+  fabricates a success payload — nothing here implies the backend is online.
+  Delete the shim and the banner to restore the original behaviour verbatim.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Obliq AI Command Core</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@300;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css?v=31-clickfix" />
+</head>
+<body data-state="standby" data-mode="standby" data-shell="hud-core">
+
+  <!-- ============ HUD CORE SHELL (cinematic Iron-Man overlay) ============ -->
+  <div class="hud-core" id="hud-core" aria-hidden="false">
+    <div class="hud-top">
+      <span class="hud-brand-line">
+        <svg class="hud-hex" viewBox="0 0 24 24" aria-hidden="true">
+          <polygon points="12,2 21,7 21,17 12,22 3,17 3,7" fill="none" stroke="#67e8f9" stroke-width="1.4"/>
+          <circle cx="12" cy="12" r="2.4" fill="#67e8f9"/>
+        </svg>
+        <span class="hb-text">OBLIQ AI</span>
+        <span class="hud-sep">|</span>
+        <span class="hb-text">DIGITAL <span class="hb-gold">HAMMERR</span></span>
+      </span>
+    </div>
+
+    <!-- Subtle side circuit lines (extend left & right from core) -->
+    <div class="hud-circuit hc-left"  aria-hidden="true"></div>
+    <div class="hud-circuit hc-right" aria-hidden="true"></div>
+
+    <div class="hud-center">
+      <div class="hud-rings">
+        <!-- Tiny ambient particle field (subtle) -->
+        <div class="hr-particles hr-particles-a" aria-hidden="true"></div>
+        <div class="hr-particles hr-particles-b" aria-hidden="true"></div>
+
+        <!-- ============ MAIN RING STACK (SVG) ============
+             Coordinate space 0..400 centered at (200,200). Each circle
+             gets its own animation via class. Different radii / dash
+             patterns create the chunky segmented arc look from the ref. -->
+        <svg class="hr-svg hr-svg-1" viewBox="0 0 400 400" aria-hidden="true">
+          <!-- Outermost thin guide circle -->
+          <circle cx="200" cy="200" r="196"
+                  fill="none" stroke="rgba(34,211,238,0.18)" stroke-width="0.6"/>
+        </svg>
+
+        <!-- Big chunky segmented ring (CW) -->
+        <svg class="hr-svg hr-svg-2 spin-cw-slow" viewBox="0 0 400 400" aria-hidden="true">
+          <circle class="hr-block-a" cx="200" cy="200" r="184"/>
+        </svg>
+
+        <!-- Second chunky segmented ring (CCW) -->
+        <svg class="hr-svg hr-svg-3 spin-ccw-med" viewBox="0 0 400 400" aria-hidden="true">
+          <circle class="hr-block-b" cx="200" cy="200" r="170"/>
+        </svg>
+
+        <!-- Third chunky segmented ring (CW, different pattern) -->
+        <svg class="hr-svg hr-svg-4 spin-cw-med" viewBox="0 0 400 400" aria-hidden="true">
+          <circle class="hr-block-c" cx="200" cy="200" r="155"/>
+        </svg>
+
+        <!-- Thin continuous ring -->
+        <svg class="hr-svg hr-svg-5" viewBox="0 0 400 400" aria-hidden="true">
+          <circle cx="200" cy="200" r="140"
+                  fill="none" stroke="rgba(34,211,238,0.35)" stroke-width="0.7"/>
+        </svg>
+
+        <!-- Fine tick mark ring (radial degree ticks) -->
+        <div class="hr-ticks hr-ticks-outer spin-cw-vslow" aria-hidden="true"></div>
+
+        <!-- Small dotted ring (CCW fast) -->
+        <svg class="hr-svg hr-svg-6 spin-ccw-fast" viewBox="0 0 400 400" aria-hidden="true">
+          <circle class="hr-dotted" cx="200" cy="200" r="120"/>
+        </svg>
+
+        <!-- Inner segmented detail ring -->
+        <svg class="hr-svg hr-svg-7 spin-cw-fast" viewBox="0 0 400 400" aria-hidden="true">
+          <circle class="hr-block-d" cx="200" cy="200" r="108"/>
+        </svg>
+
+        <!-- Inner tick marks (finer, denser) -->
+        <div class="hr-ticks hr-ticks-inner spin-ccw-vslow" aria-hidden="true"></div>
+
+        <!-- Innermost boundary circle (defines the dark center) -->
+        <svg class="hr-svg hr-svg-8" viewBox="0 0 400 400" aria-hidden="true">
+          <circle cx="200" cy="200" r="92"
+                  fill="none" stroke="rgba(34,211,238,0.55)" stroke-width="0.8"/>
+          <circle cx="200" cy="200" r="88"
+                  fill="none" stroke="rgba(34,211,238,0.18)" stroke-width="0.4"/>
+        </svg>
+
+        <!-- Orbit nodes (small bright dots travelling around) -->
+        <div class="hr-orbit hr-orbit-a spin-cw-med" aria-hidden="true">
+          <span class="hr-orbit-node"></span>
+        </div>
+        <div class="hr-orbit hr-orbit-b spin-ccw-fast" aria-hidden="true">
+          <span class="hr-orbit-node"></span>
+          <span class="hr-orbit-node opp"></span>
+        </div>
+        <div class="hr-orbit hr-orbit-c spin-cw-fast" aria-hidden="true">
+          <span class="hr-orbit-node small"></span>
+        </div>
+
+        <!-- Core inner glow (alive cyan energy under the text) -->
+        <div class="hr-core-aura"  aria-hidden="true"></div>
+        <div class="hr-core-pulse" aria-hidden="true"></div>
+
+        <!-- Center — HAMMERR text + dynamic substatus -->
+        <div class="hr-core">
+          <div class="hr-title">HAMMERR</div>
+          <div class="hr-substatus" id="hud-substatus"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hud-controls" id="hud-controls" aria-label="Command controls">
+      <button class="hc-btn" id="hc-activate" type="button">Activate</button>
+      <button class="hc-btn" id="hc-listen"   type="button">Listen</button>
+      <button class="hc-btn" id="hc-scan"     type="button">Scan</button>
+      <button class="hc-btn" id="hc-settings" type="button">Settings</button>
+    </div>
+  </div>
+
+  <!-- ============ STARTUP / BOOT SCREEN (Step 17) ============ -->
+  <div class="startup-screen" id="startup-screen" aria-hidden="true">
+    <div class="su-grid"></div>
+    <div class="su-frame">
+      <div class="su-brand">
+        <span class="su-mark">◇</span>
+        <span class="su-name">OBLIQ <span class="su-accent">AI</span></span>
+        <span class="su-sep">×</span>
+        <span class="su-name">DIGITAL <span class="su-accent gold">HAMMERR</span></span>
+        <span class="su-mark gold">⬢</span>
+      </div>
+      <div class="su-title">COMMAND CORE · BOOT SEQUENCE</div>
+      <ul class="su-checks" id="su-checks">
+        <li data-key="server">  <span class="su-c-name">Local server</span>       <span class="su-c-state">…</span></li>
+        <li data-key="intel">   <span class="su-c-name">Intelligence layer</span> <span class="su-c-state">…</span></li>
+        <li data-key="exec">    <span class="su-c-name">Execution layer</span>    <span class="su-c-state">…</span></li>
+        <li data-key="hud">     <span class="su-c-name">HUD interface</span>      <span class="su-c-state">…</span></li>
+        <li data-key="security"><span class="su-c-name">Security envelope</span>  <span class="su-c-state">…</span></li>
+        <li data-key="wake">    <span class="su-c-name">Wake channel (Hammerr)</span> <span class="su-c-state">…</span></li>
+      </ul>
+      <div class="su-progress"><div class="su-fill" id="su-fill"></div></div>
+      <div class="su-foot">
+        <span class="su-pct" id="su-pct">0%</span>
+        <span class="su-status" id="su-status">INITIALIZING…</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ BACKGROUND & OVERLAY LAYERS ============ -->
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="bg-glow" aria-hidden="true"></div>
+  <div class="bg-vignette" aria-hidden="true"></div>
+
+  <div class="data-stream stream-left" aria-hidden="true"></div>
+  <div class="data-stream stream-right" aria-hidden="true"></div>
+
+  <div class="particles" id="particles" aria-hidden="true"></div>
+  <div class="scanline" aria-hidden="true"></div>
+
+  <!-- ============ TOP BRAND BAR ============ -->
+  <header class="topbar glass">
+    <div class="brand brand-left">
+      <span class="brand-mark">◇</span>
+      <span class="brand-name">OBLIQ <span class="brand-accent">AI</span></span>
+      <span class="brand-sub">COMMAND CORE</span>
+    </div>
+    <div class="brand-meta">
+      <span class="meta-pill" id="meta-pill">
+        <span class="pill-dot ok" id="pill-dot"></span>
+        <span id="pill-text">SECURE LOCAL SYSTEM ONLINE</span>
+      </span>
+    </div>
+    <div class="brand brand-right">
+      <span class="brand-sub">PRECISION ENGINE</span>
+      <span class="brand-name">DIGITAL <span class="brand-accent gold">HAMMERR</span></span>
+      <span class="brand-mark gold">⬢</span>
+    </div>
+  </header>
+
+  <!-- ============ MODE SELECTOR (Step 7) ============ -->
+  <nav class="mode-selector glass" aria-label="AI mode selector">
+    <span class="ms-eyebrow">AI MODE</span>
+    <div class="ms-row" role="tablist">
+      <button type="button" class="ms-chip" data-mode="assistant" role="tab"><span class="ms-glyph">◇</span> ASSISTANT</button>
+      <button type="button" class="ms-chip" data-mode="security"  role="tab"><span class="ms-glyph gold">⬢</span> SECURITY</button>
+      <button type="button" class="ms-chip" data-mode="analysis"  role="tab"><span class="ms-glyph">◯</span> ANALYSIS</button>
+      <button type="button" class="ms-chip" data-mode="focus"     role="tab"><span class="ms-glyph">◈</span> FOCUS</button>
+      <button type="button" class="ms-chip active" data-mode="standby" role="tab"><span class="ms-glyph">○</span> STANDBY</button>
+    </div>
+    <span class="ms-current" id="ms-current">STANDBY MODE</span>
+  </nav>
+
+  <!-- ============ LIVE DIAGNOSTICS BAR ============ -->
+  <div class="diag-bar glass" id="diag-bar" aria-label="Live audio diagnostics">
+    <div class="db-item">
+      <span class="db-key">BROWSER</span>
+      <span class="db-chip" id="db-browser" data-state="cyan">—</span>
+    </div>
+    <div class="db-item">
+      <span class="db-key">MIC</span>
+      <span class="db-chip" id="db-mic" data-state="off">OFF</span>
+    </div>
+    <div class="db-item">
+      <span class="db-key">SPEECH</span>
+      <span class="db-chip" id="db-speech" data-state="off">OFF</span>
+    </div>
+    <div class="db-item">
+      <span class="db-key">CLAP</span>
+      <span class="db-chip" id="db-clap" data-state="off">OFF</span>
+    </div>
+    <div class="db-item">
+      <span class="db-key">CAM</span>
+      <span class="db-chip" id="db-cam" data-state="off">OFF</span>
+    </div>
+  </div>
+
+  <!-- ============ MAIN STAGE ============ -->
+  <main class="stage">
+
+    <!-- LEFT SIDE PANEL : SYSTEM TELEMETRY -->
+    <aside class="side-panel left glass">
+      <div class="panel-header">
+        <span class="panel-tag">SYSTEM TELEMETRY</span>
+        <span class="panel-ver">v0.3</span>
+      </div>
+      <div class="panel-divider"></div>
+
+      <div class="telemetry">
+        <div class="t-row">
+          <span class="t-label">UPTIME</span>
+          <span class="t-value" id="uptime-val">00:00:00</span>
+        </div>
+
+        <div class="t-row bar-row">
+          <span class="t-label">CPU</span>
+          <div class="bar"><div class="bar-fill" style="--w:42%; --d:0s;"></div></div>
+          <span class="t-value" id="cpu-val">42%</span>
+        </div>
+        <div class="t-row bar-row">
+          <span class="t-label">MEMORY</span>
+          <div class="bar"><div class="bar-fill" style="--w:61%; --d:.3s;"></div></div>
+          <span class="t-value" id="mem-val">61%</span>
+        </div>
+        <div class="t-row bar-row">
+          <span class="t-label">NETWORK</span>
+          <div class="bar"><div class="bar-fill gold" style="--w:28%; --d:.6s;"></div></div>
+          <span class="t-value" id="net-val">28%</span>
+        </div>
+        <div class="t-row bar-row">
+          <span class="t-label">CHANNELS</span>
+          <div class="bar"><div class="bar-fill" style="--w:75%; --d:.9s;"></div></div>
+          <span class="t-value" id="ch-val">75%</span>
+        </div>
+
+        <div class="panel-divider"></div>
+
+        <!-- Command History -->
+        <div class="history-block">
+          <div class="block-header">
+            <span class="block-tag">COMMAND HISTORY</span>
+            <button type="button" class="mini-btn" id="btn-clear-history" title="Clear history">CLR</button>
+          </div>
+          <ul class="history-list" id="history-list">
+            <li class="history-item placeholder">No commands yet · awaiting input</li>
+          </ul>
+        </div>
+
+        <div class="panel-divider"></div>
+
+        <!-- INTELLIGENCE CARDS (Step 7) -->
+        <div class="intel-block">
+          <div class="block-header">
+            <span class="block-tag">INTELLIGENCE LAYER</span>
+            <span class="block-sub">6 SUBSYSTEMS</span>
+          </div>
+          <ul class="intel-cards" id="intel-cards">
+            <li class="intel-card" data-card="neural"   data-status="online">
+              <span class="ic-glyph">⬢</span>
+              <span class="ic-name">Neural Core</span>
+              <span class="ic-pill">ONLINE</span>
+              <span class="ic-dot"></span>
+            </li>
+            <li class="intel-card" data-card="security" data-status="online">
+              <span class="ic-glyph">◈</span>
+              <span class="ic-name">Security Layer</span>
+              <span class="ic-pill">ONLINE</span>
+              <span class="ic-dot"></span>
+            </li>
+            <li class="intel-card" data-card="command"  data-status="online">
+              <span class="ic-glyph">›</span>
+              <span class="ic-name">Command Engine</span>
+              <span class="ic-pill">ONLINE</span>
+              <span class="ic-dot"></span>
+            </li>
+            <li class="intel-card" data-card="voice"    data-status="standby">
+              <span class="ic-glyph">◯</span>
+              <span class="ic-name">Voice Layer</span>
+              <span class="ic-pill">STANDBY</span>
+              <span class="ic-dot"></span>
+            </li>
+            <li class="intel-card" data-card="interface" data-status="online">
+              <span class="ic-glyph">◇</span>
+              <span class="ic-name">Interface Layer</span>
+              <span class="ic-pill">ONLINE</span>
+              <span class="ic-dot"></span>
+            </li>
+            <li class="intel-card" data-card="server"   data-status="online">
+              <span class="ic-glyph">⌗</span>
+              <span class="ic-name">Local Server</span>
+              <span class="ic-pill">ONLINE</span>
+              <span class="ic-dot"></span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CENTER : ARC REACTOR CORE -->
+    <section class="core-stage" aria-label="Arc reactor core">
+      <div class="core" id="core">
+        <!-- HUD CALLOUT LABELS -->
+        <span class="hud-label hud-top" id="hud-state">CORE ONLINE</span>
+        <span class="hud-label hud-top-left">OBLIQ AI</span>
+        <span class="hud-label hud-top-right">DIGITAL HAMMERR</span>
+        <span class="hud-label hud-left">SECURE LOCAL</span>
+        <span class="hud-label hud-right" id="hud-wake">HAMMERR STANDBY</span>
+
+        <!-- HUD bracket corners -->
+        <span class="hud-bracket br-tl" aria-hidden="true"></span>
+        <span class="hud-bracket br-tr" aria-hidden="true"></span>
+        <span class="hud-bracket br-bl" aria-hidden="true"></span>
+        <span class="hud-bracket br-br" aria-hidden="true"></span>
+
+        <!-- Rotating rings -->
+        <div class="ring ring-1" aria-hidden="true"></div>
+        <div class="ring ring-2" aria-hidden="true"></div>
+        <div class="ring ring-3" aria-hidden="true"></div>
+        <div class="ring ring-4" aria-hidden="true"></div>
+        <div class="ring ring-5" aria-hidden="true"></div>
+        <div class="ring ring-6" aria-hidden="true"></div>
+        <div class="ring ring-7" aria-hidden="true"></div>
+
+        <!-- Broken arc segments -->
+        <div class="arc arc-a" aria-hidden="true"></div>
+        <div class="arc arc-b" aria-hidden="true"></div>
+
+        <!-- Radar sweep -->
+        <div class="radar" aria-hidden="true"></div>
+
+        <!-- Crosshairs -->
+        <div class="crosshair v" aria-hidden="true"></div>
+        <div class="crosshair h" aria-hidden="true"></div>
+
+        <!-- Center orb -->
+        <div class="orb" aria-hidden="true">
+          <div class="orb-glint"></div>
+        </div>
+      </div>
+
+      <div class="standby-chip" id="state-chip">
+        <span class="chip-tick"></span>
+        <span class="chip-text" id="state-chip-text">STANDBY MODE</span>
+        <span class="chip-tick"></span>
+      </div>
+
+      <!-- HAMMERR WAKE CHANNEL PANEL -->
+      <section class="wake-channel glass" id="wake-channel" aria-label="Hammerr Wake Channel">
+        <div class="wc-header">
+          <span class="wc-eyebrow">HAMMERR WAKE CHANNEL</span>
+          <span class="wc-state" id="wc-state-label">STANDBY</span>
+        </div>
+        <div class="waveform" id="waveform" aria-hidden="true">
+          <!-- 28 bars generated below; kept as static elements for fallback -->
+          <span class="wf-bar"></span><span class="wf-bar"></span><span class="wf-bar"></span><span class="wf-bar"></span>
+          <span class="wf-bar"></span><span class="wf-bar"></span><span class="wf-bar"></span><span class="wf-bar"></span>
+          <span class="wf-bar"></span><span class="wf-bar"></span><span class="wf-bar"></span><span class="wf-bar"></span>
+          <span class="wf-bar"></span><span class="wf-bar"></span><span class="wf-bar"></span><span class="wf-bar"></span>
+          <span class="wf-bar"></span><span class="wf-bar"></span><span class="wf-bar"></span><span class="wf-bar"></span>
+          <span class="wf-bar"></span><span class="wf-bar"></span><span class="wf-bar"></span><span class="wf-bar"></span>
+          <span class="wf-bar"></span><span class="wf-bar"></span><span class="wf-bar"></span><span class="wf-bar"></span>
+        </div>
+        <p class="wc-foot">
+          <span class="dot gold blink"></span>
+          <span id="wc-foot-text">Simulated channel · microphone NOT enabled in Step 3</span>
+        </p>
+      </section>
+
+      <!-- MICROPHONE TEST PANEL (Step 4) -->
+      <section class="mic-panel glass" id="mic-panel" data-mic="idle" aria-label="Microphone test">
+        <div class="mic-head">
+          <span class="mic-eyebrow">MICROPHONE TEST</span>
+          <span class="mic-led" id="mic-led" aria-hidden="true"></span>
+          <span class="mic-onoff" id="mic-onoff">OFF</span>
+        </div>
+
+        <div class="mic-body">
+          <div class="mic-meta">
+            <div class="mic-row">
+              <span class="mic-key">PERMISSION</span>
+              <span class="mic-chip" id="mic-status">WAITING</span>
+            </div>
+            <div class="mic-row">
+              <span class="mic-key">DEVICE</span>
+              <span class="mic-val" id="mic-device">— not requested —</span>
+            </div>
+            <div class="mic-row">
+              <span class="mic-key">INPUT LEVEL</span>
+              <span class="mic-val" id="mic-level-text">0%</span>
+            </div>
+            <div class="mic-actions">
+              <button type="button" class="mini-btn" id="btn-mute" disabled>MUTE</button>
+              <button type="button" class="mini-btn" id="btn-calibrate" disabled>CALIBRATE</button>
+              <button type="button" class="mini-btn" id="btn-mic-release" disabled>RELEASE</button>
+            </div>
+            <p class="mic-foot">
+              <span class="dot cyan"></span>
+              <span>Audio stays in your browser · nothing is uploaded</span>
+            </p>
+          </div>
+
+          <div class="mic-meter" aria-hidden="true">
+            <div class="meter-bars" id="meter-bars">
+              <span></span><span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span><span></span>
+            </div>
+            <div class="meter-scale">
+              <span>0</span><span>50</span><span>100</span>
+            </div>
+            <div class="calibration" id="calibration" hidden>
+              <div class="cal-ring"></div>
+              <div class="cal-text">CALIBRATING…</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- HAMMERR VOICE LAYER (Step 6) -->
+      <section class="voice-panel glass" id="voice-panel" data-voice-mode="demo" aria-label="Hammerr Voice Layer">
+        <div class="voice-head">
+          <span class="voice-eyebrow">HAMMERR VOICE LAYER</span>
+          <span class="voice-mode-chip" id="voice-mode-chip">DEMO MODE</span>
+        </div>
+
+        <div class="voice-body">
+          <div class="voice-rows">
+            <div class="vrow"><span class="vk">MICROPHONE</span>  <span class="vv" id="v-mic">NOT DETECTED</span></div>
+            <div class="vrow"><span class="vk">LISTENING</span>   <span class="vv" id="v-listen">IDLE</span></div>
+            <div class="vrow"><span class="vk">VOICE READY</span> <span class="vv" id="v-ready">NO</span></div>
+            <div class="vrow"><span class="vk">WAKE WORD</span>   <span class="vv gold">HAMMERR</span></div>
+          </div>
+
+          <div class="voice-wave" id="voice-wave" aria-hidden="true">
+            <span></span><span></span><span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span><span></span><span></span>
+          </div>
+        </div>
+
+        <div class="voice-transcript" id="voice-transcript" role="log" aria-live="polite">
+          <div class="vt-line dim">// transcript idle · type "Hammerr" to simulate wake</div>
+        </div>
+
+        <p class="voice-foot">
+          <span class="dot cyan"></span>
+          <span id="voice-foot-text">Voice features run locally · no audio uploaded · no external APIs</span>
+        </p>
+      </section>
+
+      <!-- VISION LAYER (Step 16) -->
+      <section class="vision-panel glass" id="vision-panel" data-vision-mode="standby" aria-label="Hammerr Vision Layer">
+        <div class="vp-head">
+          <span class="vp-eyebrow">HAMMERR VISION LAYER</span>
+          <span class="vp-led" id="vp-led" aria-hidden="true"></span>
+          <span class="vp-mode-chip" id="vp-mode-chip">STANDBY</span>
+        </div>
+        <div class="vp-body">
+          <div class="vp-feed-wrap">
+            <video id="vp-feed" class="vp-feed" autoplay muted playsinline></video>
+            <canvas id="vp-canvas" class="vp-canvas" aria-hidden="true"></canvas>
+            <div class="vp-overlay-idle" id="vp-overlay-idle">
+              <span class="vp-overlay-glyph">◯</span>
+              <span class="vp-overlay-text">CAMERA OFF</span>
+              <span class="vp-overlay-hint">Click Enable Vision to request access</span>
+            </div>
+            <div class="vp-privacy" id="vp-privacy">
+              <span class="vp-priv-dot"></span>
+              <span class="vp-priv-text" id="vp-priv-text">PRIVACY ON</span>
+            </div>
+            <div class="vp-calibration" id="vp-calibration" hidden>
+              <div class="vp-cal-ring"></div>
+              <div class="vp-cal-text">CALIBRATING VISION…</div>
+            </div>
+          </div>
+          <div class="vp-meta">
+            <div class="vp-row">
+              <span class="vp-key">PERMISSION</span>
+              <span class="vp-chip" id="vp-permission">WAITING</span>
+            </div>
+            <div class="vp-row">
+              <span class="vp-key">DEVICE</span>
+              <span class="vp-val" id="vp-device">— not requested —</span>
+            </div>
+            <div class="vp-row">
+              <span class="vp-key">FACE DETECT</span>
+              <span class="vp-val dim" id="vp-face">READY (prepared)</span>
+            </div>
+            <div class="vp-row">
+              <span class="vp-key">HAND TRACK</span>
+              <span class="vp-val dim" id="vp-hand">READY (prepared)</span>
+            </div>
+            <div class="vp-row">
+              <span class="vp-key">MOTION</span>
+              <span class="vp-val">
+                <span class="vp-meter"><span class="vp-meter-fill" id="vp-motion-fill" style="--w:0%"></span></span>
+                <span class="vp-motion-pct" id="vp-motion-pct">0%</span>
+              </span>
+            </div>
+            <div class="vp-row">
+              <span class="vp-key">PRESENCE</span>
+              <span class="vp-val" id="vp-presence">—</span>
+            </div>
+            <div class="vp-actions">
+              <button type="button" class="mini-btn" id="btn-vision-enable">ENABLE VISION</button>
+              <button type="button" class="mini-btn" id="btn-vision-mute" disabled>PRIVACY</button>
+              <button type="button" class="mini-btn" id="btn-vision-calibrate" disabled>CALIBRATE</button>
+              <button type="button" class="mini-btn" id="btn-vision-release" disabled>RELEASE</button>
+            </div>
+            <p class="vp-foot">
+              <span class="dot cyan"></span>
+              <span>Frames analyzed locally · no video uploaded · no external AI</span>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- HAMMERR AI BRAIN — chat panel (Step 14) -->
+      <section class="ai-chat glass" id="ai-chat" data-brain-state="standby" aria-label="Hammerr AI chat">
+        <div class="ai-head">
+          <span class="ai-eyebrow">HAMMERR AI BRAIN</span>
+          <span class="ai-state-chip" id="ai-state-chip">STANDBY</span>
+          <span class="ai-turns" id="ai-turns">0 turns</span>
+        </div>
+        <div class="ai-thread" id="ai-thread" role="log" aria-live="polite">
+          <div class="ai-bubble bot intro">
+            <span class="bub-role">HAMMERR</span>
+            <span class="bub-text">Local intelligence layer online. Ask me anything · try "help", "who are you", or "summarize".</span>
+          </div>
+        </div>
+        <div class="ai-thinking" id="ai-thinking" hidden aria-hidden="true">
+          <span class="dotline"><span></span><span></span><span></span></span>
+          <span class="ai-thinking-text" id="ai-thinking-text">Thinking…</span>
+        </div>
+        <div class="ai-input-row">
+          <span class="ai-prefix">?</span>
+          <input type="text" class="ai-input" id="ai-input"
+                 placeholder='Ask Hammerr · "help", "summarize", "tell me about security"'
+                 autocomplete="off" spellcheck="false" aria-label="Ask Hammerr" />
+          <button type="button" class="ai-send" id="ai-send">ASK</button>
+        </div>
+        <div class="ai-foot">
+          <span class="ai-eyebrow gold">LOCAL · NO EXTERNAL AI</span>
+          <button type="button" class="mini-btn" id="ai-clear" title="Clear conversation">CLR</button>
+        </div>
+      </section>
+
+      <!-- LIVE COMMAND TRANSCRIPT (Step 13) -->
+      <section class="live-transcript glass" id="live-transcript" data-mode="idle" aria-label="Live command transcript">
+        <div class="lt-head">
+          <span class="lt-eyebrow">LIVE COMMAND TRANSCRIPT</span>
+          <span class="lt-state" id="lt-state">IDLE</span>
+        </div>
+        <div class="lt-rows">
+          <div class="lt-row">
+            <span class="lt-key">DETECTED</span>
+            <span class="lt-val" id="lt-detected">— awaiting speech —</span>
+          </div>
+          <div class="lt-row">
+            <span class="lt-key">COMMAND</span>
+            <span class="lt-val" id="lt-command">—</span>
+          </div>
+          <div class="lt-row">
+            <span class="lt-key">RESPONSE</span>
+            <span class="lt-val" id="lt-response">—</span>
+          </div>
+          <div class="lt-row">
+            <span class="lt-key">CONFIDENCE</span>
+            <span class="lt-val">
+              <span class="conf-bar"><span class="conf-fill" id="conf-fill" style="--w:0%"></span></span>
+              <span class="conf-pct" id="conf-pct">—</span>
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ACTION CENTER (Step 15) -->
+      <section class="action-center glass" id="action-center" aria-label="Digital Hammerr action center">
+        <div class="ac-head">
+          <span class="ac-eyebrow">DIGITAL HAMMERR · ACTION CENTER</span>
+          <span class="ac-meta" id="ac-meta">0 executed</span>
+        </div>
+        <div class="ac-grid" id="ac-grid">
+          <button type="button" class="ac-btn" data-action="open-dashboard">
+            <span class="ac-glyph">◇</span><span class="ac-label">Open Dashboard</span>
+          </button>
+          <button type="button" class="ac-btn" data-action="close-dashboard">
+            <span class="ac-glyph">◇</span><span class="ac-label">Close Dashboard</span>
+          </button>
+          <button type="button" class="ac-btn" data-action="open-settings">
+            <span class="ac-glyph">⚙</span><span class="ac-label">Open Settings</span>
+          </button>
+          <button type="button" class="ac-btn" data-action="show-tasks">
+            <span class="ac-glyph">☰</span><span class="ac-label">Show Tasks</span>
+          </button>
+          <button type="button" class="ac-btn" data-action="show-notes">
+            <span class="ac-glyph">✎</span><span class="ac-label">Show Notes</span>
+          </button>
+          <button type="button" class="ac-btn" data-action="show-notifications">
+            <span class="ac-glyph">◉</span><span class="ac-label">Show Notifications</span>
+          </button>
+          <button type="button" class="ac-btn" data-action="show-system-info">
+            <span class="ac-glyph">⌗</span><span class="ac-label">System Info</span>
+          </button>
+          <button type="button" class="ac-btn" data-action="start-timer">
+            <span class="ac-glyph">⏱</span><span class="ac-label">Start 60s Timer</span>
+          </button>
+          <button type="button" class="ac-btn" data-action="local-search">
+            <span class="ac-glyph">⌕</span><span class="ac-label">Local Search</span>
+          </button>
+          <button type="button" class="ac-btn requires-approval" data-action="open-website">
+            <span class="ac-glyph gold">⬢</span><span class="ac-label">Open Local Endpoint</span>
+            <span class="ac-approval">APPROVAL</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- COMMAND CONSOLE -->
+      <section class="console glass" aria-label="Command console">
+        <div class="console-header">
+          <span class="block-tag">COMMAND CONSOLE</span>
+          <span class="console-prompt">obliq@local:~$</span>
+        </div>
+        <div class="console-body" id="console-body" role="log" aria-live="polite">
+          <div class="console-line dim">// Console online · awaiting commands</div>
+        </div>
+      </section>
+
+      <!-- INTELLIGENCE COMMAND INPUT (Step 5) -->
+      <section class="cmd-bar glass" aria-label="Command intelligence input">
+        <div class="cmd-input-row">
+          <span class="cmd-prefix">›</span>
+          <input
+            type="text"
+            class="cmd-input"
+            id="cmd-input"
+            placeholder='Try: "hello hammerr" · "system status" · "run neural scan"'
+            autocomplete="off"
+            spellcheck="false"
+            aria-label="Type a command for Hammerr"
+          />
+          <button type="button" class="cmd-send" id="cmd-send">SEND</button>
+        </div>
+        <div class="cmd-chips" id="cmd-chips" role="list">
+          <button type="button" class="chip" data-cmd="system status">System Status</button>
+          <button type="button" class="chip" data-cmd="run diagnostics">Run Diagnostics</button>
+          <button type="button" class="chip" data-cmd="run neural scan">Neural Scan</button>
+          <button type="button" class="chip" data-cmd="security report">Security Report</button>
+          <button type="button" class="chip gold" data-cmd="activate protocol">Activate Protocol</button>
+        </div>
+
+        <!-- Step 9 — EXECUTION COMMANDS chip row -->
+        <div class="cmd-chips exec-row" id="cmd-chips-exec" role="list" aria-label="Execution commands">
+          <span class="exec-eyebrow">EXECUTION</span>
+          <button type="button" class="chip exec" data-cmd="open dashboard">Open Dashboard</button>
+          <button type="button" class="chip exec" data-cmd="run scan">Run Scan</button>
+          <button type="button" class="chip exec" data-cmd="security report">Security Report</button>
+          <button type="button" class="chip exec" data-cmd="show tasks">Show Tasks</button>
+          <button type="button" class="chip exec" data-cmd="enter standby">Enter Standby</button>
+        </div>
+        <div class="cmd-foot">
+          <span class="cmd-eyebrow">HAMMERR INTELLIGENCE LAYER</span>
+          <span class="cmd-mode" id="cmd-mode">SIMULATED · LOCAL · NO EXTERNAL AI</span>
+        </div>
+      </section>
+
+      <!-- CONTROL BUTTONS (now active) -->
+      <section class="controls" aria-label="Command controls">
+        <button class="btn" id="btn-activate" type="button">
+          <span class="btn-tick"></span>
+          <span class="btn-text">Activate</span>
+        </button>
+        <button class="btn" id="btn-listen" type="button">
+          <span class="btn-tick"></span>
+          <span class="btn-text">Start Listening</span>
+        </button>
+        <button class="btn btn-stop" id="btn-stop" type="button">
+          <span class="btn-tick"></span>
+          <span class="btn-text">Stop</span>
+        </button>
+        <button class="btn" id="btn-scan" type="button">
+          <span class="btn-tick"></span>
+          <span class="btn-text">Run Scan</span>
+        </button>
+        <button class="btn" id="btn-settings" type="button">
+          <span class="btn-tick"></span>
+          <span class="btn-text">Settings</span>
+        </button>
+      </section>
+    </section>
+
+    <!-- RIGHT SIDE PANEL : COMMAND CHANNEL -->
+    <aside class="side-panel right glass">
+      <div class="panel-header">
+        <span class="panel-tag">COMMAND CHANNEL</span>
+        <span class="panel-ver">LOCAL</span>
+      </div>
+      <div class="panel-divider"></div>
+
+      <ul class="status-list">
+        <li><span class="dot ok"></span> <span class="s-label">BACKEND</span> <span class="s-val" id="status-backend">ONLINE</span></li>
+        <li><span class="dot gold" id="dot-wake"></span> <span class="s-label">WAKE CHANNEL</span> <span class="s-val" id="status-wake">STANDBY</span></li>
+        <li><span class="dot dim"></span> <span class="s-label">AI PROVIDER</span> <span class="s-val dim">NOT CONFIGURED</span></li>
+        <li><span class="dot dim"></span> <span class="s-label">VOICE PROVIDER</span> <span class="s-val dim">NOT CONFIGURED</span></li>
+        <li><span class="dot cyan"></span> <span class="s-label">SECURITY</span> <span class="s-val">KEYS NOT EXPOSED</span></li>
+        <li><span class="dot dim" id="dot-mic"></span> <span class="s-label">MICROPHONE</span> <span class="s-val dim" id="status-mic">NOT ENABLED</span></li>
+        <li><span class="dot dim" id="dot-vision"></span> <span class="s-label">VISION</span> <span class="s-val dim" id="status-vision">NOT ENABLED</span></li>
+      </ul>
+
+      <div class="panel-divider"></div>
+
+      <div class="channel-note">
+        <span class="ch-eyebrow">WAKE WORD</span>
+        <p class="wake-word-line"><span class="ww-glyph">⬢</span> <strong>HAMMERR</strong></p>
+        <p class="ch-sub">Spoken activation arrives in Step 4. No microphone is enabled in Step 3.</p>
+      </div>
+
+      <div class="panel-divider"></div>
+
+      <!-- MISSION PANEL (Step 7) -->
+      <div class="mission-block">
+        <div class="block-header">
+          <span class="block-tag">MISSION</span>
+          <span class="block-sub">LIVE</span>
+        </div>
+
+        <div class="mission-row">
+          <span class="m-key">ACTIVE MODE</span>
+          <span class="m-val mode-chip" id="m-mode">STANDBY</span>
+        </div>
+        <div class="mission-row">
+          <span class="m-key">CURRENT TASK</span>
+          <span class="m-val" id="m-task">Idle · awaiting input</span>
+        </div>
+        <div class="mission-row">
+          <span class="m-key">LAST COMMAND</span>
+          <span class="m-val" id="m-last">— none —</span>
+        </div>
+
+        <div class="events-header">
+          <span class="block-tag small">SYSTEM EVENTS</span>
+        </div>
+        <ul class="events-list" id="events-list">
+          <li class="event-item placeholder">No events yet</li>
+        </ul>
+      </div>
+
+      <div class="panel-divider"></div>
+
+      <!-- ACTIVATION HISTORY (Step 8) -->
+      <div class="activation-block">
+        <div class="block-header">
+          <span class="block-tag">ACTIVATION HISTORY</span>
+          <button type="button" class="mini-btn" id="btn-refresh-activation" title="Refresh from server">↻</button>
+        </div>
+        <ul class="activation-list" id="activation-list">
+          <li class="activation-item placeholder">No activations yet · click Activate or type "Hammerr"</li>
+        </ul>
+      </div>
+
+      <div class="panel-divider"></div>
+
+      <!-- VOICE HISTORY (Step 13) -->
+      <div class="voice-history-block">
+        <div class="block-header">
+          <span class="block-tag">VOICE HISTORY</span>
+          <button type="button" class="mini-btn" id="btn-refresh-voice" title="Refresh from server">↻</button>
+        </div>
+        <ul class="voice-history-list" id="voice-history-list">
+          <li class="voice-history-item placeholder">No voice commands yet · say "Hammerr" then a command</li>
+        </ul>
+      </div>
+    </aside>
+
+  </main>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="footer">
+    <span class="muted">Powered by</span>
+    <span class="brand-accent">OBLIQ AI</span>
+    <span class="cross">×</span>
+    <span class="brand-accent gold">DIGITAL HAMMERR</span>
+    <span class="sep">·</span>
+    <span class="tag">STEP 3 · INTERACTIVE</span>
+  </footer>
+
+  <!-- ============ MODAL: RUN SCAN ============ -->
+  <div class="modal" id="modal-scan" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="scan-title">
+    <div class="modal-backdrop" data-close="modal-scan"></div>
+    <div class="modal-card glass">
+      <div class="modal-head">
+        <span class="modal-eyebrow">SYSTEM DIAGNOSTIC</span>
+        <h2 id="scan-title">Run Scan</h2>
+        <button class="modal-x" type="button" data-close="modal-scan" aria-label="Close">✕</button>
+      </div>
+
+      <div class="scan-progress">
+        <div class="scan-track"><div class="scan-fill" id="scan-fill"></div></div>
+        <div class="scan-meta">
+          <span class="scan-pct" id="scan-pct">0%</span>
+          <span class="scan-status" id="scan-status">INITIALIZING…</span>
+        </div>
+      </div>
+
+      <ul class="scan-list" id="scan-list">
+        <li data-key="0">Obliq AI Neural Core <span class="status pending">…</span></li>
+        <li data-key="1">Digital Hammerr Execution Layer <span class="status pending">…</span></li>
+        <li data-key="2">Hammerr Wake Channel <span class="status pending">…</span></li>
+        <li data-key="3">Interface Layer <span class="status pending">…</span></li>
+        <li data-key="4">Security Layer <span class="status pending">…</span></li>
+        <li data-key="5">Local Server <span class="status pending">…</span></li>
+        <li data-key="6">API Keys <span class="status pending">…</span></li>
+      </ul>
+
+      <div class="modal-foot">
+        <span class="modal-sub">Diagnostic is visual · no system probing</span>
+        <button class="btn" type="button" data-close="modal-scan"><span class="btn-text">Close</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: SETTINGS ============ -->
+  <div class="modal" id="modal-settings" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+    <div class="modal-backdrop" data-close="modal-settings"></div>
+    <div class="modal-card glass">
+      <div class="modal-head">
+        <span class="modal-eyebrow">SAFE SETTINGS · READ-ONLY</span>
+        <h2 id="settings-title">Settings</h2>
+        <button class="modal-x" type="button" data-close="modal-settings" aria-label="Close">✕</button>
+      </div>
+
+      <ul class="settings-list">
+        <li><span class="s-key">Local mode</span>            <span class="s-chip ok">ACTIVE</span></li>
+        <li><span class="s-key">Public deployment</span>     <span class="s-chip danger">DISABLED</span></li>
+        <li><span class="s-key">API keys exposed</span>      <span class="s-chip ok">NO</span></li>
+        <li><span class="s-key">Microphone</span>            <span class="s-chip warn">USER GRANTED ON ACTIVATE</span></li>
+        <li><span class="s-key">Wake word</span>             <span class="s-chip gold">HAMMERR</span></li>
+        <li><span class="s-key">AI provider</span>           <span class="s-chip dim">NOT CONFIGURED YET</span></li>
+        <li><span class="s-key">Voice provider</span>        <span class="s-chip dim">NOT CONFIGURED YET</span></li>
+      </ul>
+
+      <!-- Step 12 — Clap Mode controls -->
+      <div class="settings-section">
+        <h3 class="settings-section-title">CLAP MODE</h3>
+        <div class="settings-row">
+          <span class="s-key">Clap activation</span>
+          <button type="button" class="toggle-switch" id="toggle-clap" data-on="false" aria-pressed="false">
+            <span class="ts-track"><span class="ts-thumb"></span></span>
+            <span class="ts-label" id="toggle-clap-label">OFF</span>
+          </button>
+        </div>
+        <div class="settings-row">
+          <span class="s-key">Sensitivity</span>
+          <div class="sensitivity-group" id="sensitivity-group" role="tablist">
+            <button type="button" class="sens-btn" data-sens="low">LOW</button>
+            <button type="button" class="sens-btn active" data-sens="medium">MEDIUM</button>
+            <button type="button" class="sens-btn" data-sens="high">HIGH</button>
+          </div>
+        </div>
+        <p class="settings-note">Clap detection analyzes audio peaks locally · no upload · requires microphone</p>
+      </div>
+
+      <!-- Step 16 — Vision toggle -->
+      <div class="settings-section">
+        <h3 class="settings-section-title">VISION LAYER</h3>
+        <div class="settings-row">
+          <span class="s-key">Enable vision</span>
+          <button type="button" class="toggle-switch" id="toggle-vision" data-on="false" aria-pressed="false">
+            <span class="ts-track"><span class="ts-thumb"></span></span>
+            <span class="ts-label" id="toggle-vision-label">OFF</span>
+          </button>
+        </div>
+        <p class="settings-note">Vision uses your camera only after you click Enable Vision · all frames stay in your browser</p>
+      </div>
+
+      <!-- Step 17 — Keyboard shortcuts reference -->
+      <div class="settings-section keys-section">
+        <h3 class="settings-section-title">KEYBOARD SHORTCUTS</h3>
+        <ul class="key-list">
+          <li><kbd>Space</kbd><span>Activate</span></li>
+          <li><kbd>Esc</kbd><span>Standby (Stop)</span></li>
+          <li><kbd>S</kbd><span>Run Scan</span></li>
+          <li><kbd>D</kbd><span>Open Diagnostics</span></li>
+          <li><kbd>?</kbd><span>Focus AI Chat</span></li>
+        </ul>
+        <p class="settings-note">Shortcuts ignore text inputs · use them when the page has focus</p>
+      </div>
+
+      <div class="modal-foot">
+        <span class="modal-sub">All values are read-only and locked for safety in Step 3.</span>
+        <button class="btn" type="button" data-close="modal-settings"><span class="btn-text">Close</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: TASKS (Step 9) ============ -->
+  <div class="modal" id="modal-tasks" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="tasks-title">
+    <div class="modal-backdrop" data-close="modal-tasks"></div>
+    <div class="modal-card glass">
+      <div class="modal-head">
+        <span class="modal-eyebrow">EXECUTION LAYER · TASKS</span>
+        <h2 id="tasks-title">Show Tasks</h2>
+        <button class="modal-x" type="button" data-close="modal-tasks" aria-label="Close">✕</button>
+      </div>
+      <ul class="task-list">
+        <li><span class="t-box"></span><span class="t-text">Improve Hammerr wake system</span></li>
+        <li><span class="t-box"></span><span class="t-text">Test voice layer</span></li>
+        <li><span class="t-box"></span><span class="t-text">Neural diagnostics</span></li>
+        <li><span class="t-box"></span><span class="t-text">Obliq AI optimization</span></li>
+        <li><span class="t-box"></span><span class="t-text">Security verification</span></li>
+      </ul>
+      <div class="modal-foot">
+        <span class="modal-sub">Static checklist · stored locally · read-only</span>
+        <button class="btn" type="button" data-close="modal-tasks"><span class="btn-text">Close</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: NOTES (Step 9) ============ -->
+  <div class="modal" id="modal-notes" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="notes-title">
+    <div class="modal-backdrop" data-close="modal-notes"></div>
+    <div class="modal-card glass">
+      <div class="modal-head">
+        <span class="modal-eyebrow">EXECUTION LAYER · NOTES</span>
+        <h2 id="notes-title">Show Notes</h2>
+        <button class="modal-x" type="button" data-close="modal-notes" aria-label="Close">✕</button>
+      </div>
+      <ul class="note-list">
+        <li><span class="n-key">Obliq AI</span><span class="n-eq">=</span><span class="n-val">intelligence layer</span></li>
+        <li><span class="n-key gold">Digital Hammerr</span><span class="n-eq">=</span><span class="n-val gold">execution layer</span></li>
+        <li><span class="n-key">Hammerr</span><span class="n-eq">=</span><span class="n-val">wake system</span></li>
+      </ul>
+      <div class="modal-foot">
+        <span class="modal-sub">Reference glossary · local-only</span>
+        <button class="btn" type="button" data-close="modal-notes"><span class="btn-text">Close</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: SECURITY REPORT (Step 9) ============ -->
+  <div class="modal" id="modal-security" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="sec-title">
+    <div class="modal-backdrop" data-close="modal-security"></div>
+    <div class="modal-card glass">
+      <div class="modal-head">
+        <span class="modal-eyebrow">EXECUTION LAYER · SECURITY REPORT</span>
+        <h2 id="sec-title">Security Report</h2>
+        <button class="modal-x" type="button" data-close="modal-security" aria-label="Close">✕</button>
+      </div>
+      <ul class="sec-list">
+        <li><span class="sec-key">API keys exposed</span>     <span class="sec-chip ok">NO</span></li>
+        <li><span class="sec-key">Public deployment</span>    <span class="sec-chip danger">DISABLED</span></li>
+        <li><span class="sec-key">Local mode</span>           <span class="sec-chip ok">ACTIVE</span></li>
+        <li><span class="sec-key">Voice API</span>            <span class="sec-chip warn">NOT CONNECTED</span></li>
+        <li><span class="sec-key">Microphone autostart</span> <span class="sec-chip ok">DISABLED</span></li>
+        <li><span class="sec-key">External AI</span>          <span class="sec-chip ok">NOT CONNECTED</span></li>
+        <li><span class="sec-key">Server binding</span>       <span class="sec-chip ok">127.0.0.1 ONLY</span></li>
+      </ul>
+      <div class="modal-foot">
+        <span class="modal-sub">Live · derived from local state · no external probe</span>
+        <button class="btn" type="button" data-close="modal-security"><span class="btn-text">Close</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: APPROVAL (Step 15) ============ -->
+  <div class="modal" id="modal-approval" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="approval-title">
+    <div class="modal-backdrop" data-close="modal-approval"></div>
+    <div class="modal-card glass">
+      <div class="modal-head">
+        <span class="modal-eyebrow gold">PERMISSION REQUIRED</span>
+        <h2 id="approval-title">Approve Action</h2>
+        <button class="modal-x" type="button" data-close="modal-approval" aria-label="Close">✕</button>
+      </div>
+      <div class="approval-body">
+        <p class="approval-prompt" id="approval-prompt">An external action is about to run.</p>
+        <div class="approval-detail" id="approval-detail"></div>
+      </div>
+      <div class="modal-foot approval-foot">
+        <span class="modal-sub">External actions never run without your explicit click.</span>
+        <div class="approval-actions">
+          <button class="btn btn-stop" type="button" data-close="modal-approval"><span class="btn-text">Cancel</span></button>
+          <button class="btn" type="button" id="approval-approve"><span class="btn-text">Approve</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: SYSTEM INFO (Step 15) ============ -->
+  <div class="modal" id="modal-sysinfo" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="sysinfo-title">
+    <div class="modal-backdrop" data-close="modal-sysinfo"></div>
+    <div class="modal-card glass">
+      <div class="modal-head">
+        <span class="modal-eyebrow">DIGITAL HAMMERR · SYSTEM INFORMATION</span>
+        <h2 id="sysinfo-title">System Information</h2>
+        <button class="modal-x" type="button" data-close="modal-sysinfo" aria-label="Close">✕</button>
+      </div>
+      <ul class="sysinfo-list" id="sysinfo-list">
+        <li><span class="si-key">Server</span><span class="si-val" id="si-server">http://localhost:3000</span></li>
+        <li><span class="si-key">Binding</span><span class="si-val">127.0.0.1 ONLY</span></li>
+        <li><span class="si-key">Microphone</span><span class="si-val" id="si-mic">—</span></li>
+        <li><span class="si-key">Wake word</span><span class="si-val gold">HAMMERR</span></li>
+        <li><span class="si-key">Clap mode</span><span class="si-val" id="si-clap">—</span></li>
+        <li><span class="si-key">Current state</span><span class="si-val" id="si-state">—</span></li>
+        <li><span class="si-key">Active mode</span><span class="si-val" id="si-mode">—</span></li>
+        <li><span class="si-key">Uptime (page)</span><span class="si-val" id="si-uptime">—</span></li>
+        <li><span class="si-key">User agent</span><span class="si-val small" id="si-ua">—</span></li>
+        <li><span class="si-key">External AI</span><span class="si-val">NOT CONNECTED</span></li>
+      </ul>
+      <div class="modal-foot">
+        <span class="modal-sub">All values derived from local state · no remote probe</span>
+        <button class="btn" type="button" data-close="modal-sysinfo"><span class="btn-text">Close</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: SYSTEM DIAGNOSTICS (Step 17) ============ -->
+  <div class="modal" id="modal-diagnostics" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="diag-title">
+    <div class="modal-backdrop" data-close="modal-diagnostics"></div>
+    <div class="modal-card glass">
+      <div class="modal-head">
+        <span class="modal-eyebrow">DIGITAL HAMMERR · SYSTEM DIAGNOSTICS</span>
+        <h2 id="diag-title">System Diagnostics</h2>
+        <button class="modal-x" type="button" data-close="modal-diagnostics" aria-label="Close">✕</button>
+      </div>
+      <ul class="diag-list" id="diag-list">
+        <ul class="diag-summary">
+          <li><span class="d-key">SYSTEM HEALTH</span>
+              <span class="health-chip" id="d-health">CHECKING…</span></li>
+          <li><span class="d-key">PERFORMANCE SCORE</span>
+              <span class="score-wrap">
+                <span class="score-bar"><span class="score-fill" id="d-score-fill" style="--w:0%"></span></span>
+                <span class="score-num" id="d-score-num">—</span>
+              </span></li>
+        </ul>
+        <li><span class="d-key">Server binding</span>          <span class="d-chip ok">127.0.0.1</span></li>
+        <li><span class="d-key">External AI</span>             <span class="d-chip ok">NOT CONNECTED</span></li>
+        <li><span class="d-key">API keys exposed</span>        <span class="d-chip ok">NO</span></li>
+        <li><span class="d-key">Microphone</span>              <span class="d-chip" id="d-mic">—</span></li>
+        <li><span class="d-key">Wake-word engine</span>        <span class="d-chip" id="d-wake">—</span></li>
+        <li><span class="d-key">Clap mode</span>               <span class="d-chip" id="d-clap">—</span></li>
+        <li><span class="d-key">Vision</span>                  <span class="d-chip" id="d-vision">—</span></li>
+        <li><span class="d-key">Camera</span>                  <span class="d-chip" id="d-camera">—</span></li>
+        <li><span class="d-key">AI brain turns</span>          <span class="d-chip" id="d-turns">—</span></li>
+        <li><span class="d-key">Actions executed</span>        <span class="d-chip" id="d-actions">—</span></li>
+        <li><span class="d-key">Wake history</span>            <span class="d-chip" id="d-wakehist">—</span></li>
+        <li><span class="d-key">Voice history</span>           <span class="d-chip" id="d-voicehist">—</span></li>
+        <li><span class="d-key">Activation log</span>          <span class="d-chip" id="d-actlog">—</span></li>
+        <li><span class="d-key">Active mode</span>             <span class="d-chip" id="d-mode">—</span></li>
+        <li><span class="d-key">Core state</span>              <span class="d-chip" id="d-state">—</span></li>
+        <li><span class="d-key">Page uptime</span>             <span class="d-chip" id="d-uptime">—</span></li>
+      </ul>
+      <div class="modal-foot">
+        <span class="modal-sub">Live snapshot · derived from local state · no network probe</span>
+        <button class="btn" type="button" id="diag-refresh"><span class="btn-text">Refresh</span></button>
+        <button class="btn" type="button" data-close="modal-diagnostics"><span class="btn-text">Close</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: LOCAL SEARCH (Step 15) ============ -->
+  <div class="modal" id="modal-search" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="search-title">
+    <div class="modal-backdrop" data-close="modal-search"></div>
+    <div class="modal-card glass">
+      <div class="modal-head">
+        <span class="modal-eyebrow">DIGITAL HAMMERR · LOCAL SEARCH</span>
+        <h2 id="search-title">Local Search</h2>
+        <button class="modal-x" type="button" data-close="modal-search" aria-label="Close">✕</button>
+      </div>
+      <div class="search-input-row">
+        <input type="text" class="search-input" id="search-input"
+               placeholder="Search commands · notes · history (local only)"
+               autocomplete="off" spellcheck="false" />
+      </div>
+      <ul class="search-results" id="search-results">
+        <li class="search-result placeholder">Type to search · results stay local</li>
+      </ul>
+      <div class="modal-foot">
+        <span class="modal-sub">Searches local commands, notes, voice history, and events · no network</span>
+        <button class="btn" type="button" data-close="modal-search"><span class="btn-text">Close</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN DIM + VOICE LINE (Step 8 cinematic) ============ -->
+  <div class="screen-dim" id="screen-dim" hidden aria-hidden="true"></div>
+  <div class="voice-line-overlay" id="voice-line-overlay" hidden aria-hidden="true">
+    <div class="vl-bracket left"></div>
+    <div class="vl-text" id="vl-text"></div>
+    <div class="vl-bracket right"></div>
+    <span class="vl-cursor" aria-hidden="true">▌</span>
+  </div>
+
+  <!-- ============ NOTIFICATION CENTER (Step 7) ============ -->
+  <aside class="notif-center" id="notif-center" aria-live="polite" aria-label="Hammerr notifications"></aside>
+
+  <!-- ============ HUD ALERT OVERLAY (Step 7) ============ -->
+  <div class="hud-alert" id="hud-alert" hidden aria-hidden="true">
+    <div class="ha-bracket left"></div>
+    <div class="ha-text" id="ha-text">SYSTEM READY</div>
+    <div class="ha-bracket right"></div>
+  </div>
+  <script>
+  /* Offline shim — see the ARCHIVE NOTE at the top of this file. */
+  (function () {
+    var realFetch = window.fetch ? window.fetch.bind(window) : null;
+    if (!realFetch) return;
+    var warned = false;
+    window.fetch = function (input, init) {
+      var url = '';
+      try { url = typeof input === 'string' ? input : (input && input.url) || ''; } catch (e) {}
+      if (/(^|\/)api\//.test(url)) {
+        if (!warned) {
+          warned = true;
+          // One line, once. Never per poll.
+          console.info('[archive] Backend unavailable in this static copy; /api/* calls answer 503 locally.');
+        }
+        // Honest failure: an explicit error, never a fake "online" payload.
+        return Promise.resolve(new Response(
+          JSON.stringify({ ok: false, error: 'backend_unavailable', archived: true }),
+          { status: 503, statusText: 'Service Unavailable',
+            headers: { 'Content-Type': 'application/json' } }
+        ));
+      }
+      return realFetch(input, init);
+    };
+  })();
+  </script>
+
+
+  <script src="app.js?v=31-clickfix"></script>
+
+  <style>
+    /* Injected by the portfolio archive restore — see README. */
+    #ds-archive-notice{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);
+      z-index:2147483647;max-width:min(92vw,680px);display:flex;gap:10px;align-items:flex-start;
+      padding:10px 14px;border-radius:10px;border:1px solid rgba(251,191,36,.45);
+      background:rgba(28,22,10,.94);color:#FDE68A;font:500 13px/1.45 ui-sans-serif,system-ui,sans-serif;
+      box-shadow:0 10px 34px rgba(0,0,0,.55);backdrop-filter:blur(6px)}
+    #ds-archive-notice b{color:#FCD34D;font-weight:700}
+    #ds-archive-notice button{margin-left:6px;flex:none;background:none;border:0;color:#FDE68A;
+      cursor:pointer;font-size:15px;line-height:1;padding:2px 4px;border-radius:4px}
+    #ds-archive-notice button:hover{background:rgba(253,230,138,.16)}
+    #ds-archive-notice button:focus-visible{outline:2px solid #FCD34D;outline-offset:2px}
+    @media (max-width:520px){#ds-archive-notice{font-size:12px;bottom:8px}}
+  </style>
+  <div id="ds-archive-notice" role="status">
+    <span><b>Archive notice:</b> Interactive frontend available — live backend unavailable. Status panels will not populate.</span>
+    <button type="button" aria-label="Dismiss notice"
+      onclick="this.parentNode.remove()">&times;</button>
+  </div>
+</body>
+</html>

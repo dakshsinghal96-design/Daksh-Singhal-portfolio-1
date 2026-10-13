@@ -1,0 +1,1489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HAMMERR LIVE — Obliq AI × Digital Hammerr</title>
+<style>
+  :root {
+    --bg: #04010c;
+    --violet: #8b3cff;
+    --magenta: #ff2bd6;
+    --neon: #b15bff;
+    --soft: #d8b8ff;
+    --text: #ece0ff;
+    --dim: #7a6a99;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 100%; height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Helvetica Neue', system-ui, sans-serif;
+    overflow: hidden;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body { display: flex; flex-direction: column; }
+
+  /* ===================== TOP STAGE ===================== */
+  #stage {
+    position: relative;
+    flex: 0 0 67%;
+    width: 100%;
+    overflow: hidden;
+    background: radial-gradient(ellipse at center, #100023 0%, #03000a 70%, #000 100%);
+    border-bottom: 1px solid rgba(177,91,255,0.18);
+  }
+  #visualCanvas { position: absolute; inset: 0; width: 100%; height: 100%; display:block; }
+  #stage::after {
+    content:""; position:absolute; inset:0; pointer-events:none; z-index:2;
+    background:
+      radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.7) 100%),
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 3px);
+  }
+
+  /* Brand */
+  .brand {
+    position:absolute; top:18px; left:22px; z-index:6;
+    letter-spacing:0.35em; font-weight:700; font-size:13px; color:#fff;
+    text-shadow: 0 0 12px rgba(177,91,255,0.7);
+  }
+  .brand .dot {
+    display:inline-block; width:8px; height:8px; border-radius:50%;
+    background:#ff2bd6; box-shadow:0 0 12px #ff2bd6;
+    margin-right:10px; vertical-align:middle;
+    animation: pulseDot 1.4s infinite ease-in-out;
+  }
+  .brand small {
+    display:block; margin-top:4px; letter-spacing:0.25em; font-size:9px;
+    color:var(--dim); font-weight:400;
+  }
+  @keyframes pulseDot {
+    0%,100% { transform: scale(1); opacity:1; }
+    50% { transform: scale(1.4); opacity:.55; }
+  }
+
+  /* HUD */
+  .hud {
+    position:absolute; top:18px; right:22px; z-index:6; text-align:right;
+    font-size:11px; letter-spacing:0.2em; color:var(--dim);
+  }
+  .hud .row { margin-bottom:4px; }
+  .hud .row span { color:#fff; margin-left:8px; text-shadow:0 0 8px rgba(177,91,255,0.5); }
+
+  /* Big overlay */
+  #bigOverlay {
+    position:absolute; left:50%; top:50%;
+    transform: translate(-50%, -50%);
+    z-index:5; pointer-events:none;
+    font-size: clamp(36px, 6vw, 78px); font-weight:900; letter-spacing:0.22em;
+    color:#fff;
+    text-shadow:
+      0 0 22px rgba(177,91,255,0.95),
+      0 0 50px rgba(255,43,214,0.55);
+    opacity:0; transition:opacity 0.3s ease;
+    text-align:center;
+  }
+  #bigOverlay.show { opacity:0.95; }
+  #bigOverlay .sub {
+    display:block; font-size:14px; letter-spacing:0.5em;
+    margin-top:12px; color:var(--soft); text-shadow:none; font-weight:300;
+  }
+
+  /* Gesture chip + hands chip */
+  .chip {
+    position:absolute; z-index:6;
+    font-size:11px; letter-spacing:0.25em; color:var(--dim);
+  }
+  .chip strong {
+    display:block; font-size:22px; color:#fff;
+    letter-spacing:0.15em; margin-top:4px;
+    text-shadow:0 0 10px rgba(177,91,255,0.7);
+  }
+  .gesture-chip { bottom:20px; left:22px; }
+  .hands-chip   { bottom:20px; right:22px; text-align:right; }
+  .hands-chip strong { text-shadow:0 0 10px rgba(255,43,214,0.7); }
+
+  /* Vertical big volume bar on side of stage */
+  #volBar {
+    position:absolute;
+    right: 28px; top: 50%;
+    transform: translateY(-50%);
+    width: 6px; height: 45%;
+    background: rgba(177,91,255,0.1);
+    border: 1px solid rgba(177,91,255,0.25);
+    border-radius: 4px;
+    z-index: 5;
+    overflow: visible;
+  }
+  #volBar .fill {
+    position:absolute; bottom:0; left:0; right:0;
+    background: linear-gradient(180deg, #ff2bd6 0%, #b15bff 50%, #6020c0 100%);
+    border-radius: 4px;
+    box-shadow: 0 0 20px rgba(177,91,255,0.7);
+    transition: height 0.05s linear;
+  }
+  #volBar .label {
+    position:absolute; top:-22px; right:-6px;
+    font-size:9px; letter-spacing:0.3em;
+    color: var(--dim);
+  }
+  #volBar .pct {
+    position:absolute; bottom:-22px; right:-12px;
+    font-size:11px; color:#fff; letter-spacing:0.15em;
+    text-shadow: 0 0 8px rgba(177,91,255,0.6);
+    white-space:nowrap;
+  }
+
+  /* ===================== CONTROL BAR (middle) ===================== */
+  #ctrlBar {
+    position: relative;
+    flex: 0 0 auto;
+    z-index: 8;
+    display:flex; align-items:center; gap:10px;
+    padding: 8px 16px;
+    background: linear-gradient(180deg, rgba(8,0,20,0.9), rgba(4,0,12,0.95));
+    border-top: 1px solid rgba(177,91,255,0.2);
+    border-bottom: 1px solid rgba(177,91,255,0.2);
+    backdrop-filter: blur(10px);
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  #ctrlBar::-webkit-scrollbar { display:none; }
+  #ctrlBar button {
+    background: rgba(177,91,255,0.08);
+    border: 1px solid rgba(177,91,255,0.3);
+    color: #fff;
+    padding: 7px 13px;
+    border-radius: 100px;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    font-family: inherit;
+    flex-shrink: 0;
+  }
+  #ctrlBar button:hover {
+    background: rgba(177,91,255,0.22);
+    border-color: var(--neon);
+    box-shadow: 0 0 14px rgba(177,91,255,0.4);
+  }
+  #ctrlBar button.active {
+    background: var(--violet);
+    color:#fff;
+    box-shadow: 0 0 16px rgba(177,91,255,0.7);
+  }
+  #ctrlBar .song {
+    color: var(--text); font-size:10px; letter-spacing:0.2em;
+    padding: 7px 14px; max-width:200px;
+    overflow:hidden; text-overflow:ellipsis;
+    border-left:1px solid rgba(177,91,255,0.2);
+    border-right:1px solid rgba(177,91,255,0.2);
+    flex-shrink: 0;
+  }
+  #ctrlBar .vol-display {
+    color: #fff; font-size:11px; letter-spacing:0.25em;
+    padding: 7px 12px;
+    border: 1px solid rgba(255,43,214,0.4);
+    border-radius:100px;
+    background: rgba(255,43,214,0.06);
+    text-shadow: 0 0 8px rgba(255,43,214,0.5);
+    flex-shrink: 0;
+    min-width: 95px;
+    text-align: center;
+  }
+  #ctrlBar .privacy {
+    color: var(--dim); font-size:9px; letter-spacing:0.18em;
+    margin-left:auto; padding-right:6px;
+    flex-shrink: 0;
+  }
+  /* Progress bar */
+  #progressWrap {
+    flex: 1 1 auto;
+    min-width: 100px;
+    display:flex; align-items:center; gap:8px;
+  }
+  #progress {
+    flex:1; height:4px;
+    background: rgba(177,91,255,0.15);
+    border-radius: 4px; overflow: hidden;
+    cursor: pointer;
+    position: relative;
+  }
+  #progress .pfill {
+    position:absolute; left:0; top:0; bottom:0;
+    background: linear-gradient(90deg, #b15bff, #ff2bd6);
+    box-shadow: 0 0 10px rgba(255,43,214,0.6);
+    width: 0%;
+  }
+  #timeTxt {
+    color: var(--dim);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    min-width: 80px;
+    text-align: right;
+  }
+
+  /* ===================== BOTTOM CAM ===================== */
+  #camStage {
+    position: relative; flex: 1 1 auto; width:100%; overflow:hidden;
+    background:#02000a;
+  }
+  #video {
+    position:absolute; inset:0; width:100%; height:100%;
+    object-fit: cover;
+    transform: scaleX(-1);
+    opacity: 0.32;
+    filter: contrast(1.05) brightness(0.7) saturate(0.55);
+  }
+  #camCanvas { position:absolute; inset:0; width:100%; height:100%; }
+  #camStage::before {
+    content:""; position:absolute; inset:0; pointer-events:none; z-index:2;
+    background:
+      linear-gradient(rgba(177,91,255,0.05) 1px, transparent 1px) 0 0/40px 40px,
+      linear-gradient(90deg, rgba(177,91,255,0.05) 1px, transparent 1px) 0 0/40px 40px,
+      radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,0.75) 100%);
+  }
+  #camStage .frame {
+    position:absolute; inset:16px; pointer-events:none; z-index:3;
+    border: 1px solid rgba(177,91,255,0.18);
+  }
+  .cam-info {
+    position:absolute; top:14px; left:22px; z-index:5;
+    font-size:10px; letter-spacing:0.3em; color:var(--dim);
+  }
+  .cam-info strong { color:#fff; }
+  .cam-info .live {
+    display:inline-block; width:7px; height:7px; border-radius:50%;
+    background:#ff2bd6; margin-right:8px;
+    box-shadow:0 0 8px #ff2bd6;
+    animation: pulseDot 1.2s infinite; vertical-align:middle;
+  }
+  .cam-right {
+    position:absolute; top:14px; right:22px; z-index:5;
+    font-size:10px; letter-spacing:0.3em; color:var(--dim); text-align:right;
+  }
+  .cam-right strong { color:#fff; }
+
+  .cam-bottom {
+    position:absolute; bottom:14px; left:50%; transform:translateX(-50%);
+    z-index:5; font-size:10px; letter-spacing:0.25em; color: var(--dim);
+    background: rgba(8,0,20,0.55); padding: 6px 14px;
+    border: 1px solid rgba(177,91,255,0.22);
+    border-radius: 100px;
+    backdrop-filter: blur(8px);
+    white-space: nowrap;
+  }
+  .cam-bottom strong { color:#fff; margin: 0 6px; }
+
+  /* Floating hand labels */
+  .hand-label {
+    position: absolute; z-index:7;
+    padding: 5px 12px;
+    border: 1px solid rgba(177,91,255,0.6);
+    background: rgba(8,0,20,0.65);
+    color:#fff;
+    font-size: 10px; letter-spacing:0.3em; font-weight:600;
+    border-radius: 4px; pointer-events: none;
+    text-shadow: 0 0 8px rgba(177,91,255,0.8);
+    box-shadow: 0 0 14px rgba(177,91,255,0.4);
+    transform: translate(-50%, -50%);
+    white-space: nowrap;
+    backdrop-filter: blur(6px);
+  }
+  .hand-label::before {
+    content: "";
+    position: absolute; left:-6px; top:50%;
+    width:4px; height:4px; background: var(--magenta);
+    border-radius:50%; transform: translateY(-50%);
+    box-shadow: 0 0 8px var(--magenta);
+  }
+  .hand-label.energy { border-color: rgba(255,43,214,0.8); box-shadow: 0 0 20px rgba(255,43,214,0.6); }
+
+  /* ===================== HAND GUIDE MODAL ===================== */
+  .modal-bg {
+    position: fixed; inset: 0; z-index: 50;
+    background: rgba(0,0,0,0.78);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    display: none;
+    align-items: center; justify-content: center;
+    padding: 16px;
+    overflow-y: auto;
+  }
+  .modal-bg.show { display: flex; }
+  .modal {
+    width: 100%; max-width: 760px;
+    background: linear-gradient(180deg, rgba(15,2,30,0.96), rgba(6,0,18,0.98));
+    border: 1px solid rgba(177,91,255,0.4);
+    border-radius: 12px;
+    padding: 28px;
+    box-shadow: 0 0 60px rgba(177,91,255,0.25);
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+  }
+  .modal h2 {
+    font-size: 18px; letter-spacing: 0.3em; font-weight: 800;
+    color: #fff; text-shadow: 0 0 14px rgba(177,91,255,0.7);
+    margin-bottom: 6px;
+  }
+  .modal .subt {
+    font-size: 10px; letter-spacing: 0.35em; color: var(--dim);
+    margin-bottom: 22px;
+  }
+  .modal .close {
+    position: absolute; top: 14px; right: 14px;
+    background: rgba(255,43,214,0.1);
+    border: 1px solid rgba(255,43,214,0.5);
+    color: #fff;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 14px;
+    display:flex; align-items:center; justify-content:center;
+    transition: all 0.2s ease;
+  }
+  .modal .close:hover { background: rgba(255,43,214,0.3); }
+  .gesture-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+  }
+  .gcard {
+    border: 1px solid rgba(177,91,255,0.25);
+    background: linear-gradient(180deg, rgba(177,91,255,0.05), rgba(177,91,255,0.01));
+    padding: 14px;
+    border-radius: 8px;
+  }
+  .gcard .ico {
+    font-size: 28px; margin-bottom: 8px;
+    filter: drop-shadow(0 0 6px rgba(177,91,255,0.6));
+  }
+  .gcard h3 {
+    color:#fff; font-size:11px; letter-spacing:0.25em; font-weight:700;
+    margin-bottom: 4px;
+  }
+  .gcard .fn {
+    color: var(--magenta); font-size:10px; letter-spacing:0.2em;
+    margin-bottom: 6px; text-shadow: 0 0 6px rgba(255,43,214,0.5);
+  }
+  .gcard p {
+    color: var(--soft); font-size: 11px; line-height: 1.6;
+    letter-spacing: 0.05em;
+  }
+
+  /* ===================== FULLSCREEN MODE ===================== */
+  body.fullscreen-mode #stage { flex: 1 1 100%; }
+  body.fullscreen-mode #ctrlBar { display: none; }
+  body.fullscreen-mode #camStage {
+    position: fixed; bottom: 18px; right: 18px;
+    width: 260px; height: 170px; flex: none;
+    border: 1px solid rgba(177,91,255,0.45);
+    border-radius: 8px;
+    overflow: hidden;
+    z-index: 12;
+    box-shadow: 0 0 30px rgba(177,91,255,0.3);
+  }
+  body.fullscreen-mode #camStage .frame { inset: 6px; }
+
+  body.hide-ui .brand,
+  body.hide-ui .hud,
+  body.hide-ui .gesture-chip,
+  body.hide-ui .hands-chip,
+  body.hide-ui .cam-info,
+  body.hide-ui .cam-right,
+  body.hide-ui .cam-bottom,
+  body.hide-ui #ctrlBar,
+  body.hide-ui #volBar { opacity:0; pointer-events:none; transition:opacity 0.4s ease; }
+
+  /* Toast */
+  .toast {
+    position: fixed; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(8,0,20,0.95);
+    border: 1px solid rgba(177,91,255,0.5);
+    color: #fff;
+    padding: 18px 32px;
+    border-radius: 8px;
+    font-size: 13px;
+    letter-spacing: 0.18em;
+    z-index: 100;
+    box-shadow: 0 0 30px rgba(177,91,255,0.3);
+    max-width: 90vw;
+    text-align: center;
+  }
+
+  input[type=file] { display: none; }
+
+  /* Mobile tweaks */
+  @media (max-width: 640px) {
+    .brand small { display: none; }
+    .hud { font-size: 9px; }
+    .chip strong { font-size: 18px; }
+    #ctrlBar { padding: 6px 10px; gap: 6px; }
+    #ctrlBar button { padding: 6px 10px; font-size: 9px; }
+    #ctrlBar .song { max-width: 100px; }
+    #progressWrap { display: none; }
+    .gesture-grid { grid-template-columns: 1fr; }
+    #volBar { width: 5px; right: 14px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ================== TOP STAGE ================== -->
+<div id="stage">
+  <canvas id="visualCanvas"></canvas>
+
+  <div class="brand">
+    <span class="dot"></span>HAMMERR LIVE
+    <small>OBLIQ AI × DIGITAL HAMMERR</small>
+  </div>
+
+  <div class="hud">
+    <div class="row">FPS <span id="hudFps">0</span></div>
+    <div class="row">STATUS <span id="hudStatus">IDLE</span></div>
+    <div class="row">MODE <span id="hudMode">NORMAL</span></div>
+  </div>
+
+  <div id="bigOverlay">
+    <span id="bigText">VOLUME 0%</span>
+    <span class="sub" id="bigSub">HAND CONTROL</span>
+  </div>
+
+  <div class="chip gesture-chip">GESTURE<strong id="gestureLabel">—</strong></div>
+  <div class="chip hands-chip">HANDS<strong id="handsCount">0</strong></div>
+
+  <div id="volBar">
+    <div class="label">VOL</div>
+    <div class="fill" id="volFill" style="height:50%"></div>
+    <div class="pct" id="volPct">50%</div>
+  </div>
+</div>
+
+<!-- ================== CONTROL BAR ================== -->
+<div id="ctrlBar">
+  <button id="btnCam">START CAM</button>
+  <button id="btnUpload">UPLOAD</button>
+  <button id="btnPlay">PLAY</button>
+  <button id="btnStop">STOP</button>
+  <button id="btnMute">MUTE</button>
+  <div class="vol-display" id="ctrlVol">VOL 50%</div>
+  <div class="song" id="songName">NO TRACK</div>
+  <div id="progressWrap">
+    <div id="progress"><div class="pfill" id="pfill"></div></div>
+    <div id="timeTxt">0:00 / 0:00</div>
+  </div>
+  <button id="btnGuide">HAND GUIDE</button>
+  <button id="btnFs">FULLSCREEN</button>
+  <button id="btnHide">HIDE UI</button>
+  <div class="privacy">CAMERA &amp; AUDIO PROCESSED LOCALLY</div>
+</div>
+
+<!-- ================== BOTTOM CAM ================== -->
+<div id="camStage">
+  <video id="video" autoplay playsinline muted></video>
+  <canvas id="camCanvas"></canvas>
+  <div class="frame"></div>
+
+  <div class="cam-info"><span class="live"></span>LIVE FEED · <strong>HAND TRACKING</strong></div>
+  <div class="cam-right">MEDIAPIPE · <strong id="trackingStatus">OFFLINE</strong></div>
+  <div class="cam-bottom">
+    MUSIC <strong id="musicStat">IDLE</strong> · VOL <strong id="camVol">50%</strong> · <strong id="camGest">—</strong>
+  </div>
+
+  <div id="labels"></div>
+</div>
+
+<input type="file" id="fileInput" accept="audio/*" />
+<audio id="audio" crossorigin="anonymous"></audio>
+
+<!-- ================== HAND GUIDE MODAL ================== -->
+<div class="modal-bg" id="guideModal">
+  <div class="modal">
+    <button class="close" id="guideClose">✕</button>
+    <h2>HAMMERR HAND GESTURE GUIDE</h2>
+    <div class="subt">CONTROL VISUALS &amp; MUSIC WITH YOUR HANDS</div>
+
+    <div class="gesture-grid">
+      <div class="gcard">
+        <div class="ico">✋⬆️</div>
+        <h3>RIGHT HAND UP / DOWN</h3>
+        <div class="fn">MUSIC VOLUME</div>
+        <p>Raise your right hand for louder volume. Lower it to bring volume down. Continuous live control like a fader.</p>
+      </div>
+      <div class="gcard">
+        <div class="ico">🤚↔️</div>
+        <h3>LEFT HAND LEFT / RIGHT</h3>
+        <div class="fn">ROTATE / COMPOSE</div>
+        <p>Move your left hand horizontally to rotate the visual form. Left turns anticlockwise, right turns clockwise.</p>
+      </div>
+      <div class="gcard">
+        <div class="ico">🙌</div>
+        <h3>TWO HANDS APART / CLOSE</h3>
+        <div class="fn">ZOOM &amp; ENERGY</div>
+        <p>Pull hands apart to expand the visual and spread particles. Bring them close to compress and focus.</p>
+      </div>
+      <div class="gcard">
+        <div class="ico">🖐️</div>
+        <h3>OPEN PALM</h3>
+        <div class="fn">PLAY &amp; GLOW</div>
+        <p>Show an open palm to play music and boost the visual glow and energy.</p>
+      </div>
+      <div class="gcard">
+        <div class="ico">✊</div>
+        <h3>CLOSED FIST</h3>
+        <div class="fn">PAUSE &amp; FREEZE</div>
+        <p>Close your fist to pause the music and freeze the visual motion.</p>
+      </div>
+      <div class="gcard">
+        <div class="ico">🤏</div>
+        <h3>PINCH</h3>
+        <div class="fn">MUTE &amp; PULSE</div>
+        <p>Pinch thumb and index together to toggle mute and trigger a pulse burst.</p>
+      </div>
+      <div class="gcard">
+        <div class="ico">💨</div>
+        <h3>FAST SWIPE</h3>
+        <div class="fn">BEAT BURST</div>
+        <p>Swipe your hand quickly to trigger a particle explosion and pulse ring.</p>
+      </div>
+      <div class="gcard">
+        <div class="ico">🙏⬆️</div>
+        <h3>BOTH HANDS HIGH</h3>
+        <div class="fn">ENERGY MODE</div>
+        <p>Raise both hands above the upper third for an intense, high-energy visual mode.</p>
+      </div>
+      <div class="gcard">
+        <div class="ico">🙏⬇️</div>
+        <h3>BOTH HANDS LOW</h3>
+        <div class="fn">CALM MODE</div>
+        <p>Drop both hands into the lower third to enter a slow, calm, ambient mode.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+
+<script>
+/* =================== HAMMERR LIVE =================== */
+const visualCanvas = document.getElementById('visualCanvas');
+const vctx = visualCanvas.getContext('2d');
+const camCanvas = document.getElementById('camCanvas');
+const cctx = camCanvas.getContext('2d');
+const video = document.getElementById('video');
+const audio = document.getElementById('audio');
+const fileInput = document.getElementById('fileInput');
+const labelsEl = document.getElementById('labels');
+
+const btnCam = document.getElementById('btnCam');
+const btnUpload = document.getElementById('btnUpload');
+const btnPlay = document.getElementById('btnPlay');
+const btnStop = document.getElementById('btnStop');
+const btnMute = document.getElementById('btnMute');
+const btnGuide = document.getElementById('btnGuide');
+const btnFs = document.getElementById('btnFs');
+const btnHide = document.getElementById('btnHide');
+const songNameEl = document.getElementById('songName');
+const hudFps = document.getElementById('hudFps');
+const hudStatus = document.getElementById('hudStatus');
+const hudMode = document.getElementById('hudMode');
+const gestureLabel = document.getElementById('gestureLabel');
+const handsCount = document.getElementById('handsCount');
+const bigOverlay = document.getElementById('bigOverlay');
+const bigText = document.getElementById('bigText');
+const bigSub = document.getElementById('bigSub');
+const trackingStatus = document.getElementById('trackingStatus');
+const volFill = document.getElementById('volFill');
+const volPct = document.getElementById('volPct');
+const ctrlVol = document.getElementById('ctrlVol');
+const musicStat = document.getElementById('musicStat');
+const camVol = document.getElementById('camVol');
+const camGest = document.getElementById('camGest');
+const guideModal = document.getElementById('guideModal');
+const guideClose = document.getElementById('guideClose');
+const pfill = document.getElementById('pfill');
+const timeTxt = document.getElementById('timeTxt');
+const progressBar = document.getElementById('progress');
+
+/* ---------- Resize ---------- */
+function resizeCanvases() {
+  visualCanvas.width = visualCanvas.clientWidth;
+  visualCanvas.height = visualCanvas.clientHeight;
+  camCanvas.width = camCanvas.clientWidth;
+  camCanvas.height = camCanvas.clientHeight;
+}
+window.addEventListener('resize', resizeCanvases);
+setTimeout(resizeCanvases, 50);
+
+/* ================= STATE ================= */
+const state = {
+  rotation: 0, rotationTarget: 0,
+  zoom: 1, zoomTarget: 1,
+  glow: 0.5, glowTarget: 0.5,
+  intensity: 0.5, intensityTarget: 0.5,
+  volume: 0.5, volumeTarget: 0.5,
+  burst: 0,
+  freezeAmt: 0, freezeTarget: 0,
+  bass: 0, mid: 0, treble: 0, loud: 0,
+  hands: [],
+  gesture: '—',
+  mode: 'NORMAL',
+  isPlaying: false,
+  isMuted: false,
+  uiHidden: false,
+  fullscreen: false,
+  lastHandPos: {},
+  lastHandTime: {},
+  bigOverlayTimer: 0,
+  trackingActive: false,
+  rightHandSeen: false,
+  twoHands: false
+};
+
+/* ================= AUDIO ================= */
+let audioCtx, analyser, audioSrc, freqData;
+
+function initAudio() {
+  if (audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  analyser = audioCtx.createAnalyser();
+  analyser.fftSize = 512;
+  freqData = new Uint8Array(analyser.frequencyBinCount);
+  audioSrc = audioCtx.createMediaElementSource(audio);
+  audioSrc.connect(analyser);
+  analyser.connect(audioCtx.destination);
+}
+
+fileInput.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const url = URL.createObjectURL(file);
+  audio.src = url;
+  songNameEl.textContent = file.name.toUpperCase();
+  initAudio();
+  audio.play().then(() => {
+    state.isPlaying = true;
+    btnPlay.textContent = 'PAUSE';
+    btnPlay.classList.add('active');
+    hudStatus.textContent = 'PLAYING';
+    musicStat.textContent = 'PLAYING';
+  }).catch(()=>{
+    hudStatus.textContent = 'READY';
+    musicStat.textContent = 'READY';
+  });
+});
+
+btnUpload.addEventListener('click', () => fileInput.click());
+
+function playMusic() {
+  if (!audio.src) { fileInput.click(); return; }
+  initAudio();
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  audio.play().then(() => {
+    state.isPlaying = true;
+    btnPlay.textContent = 'PAUSE';
+    btnPlay.classList.add('active');
+    hudStatus.textContent = 'PLAYING';
+    musicStat.textContent = 'PLAYING';
+  }).catch(()=>{});
+}
+function pauseMusic() {
+  if (!audio.src) return;
+  audio.pause();
+  state.isPlaying = false;
+  btnPlay.textContent = 'PLAY';
+  btnPlay.classList.remove('active');
+  hudStatus.textContent = 'PAUSED';
+  musicStat.textContent = 'PAUSED';
+}
+
+btnPlay.addEventListener('click', () => {
+  if (audio.paused) playMusic(); else pauseMusic();
+});
+btnStop.addEventListener('click', () => {
+  if (!audio.src) return;
+  audio.pause();
+  audio.currentTime = 0;
+  state.isPlaying = false;
+  btnPlay.textContent = 'PLAY';
+  btnPlay.classList.remove('active');
+  hudStatus.textContent = 'STOPPED';
+  musicStat.textContent = 'STOPPED';
+});
+btnMute.addEventListener('click', () => {
+  state.isMuted = !state.isMuted;
+  audio.muted = state.isMuted;
+  btnMute.classList.toggle('active', state.isMuted);
+  btnMute.textContent = state.isMuted ? 'UNMUTE' : 'MUTE';
+});
+audio.addEventListener('ended', () => {
+  state.isPlaying = false;
+  btnPlay.textContent = 'PLAY';
+  btnPlay.classList.remove('active');
+  hudStatus.textContent = 'ENDED';
+  musicStat.textContent = 'ENDED';
+});
+
+audio.addEventListener('timeupdate', () => {
+  if (audio.duration) {
+    const pct = (audio.currentTime / audio.duration) * 100;
+    pfill.style.width = pct + '%';
+    timeTxt.textContent = fmtTime(audio.currentTime) + ' / ' + fmtTime(audio.duration);
+  }
+});
+progressBar.addEventListener('click', (e) => {
+  if (!audio.duration) return;
+  const rect = progressBar.getBoundingClientRect();
+  const pct = (e.clientX - rect.left) / rect.width;
+  audio.currentTime = pct * audio.duration;
+});
+function fmtTime(s) {
+  if (!isFinite(s)) return '0:00';
+  const m = Math.floor(s/60), sec = Math.floor(s%60);
+  return m + ':' + (sec < 10 ? '0' : '') + sec;
+}
+
+/* ================= GUIDE ================= */
+btnGuide.addEventListener('click', () => guideModal.classList.add('show'));
+guideClose.addEventListener('click', () => guideModal.classList.remove('show'));
+guideModal.addEventListener('click', (e) => { if (e.target === guideModal) guideModal.classList.remove('show'); });
+
+/* ================= FULLSCREEN ================= */
+btnFs.addEventListener('click', toggleFullscreen);
+btnHide.addEventListener('click', toggleUI);
+
+function toggleFullscreen() {
+  state.fullscreen = !state.fullscreen;
+  document.body.classList.toggle('fullscreen-mode', state.fullscreen);
+  if (state.fullscreen && document.documentElement.requestFullscreen) {
+    document.documentElement.requestFullscreen().catch(()=>{});
+  } else if (!state.fullscreen && document.exitFullscreen && document.fullscreenElement) {
+    document.exitFullscreen();
+  }
+  setTimeout(resizeCanvases, 200);
+}
+function toggleUI() {
+  state.uiHidden = !state.uiHidden;
+  document.body.classList.toggle('hide-ui', state.uiHidden);
+}
+document.addEventListener('fullscreenchange', () => {
+  if (!document.fullscreenElement && state.fullscreen) {
+    state.fullscreen = false;
+    document.body.classList.remove('fullscreen-mode');
+    setTimeout(resizeCanvases, 200);
+  }
+});
+
+/* ================= KEYBOARD ================= */
+document.addEventListener('keydown', (e) => {
+  if (guideModal.classList.contains('show') && e.key === 'Escape') {
+    guideModal.classList.remove('show'); return;
+  }
+  switch (e.key.toLowerCase()) {
+    case 'f': toggleFullscreen(); break;
+    case 'h': toggleUI(); break;
+    case ' ': e.preventDefault(); state.burst = 1; showBig('PULSE', 'BURST'); break;
+    case 'm': btnMute.click(); break;
+    case 'k': btnPlay.click(); break;
+    case 'escape':
+      if (state.fullscreen) { state.fullscreen=false; document.body.classList.remove('fullscreen-mode'); setTimeout(resizeCanvases,200); }
+      break;
+    case 'arrowup': audio.volume = Math.min(1, audio.volume+0.05); state.volumeTarget = audio.volume; showBig('VOLUME '+Math.round(audio.volume*100)+'%','KEY'); break;
+    case 'arrowdown': audio.volume = Math.max(0, audio.volume-0.05); state.volumeTarget = audio.volume; showBig('VOLUME '+Math.round(audio.volume*100)+'%','KEY'); break;
+    case 'arrowleft': audio.currentTime = Math.max(0, audio.currentTime-5); break;
+    case 'arrowright': audio.currentTime = Math.min(audio.duration||0, audio.currentTime+5); break;
+  }
+});
+
+function showBig(text, sub) {
+  bigText.textContent = text;
+  bigSub.textContent = sub || '';
+  bigOverlay.classList.add('show');
+  state.bigOverlayTimer = 60;
+}
+
+/* ================= MOUSE FALLBACK ================= */
+visualCanvas.addEventListener('mousemove', (e) => {
+  if (!state.trackingActive) {
+    const rect = visualCanvas.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width;
+    const y = (e.clientY - rect.top) / rect.height;
+    state.rotationTarget = (x - 0.5) * Math.PI * 2;
+    state.intensityTarget = 1 - y;
+    state.glowTarget = 0.4 + (1 - y) * 0.6;
+    state.volumeTarget = Math.max(0, Math.min(1, 1 - y));
+  }
+});
+visualCanvas.addEventListener('wheel', (e) => {
+  if (!state.trackingActive) { e.preventDefault();
+    state.zoomTarget = Math.max(0.4, Math.min(2.5, state.zoomTarget + e.deltaY * -0.001));
+  }
+}, { passive: false });
+visualCanvas.addEventListener('click', () => {
+  if (!state.trackingActive) { state.burst = 1; showBig('PULSE','CLICK'); }
+});
+
+/* ================= CAMERA / MEDIAPIPE ================= */
+let hands, camera;
+btnCam.addEventListener('click', startCamera);
+
+async function startCamera() {
+  btnCam.textContent = 'STARTING...';
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { width:640, height:480 }, audio:false });
+    video.srcObject = stream;
+    await video.play();
+
+    if (typeof Hands === 'undefined') {
+      showToast('Hand tracking library failed to load. Use mouse and keyboard controls.');
+      btnCam.textContent = 'CAM ONLY';
+      return;
+    }
+
+    hands = new Hands({ locateFile: (f) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}` });
+    hands.setOptions({
+      maxNumHands: 2,
+      modelComplexity: 1,
+      minDetectionConfidence: 0.6,
+      minTrackingConfidence: 0.6
+    });
+    hands.onResults(onHandResults);
+
+    camera = new Camera(video, {
+      onFrame: async () => { await hands.send({ image: video }); },
+      width: 640, height: 480
+    });
+    camera.start();
+
+    state.trackingActive = true;
+    trackingStatus.textContent = 'ONLINE';
+    btnCam.textContent = 'CAM ON';
+    btnCam.classList.add('active');
+  } catch (err) {
+    console.warn(err);
+    showToast('Hand tracking unavailable. Use mouse and keyboard controls.');
+    btnCam.textContent = 'NO CAM';
+  }
+}
+
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 4000);
+}
+
+/* ================= HAND CONNECTIONS ================= */
+const HAND_CONNECTIONS = [
+  [0,1],[1,2],[2,3],[3,4],
+  [0,5],[5,6],[6,7],[7,8],
+  [5,9],[9,10],[10,11],[11,12],
+  [9,13],[13,14],[14,15],[15,16],
+  [13,17],[17,18],[18,19],[19,20],
+  [0,17]
+];
+
+const activeLabels = {};
+function ensureLabel(id, text, energy) {
+  if (!activeLabels[id]) {
+    const el = document.createElement('div');
+    el.className = 'hand-label' + (energy?' energy':'');
+    el.style.opacity = '0';
+    labelsEl.appendChild(el);
+    activeLabels[id] = { el, target:{x:0,y:0,op:0}, current:{x:0,y:0,op:0} };
+  }
+  activeLabels[id].el.textContent = text;
+  activeLabels[id].el.className = 'hand-label' + (energy?' energy':'');
+  return activeLabels[id];
+}
+function fadeOutLabel(id) {
+  if (activeLabels[id]) activeLabels[id].target.op = 0;
+}
+function updateLabels() {
+  for (const id in activeLabels) {
+    const L = activeLabels[id];
+    L.current.x += (L.target.x - L.current.x) * 0.22;
+    L.current.y += (L.target.y - L.current.y) * 0.22;
+    L.current.op += (L.target.op - L.current.op) * 0.12;
+    L.el.style.left = L.current.x + 'px';
+    L.el.style.top = L.current.y + 'px';
+    L.el.style.opacity = L.current.op;
+    if (L.target.op === 0 && L.current.op < 0.02) {
+      L.el.remove();
+      delete activeLabels[id];
+    }
+  }
+}
+
+function dist(a, b) {
+  const dx=a.x-b.x, dy=a.y-b.y;
+  return Math.sqrt(dx*dx+dy*dy);
+}
+
+/* ================= GESTURE TIMERS ================= */
+let lastPlayPauseTime = 0;
+let lastMuteTime = 0;
+let lastShownVol = 50;
+
+function onHandResults(results) {
+  state.hands = results.multiHandLandmarks || [];
+  handsCount.textContent = state.hands.length;
+
+  const w = camCanvas.width, h = camCanvas.height;
+  cctx.clearRect(0, 0, w, h);
+
+  // Determine hand assignment by position on MIRRORED display.
+  // Display X = 1 - palm.x  (because we visually mirror)
+  // The hand appearing on the user's right (right side of display) is the user's RIGHT hand.
+  let rightHandIdx = -1, leftHandIdx = -1;
+  const handsData = state.hands.map((lm, i) => {
+    return { i, displayX: 1 - lm[9].x, palmY: lm[9].y, lm };
+  });
+  if (handsData.length === 1) {
+    if (handsData[0].displayX > 0.5) rightHandIdx = handsData[0].i;
+    else leftHandIdx = handsData[0].i;
+  } else if (handsData.length >= 2) {
+    // Sort by displayX desc; the one with bigger displayX is user's right hand
+    handsData.sort((a,b) => b.displayX - a.displayX);
+    rightHandIdx = handsData[0].i;
+    leftHandIdx = handsData[1].i;
+  }
+
+  // Draw skeletons in mirrored space
+  cctx.save();
+  cctx.translate(w, 0); cctx.scale(-1, 1);
+  for (let i=0; i<state.hands.length; i++) {
+    const isRight = (i === rightHandIdx);
+    drawHandSkeleton(state.hands[i], w, h, isRight);
+  }
+  // Connecting line between palms
+  if (rightHandIdx >= 0 && leftHandIdx >= 0) {
+    const p1 = state.hands[rightHandIdx][9], p2 = state.hands[leftHandIdx][9];
+    cctx.beginPath();
+    cctx.moveTo(p1.x*w, p1.y*h);
+    cctx.lineTo(p2.x*w, p2.y*h);
+    cctx.strokeStyle = 'rgba(255,80,230,0.5)';
+    cctx.lineWidth = 1.5;
+    cctx.setLineDash([5,5]);
+    cctx.shadowBlur = 14; cctx.shadowColor = '#ff2bd6';
+    cctx.stroke();
+    cctx.setLineDash([]);
+    cctx.shadowBlur = 0;
+  }
+  // Draw vertical volume meter beside right hand
+  if (rightHandIdx >= 0) {
+    drawVolMeter(state.hands[rightHandIdx][9], w, h);
+  }
+  cctx.restore();
+
+  state.rightHandSeen = false;
+  state.twoHands = false;
+  const usedLabels = new Set();
+  const camRect = document.getElementById('camStage').getBoundingClientRect();
+
+  /* ===== RIGHT HAND — VOLUME (continuous) ===== */
+  if (rightHandIdx >= 0) {
+    const lm = state.hands[rightHandIdx];
+    const wrist = lm[0];
+    const palm = lm[9];
+    const tips = [lm[8], lm[12], lm[16], lm[20]];
+    const avgTipDist = tips.reduce((s,t)=>s+dist(t,wrist),0)/tips.length;
+    const pinchD = dist(lm[4], lm[8]);
+    const isPinch = pinchD < 0.05;
+    const isFist = avgTipDist < 0.13;
+    const isOpen = avgTipDist > 0.20 && !isPinch;
+
+    // CONTINUOUS VOLUME — main music control
+    // Map palm.y 0.1..0.9 to volume 1..0
+    const normY = (palm.y - 0.1) / 0.8;
+    const yClamped = Math.max(0, Math.min(1, normY));
+    state.volumeTarget = 1 - yClamped;
+    state.rightHandSeen = true;
+
+    state.intensityTarget = 0.35 + state.volumeTarget * 0.6;
+    state.glowTarget = 0.35 + state.volumeTarget * 0.55;
+
+    trackSpeed('R', palm);
+
+    // VOLUME label near right hand
+    const lblX = (1 - palm.x) * camRect.width + camRect.left;
+    const lblY = palm.y * camRect.height + camRect.top - 36;
+    const volTxt = 'VOLUME ' + Math.round(state.volumeTarget*100) + '%';
+    const L = ensureLabel('vol_R', volTxt, state.volumeTarget > 0.7);
+    L.target.x = lblX; L.target.y = lblY; L.target.op = 1;
+    usedLabels.add('vol_R');
+
+    if (isPinch) {
+      handleMuteToggle();
+      const PL = ensureLabel('pulse_R', 'MUTE / PULSE', true);
+      const px = ((1 - lm[4].x + 1 - lm[8].x)/2) * camRect.width + camRect.left;
+      const py = ((lm[4].y + lm[8].y)/2) * camRect.height + camRect.top - 30;
+      PL.target.x = px; PL.target.y = py; PL.target.op = 1;
+      usedLabels.add('pulse_R');
+      state.burst = Math.min(1, state.burst + 0.3);
+    } else if (isOpen) {
+      handlePlayGesture();
+    } else if (isFist) {
+      handlePauseGesture();
+    }
+  }
+
+  /* ===== LEFT HAND — ROTATION ===== */
+  if (leftHandIdx >= 0) {
+    const lm = state.hands[leftHandIdx];
+    const palm = lm[9];
+    const wrist = lm[0];
+    const tips = [lm[8], lm[12], lm[16], lm[20]];
+    const avgTipDist = tips.reduce((s,t)=>s+dist(t,wrist),0)/tips.length;
+    const pinchD = dist(lm[4], lm[8]);
+    const isPinch = pinchD < 0.05;
+    const isFist = avgTipDist < 0.13;
+    const isOpen = avgTipDist > 0.20 && !isPinch;
+
+    // Rotation from horizontal x of left hand on display
+    const displayX = 1 - palm.x;
+    // Map 0..1 to -π..+π for full sweep
+    state.rotationTarget = (displayX - 0.5) * Math.PI * 2.5;
+
+    trackSpeed('L', palm);
+
+    const lblX = (1 - palm.x) * camRect.width + camRect.left;
+    const lblY = palm.y * camRect.height + camRect.top - 36;
+    const L = ensureLabel('rot_L', 'ROTATE', false);
+    L.target.x = lblX; L.target.y = lblY; L.target.op = 1;
+    usedLabels.add('rot_L');
+
+    if (isPinch) {
+      handleMuteToggle();
+      const PL = ensureLabel('pulse_L', 'PULSE', true);
+      const px = ((1 - lm[4].x + 1 - lm[8].x)/2) * camRect.width + camRect.left;
+      const py = ((lm[4].y + lm[8].y)/2) * camRect.height + camRect.top - 30;
+      PL.target.x = px; PL.target.y = py; PL.target.op = 1;
+      usedLabels.add('pulse_L');
+      state.burst = Math.min(1, state.burst + 0.3);
+    } else if (isOpen) {
+      handlePlayGesture();
+    } else if (isFist) {
+      handlePauseGesture();
+    }
+  }
+
+  /* ===== TWO HANDS — ZOOM + ENERGY/CALM ===== */
+  if (rightHandIdx >= 0 && leftHandIdx >= 0) {
+    state.twoHands = true;
+    const p1 = state.hands[rightHandIdx][9];
+    const p2 = state.hands[leftHandIdx][9];
+    const d = dist(p1, p2);
+    state.zoomTarget = Math.max(0.4, Math.min(2.6, d * 3.5));
+
+    const midX = ((1 - p1.x) + (1 - p2.x))/2 * camRect.width + camRect.left;
+    const midY = (p1.y + p2.y)/2 * camRect.height + camRect.top;
+    const ZL = ensureLabel('zoom_2', 'ZOOM ' + state.zoomTarget.toFixed(2) + 'x', d > 0.4);
+    ZL.target.x = midX; ZL.target.y = midY; ZL.target.op = 1;
+    usedLabels.add('zoom_2');
+
+    const avgY = (p1.y + p2.y) / 2;
+    if (avgY < 0.30) {
+      state.mode = 'ENERGY';
+      const EL = ensureLabel('mode_E', 'ENERGY MODE', true);
+      EL.target.x = midX; EL.target.y = midY - 40; EL.target.op = 1;
+      usedLabels.add('mode_E');
+    } else if (avgY > 0.70) {
+      state.mode = 'CALM';
+      const EL = ensureLabel('mode_C', 'CALM MODE', false);
+      EL.target.x = midX; EL.target.y = midY - 40; EL.target.op = 1;
+      usedLabels.add('mode_C');
+    } else {
+      state.mode = 'NORMAL';
+    }
+  } else {
+    if (state.mode !== 'FREEZE') state.mode = 'NORMAL';
+  }
+
+  if (state.mode === 'ENERGY') {
+    state.glowTarget = Math.max(state.glowTarget, 0.95);
+    state.intensityTarget = Math.max(state.intensityTarget, 0.95);
+  } else if (state.mode === 'CALM') {
+    state.glowTarget = Math.min(state.glowTarget, 0.4);
+    state.intensityTarget = Math.min(state.intensityTarget, 0.45);
+  }
+  hudMode.textContent = state.mode;
+
+  /* ===== Primary gesture label ===== */
+  let g = '—';
+  if (state.twoHands) g = 'ZOOM';
+  else if (rightHandIdx >= 0) {
+    const lm = state.hands[rightHandIdx];
+    const wrist = lm[0];
+    const tips = [lm[8], lm[12], lm[16], lm[20]];
+    const avgTipDist = tips.reduce((s,t)=>s+dist(t,wrist),0)/tips.length;
+    const pinchD = dist(lm[4], lm[8]);
+    if (pinchD < 0.05) g = 'PINCH';
+    else if (avgTipDist < 0.13) g = 'FIST';
+    else if (avgTipDist > 0.20) g = 'PALM';
+    else g = 'VOLUME';
+  } else if (leftHandIdx >= 0) {
+    g = 'ROTATE';
+  }
+  state.gesture = g;
+  gestureLabel.textContent = g;
+  camGest.textContent = g;
+
+  // Show volume overlay when right hand active and changes
+  if (state.rightHandSeen) {
+    const cur = Math.round(state.volumeTarget*100);
+    if (Math.abs(cur - lastShownVol) >= 3) {
+      showBig('VOLUME ' + cur + '%', 'RIGHT HAND');
+      lastShownVol = cur;
+    }
+  }
+
+  // Fade unused
+  for (const id in activeLabels) {
+    if (!usedLabels.has(id)) fadeOutLabel(id);
+  }
+}
+
+function trackSpeed(key, palm) {
+  const now = performance.now();
+  if (state.lastHandPos[key]) {
+    const dt = (now - state.lastHandTime[key]) / 1000;
+    const dd = dist(palm, state.lastHandPos[key]);
+    const speed = dt > 0 ? dd / dt : 0;
+    if (speed > 2.6) {
+      state.burst = Math.min(1, state.burst + 0.5);
+      if (now - (state._lastBurst||0) > 700) {
+        showBig('BURST', 'FAST SWIPE');
+        state._lastBurst = now;
+      }
+    }
+  }
+  state.lastHandPos[key] = { x: palm.x, y: palm.y };
+  state.lastHandTime[key] = now;
+}
+
+function handlePlayGesture() {
+  const now = performance.now();
+  if (now - lastPlayPauseTime < 1200) return;
+  if (audio.src && audio.paused) {
+    playMusic();
+    showBig('PLAY', 'OPEN PALM');
+    lastPlayPauseTime = now;
+  }
+  state.glowTarget = Math.max(state.glowTarget, 0.85);
+}
+function handlePauseGesture() {
+  const now = performance.now();
+  if (now - lastPlayPauseTime < 1200) return;
+  if (audio.src && !audio.paused) {
+    pauseMusic();
+    showBig('PAUSE', 'FIST FREEZE');
+    lastPlayPauseTime = now;
+  }
+  state.freezeTarget = 1;
+  state.mode = 'FREEZE';
+}
+function handleMuteToggle() {
+  const now = performance.now();
+  if (now - lastMuteTime < 1500) return;
+  state.isMuted = !state.isMuted;
+  audio.muted = state.isMuted;
+  btnMute.classList.toggle('active', state.isMuted);
+  btnMute.textContent = state.isMuted ? 'UNMUTE' : 'MUTE';
+  showBig(state.isMuted ? 'MUTE' : 'UNMUTE', 'PINCH');
+  state.burst = 1;
+  lastMuteTime = now;
+}
+
+// Decay freeze when not fist
+setInterval(() => {
+  if (state.gesture !== 'FIST') state.freezeTarget = 0;
+}, 200);
+
+/* ============ Vol meter on cam (called inside mirrored save() block) ============ */
+function drawVolMeter(palm, w, h) {
+  const x = palm.x * w + 30;
+  const y = palm.y * h;
+  const mH = 100, mW = 6;
+  cctx.fillStyle = 'rgba(177,91,255,0.15)';
+  cctx.fillRect(x, y - mH/2, mW, mH);
+  cctx.strokeStyle = 'rgba(177,91,255,0.4)';
+  cctx.lineWidth = 1;
+  cctx.strokeRect(x, y - mH/2, mW, mH);
+  const fillH = mH * state.volumeTarget;
+  const grad = cctx.createLinearGradient(0, y + mH/2 - fillH, 0, y + mH/2);
+  grad.addColorStop(0, '#ff2bd6');
+  grad.addColorStop(1, '#7020c0');
+  cctx.fillStyle = grad;
+  cctx.shadowBlur = 12; cctx.shadowColor = '#ff2bd6';
+  cctx.fillRect(x, y + mH/2 - fillH, mW, fillH);
+  cctx.shadowBlur = 0;
+}
+
+/* ============ Skeleton ============ */
+function drawHandSkeleton(lm, w, h, isRight) {
+  cctx.lineWidth = 3;
+  cctx.strokeStyle = isRight ? 'rgba(255,43,214,0.9)' : 'rgba(177,91,255,0.9)';
+  cctx.shadowBlur = 18;
+  cctx.shadowColor = isRight ? '#ff2bd6' : '#b15bff';
+
+  for (const c of HAND_CONNECTIONS) {
+    const a = lm[c[0]], b = lm[c[1]];
+    cctx.beginPath();
+    cctx.moveTo(a.x*w, a.y*h);
+    cctx.lineTo(b.x*w, b.y*h);
+    cctx.stroke();
+  }
+  for (let i=0;i<lm.length;i++) {
+    const p = lm[i];
+    const x = p.x*w, y = p.y*h;
+    cctx.beginPath();
+    cctx.arc(x, y, (i===0||i===4||i===8||i===9)?6:3.5, 0, Math.PI*2);
+    cctx.fillStyle = '#fff';
+    cctx.fill();
+  }
+  const palm = lm[9];
+  cctx.beginPath();
+  cctx.arc(palm.x*w, palm.y*h, 10, 0, Math.PI*2);
+  cctx.strokeStyle = isRight ? 'rgba(255,43,214,0.7)' : 'rgba(177,91,255,0.7)';
+  cctx.lineWidth = 1.5;
+  cctx.stroke();
+  cctx.shadowBlur = 0;
+}
+
+/* ============ AUDIO ANALYSIS ============ */
+function analyzeAudio() {
+  if (!analyser) return;
+  analyser.getByteFrequencyData(freqData);
+  let bass=0, mid=0, treble=0, total=0;
+  const len = freqData.length;
+  const b = Math.floor(len*0.15), m = Math.floor(len*0.5);
+  for (let i=0;i<len;i++) {
+    total += freqData[i];
+    if (i<b) bass+=freqData[i];
+    else if (i<m) mid+=freqData[i];
+    else treble+=freqData[i];
+  }
+  state.bass = (bass/b)/255;
+  state.mid = (mid/(m-b))/255;
+  state.treble = (treble/(len-m))/255;
+  state.loud = (total/len)/255;
+}
+
+/* ============ PARTICLES ============ */
+let particles = [];
+function initParticles() {
+  particles = [];
+  for (let i=0;i<240;i++) {
+    particles.push({
+      angle: Math.random()*Math.PI*2,
+      radius: 80 + Math.random()*320,
+      speed: 0.001 + Math.random()*0.004,
+      size: 0.5 + Math.random()*2.5,
+      hueShift: Math.random()*60-30,
+      life: Math.random()
+    });
+  }
+}
+initParticles();
+
+/* ============ MAIN RENDER ============ */
+let fpsCount=0, fpsTime=performance.now(), vTime=0;
+
+function renderVisual() {
+  // Smooth state
+  state.rotation += (state.rotationTarget - state.rotation)*0.08;
+  state.zoom += (state.zoomTarget - state.zoom)*0.08;
+  state.glow += (state.glowTarget - state.glow)*0.08;
+  state.intensity += (state.intensityTarget - state.intensity)*0.08;
+  state.volume += (state.volumeTarget - state.volume)*0.08;
+  state.freezeAmt += (state.freezeTarget - state.freezeAmt)*0.1;
+  state.burst *= 0.94;
+
+  // Apply volume continuously to audio
+  if (!state.isMuted && audio) audio.volume = state.volume;
+
+  // UI volume displays (live)
+  const volNow = Math.round(state.volume*100);
+  volFill.style.height = volNow + '%';
+  volPct.textContent = volNow + '%';
+  ctrlVol.textContent = 'VOL ' + volNow + '%';
+  camVol.textContent = volNow + '%';
+
+  analyzeAudio();
+
+  const w = visualCanvas.width, h = visualCanvas.height;
+  const cx = w/2, cy = h/2;
+
+  vctx.globalCompositeOperation = 'source-over';
+  vctx.fillStyle = 'rgba(3,0,12,' + (0.12 + state.freezeAmt*0.18) + ')';
+  vctx.fillRect(0,0,w,h);
+
+  vctx.globalCompositeOperation = 'lighter';
+
+  const motionMul = 1 - state.freezeAmt * 0.85;
+  vTime += (0.012 + state.intensity*0.008 + state.bass*0.02) * motionMul;
+  const rot = state.rotation + vTime*0.15;
+  const zoom = state.zoom;
+  const intensity = state.intensity;
+  const glow = state.glow;
+  const bass = state.bass;
+  const burst = state.burst;
+
+  // Rings
+  const ringCount = 6;
+  for (let r=0;r<ringCount;r++) {
+    const t = r/ringCount;
+    const radius = (60 + r*38) * zoom * (1 + bass*0.3);
+    vctx.beginPath();
+    vctx.lineWidth = 1 + (1-t)*1.5 + bass*2;
+    vctx.strokeStyle = `hsla(${280 + t*40 - 20}, 100%, ${50 + intensity*20}%, ${0.18 + glow*0.3})`;
+    vctx.shadowBlur = 30 + glow*40;
+    vctx.shadowColor = '#b15bff';
+    const wob = 0.06 + bass*0.15;
+    for (let a=0; a<=Math.PI*2+0.05; a+=0.1) {
+      const rr = radius * (1 + Math.sin(a*5 + vTime*2 + r)*wob);
+      const x = cx + Math.cos(a + rot*(r%2?1:-1)) * rr;
+      const y = cy + Math.sin(a + rot*(r%2?1:-1)) * rr;
+      if (a===0) vctx.moveTo(x,y); else vctx.lineTo(x,y);
+    }
+    vctx.stroke();
+  }
+
+  // Burst ring
+  if (burst > 0.01) {
+    const br = 100 + (1-burst)*600;
+    vctx.beginPath();
+    vctx.lineWidth = 4 + burst*8;
+    vctx.strokeStyle = `rgba(255,90,230,${burst})`;
+    vctx.shadowBlur = 80; vctx.shadowColor = '#ff2bd6';
+    vctx.arc(cx, cy, br*zoom, 0, Math.PI*2);
+    vctx.stroke();
+  }
+
+  // Central organic
+  vctx.save();
+  vctx.translate(cx, cy);
+  vctx.rotate(rot);
+  vctx.scale(zoom, zoom);
+
+  for (let l=0;l<5;l++) {
+    const lt = l/5;
+    const baseR = 80 - l*10;
+    const points = 60;
+    vctx.beginPath();
+    for (let p=0;p<=points;p++) {
+      const a = (p/points)*Math.PI*2;
+      const noise =
+        Math.sin(a*4 + vTime*1.4 + l)*14 +
+        Math.cos(a*7 - vTime*2 + l*1.7)*8 +
+        Math.sin(a*2 + vTime*0.5)*18*intensity +
+        bass*30;
+      const rr = baseR + noise + burst*30;
+      const x = Math.cos(a)*rr;
+      const y = Math.sin(a)*rr;
+      if (p===0) vctx.moveTo(x,y); else vctx.lineTo(x,y);
+    }
+    vctx.closePath();
+    const grad = vctx.createRadialGradient(0,0,5, 0,0, baseR*1.8);
+    grad.addColorStop(0, `rgba(255,200,255,${0.55 + glow*0.4 - lt*0.4})`);
+    grad.addColorStop(0.35, `rgba(190,80,255,${0.45 - lt*0.2 + glow*0.3})`);
+    grad.addColorStop(0.7, `rgba(120,30,220,${0.25 - lt*0.1})`);
+    grad.addColorStop(1, `rgba(40,0,80,0)`);
+    vctx.fillStyle = grad;
+    vctx.shadowBlur = 60 + glow*60;
+    vctx.shadowColor = '#a040ff';
+    vctx.fill();
+  }
+  const core = vctx.createRadialGradient(0,0,0, 0,0, 50 + bass*40);
+  core.addColorStop(0, `rgba(255,255,255,${0.7 + glow*0.3})`);
+  core.addColorStop(0.4, `rgba(255,150,255,0.5)`);
+  core.addColorStop(1, 'rgba(120,0,200,0)');
+  vctx.fillStyle = core;
+  vctx.beginPath();
+  vctx.arc(0,0, 60 + bass*50, 0, Math.PI*2);
+  vctx.fill();
+  vctx.restore();
+
+  // Particles
+  for (const p of particles) {
+    p.angle += p.speed*(1+intensity) * motionMul;
+    p.life -= 0.003 * motionMul;
+    if (p.life <= 0) {
+      p.life = 1;
+      p.radius = 60 + Math.random()*200*zoom;
+      p.angle = Math.random()*Math.PI*2;
+    }
+    const r = p.radius*(0.7 + state.mid*0.6) + burst*60;
+    const x = cx + Math.cos(p.angle + rot*0.5)*r;
+    const y = cy + Math.sin(p.angle + rot*0.5)*r;
+    const size = p.size*(1+bass*1.5)*(0.5+glow*0.6);
+    vctx.beginPath();
+    vctx.arc(x, y, size, 0, Math.PI*2);
+    const hue = 280 + p.hueShift + intensity*20;
+    vctx.fillStyle = `hsla(${hue},100%,${65+glow*20}%,${0.4+p.life*0.5})`;
+    vctx.shadowBlur = 12 + glow*14;
+    vctx.shadowColor = `hsl(${hue},100%,65%)`;
+    vctx.fill();
+  }
+
+  // Wave lines
+  vctx.shadowBlur = 0;
+  for (let wv=0; wv<3; wv++) {
+    vctx.beginPath();
+    vctx.lineWidth = 1.2;
+    vctx.strokeStyle = `hsla(${290+wv*15},100%,70%,${0.15 + state.mid*0.4})`;
+    const amp = 30 + state.mid*80 + wv*10;
+    const yBase = cy + (wv-1)*80;
+    for (let x=0; x<=w; x+=8) {
+      const yy = yBase + Math.sin(x*0.012 + vTime*2 + wv)*amp*(0.5+intensity*0.5);
+      if (x===0) vctx.moveTo(x,yy); else vctx.lineTo(x,yy);
+    }
+    vctx.stroke();
+  }
+
+  // Spectrum bars subtle
+  if (freqData) {
+    const bars = 64;
+    const barW = w/bars;
+    for (let i=0;i<bars;i++) {
+      const v = freqData[Math.floor(i*freqData.length/bars)]/255;
+      const bh = v*80;
+      vctx.fillStyle = `hsla(${280+i*0.8},100%,60%,0.4)`;
+      vctx.fillRect(i*barW, h-bh, barW-1, bh);
+    }
+  }
+
+  vctx.globalCompositeOperation = 'source-over';
+  vctx.shadowBlur = 0;
+
+  // FPS
+  fpsCount++;
+  const now = performance.now();
+  if (now - fpsTime > 500) {
+    hudFps.textContent = Math.round(fpsCount*1000/(now-fpsTime));
+    fpsCount = 0; fpsTime = now;
+  }
+
+  if (state.bigOverlayTimer > 0) {
+    state.bigOverlayTimer--;
+    if (state.bigOverlayTimer === 0) bigOverlay.classList.remove('show');
+  }
+
+  updateLabels();
+  requestAnimationFrame(renderVisual);
+}
+renderVisual();
+
+const ro = new ResizeObserver(resizeCanvases);
+ro.observe(visualCanvas.parentElement);
+ro.observe(camCanvas.parentElement);
+</script>
+</body>
+</html>

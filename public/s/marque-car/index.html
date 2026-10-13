@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Marque - Premium car marketplace</title>
+  <meta name="description" content="Marque is a premium marketplace to buy and sell performance and luxury cars, each inspected part by part." />
+
+  <!-- Progressive enhancement flag: set before paint so no-JS users still see the video and content -->
+  <script>document.documentElement.classList.replace('no-js', 'js');</script>
+
+  <style>
+    /* ----------  Design tokens (light "showroom" theme, one accent, one radius scale)  ---------- */
+    :root {
+      --paper:      #EEF0F2;   /* light base, matches the studio backdrop so first paint blends */
+      --ink:        #16181C;   /* primary text, near-black (never pure #000) */
+      --ink-soft:   #454951;   /* secondary text */
+      --accent:     #E8912B;   /* single amber accent */
+      --accent-hi:  #F4A445;
+      --accent-deep:#8A5210;   /* readable amber-bronze for small text on light */
+      --accent-ink: #14100A;   /* near-black text on amber */
+
+      --r-sm: 8px;
+      --r-md: 12px;
+      --r-pill: 999px;
+
+      --maxw: 1400px;
+      --gutter: clamp(20px, 5vw, 64px);
+
+      --ease: cubic-bezier(0.22, 1, 0.36, 1);
+      --font: "Helvetica Neue", "Segoe UI", Helvetica, Arial, system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    body {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--font);
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+      overflow-x: hidden;
+    }
+    a { color: inherit; text-decoration: none; }
+
+    /* ----------  Hero stage  ---------- */
+    .hero {
+      position: relative;
+      min-height: 100dvh;               /* dvh, never vh/h-screen */
+      display: flex;
+      flex-direction: column;
+      isolation: isolate;
+      overflow: hidden;
+    }
+
+    /* Layer 0: light base (matches the footage) so first paint is never a dark or white flash */
+    .hero__media {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background: radial-gradient(120% 100% at 60% 34%, #FBFBFC 0%, var(--paper) 72%);
+    }
+    .hero__video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: 54% 46%;         /* keep the car framed as the container gets tall */
+      opacity: 1;                        /* default visible => no-JS safe */
+      transition: opacity 0.8s ease;
+    }
+    .js .hero__video { opacity: 0; }
+    .js .hero__video.is-playing { opacity: 1; }
+
+    /* Layer 1: LIGHT lift (no black shade). Near-white, so it reads as studio lighting, not an overlay.
+       It keeps the copy zone bright even when a dark exploded part drifts behind the text. */
+    .hero__lift {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      background:
+        radial-gradient(72% 92% at 21% 80%,
+          rgba(240,241,243,0.94) 0%,
+          rgba(240,241,243,0.60) 34%,
+          rgba(240,241,243,0)    66%),
+        linear-gradient(to top,
+          rgba(240,241,243,0.82) 0%,
+          rgba(240,241,243,0.20) 22%,
+          rgba(240,241,243,0)    40%),
+        linear-gradient(to bottom,
+          rgba(240,241,243,0.70) 0%,
+          rgba(240,241,243,0)    13%);   /* gentle lift behind the nav */
+    }
+
+    /* ----------  Navigation (one line, <= 80px)  ---------- */
+    .nav {
+      position: relative;
+      z-index: 3;
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      padding-inline: var(--gutter);
+      max-width: var(--maxw);
+      width: 100%;
+      margin: 0 auto;
+    }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      font-size: 1.02rem;
+      text-transform: uppercase;
+      color: var(--ink);
+    }
+    .brand__mark {
+      width: 12px; height: 12px;
+      background: var(--accent);
+      transform: rotate(45deg);
+      border-radius: 2px;
+    }
+    .nav__links {
+      display: flex;
+      align-items: center;
+      gap: clamp(18px, 2.4vw, 34px);
+      margin-left: auto;
+    }
+    .nav__links a {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--ink-soft);
+      position: relative;
+      padding: 6px 0;
+      transition: color 0.2s ease;
+    }
+    .nav__links a::after {
+      content: "";
+      position: absolute;
+      left: 0; bottom: 0;
+      width: 100%; height: 1.5px;
+      background: var(--accent);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.24s var(--ease);
+    }
+    .nav__links a:hover { color: var(--ink); }
+    .nav__links a:hover::after { transform: scaleX(1); }
+    .nav__signin {
+      margin-left: 6px;
+      padding: 9px 18px;
+      border: 1px solid rgba(20,22,28,0.24);
+      border-radius: var(--r-pill);
+      color: var(--ink);
+      font-size: 0.9rem;
+      font-weight: 500;
+      background: rgba(255,255,255,0.45);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      transition: border-color 0.2s ease, background 0.2s ease;
+    }
+    .nav__signin::after { display: none; }
+    .nav__signin:hover { border-color: rgba(20,22,28,0.5); background: rgba(255,255,255,0.7); }
+
+    /* ----------  Hero content (bottom-left)  ---------- */
+    .hero__body {
+      position: relative;
+      z-index: 2;
+      flex: 1;
+      display: flex;
+      align-items: flex-end;
+      width: 100%;
+      max-width: var(--maxw);
+      margin: 0 auto;
+      padding-inline: var(--gutter);
+      padding-bottom: clamp(44px, 8vh, 96px);
+    }
+    .hero__col { max-width: 44rem; }
+
+    .eyebrow {
+      display: inline-block;
+      margin: 0 0 18px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: var(--accent-deep);
+    }
+    .headline {
+      margin: 0;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      line-height: 0.98;
+      font-size: clamp(2.6rem, 6.4vw, 4.9rem);
+      color: var(--ink);
+      text-wrap: balance;
+      max-width: 15ch;
+      text-shadow: 0 1px 2px rgba(255,255,255,0.6);   /* light halo, keeps type crisp over the busy car */
+    }
+    .subtext {
+      margin: 22px 0 0;
+      max-width: 42ch;
+      font-size: clamp(1rem, 1.5vw, 1.2rem);
+      line-height: 1.55;
+      color: var(--ink-soft);
+      text-wrap: pretty;
+      text-shadow: 0 1px 2px rgba(255,255,255,0.55);
+    }
+
+    /* ----------  CTAs (different intents, AA on light)  ---------- */
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 34px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 14px 26px;
+      border-radius: var(--r-pill);
+      font-size: 0.98rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: transform 0.15s var(--ease), background 0.2s ease,
+                  border-color 0.2s ease, box-shadow 0.25s ease;
+    }
+    .btn__arrow { transition: transform 0.2s var(--ease); }
+    .btn--primary {
+      background: var(--accent);
+      color: var(--accent-ink);
+      box-shadow: 0 12px 30px -12px rgba(232,145,43,0.7);
+    }
+    .btn--primary:hover { background: var(--accent-hi); transform: translateY(-1px);
+                          box-shadow: 0 18px 42px -14px rgba(244,164,69,0.8); }
+    .btn--primary:hover .btn__arrow { transform: translateX(3px); }
+    .btn--primary:active { transform: translateY(0) scale(0.98); }
+    .btn--ghost {
+      background: rgba(255,255,255,0.55);
+      color: var(--ink);
+      border-color: rgba(20,22,28,0.28);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+    .btn--ghost:hover { background: rgba(255,255,255,0.82); border-color: rgba(20,22,28,0.5);
+                        transform: translateY(-1px); }
+    .btn--ghost:active { transform: translateY(0) scale(0.98); }
+
+    :focus-visible { outline: 2px solid var(--accent-deep); outline-offset: 3px; border-radius: 4px; }
+
+    /* ----------  Entrance motion (motivated, JS + motion-safe only)  ---------- */
+    .js .reveal { opacity: 0; transform: translateY(16px); }
+    .js.is-ready .reveal {
+      opacity: 1;
+      transform: none;
+      transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+      transition-delay: var(--d, 0s);
+    }
+
+    /* ----------  Responsive  ---------- */
+    @media (max-width: 760px) {
+      .nav__links a:not(.nav__signin) { display: none; }
+      .hero__video { object-position: 56% 44%; }
+      .cta-row { width: 100%; }
+      .btn { flex: 1 1 auto; justify-content: center; }
+    }
+
+    /* ----------  Reduced motion: pause everything, show a clean still  ---------- */
+    @media (prefers-reduced-motion: reduce) {
+      .js .hero__video { opacity: 1 !important; transition: none; }
+      .js .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
+      .btn, .nav__links a::after, .btn__arrow { transition: none !important; }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="hero">
+    <!-- Full-bleed seamless-loop background video (assemble -> explode -> re-assemble) -->
+    <div class="hero__media">
+      <video
+        id="heroVideo"
+        class="hero__video"
+        autoplay muted loop playsinline preload="auto"
+        poster="poster.jpg"
+        aria-hidden="true">
+        <source src="car-hero.mp4" type="video/mp4" />
+        <!-- Fallback to the original clip if the seamless loop is unavailable -->
+        <source src="car%201.mp4.mp4" type="video/mp4" />
+      </video>
+    </div>
+    <div class="hero__lift"></div>
+
+    <!-- Nav -->
+    <nav class="nav" aria-label="Primary">
+      <a class="brand" href="#" aria-label="Marque home">
+        <span class="brand__mark" aria-hidden="true"></span>
+        Marque
+      </a>
+      <div class="nav__links">
+        <a href="#">Browse</a>
+        <a href="#">Sell</a>
+        <a href="#">Finance</a>
+        <a href="#">Stories</a>
+        <a class="nav__signin" href="#">Sign in</a>
+      </div>
+    </nav>
+
+    <!-- Hero copy: exactly 4 text elements (eyebrow, headline, subtext, CTA pair) -->
+    <div class="hero__body">
+      <div class="hero__col">
+        <span class="eyebrow reveal" style="--d:.05s">Premium car marketplace</span>
+        <h1 class="headline reveal" style="--d:.15s">Know every car, inside out</h1>
+        <p class="subtext reveal" style="--d:.28s">
+          Browse performance and luxury cars, each inspected part by part. List yours in minutes.
+        </p>
+        <div class="cta-row reveal" style="--d:.4s">
+          <a class="btn btn--primary" href="#">
+            Browse cars
+            <span class="btn__arrow" aria-hidden="true">&rarr;</span>
+          </a>
+          <a class="btn btn--ghost" href="#">Sell your car</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <script>
+    (function () {
+      var root   = document.documentElement;
+      var video  = document.getElementById('heroVideo');
+      var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+      // Some browsers require the muted property (not just the attribute) to autoplay.
+      video.muted = true;
+
+      function showContent() { root.classList.add('is-ready'); }
+      function showVideo()   { video.classList.add('is-playing'); }
+
+      if (reduce.matches) {
+        // Honor reduced motion: hold the poster/first frame, no autoplay, no entrance animation.
+        video.removeAttribute('autoplay');
+        video.pause();
+        return; // CSS forces content + video visible under reduced motion.
+      }
+
+      ['playing', 'canplay', 'loadeddata'].forEach(function (ev) {
+        video.addEventListener(ev, showVideo, { once: true });
+      });
+      if (video.readyState >= 2) showVideo();
+      setTimeout(showVideo, 1600); // safety net
+
+      var p = video.play();
+      if (p && typeof p.catch === 'function') { p.catch(function () {}); }
+
+      requestAnimationFrame(function () { requestAnimationFrame(showContent); });
+    })();
+  </script>
+</body>
+</html>

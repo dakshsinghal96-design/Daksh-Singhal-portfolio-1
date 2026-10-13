@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="theme-color" content="#120F17" />
+
+    <title>Daksh Sinhghal — Student Innovator &amp; Creative Developer</title>
+    <meta
+      name="description"
+      content="First-year B.Tech student building AI prototypes, gesture and motion interfaces, browser-based tools, simulations and product websites."
+    />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+    />
+
+    <!--
+      Painted before React mounts so a hard refresh never flashes the wrong
+      theme. Falls back to the dark-first default if storage is unavailable.
+    -->
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem('ds-theme');
+          var theme =
+            stored ||
+            (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+          document.documentElement.classList.toggle('dark', theme === 'dark');
+          document.documentElement.style.colorScheme = theme;
+        } catch (e) {
+          /* dark-first default already on <html> */
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>
+      <div style="padding: 2rem; font: 16px/1.6 system-ui, sans-serif; color: #f8f7fc">
+        <h1>Daksh Sinhghal</h1>
+        <p>
+          This portfolio needs JavaScript. The complete project archive remains browsable directly
+          at <a href="/p/" style="color: #a855f7">/p/</a> and <a href="/s/" style="color: #a855f7">/s/</a>.
+        </p>
+      </div>
+    </noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

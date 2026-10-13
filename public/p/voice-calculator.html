@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Voice Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+  /* ===== CSS Variables / Theme ===== */
+  :root {
+    --bg: #07090a;
+    --bg-elev: #0e1214;
+    --bg-card: #11161a;
+    --border: #1e262c;
+    --border-bright: #2a3640;
+    --text: #e6f1ec;
+    --text-dim: #7d8d87;
+    --text-faint: #4a5751;
+    --accent: #7CFFCB;       /* mint */
+    --accent-glow: #7CFFCB55;
+    --accent-soft: #7cffcb15;
+    --warn: #FFB84D;
+    --error: #ff6b6b;
+    --display-font: 'JetBrains Mono', ui-monospace, monospace;
+    --ui-font: 'Bricolage Grotesque', system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--ui-font);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Subtle background atmosphere */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 0%, #7cffcb0a 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 100%, #ffb84d08 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Faint grid */
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 60px 60px;
+    opacity: 0.15;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .app {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 28px 24px 60px;
+  }
+
+  /* ===== Header ===== */
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 36px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  .brand {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .brand-dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 10px var(--accent), 0 0 20px var(--accent-glow);
+    animation: dotPulse 2s ease-in-out infinite;
+  }
+  @keyframes dotPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.85); }
+  }
+  .brand-name {
+    font-family: var(--display-font);
+    font-size: 14px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .brand-name b { color: var(--text); font-weight: 500; }
+
+  .status-pill {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 14px;
+    border: 1px solid var(--border-bright);
+    border-radius: 999px;
+    font-family: var(--display-font);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    background: var(--bg-elev);
+  }
+  .status-pill .indicator {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--text-faint);
+  }
+  .status-pill.ready .indicator { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+  .status-pill.listening .indicator {
+    background: var(--accent);
+    animation: indicatorPulse 0.8s ease-in-out infinite;
+  }
+  .status-pill.error .indicator { background: var(--error); }
+  @keyframes indicatorPulse {
+    0%, 100% { box-shadow: 0 0 0 0 var(--accent-glow); }
+    50% { box-shadow: 0 0 0 6px transparent; }
+  }
+
+  /* ===== Title ===== */
+  .title-block {
+    margin-bottom: 40px;
+  }
+  h1 {
+    font-family: var(--ui-font);
+    font-weight: 800;
+    font-size: clamp(38px, 6vw, 68px);
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    margin-bottom: 12px;
+  }
+  h1 .accent {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--accent);
+    text-shadow: 0 0 30px var(--accent-glow);
+  }
+  .subtitle {
+    color: var(--text-dim);
+    font-size: 15px;
+    max-width: 520px;
+    line-height: 1.5;
+  }
+
+  /* ===== Main grid ===== */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 24px;
+  }
+  @media (max-width: 860px) {
+    .main-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ===== Calculator panel ===== */
+  .calc-panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 32px 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .calc-panel::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0.4;
+  }
+
+  .label {
+    font-family: var(--display-font);
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin-bottom: 8px;
+  }
+
+  /* Recognized speech display */
+  .heard {
+    font-family: var(--display-font);
+    font-size: 14px;
+    color: var(--text-dim);
+    min-height: 22px;
+    margin-bottom: 22px;
+    word-break: break-word;
+    transition: color 0.2s;
+  }
+  .heard.has-text { color: var(--text); }
+  .heard .interim { color: var(--text-faint); font-style: italic; }
+
+  /* Expression display */
+  .expression {
+    font-family: var(--display-font);
+    font-size: clamp(22px, 4vw, 32px);
+    font-weight: 400;
+    color: var(--text-dim);
+    min-height: 44px;
+    margin-bottom: 12px;
+    word-break: break-word;
+    letter-spacing: -0.02em;
+  }
+
+  /* Result display */
+  .result {
+    font-family: var(--display-font);
+    font-size: clamp(48px, 9vw, 84px);
+    font-weight: 500;
+    color: var(--accent);
+    line-height: 1.05;
+    letter-spacing: -0.04em;
+    min-height: 90px;
+    text-shadow: 0 0 40px var(--accent-glow);
+    word-break: break-all;
+    transition: opacity 0.3s;
+  }
+  .result.error { color: var(--error); text-shadow: 0 0 30px #ff6b6b55; font-size: clamp(20px, 3vw, 28px); }
+  .result.empty { color: var(--text-faint); text-shadow: none; font-size: clamp(36px, 6vw, 56px); opacity: 0.4; }
+
+  /* ===== Mic & controls ===== */
+  .mic-row {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    margin-top: 36px;
+    padding-top: 28px;
+    border-top: 1px dashed var(--border);
+  }
+
+  .mic-button {
+    position: relative;
+    width: 96px; height: 96px;
+    border-radius: 50%;
+    border: 1px solid var(--border-bright);
+    background: var(--bg-elev);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.2s, border-color 0.2s, background 0.2s;
+    flex-shrink: 0;
+  }
+  .mic-button:hover { transform: scale(1.04); border-color: var(--accent); }
+  .mic-button:active { transform: scale(0.98); }
+  .mic-button svg { width: 36px; height: 36px; color: var(--text); transition: color 0.2s; }
+  .mic-button:hover svg { color: var(--accent); }
+
+  .mic-button.listening {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+  }
+  .mic-button.listening svg { color: var(--accent); }
+  .mic-button.listening::before,
+  .mic-button.listening::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 2px solid var(--accent);
+    animation: ring 1.6s ease-out infinite;
+    pointer-events: none;
+  }
+  .mic-button.listening::after { animation-delay: 0.8s; }
+  @keyframes ring {
+    0%   { transform: scale(1);   opacity: 0.8; }
+    100% { transform: scale(1.6); opacity: 0;   }
+  }
+
+  .mic-button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .mic-info { flex: 1; min-width: 0; }
+  .mic-info .hint {
+    color: var(--text-dim);
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+  .mic-info .hint b { color: var(--text); font-weight: 500; }
+  .mic-info .help {
+    color: var(--text-faint);
+    font-size: 12px;
+    font-family: var(--display-font);
+  }
+
+  /* Toggles */
+  .toggles {
+    display: flex; gap: 8px; margin-top: 18px; flex-wrap: wrap;
+  }
+  .toggle {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 7px 14px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--text-dim);
+    font-family: var(--display-font);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .toggle:hover { border-color: var(--border-bright); color: var(--text); }
+  .toggle.on { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+  .toggle .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--text-faint);
+  }
+  .toggle.on .dot { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+
+  /* Manual input */
+  .manual {
+    margin-top: 18px;
+    display: flex; gap: 8px;
+  }
+  .manual input {
+    flex: 1;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--display-font);
+    font-size: 15px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .manual input:focus { border-color: var(--accent); }
+  .manual input::placeholder { color: var(--text-faint); }
+  .manual button {
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    font-family: var(--display-font);
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0 20px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: filter 0.15s, transform 0.1s;
+  }
+  .manual button:hover { filter: brightness(1.1); }
+  .manual button:active { transform: scale(0.97); }
+
+  /* ===== Side panel ===== */
+  .side-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 24px;
+  }
+  .card h3 {
+    font-family: var(--display-font);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .card h3 .num {
+    color: var(--accent); font-weight: 700;
+  }
+
+  /* Sample phrases */
+  .samples { display: flex; flex-direction: column; gap: 6px; }
+  .sample {
+    text-align: left;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--display-font);
+    font-size: 13px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .sample:hover {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    transform: translateX(3px);
+  }
+  .sample .arrow { color: var(--text-faint); margin-right: 8px; }
+  .sample:hover .arrow { color: var(--accent); }
+
+  /* History */
+  .history-list {
+    display: flex; flex-direction: column; gap: 10px;
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+  .history-list::-webkit-scrollbar { width: 4px; }
+  .history-list::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 4px; }
+
+  .hist-item {
+    padding: 10px 12px;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-family: var(--display-font);
+  }
+  .hist-item .h-expr {
+    font-size: 12px; color: var(--text-dim); margin-bottom: 2px;
+  }
+  .hist-item .h-result {
+    font-size: 16px; color: var(--accent); font-weight: 500;
+  }
+  .empty-state {
+    color: var(--text-faint);
+    font-size: 13px;
+    font-family: var(--display-font);
+    text-align: center;
+    padding: 20px 0;
+  }
+
+  /* Footer */
+  footer {
+    margin-top: 50px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    color: var(--text-faint);
+    font-size: 12px;
+    font-family: var(--display-font);
+    letter-spacing: 0.05em;
+    text-align: center;
+  }
+
+  /* Browser warning */
+  .browser-warn {
+    background: #ff6b6b15;
+    border: 1px solid #ff6b6b40;
+    color: #ffb3b3;
+    padding: 14px 18px;
+    border-radius: 14px;
+    font-size: 13px;
+    margin-bottom: 24px;
+    display: none;
+  }
+  .browser-warn.show { display: block; }
+  .browser-warn b { color: #ff8888; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Header -->
+  <header>
+    <div class="brand">
+      <div class="brand-dot"></div>
+      <div class="brand-name"><b>Voxcalc</b> · Voice Calculator</div>
+    </div>
+    <div class="status-pill" id="statusPill">
+      <span class="indicator"></span>
+      <span id="statusText">Initializing</span>
+    </div>
+  </header>
+
+  <!-- Title -->
+  <div class="title-block">
+    <h1>Just say <span class="accent">the math.</span></h1>
+    <p class="subtitle">Tap the mic and speak naturally — "twenty five plus thirty", "square root of one hundred forty four", "fifteen percent of two hundred". The calculator listens, computes, and speaks the answer back.</p>
+  </div>
+
+  <div class="browser-warn" id="browserWarn">
+    <b>Heads up:</b> Your browser may not fully support voice recognition. For best results, use <b>Google Chrome</b> or <b>Microsoft Edge</b>. You can still type expressions manually below.
+  </div>
+
+  <!-- Main grid -->
+  <div class="main-grid">
+
+    <!-- LEFT: Calculator panel -->
+    <div class="calc-panel">
+      <div class="label">Heard</div>
+      <div class="heard" id="heard">—</div>
+
+      <div class="label">Expression</div>
+      <div class="expression" id="expression">—</div>
+
+      <div class="label">Result</div>
+      <div class="result empty" id="result">0</div>
+
+      <!-- Mic + info -->
+      <div class="mic-row">
+        <button class="mic-button" id="micBtn" aria-label="Start listening">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="3" width="6" height="12" rx="3"/>
+            <path d="M5 11a7 7 0 0 0 14 0"/>
+            <line x1="12" y1="19" x2="12" y2="22"/>
+            <line x1="8" y1="22" x2="16" y2="22"/>
+          </svg>
+        </button>
+        <div class="mic-info">
+          <div class="hint" id="micHint"><b>Tap to speak.</b> Or type below.</div>
+          <div class="help">Try: "fifty times eight" · "say clear to reset"</div>
+
+          <div class="toggles">
+            <button class="toggle on" id="ttsToggle">
+              <span class="dot"></span> Speak Result
+            </button>
+            <button class="toggle on" id="contToggle">
+              <span class="dot"></span> Continuous
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Manual input fallback -->
+      <div class="manual">
+        <input type="text" id="manualInput" placeholder="Or type: 25 + 30, sqrt(144), 50% of 200..." />
+        <button id="manualBtn">Calc</button>
+      </div>
+    </div>
+
+    <!-- RIGHT: Side panel -->
+    <div class="side-panel">
+
+      <div class="card">
+        <h3><span class="num">01</span> Try saying</h3>
+        <div class="samples" id="samples">
+          <button class="sample"><span class="arrow">→</span>twenty five plus thirty</button>
+          <button class="sample"><span class="arrow">→</span>seven times eight</button>
+          <button class="sample"><span class="arrow">→</span>one hundred divided by four</button>
+          <button class="sample"><span class="arrow">→</span>square root of one hundred forty four</button>
+          <button class="sample"><span class="arrow">→</span>fifteen percent of two hundred</button>
+          <button class="sample"><span class="arrow">→</span>two to the power of ten</button>
+          <button class="sample"><span class="arrow">→</span>nine squared</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3><span class="num">02</span> History</h3>
+        <div class="history-list" id="history">
+          <div class="empty-state">No calculations yet</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <footer>
+    Built with Web Speech API · Single-file project
+  </footer>
+</div>
+
+<script>
+/* ======================================================================
+   VOICE CALCULATOR — single file project
+   ----------------------------------------------------------------------
+   Pipeline:
+     1. Listen via SpeechRecognition (Web Speech API)
+     2. Convert spoken text → math expression
+        - replace operator words (plus, minus, times…)
+        - convert number words (twenty five → 25)
+        - handle special ops (square root, percent, power)
+     3. Evaluate safely
+     4. Display + speak result via SpeechSynthesis
+   ====================================================================== */
+
+/* ---------- DOM refs ---------- */
+const $ = (id) => document.getElementById(id);
+const heardEl     = $('heard');
+const exprEl      = $('expression');
+const resultEl    = $('result');
+const micBtn      = $('micBtn');
+const micHint     = $('micHint');
+const statusPill  = $('statusPill');
+const statusText  = $('statusText');
+const ttsToggle   = $('ttsToggle');
+const contToggle  = $('contToggle');
+const manualInput = $('manualInput');
+const manualBtn   = $('manualBtn');
+const historyEl   = $('history');
+const browserWarn = $('browserWarn');
+
+/* ---------- State ---------- */
+let recognition = null;
+let isListening = false;
+let speakResult = true;
+let continuousMode = true;
+const history = [];
+
+/* ======================================================================
+   1. NUMBER-WORDS → DIGITS
+   Handles: zero..nineteen, twenty..ninety, hundred, thousand, million.
+   Also handles compound numbers like "one hundred and twenty five".
+   ====================================================================== */
+const NUMBER_WORDS = {
+  zero:0, oh:0, one:1, two:2, three:3, four:4, five:5, six:6, seven:7,
+  eight:8, nine:9, ten:10, eleven:11, twelve:12, thirteen:13, fourteen:14,
+  fifteen:15, sixteen:16, seventeen:17, eighteen:18, nineteen:19,
+  twenty:20, thirty:30, forty:40, fourty:40 /* common typo */, fifty:50,
+  sixty:60, seventy:70, eighty:80, ninety:90,
+  hundred:100, thousand:1000, million:1000000
+};
+
+function isNumberWord(tok) {
+  return NUMBER_WORDS[tok] !== undefined || tok === 'and';
+}
+
+/* Convert an array of number-word tokens to a single number */
+function wordsToNumber(tokens) {
+  let total = 0;
+  let current = 0;
+  let saw = false;
+  for (const word of tokens) {
+    if (word === 'and') continue;
+    const n = NUMBER_WORDS[word];
+    if (n === undefined) return null;
+    saw = true;
+    if (n === 100) {
+      current = (current || 1) * 100;
+    } else if (n >= 1000) {
+      total += (current || 1) * n;
+      current = 0;
+    } else {
+      current += n;
+    }
+  }
+  return saw ? total + current : null;
+}
+
+/* ======================================================================
+   2. SPOKEN TEXT → MATH EXPRESSION
+   ====================================================================== */
+function spokenToExpression(text) {
+  let s = ' ' + text.toLowerCase().trim() + ' ';
+
+  // Strip filler / question phrasing
+  s = s.replace(/\b(what's|whats|what is|how much is|calculate|compute|tell me|please|the answer|the result|equals|equal to|is)\b/g, ' ');
+
+  // Normalize phrases (do longest first)
+  s = s.replace(/\bsquare root of\b/g, ' SQRT ');
+  s = s.replace(/\bsquared\b/g, ' ** 2 ');
+  s = s.replace(/\bcubed\b/g, ' ** 3 ');
+  s = s.replace(/\bto the power of\b|\braised to\b|\bpower of\b|\bpower\b/g, ' ** ');
+  s = s.replace(/\bpercent of\b/g, ' PERCENTOF ');
+  s = s.replace(/\bpercent\b|%/g, ' PERCENT ');
+  s = s.replace(/\bmodulo\b|\bmod\b/g, ' % ');
+
+  // Operators (longest variants first)
+  s = s.replace(/\bmultiplied by\b/g, ' * ');
+  s = s.replace(/\bdivided by\b/g, ' / ');
+  s = s.replace(/\bdivide by\b/g, ' / ');
+  s = s.replace(/\bplus\b|\badd\b|\badded to\b/g, ' + ');
+  s = s.replace(/\bminus\b|\bsubtract\b|\btake away\b|\bless\b/g, ' - ');
+  s = s.replace(/\btimes\b|\bmultiply\b|\binto\b/g, ' * ');
+  s = s.replace(/\bdivide\b|\bover\b/g, ' / ');
+  s = s.replace(/\bpoint\b|\bdecimal\b/g, '.');
+
+  // Keep math symbols if user said e.g. "5 + 3" (some recognizers do this)
+  // Tokenize — split on whitespace, keeping operator symbols as separate tokens
+  s = s.replace(/([+\-*/()])/g, ' $1 ');
+  const rawTokens = s.split(/\s+/).filter(Boolean);
+
+  // Convert runs of number words to digits
+  const out = [];
+  let buf = [];
+  const flush = () => {
+    if (!buf.length) return;
+    const n = wordsToNumber(buf);
+    if (n !== null) out.push(String(n));
+    else out.push(buf.join(' '));
+    buf = [];
+  };
+  for (const t of rawTokens) {
+    if (isNumberWord(t)) {
+      buf.push(t);
+    } else {
+      flush();
+      out.push(t);
+    }
+  }
+  flush();
+
+  let expr = out.join(' ');
+
+  // Handle PERCENT and PERCENTOF after numbers are digits
+  // "X PERCENTOF Y"  →  "(X/100)*Y"
+  expr = expr.replace(/(\d+(?:\.\d+)?)\s*PERCENTOF\s*(\d+(?:\.\d+)?)/g, '($1/100)*$2');
+  // "X PERCENT" → "(X/100)"
+  expr = expr.replace(/(\d+(?:\.\d+)?)\s*PERCENT/g, '($1/100)');
+  // Stray PERCENT
+  expr = expr.replace(/PERCENTOF/g, '*').replace(/PERCENT/g, '');
+
+  // Handle SQRT
+  // "SQRT X" → Math.sqrt(X)
+  expr = expr.replace(/SQRT\s*\(?\s*(\d+(?:\.\d+)?)\s*\)?/g, 'Math.sqrt($1)');
+  expr = expr.replace(/\bsqrt\b\s*\(?\s*(\d+(?:\.\d+)?)\s*\)?/gi, 'Math.sqrt($1)');
+
+  // Cleanup whitespace + stray operators
+  expr = expr.replace(/\s+/g, ' ').trim();
+
+  return expr;
+}
+
+/* ======================================================================
+   3. SAFE EVALUATOR
+   Only allow: digits, dot, + - * / % ( ) , and "Math.sqrt"
+   ====================================================================== */
+function safeEval(expr) {
+  if (!expr) throw new Error('empty');
+
+  // Allowlist check: strip Math.sqrt then ensure only safe chars remain.
+  const stripped = expr.replace(/Math\.sqrt/g, '').replace(/\s/g, '');
+  if (!/^[0-9+\-*/.%()]*$/.test(stripped)) {
+    throw new Error('unsupported characters: ' + expr);
+  }
+
+  // Reject obviously broken expressions
+  if (/[+\-*/]{3,}/.test(stripped) || /^[*/%]/.test(stripped) || /[+\-*/]$/.test(stripped)) {
+    throw new Error('incomplete expression');
+  }
+
+  // Use Function constructor (no access to local scope)
+  const val = Function('"use strict"; return (' + expr + ')')();
+  if (typeof val !== 'number' || !isFinite(val)) throw new Error('not a number');
+  return val;
+}
+
+/* Format number nicely (limit floating noise) */
+function formatNumber(n) {
+  if (Number.isInteger(n)) return n.toString();
+  // Round to 8 decimals then trim trailing zeros
+  return parseFloat(n.toFixed(8)).toString();
+}
+
+/* ======================================================================
+   4. RUN A CALCULATION (entry point for both voice + manual)
+   ====================================================================== */
+function runCalculation(spokenText, fromVoice = false) {
+  if (!spokenText || !spokenText.trim()) return;
+
+  // Special voice commands
+  const lower = spokenText.toLowerCase().trim();
+  if (/^(clear|reset|erase|cancel)$/.test(lower)) {
+    heardEl.textContent = 'clear';
+    heardEl.classList.add('has-text');
+    exprEl.textContent = '—';
+    resultEl.textContent = '0';
+    resultEl.className = 'result empty';
+    speak('Cleared');
+    return;
+  }
+
+  heardEl.textContent = spokenText;
+  heardEl.classList.add('has-text');
+
+  let expr;
+  try {
+    expr = spokenToExpression(spokenText);
+  } catch (e) {
+    showError("Couldn't understand that.");
+    return;
+  }
+
+  if (!expr || !/[0-9]/.test(expr)) {
+    showError("Didn't catch any numbers — try again.");
+    return;
+  }
+
+  exprEl.textContent = expr;
+
+  let value;
+  try {
+    value = safeEval(expr);
+  } catch (e) {
+    showError('Hmm, that math didn\'t work. Try rephrasing.');
+    return;
+  }
+
+  const formatted = formatNumber(value);
+  resultEl.textContent = formatted;
+  resultEl.className = 'result';
+
+  // Add to history
+  addHistory(expr, formatted);
+
+  // Speak result
+  if (fromVoice && speakResult) {
+    speak('The answer is ' + formatted);
+  } else if (speakResult && !fromVoice) {
+    // For manual input, only speak if user wants
+    speak(formatted);
+  }
+}
+
+function showError(msg) {
+  resultEl.textContent = msg;
+  resultEl.className = 'result error';
+  if (speakResult) speak("Sorry, I didn't get that.");
+}
+
+/* ======================================================================
+   5. HISTORY
+   ====================================================================== */
+function addHistory(expr, result) {
+  history.unshift({ expr, result, t: Date.now() });
+  if (history.length > 20) history.pop();
+  renderHistory();
+}
+function renderHistory() {
+  if (!history.length) {
+    historyEl.innerHTML = '<div class="empty-state">No calculations yet</div>';
+    return;
+  }
+  historyEl.innerHTML = history.map(h => `
+    <div class="hist-item">
+      <div class="h-expr">${escapeHtml(h.expr)}</div>
+      <div class="h-result">= ${escapeHtml(h.result)}</div>
+    </div>
+  `).join('');
+}
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ======================================================================
+   6. TEXT-TO-SPEECH
+   ====================================================================== */
+function speak(text) {
+  if (!speakResult) return;
+  if (!('speechSynthesis' in window)) return;
+  try {
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 1.0;
+    u.pitch = 1.0;
+    window.speechSynthesis.speak(u);
+  } catch (e) { /* ignore */ }
+}
+
+/* ======================================================================
+   7. SPEECH RECOGNITION SETUP
+   ====================================================================== */
+function setupRecognition() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    browserWarn.classList.add('show');
+    setStatus('error', 'Voice not supported');
+    micBtn.disabled = true;
+    return;
+  }
+
+  recognition = new SR();
+  recognition.lang = 'en-US';
+  recognition.interimResults = true;
+  recognition.continuous = false;     // we restart manually for "continuous mode"
+  recognition.maxAlternatives = 1;
+
+  recognition.onstart = () => {
+    isListening = true;
+    micBtn.classList.add('listening');
+    setStatus('listening', 'Listening…');
+    micHint.innerHTML = '<b>Listening…</b> say a math expression';
+  };
+
+  recognition.onresult = (e) => {
+    let finalText = '';
+    let interimText = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const r = e.results[i];
+      if (r.isFinal) finalText += r[0].transcript;
+      else interimText += r[0].transcript;
+    }
+    if (interimText) {
+      heardEl.innerHTML = '<span class="interim">' + escapeHtml(interimText) + '</span>';
+      heardEl.classList.add('has-text');
+    }
+    if (finalText) {
+      runCalculation(finalText, true);
+    }
+  };
+
+  recognition.onerror = (e) => {
+    console.warn('Recognition error:', e.error);
+    if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+      setStatus('error', 'Mic blocked');
+      micHint.innerHTML = '<b>Microphone blocked.</b> Allow mic access in your browser.';
+      stopListening();
+      return;
+    }
+    if (e.error === 'no-speech') {
+      micHint.innerHTML = "Didn't hear anything. <b>Tap mic</b> & try again.";
+    }
+  };
+
+  recognition.onend = () => {
+    isListening = false;
+    micBtn.classList.remove('listening');
+    if (continuousMode && !micBtn.disabled && wasListening) {
+      // Restart for continuous mode after small delay
+      setTimeout(() => { if (wasListening) startListening(); }, 350);
+    } else {
+      setStatus('ready', 'Ready');
+      micHint.innerHTML = '<b>Tap to speak.</b> Or type below.';
+    }
+  };
+}
+
+let wasListening = false;
+function startListening() {
+  if (!recognition || isListening) return;
+  try {
+    wasListening = true;
+    recognition.start();
+  } catch (e) {
+    // already started — ignore
+  }
+}
+function stopListening() {
+  wasListening = false;
+  if (recognition && isListening) {
+    try { recognition.stop(); } catch (e) {}
+  }
+  micBtn.classList.remove('listening');
+  setStatus('ready', 'Ready');
+  micHint.innerHTML = '<b>Tap to speak.</b> Or type below.';
+}
+
+/* ======================================================================
+   8. UI WIRING
+   ====================================================================== */
+function setStatus(cls, text) {
+  statusPill.className = 'status-pill ' + cls;
+  statusText.textContent = text;
+}
+
+micBtn.addEventListener('click', () => {
+  if (isListening || wasListening) stopListening();
+  else startListening();
+});
+
+manualBtn.addEventListener('click', () => {
+  const v = manualInput.value.trim();
+  if (v) {
+    runCalculation(v, false);
+    manualInput.value = '';
+  }
+});
+manualInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') manualBtn.click();
+});
+
+ttsToggle.addEventListener('click', () => {
+  speakResult = !speakResult;
+  ttsToggle.classList.toggle('on', speakResult);
+});
+
+contToggle.addEventListener('click', () => {
+  continuousMode = !continuousMode;
+  contToggle.classList.toggle('on', continuousMode);
+});
+
+// Sample phrase buttons → run as if spoken
+document.querySelectorAll('.sample').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const phrase = btn.textContent.replace(/^→\s*/, '').trim();
+    runCalculation(phrase, false);
+  });
+});
+
+/* ======================================================================
+   9. INITIALIZE
+   ====================================================================== */
+setupRecognition();
+if (recognition) setStatus('ready', 'Ready');
+</script>
+</body>
+</html>

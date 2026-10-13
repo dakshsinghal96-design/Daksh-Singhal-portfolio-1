@@ -1,0 +1,1480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hands-Free Cookbook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;900&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f5ebd9;            /* warm vintage cream */
+    --bg-2: #ead9bf;          /* deeper cream */
+    --card: #fcf5e6;          /* lightest cream for surfaces */
+    --ink: #3a1018;           /* deep burgundy ink (text + buttons) */
+    --ink-soft: #6e3540;      /* secondary text */
+    --muted: #9d7e7c;         /* dusty mauve for muted text */
+    --line: #d9c6a8;          /* warm tan hairlines */
+    --accent: #7a1f2b;        /* rich burgundy primary accent */
+    --accent-2: #b59446;      /* aged brass for secondary accent */
+    --accent-soft: #f3dccf;   /* blush wash for hover/badge backgrounds */
+    --done: #5e4a2a;          /* deep olive-bronze for completed state */
+  }
+  html, body {
+    height: 100%; overflow: hidden;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'EB Garamond', 'Garamond', Georgia, serif;
+    font-size: 17px;            /* Garamond reads slightly small at 16px */
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3 {
+    font-family: 'Cinzel', 'Trajan Pro', 'Times New Roman', serif;
+    font-weight: 600;
+    letter-spacing: 0.04em;     /* Cinzel benefits from slightly open spacing */
+    text-transform: uppercase;  /* the all-caps Roman-inscription look */
+    line-height: 1.15;
+  }
+  /* Italic accents inside headings keep the lowercase italic feel from
+     Cormorant Garamond — looks like a calligrapher's flourish */
+  h1 em, h2 em, h3 em {
+    font-family: 'Cormorant Garamond', 'EB Garamond', serif;
+    font-style: italic;
+    font-weight: 500;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  /* ── BRAND HEADER (OBLIQ AI Education Foundation) ── */
+  #brandHeader {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 95;
+    background: var(--ink);                          /* deep burgundy */
+    color: var(--bg);
+    padding: 10px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--accent-2);
+    box-shadow: 0 2px 12px rgba(58, 16, 24, 0.18);
+    font-family: 'Cinzel', serif;
+    height: 54px;
+  }
+  #brandHeader .brand-mark {
+    display: flex; align-items: center; gap: 12px;
+  }
+  #brandHeader .brand-glyph {
+    color: var(--accent-2);                           /* aged brass */
+    font-size: 18px;
+    line-height: 1;
+  }
+  #brandHeader .brand-text {
+    display: flex; flex-direction: column;
+    line-height: 1.05;
+  }
+  #brandHeader .brand-name {
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: 0.32em;
+    color: var(--bg);
+  }
+  #brandHeader .brand-line {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    color: var(--accent-2);
+    margin-top: 1px;
+  }
+  #brandHeader .brand-tag {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 13px;
+    color: var(--accent-2);
+    letter-spacing: 0.04em;
+  }
+
+  /* ── BRAND FOOTER (Digital Hammerr) ─────────────── */
+  #brandFooter {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    z-index: 95;
+    background: var(--ink);
+    color: var(--bg);
+    padding: 10px 28px;
+    border-top: 1px solid var(--accent-2);
+    box-shadow: 0 -2px 12px rgba(58, 16, 24, 0.18);
+    height: 50px;
+  }
+  #brandFooter .footer-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+  }
+  #brandFooter .footer-mark {
+    display: flex; align-items: center; gap: 12px;
+  }
+  #brandFooter .dh-glyph {
+    color: var(--accent-2);
+    font-size: 18px;
+    line-height: 1;
+    transform: rotate(-15deg);
+    display: inline-block;
+  }
+  #brandFooter .dh-text {
+    display: flex; flex-direction: column;
+    line-height: 1.05;
+  }
+  #brandFooter .dh-name {
+    font-family: 'Cinzel', serif;
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: 0.18em;
+    color: var(--bg);
+  }
+  #brandFooter .dh-tag {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--accent-2);
+    margin-top: 1px;
+  }
+  #brandFooter .footer-meta {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 12px;
+    color: var(--accent-2);
+    letter-spacing: 0.06em;
+  }
+
+  /* ── INTRO ──────────────────────────────────────── */
+  #intro {
+    position: fixed; top: 54px; bottom: 50px; left: 0; right: 0;
+    z-index: 90;
+    background: var(--bg);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 40px; text-align: center;
+    transition: opacity .5s;
+    overflow-y: auto;
+  }
+  #intro.hide { opacity: 0; pointer-events: none; }
+  #intro .badge {
+    background: var(--accent-soft); color: var(--accent);
+    padding: 7px 18px; border-radius: 100px;
+    font-family: 'Cinzel', serif;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.28em; text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  #intro h1 {
+    font-size: clamp(40px, 7.5vw, 80px);   /* Cinzel takes more horizontal space than Fraunces */
+    margin-bottom: 22px; max-width: 1000px;
+    letter-spacing: 0.03em;
+    line-height: 1.05;
+  }
+  #intro h1 em { font-style: italic; color: var(--accent); }
+  #intro p {
+    font-size: 17px; color: var(--ink-soft);
+    max-width: 580px; margin-bottom: 32px;
+  }
+  #intro .gestures {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px; max-width: 880px; width: 100%;
+    margin-bottom: 36px;
+  }
+  #intro .gesture {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 20px;
+    text-align: left;
+  }
+  #intro .gesture .ico { font-size: 28px; margin-bottom: 8px; }
+  #intro .gesture .lbl { font-weight: 700; margin-bottom: 4px; }
+  #intro .gesture .sub { font-size: 13px; color: var(--ink-soft); }
+  #intro button {
+    padding: 16px 40px; border: 0;
+    background: var(--ink); color: var(--bg);
+    border-radius: 100px;
+    font-family: 'Cinzel', serif;
+    font-size: 13px; font-weight: 600;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    cursor: pointer; transition: background .2s;
+  }
+  #intro button:hover { background: var(--accent); }
+  #intro .tip { margin-top: 18px; font-size: 12px; color: var(--muted); }
+
+  /* ── HOME / RECIPE PICKER ────────────────────────── */
+  #picker {
+    position: fixed; top: 54px; bottom: 50px; left: 0; right: 0;
+    z-index: 5;
+    background: var(--bg);
+    overflow-y: auto;
+    padding: 56px 32px 56px;
+    display: none;
+  }
+  #picker.show { display: block; }
+  #picker .inner { max-width: 1200px; margin: 0 auto; }
+  #picker h2 { font-size: clamp(32px, 4.5vw, 54px); margin-bottom: 8px; letter-spacing: 0.04em; }
+  #picker h2 em { font-style: italic; color: var(--accent); }
+  #picker .sub { color: var(--ink-soft); font-size: 16px; margin-bottom: 40px; max-width: 580px; }
+  #picker .grid {
+    display: grid; gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+  .recipe-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform .25s, box-shadow .25s, border-color .25s;
+  }
+  .recipe-card:hover, .recipe-card.gaze {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 40px rgba(58, 16, 24, 0.1);
+    border-color: var(--accent);
+  }
+  .recipe-card .img {
+    aspect-ratio: 3/2;
+    font-size: 64px;
+    display: grid; place-items: center;
+    background: var(--bg-2);
+  }
+  .recipe-card .body { padding: 18px; }
+  .recipe-card .body h3 { font-size: 22px; margin-bottom: 6px; }
+  .recipe-card .meta { display: flex; gap: 12px; font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+  .recipe-card .meta span { display: inline-flex; align-items: center; gap: 4px; }
+  .recipe-card .desc {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 16px;
+    color: var(--ink-soft);
+    line-height: 1.4;
+  }
+
+  /* ── RECIPE READER ───────────────────────────────── */
+  #reader {
+    position: fixed; top: 54px; bottom: 50px; left: 0; right: 0;
+    z-index: 5;
+    display: none;
+  }
+  #reader.show { display: block; }
+
+  #recipeScroll {
+    position: absolute; inset: 0;
+    overflow-y: auto;
+    scroll-behavior: auto;
+    padding: 100px 64px 60px;
+  }
+  #recipeScroll::-webkit-scrollbar { width: 8px; }
+  #recipeScroll::-webkit-scrollbar-thumb { background: var(--line); border-radius: 8px; }
+
+  .recipe-header { text-align: center; margin-bottom: 56px; }
+  .recipe-header .ico { font-size: 80px; margin-bottom: 16px; }
+  .recipe-header h1 { font-size: clamp(40px, 5.2vw, 76px); margin-bottom: 12px; letter-spacing: 0.04em; line-height: 1.05; }
+  .recipe-header h1 em { font-style: italic; color: var(--accent); }
+  /* Ornamental rule — small lozenges flanking the title for old-manuscript feel */
+  .recipe-header h1::before, .recipe-header h1::after {
+    content: '◆';
+    color: var(--accent-2);
+    font-size: 0.32em;
+    vertical-align: 0.5em;
+    margin: 0 0.6em;
+    letter-spacing: 0;
+  }
+  .recipe-header .meta {
+    display: flex; gap: 24px; justify-content: center;
+    color: var(--ink-soft); font-size: 17px;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+  }
+
+  .recipe-body {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 56px;
+    max-width: 1320px;
+    margin: 0 auto;
+  }
+
+  /* Ingredients sidebar */
+  .ingredients { position: sticky; top: 0; align-self: start; padding-top: 8px; }
+  .ingredients h2 { font-size: 28px; margin-bottom: 16px; }
+  .ingredients ul { list-style: none; }
+  .ingredients li {
+    padding: 12px 14px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    margin-bottom: 6px;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 16px;
+  }
+  .ingredients li .check {
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 1.5px solid var(--line); flex-shrink: 0;
+  }
+  .ingredients li.checked { color: var(--muted); text-decoration: line-through; }
+  .ingredients li.checked .check {
+    background: var(--done); border-color: var(--done);
+    color: white; display: grid; place-items: center; font-size: 11px;
+  }
+  .ingredients li.checked .check::after { content: '✓'; color: white; }
+
+  /* Steps */
+  .steps h2 { font-size: 28px; margin-bottom: 16px; }
+  .step {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 32px 36px;
+    margin-bottom: 18px;
+    transition: border-color .25s, background .25s;
+    position: relative;
+  }
+  .step.current {
+    border-color: var(--accent);
+    background: var(--card);
+    box-shadow: 0 8px 32px rgba(122, 31, 43, 0.18);
+  }
+  .step.done {
+    background: var(--bg-2);
+    opacity: 0.7;
+  }
+  .step .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 38px; height: 38px;
+    background: var(--bg-2); color: var(--ink);
+    border-radius: 50%;
+    font-family: 'Cinzel', serif; font-size: 17px; font-weight: 600;
+    margin-bottom: 12px;
+    letter-spacing: 0;
+  }
+  .step.current .num { background: var(--accent); color: var(--bg); }
+  .step.done .num { background: var(--done); color: white; }
+  .step.done .num::after { content: '✓'; }
+  .step.done .num span { display: none; }
+  .step h3 { font-size: 22px; margin-bottom: 10px; letter-spacing: 0.04em; }
+  .step p { font-size: 19px; line-height: 1.65; color: var(--ink-soft); }
+  /* Cormorant for the cooking-time tag — feels like a margin note */
+  .step .timer-tag {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 5px 12px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-radius: 100px;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 14px; font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+
+  /* ── SCROLL ZONES (visual gaze hints) ───────────── */
+  .scroll-zone {
+    position: fixed; left: 0; right: 0;
+    height: 14%; z-index: 8;
+    pointer-events: none;
+    display: flex; justify-content: center; align-items: center;
+    transition: background .25s;
+  }
+  .scroll-zone.top { top: 54px; }
+  .scroll-zone.bottom { bottom: 50px; }
+  .scroll-zone .label {
+    background: rgba(58, 16, 24, 0.9);
+    color: var(--bg);
+    padding: 8px 20px; border-radius: 100px;
+    font-size: 12px; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    opacity: 0; transform: translateY(0);
+    transition: opacity .25s, transform .25s;
+  }
+  .scroll-zone.active { background: linear-gradient(to bottom, rgba(122, 31, 43, 0.22), transparent); }
+  .scroll-zone.bottom.active { background: linear-gradient(to top, rgba(122, 31, 43, 0.22), transparent); }
+  .scroll-zone.active .label { opacity: 1; }
+
+  /* ── HEADER (during reader) ──────────────────────── */
+  #readerHeader {
+    position: absolute; top: 0; left: 0; right: 0; z-index: 9;
+    padding: 16px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: linear-gradient(to bottom, var(--bg), rgba(245, 235, 217, 0));
+    pointer-events: none;
+  }
+  #readerHeader > * { pointer-events: auto; }
+  #backBtn {
+    border: 0; background: var(--card);
+    border: 1px solid var(--line);
+    padding: 10px 18px; border-radius: 100px;
+    font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: all .2s;
+  }
+  #backBtn:hover, #backBtn.gaze {
+    background: var(--ink); color: var(--bg); border-color: var(--ink);
+  }
+  #stepIndicator {
+    background: var(--card);
+    border: 1px solid var(--line);
+    padding: 10px 18px; border-radius: 100px;
+    font-size: 13px; font-weight: 600;
+    display: flex; gap: 10px; align-items: center;
+  }
+  #stepIndicator .pip {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--line);
+  }
+  #stepIndicator .pip.done { background: var(--done); }
+  #stepIndicator .pip.current { background: var(--accent); transform: scale(1.4); }
+
+  /* ── TIMER OVERLAY ───────────────────────────────── */
+  #timer {
+    position: fixed; bottom: 64px; left: 50%; transform: translateX(-50%) translateY(150%);
+    z-index: 12;
+    background: var(--ink); color: var(--bg);
+    padding: 18px 28px; border-radius: 18px;
+    display: flex; align-items: center; gap: 16px;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.25);
+    transition: transform .35s cubic-bezier(.2,.7,.2,1);
+    min-width: 280px;
+  }
+  #timer.show { transform: translateX(-50%) translateY(0); }
+  #timer.alarm { animation: shake .5s ease-in-out infinite; background: var(--accent); }
+  @keyframes shake {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    25% { transform: translateX(calc(-50% - 4px)) translateY(0); }
+    75% { transform: translateX(calc(-50% + 4px)) translateY(0); }
+  }
+  #timer .ico { font-size: 28px; }
+  #timer .info { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+  #timer .lbl { font-size: 11px; opacity: 0.7; letter-spacing: 0.16em; text-transform: uppercase; }
+  #timer .countdown {
+    font-family: 'Cinzel', serif; font-size: 32px; font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0.05em;
+  }
+
+  /* ── GESTURE HUD ─────────────────────────────────── */
+  #hud {
+    position: fixed; bottom: 60px; left: 16px; z-index: 96;
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: 100px;
+    padding: 8px 14px;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 12px; color: var(--ink-soft);
+    pointer-events: none;
+  }
+  #hud .led {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--muted);
+  }
+  #hud .led.on {
+    background: var(--accent-2);
+    animation: pulse 1.4s infinite;
+  }
+  @keyframes pulse { 50% { opacity: 0.4; } }
+
+  /* ── PIP WEBCAM ──────────────────────────────────── */
+  #pip {
+    position: fixed; bottom: 60px; right: 16px; z-index: 96;
+    width: 160px; height: 120px;
+    background: #000;
+    border-radius: 12px;
+    border: 2px solid var(--card);
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+    pointer-events: none;
+  }
+  #pip video, #pip canvas {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    transform: scaleX(-1);
+    object-fit: cover;
+  }
+  #pip .badge {
+    position: absolute; top: 6px; left: 8px;
+    color: white; font-size: 10px;
+    background: rgba(0,0,0,0.5);
+    padding: 2px 6px; border-radius: 100px;
+    letter-spacing: 0.12em; font-weight: 700;
+  }
+
+  /* ── HAND CURSOR PINCH STATE ─────────────────────── */
+  #handCursor.pinching .ho { fill: rgba(122, 31, 43, 0.5); stroke-width: 2; }
+  #handCursor.pinching .hi { r: 6; fill: var(--card); }
+
+  /* ── GAZE CURSOR ─────────────────────────────────── */
+  #gazeCursor {
+    position: fixed; top: 0; left: 0; z-index: 50;
+    width: 50px; height: 50px;
+    pointer-events: none;
+    opacity: 0; transition: opacity .2s;
+    will-change: transform;
+  }
+  #gazeCursor.visible { opacity: 1; }
+  #gazeCursor svg { width: 100%; height: 100%; overflow: visible; }
+
+  /* ── TOAST ───────────────────────────────────────── */
+  #toast {
+    position: fixed; top: 70px; left: 50%;
+    transform: translateX(-50%) translateY(-200%);
+    z-index: 100;
+    background: var(--accent); color: var(--bg);
+    padding: 12px 22px; border-radius: 100px;
+    font-size: 13px; font-weight: 600;
+    transition: transform .35s cubic-bezier(.2,.7,.2,1);
+    box-shadow: 0 8px 24px rgba(58, 16, 24, 0.25);
+  }
+  #toast.show { transform: translateX(-50%) translateY(0); }
+
+  @media (max-width: 900px) {
+    .recipe-body { grid-template-columns: 1fr; }
+    .ingredients { position: static; margin-bottom: 32px; }
+    #recipeScroll { padding: 100px 24px 200px; }
+    .step { padding: 24px; }
+    #intro .gestures { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 540px) {
+    #intro .gestures { grid-template-columns: 1fr; }
+    #brandHeader { height: 46px; padding: 8px 14px; }
+    #brandHeader .brand-name { font-size: 14px; letter-spacing: 0.22em; }
+    #brandHeader .brand-line { font-size: 9px; }
+    #brandHeader .brand-tag { display: none; }
+    #brandFooter { height: 44px; padding: 8px 14px; }
+    #brandFooter .dh-name { font-size: 12px; letter-spacing: 0.14em; }
+    #brandFooter .dh-tag { font-size: 9px; }
+    #brandFooter .footer-meta { display: none; }
+    #intro, #picker, #reader { top: 46px; bottom: 44px; }
+    .scroll-zone.top { top: 46px; }
+    .scroll-zone.bottom { bottom: 44px; }
+    #pip, #hud { bottom: 54px; }
+    #timer { bottom: 58px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── OBLIQ AI Education Foundation — header ───────────── -->
+<header id="brandHeader">
+  <div class="brand-mark">
+    <span class="brand-glyph">◆</span>
+    <span class="brand-text">
+      <span class="brand-name">OBLIQ</span>
+      <span class="brand-line">AI Education Foundation</span>
+    </span>
+  </div>
+  <div class="brand-tag">A project · Hands-Free Cookbook</div>
+</header>
+
+<!-- ── Digital Hammerr — footer ─────────────────────────── -->
+<footer id="brandFooter">
+  <div class="footer-inner">
+    <div class="footer-mark">
+      <span class="dh-glyph">⚒</span>
+      <span class="dh-text">
+        <span class="dh-name">Digital Hammerr</span>
+        <span class="dh-tag">Built different · built better</span>
+      </span>
+    </div>
+    <div class="footer-meta">© 2026 · digitalhammerr.com</div>
+  </div>
+</footer>
+
+<!-- INTRO -->
+<div id="intro">
+  <div class="badge">— hands-free cooking —</div>
+  <h1>Cook with your <em>eyes</em>.</h1>
+  <p>A recipe reader for messy hands. Glance up or down to scroll. Wink to mark steps done or start a kitchen timer. Look at a recipe to open it.</p>
+  <div class="gestures">
+    <div class="gesture">
+      <div class="ico">👀</div>
+      <div class="lbl">Look up / down</div>
+      <div class="sub">scroll the recipe with your gaze</div>
+    </div>
+    <div class="gesture">
+      <div class="ico">☝️</div>
+      <div class="lbl">Point + pinch</div>
+      <div class="sub">cursor follows your finger; pinch thumb &amp; index to click</div>
+    </div>
+    <div class="gesture">
+      <div class="ico">😉</div>
+      <div class="lbl">Wink right eye</div>
+      <div class="sub">mark current step done</div>
+    </div>
+    <div class="gesture">
+      <div class="ico">😜</div>
+      <div class="lbl">Wink left eye</div>
+      <div class="sub">start a kitchen timer</div>
+    </div>
+  </div>
+  <button id="startBtn">Allow camera &amp; start cooking</button>
+  <div class="tip">prop your phone or laptop in the kitchen · works best in good light · press C any time to recenter</div>
+</div>
+
+<!-- RECIPE PICKER -->
+<div id="picker">
+  <div class="inner">
+    <h2>What are you <em>making</em>?</h2>
+    <p class="sub">Pick a recipe — look at any card and hold your gaze for ~1 second to open it.</p>
+    <div class="grid" id="recipeGrid"></div>
+  </div>
+</div>
+
+<!-- READER -->
+<div id="reader">
+  <div id="readerHeader">
+    <button id="backBtn">← Back</button>
+    <div id="stepIndicator"></div>
+    <div style="width: 68px"></div>
+  </div>
+
+  <div id="recipeScroll"></div>
+
+  <div class="scroll-zone top" id="zoneTop"><div class="label">↑ scrolling up</div></div>
+  <div class="scroll-zone bottom" id="zoneBottom"><div class="label">↓ scrolling down</div></div>
+</div>
+
+<!-- TIMER -->
+<div id="timer">
+  <span class="ico" id="timerIco">⏱</span>
+  <div class="info">
+    <span class="lbl" id="timerLabel">Step timer</span>
+    <span class="countdown" id="timerCountdown">00:00</span>
+  </div>
+</div>
+
+<!-- HUD -->
+<div id="hud"><span class="led" id="hudLed"></span><span id="hudText">— eye tracking off</span></div>
+
+<!-- WEBCAM PIP -->
+<div id="pip">
+  <video id="video" autoplay playsinline muted></video>
+  <canvas id="pipCanvas"></canvas>
+  <div class="badge">CAM</div>
+</div>
+
+<!-- GAZE CURSOR -->
+<div id="gazeCursor">
+  <svg viewBox="-25 -25 50 50">
+    <ellipse cx="0" cy="0" rx="22" ry="14" fill="rgba(252,245,230,0.55)" stroke="#3a1018" stroke-width="1.4"/>
+    <circle cx="0" cy="0" r="8" fill="none" stroke="#7a1f2b" stroke-width="1.2"/>
+    <circle cx="0" cy="0" r="3" fill="#7a1f2b"/>
+  </svg>
+</div>
+
+<!-- HAND CURSOR — drawn when a hand is in frame, looks like a different "tool" -->
+<div id="handCursor" style="position:fixed;top:0;left:0;width:54px;height:54px;pointer-events:none;z-index:51;opacity:0;transition:opacity .2s;will-change:transform">
+  <svg viewBox="-27 -27 54 54" style="width:100%;height:100%;overflow:visible">
+    <circle class="ho" cx="0" cy="0" r="20" fill="rgba(181,148,70,0.18)" stroke="#7a1f2b" stroke-width="1.3"/>
+    <circle class="hi" cx="0" cy="0" r="4" fill="#7a1f2b"/>
+    <line x1="-30" y1="0" x2="-22" y2="0" stroke="#7a1f2b" stroke-width="1.4"/>
+    <line x1="22" y1="0" x2="30" y2="0" stroke="#7a1f2b" stroke-width="1.4"/>
+    <line x1="0" y1="-30" x2="0" y2="-22" stroke="#7a1f2b" stroke-width="1.4"/>
+    <line x1="0" y1="22" x2="0" y2="30" stroke="#7a1f2b" stroke-width="1.4"/>
+  </svg>
+</div>
+
+<!-- TOAST -->
+<div id="toast">—</div>
+
+<!-- MEDIAPIPE FACE MESH + HANDS — running together for combined gaze + pointing control -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+
+<script>
+// ════════════════════════════════════════════════════════════════════════════
+// RECIPE DATA
+// ════════════════════════════════════════════════════════════════════════════
+const RECIPES = [
+  {
+    id: 'masala-chai', emoji: '☕', title: 'Masala Chai', time: '15 min', serves: '2',
+    desc: 'A small pot of strong, spiced milk tea. The kind your grandmother made.',
+    ingredients: [
+      '2 cups water',
+      '1 cup whole milk',
+      '2 tsp loose black tea (Assam works best)',
+      '4 green cardamom pods, lightly crushed',
+      '1 small piece cinnamon stick',
+      '4 black peppercorns',
+      '1-inch piece fresh ginger, sliced',
+      '2 tbsp sugar (or to taste)',
+    ],
+    steps: [
+      { title: 'Crush the spices', text: 'Lightly crack the cardamom pods, peppercorns, and a small piece of cinnamon stick using a mortar or the back of a spoon. Slice the ginger thinly. Crushing releases the oils — don\'t skip this.' },
+      { title: 'Bring water and spices to a boil', text: 'In a small pot, add water, all the crushed spices, and the ginger. Bring to a rolling boil and let it bubble for 3 minutes. Your kitchen should smell incredible.', timer: 180 },
+      { title: 'Add tea leaves', text: 'Add the loose tea and let it boil for 2 more minutes. The water should turn deep amber.', timer: 120 },
+      { title: 'Pour in milk and sugar', text: 'Add the milk and sugar. Stir, then bring back to a slow boil over medium heat. Watch it — it can climb out of the pot fast.', timer: 240 },
+      { title: 'Strain and serve', text: 'Strain through a fine sieve into two cups. Serve hot, ideally with something biscuit-shaped on the side.' },
+    ],
+  },
+  {
+    id: 'aglio-olio', emoji: '🍝', title: 'Pasta Aglio e Olio', time: '20 min', serves: '2',
+    desc: 'Garlic, oil, chili, parsley. Five ingredients, one pan, dinner in 20 minutes.',
+    ingredients: [
+      '200g spaghetti',
+      '4 tbsp good olive oil',
+      '4 cloves garlic, thinly sliced',
+      '1 tsp red chili flakes (more if you like heat)',
+      'A handful of fresh parsley, finely chopped',
+      'Salt for the pasta water',
+      'Optional: parmesan, lemon wedge',
+    ],
+    steps: [
+      { title: 'Boil the pasta water', text: 'Bring a large pot of water to a hard boil. Salt it generously — it should taste like the sea. Once boiling, add the spaghetti.', timer: 480 },
+      { title: 'Slice the garlic', text: 'While the pasta cooks, slice the garlic as thinly as you can. Thin slices = even browning, no burnt bits.' },
+      { title: 'Warm the oil and garlic', text: 'In a wide pan over LOW heat, add olive oil and the sliced garlic. Cook gently for 3-4 minutes until the garlic just turns pale gold. Do not let it brown.', timer: 240 },
+      { title: 'Add chili flakes', text: 'Toss in the red chili flakes and swirl. Take the pan off the heat for 30 seconds — let the chili infuse without scorching.' },
+      { title: 'Toss everything together', text: 'When pasta is al dente, scoop it directly into the oil pan with tongs. Add a splash of pasta water (about 1/4 cup). Toss vigorously for 1 minute — the starchy water emulsifies into a glossy sauce.', timer: 60 },
+      { title: 'Finish and plate', text: 'Off the heat, stir in chopped parsley. Plate, drizzle with a little more raw olive oil, grate parmesan if using, and serve immediately.' },
+    ],
+  },
+  {
+    id: 'french-toast', emoji: '🍞', title: 'French Toast', time: '15 min', serves: '2',
+    desc: 'Thick slices of bread soaked in eggs and milk, fried in butter. A weekend ritual.',
+    ingredients: [
+      '4 thick slices bread (brioche or day-old white)',
+      '2 large eggs',
+      '1/2 cup whole milk',
+      '1 tbsp sugar',
+      '1 tsp vanilla extract',
+      '1/4 tsp ground cinnamon',
+      '2 tbsp butter for the pan',
+      'Maple syrup, fresh fruit, or icing sugar to serve',
+    ],
+    steps: [
+      { title: 'Whisk the custard', text: 'In a wide shallow dish, whisk together eggs, milk, sugar, vanilla, and cinnamon until completely smooth. No streaks of egg white.' },
+      { title: 'Soak the bread', text: 'Dip each slice in the custard for about 20 seconds per side. The bread should be saturated but not falling apart.', timer: 40 },
+      { title: 'Heat the pan', text: 'Put a non-stick pan over medium-low heat. Add 1 tablespoon of butter and let it foam.', timer: 90 },
+      { title: 'Cook the first side', text: 'Lay two slices in the pan. Cook for about 2-3 minutes until the bottom is deep golden brown. Don\'t crowd the pan.', timer: 150 },
+      { title: 'Flip and finish', text: 'Flip carefully. Cook for 2 more minutes on the other side. The toast should be set and springy in the middle.', timer: 120 },
+      { title: 'Serve hot', text: 'Plate, dust with icing sugar, top with fruit, and pour over real maple syrup. Eat immediately while still warm.' },
+    ],
+  },
+];
+
+// ════════════════════════════════════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════════════════════════════════════
+let currentRecipe = null;
+let currentStep = 0;
+let stepDone = new Set();
+let ingDone = new Set();
+
+// ════════════════════════════════════════════════════════════════════════════
+// PICKER
+// ════════════════════════════════════════════════════════════════════════════
+const pickerEl = document.getElementById('picker');
+const recipeGrid = document.getElementById('recipeGrid');
+const readerEl = document.getElementById('reader');
+const readerScroll = document.getElementById('recipeScroll');
+
+function renderPicker() {
+  recipeGrid.innerHTML = '';
+  RECIPES.forEach(r => {
+    const card = document.createElement('div');
+    card.className = 'recipe-card';
+    card.dataset.id = r.id;
+    card.innerHTML = `
+      <div class="img">${r.emoji}</div>
+      <div class="body">
+        <h3>${r.title}</h3>
+        <div class="meta"><span>⏱ ${r.time}</span><span>· serves ${r.serves}</span></div>
+        <div class="desc">${r.desc}</div>
+      </div>
+    `;
+    card.addEventListener('click', () => openRecipe(r.id));
+    recipeGrid.appendChild(card);
+  });
+}
+
+function openRecipe(id) {
+  currentRecipe = RECIPES.find(r => r.id === id);
+  if (!currentRecipe) return;
+  currentStep = 0;
+  stepDone = new Set();
+  ingDone = new Set();
+  renderReader();
+  pickerEl.classList.remove('show');
+  readerEl.classList.add('show');
+  readerScroll.scrollTo(0, 0);
+}
+
+function backToPicker() {
+  cancelTimer();
+  pickerEl.classList.add('show');
+  readerEl.classList.remove('show');
+}
+document.getElementById('backBtn').addEventListener('click', backToPicker);
+
+// ════════════════════════════════════════════════════════════════════════════
+// READER
+// ════════════════════════════════════════════════════════════════════════════
+function renderReader() {
+  const r = currentRecipe;
+  readerScroll.innerHTML = `
+    <div class="recipe-header">
+      <div class="ico">${r.emoji}</div>
+      <h1>${r.title.replace(/(\w+)$/, '<em>$1</em>')}</h1>
+      <div class="meta"><span>⏱ ${r.time}</span><span>· serves ${r.serves}</span></div>
+    </div>
+    <div class="recipe-body">
+      <div class="ingredients">
+        <h2>Ingredients</h2>
+        <ul id="ingList">
+          ${r.ingredients.map((ing, i) =>
+            `<li data-ing="${i}" class="${ingDone.has(i) ? 'checked' : ''}"><span class="check"></span><span>${ing}</span></li>`
+          ).join('')}
+        </ul>
+      </div>
+      <div class="steps">
+        <h2>Steps</h2>
+        ${r.steps.map((s, i) => `
+          <div class="step ${i === currentStep ? 'current' : stepDone.has(i) ? 'done' : ''}" data-step="${i}">
+            <div class="num"><span>${i + 1}</span></div>
+            <h3>${s.title}</h3>
+            <p>${s.text}</p>
+            ${s.timer ? `<div class="timer-tag">⏱ ${formatDuration(s.timer)} timer · wink left to start</div>` : ''}
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+  // Ingredient click toggles checked
+  readerScroll.querySelectorAll('[data-ing]').forEach(li => {
+    li.addEventListener('click', () => {
+      const i = parseInt(li.dataset.ing);
+      if (ingDone.has(i)) ingDone.delete(i); else ingDone.add(i);
+      li.classList.toggle('checked');
+    });
+  });
+  // Step click marks current
+  readerScroll.querySelectorAll('[data-step]').forEach(el => {
+    el.addEventListener('click', () => {
+      const i = parseInt(el.dataset.step);
+      setCurrentStep(i);
+    });
+  });
+  renderStepIndicator();
+}
+
+function renderStepIndicator() {
+  const ind = document.getElementById('stepIndicator');
+  if (!currentRecipe) { ind.innerHTML = ''; return; }
+  ind.innerHTML = `<span>Step ${currentStep + 1} of ${currentRecipe.steps.length}</span>` +
+    currentRecipe.steps.map((_, i) =>
+      `<span class="pip ${i === currentStep ? 'current' : stepDone.has(i) ? 'done' : ''}"></span>`
+    ).join('');
+}
+
+function setCurrentStep(i) {
+  if (!currentRecipe) return;
+  currentStep = Math.max(0, Math.min(currentRecipe.steps.length - 1, i));
+  readerScroll.querySelectorAll('.step').forEach((el, idx) => {
+    el.classList.toggle('current', idx === currentStep);
+    el.classList.toggle('done', stepDone.has(idx));
+  });
+  renderStepIndicator();
+}
+
+function markCurrentStepDone() {
+  if (!currentRecipe) return;
+  stepDone.add(currentStep);
+  // Auto-advance
+  if (currentStep < currentRecipe.steps.length - 1) {
+    setCurrentStep(currentStep + 1);
+    // Scroll the new current step into view
+    const el = readerScroll.querySelector(`[data-step="${currentStep}"]`);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  } else {
+    setCurrentStep(currentStep);   // re-render for done state
+    showToast('🎉 Recipe complete!');
+  }
+  showToast('✓ Step done');
+}
+
+function formatDuration(sec) {
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  if (m === 0) return `${s}s`;
+  if (s === 0) return `${m} min`;
+  return `${m}m ${s}s`;
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// TIMER
+// ════════════════════════════════════════════════════════════════════════════
+const timerEl = document.getElementById('timer');
+const timerCountdown = document.getElementById('timerCountdown');
+const timerLabel = document.getElementById('timerLabel');
+const timerIco = document.getElementById('timerIco');
+let timerEndsAt = 0;
+let timerInterval = null;
+let timerAlarm = null;
+
+function startTimerForCurrentStep() {
+  if (!currentRecipe) return;
+  const step = currentRecipe.steps[currentStep];
+  if (!step.timer) {
+    showToast('No timer for this step');
+    return;
+  }
+  startTimer(step.timer, `Step ${currentStep + 1}: ${step.title}`);
+}
+
+function startTimer(seconds, label) {
+  cancelTimer();
+  timerEndsAt = Date.now() + seconds * 1000;
+  timerLabel.textContent = label;
+  timerIco.textContent = '⏱';
+  timerEl.classList.add('show');
+  timerEl.classList.remove('alarm');
+  updateTimerDisplay();
+  timerInterval = setInterval(updateTimerDisplay, 200);
+  showToast(`⏱ Timer started: ${formatDuration(seconds)}`);
+}
+
+function updateTimerDisplay() {
+  const remaining = Math.max(0, timerEndsAt - Date.now());
+  const totalSec = Math.ceil(remaining / 1000);
+  const m = Math.floor(totalSec / 60);
+  const s = totalSec % 60;
+  timerCountdown.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  if (remaining === 0) {
+    clearInterval(timerInterval); timerInterval = null;
+    timerEl.classList.add('alarm');
+    timerIco.textContent = '🔔';
+    timerLabel.textContent = 'Timer done!';
+    // Repeat beep with WebAudio
+    timerAlarm = setInterval(playBeep, 700);
+    setTimeout(cancelTimer, 8000);
+  }
+}
+
+function cancelTimer() {
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+  if (timerAlarm) { clearInterval(timerAlarm); timerAlarm = null; }
+  timerEl.classList.remove('show', 'alarm');
+}
+
+let audioCtx = null;
+function playBeep() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.frequency.value = 880;
+  o.type = 'sine';
+  g.gain.setValueAtTime(0.2, audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
+  o.connect(g).connect(audioCtx.destination);
+  o.start();
+  o.stop(audioCtx.currentTime + 0.4);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// TOAST
+// ════════════════════════════════════════════════════════════════════════════
+const toast = document.getElementById('toast');
+let toastTimer = null;
+function showToast(msg) {
+  toast.textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 2000);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// EYE TRACKING
+// ════════════════════════════════════════════════════════════════════════════
+const video = document.getElementById('video');
+const pipCanvas = document.getElementById('pipCanvas');
+const pctx = pipCanvas.getContext('2d');
+const cursor = document.getElementById('gazeCursor');
+const hud = document.getElementById('hud');
+const hudLed = document.getElementById('hudLed');
+const hudText = document.getElementById('hudText');
+const zoneTop = document.getElementById('zoneTop');
+const zoneBottom = document.getElementById('zoneBottom');
+
+let mpFace = null, mpReady = false;
+let mpHands = null, mpHandsReady = false;
+let faceLandmarks = null;
+let handLandmarks = null;        // most recent hand landmarks (one hand)
+let handLastSeen  = 0;           // timestamp — used to fade the hand cursor
+
+let gazeX = -999, gazeY = -999;
+let smoothX = -999, smoothY = -999;
+let calibOffset = { x: 0, y: 0 };
+let calibrated = false;
+
+// Hand-pointer state (separate from gaze cursor — hand has its own position)
+let handTargetX = -999, handTargetY = -999;
+let handX = -999, handY = -999;
+let isPinching = false;
+
+// One Euro Filter for gaze smoothing
+class OneEuroFilter {
+  constructor(minCutoff = 1.0, beta = 0.05, dCutoff = 1.0) {
+    this.minCutoff = minCutoff; this.beta = beta; this.dCutoff = dCutoff;
+    this.x = null; this.dx = 0; this.lastTime = null;
+  }
+  _alpha(c, dt) { const tau = 1/(2*Math.PI*c); return 1/(1 + tau/dt); }
+  filter(x, t) {
+    if (this.x === null) { this.x = x; this.lastTime = t; return x; }
+    const dt = Math.max((t - this.lastTime)/1000, 1e-6);
+    const dx = (x - this.x)/dt;
+    const aD = this._alpha(this.dCutoff, dt);
+    const dxHat = aD*dx + (1-aD)*this.dx;
+    const cutoff = this.minCutoff + this.beta * Math.abs(dxHat);
+    const a = this._alpha(cutoff, dt);
+    const xHat = a*x + (1-a)*this.x;
+    this.x = xHat; this.dx = dxHat; this.lastTime = t;
+    return xHat;
+  }
+  reset() { this.x = null; this.dx = 0; this.lastTime = null; }
+}
+const filterX = new OneEuroFilter(1.0, 0.05);
+const filterY = new OneEuroFilter(1.0, 0.05);
+const handFilterX = new OneEuroFilter(1.5, 0.08);   // more aggressive smoothing for hand
+const handFilterY = new OneEuroFilter(1.5, 0.08);
+
+const handCursor = document.getElementById('handCursor');
+
+async function startEyeTracking() {
+  hudText.textContent = 'starting camera…';
+  if (!window.isSecureContext) {
+    alert('This page needs HTTPS for camera access. Upload to Netlify Drop to get an https link.');
+    return;
+  }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
+      audio: false
+    });
+    video.srcObject = stream;
+    await new Promise(r => { video.onloadedmetadata = r; setTimeout(r, 3000); });
+    try { await video.play(); } catch (_) {}
+  } catch (e) {
+    alert(`Camera error: ${e.name}: ${e.message}`);
+    hudText.textContent = 'camera blocked';
+    return;
+  }
+
+  hudText.textContent = 'loading face mesh…';
+  pipCanvas.width = 160; pipCanvas.height = 120;
+
+  // ── Face mesh: gaze + winks ────────────────────────────────────────────
+  mpFace = new FaceMesh({ locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${f}` });
+  mpFace.setOptions({
+    maxNumFaces: 1,
+    refineLandmarks: true,
+    minDetectionConfidence: 0.5,
+    minTrackingConfidence: 0.5,
+  });
+  mpFace.onResults(onFaceResults);
+  await mpFace.initialize();
+  mpReady = true;
+
+  // ── Hands: pointer + pinch click ───────────────────────────────────────
+  hudText.textContent = 'loading hand tracking…';
+  mpHands = new Hands({ locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}` });
+  mpHands.setOptions({
+    maxNumHands: 1,
+    modelComplexity: 0,        // lite — keeps performance high alongside face mesh
+    minDetectionConfidence: 0.5,
+    minTrackingConfidence: 0.5,
+  });
+  mpHands.onResults(onHandResults);
+  await mpHands.initialize();
+  mpHandsReady = true;
+
+  hudText.textContent = 'tracking face + hands';
+  hudLed.classList.add('on');
+  cursor.classList.add('visible');
+  pumpFrames();
+  requestAnimationFrame(loop);
+
+  // Auto-calibrate after we lock onto a face
+  setTimeout(() => { if (faceLandmarks && !calibrated) recenter(); }, 4000);
+}
+
+// ── Frame pump: alternate face + hands frame-by-frame ──────────────────────
+// Running both models every frame would halve the FPS. Alternating means
+// each model runs at ~15 fps while the camera streams 30 fps — plenty for
+// gaze (which is heavily smoothed) and for hand pointing.
+let pumping = false;
+let pumpTick = 0;
+async function pumpFrames() {
+  if (pumping) return;
+  pumping = true;
+  const inner = async () => {
+    if (video.readyState >= 2 && !video.paused) {
+      try {
+        if (pumpTick % 2 === 0 && mpReady) {
+          await mpFace.send({ image: video });
+        } else if (mpHandsReady) {
+          await mpHands.send({ image: video });
+        } else if (mpReady) {
+          await mpFace.send({ image: video });
+        }
+      } catch (_) {}
+      pumpTick++;
+    }
+    setTimeout(inner, 33);   // ~30 fps total → 15 fps per model
+  };
+  inner();
+}
+
+function onFaceResults(r) {
+  faceLandmarks = (r.multiFaceLandmarks && r.multiFaceLandmarks[0]) || null;
+  drawPip();
+
+  if (faceLandmarks) {
+    detectWinks(faceLandmarks);
+  } else {
+    filterX.reset(); filterY.reset();
+  }
+  updateHudText();
+}
+
+// ── HAND TRACKING RESULTS ──────────────────────────────────────────────────
+// We extract index fingertip (landmark 8) for the cursor position and measure
+// the distance to the thumb tip (landmark 4) for pinch detection. With one
+// camera this gives a clean point-and-click input scheme.
+function onHandResults(r) {
+  const list = r.multiHandLandmarks || [];
+  handLandmarks = list.length > 0 ? list[0] : null;
+  drawPip();
+
+  if (handLandmarks) {
+    handLastSeen = Date.now();
+
+    const idx   = handLandmarks[8];
+    const thumb = handLandmarks[4];
+
+    // Mirror x because the video feed is mirrored. Don't amplify — the hand
+    // already covers the full camera view, so 1:1 mapping is fine.
+    const t = performance.now();
+    const fx = handFilterX.filter((1 - idx.x) * window.innerWidth, t);
+    const fy = handFilterY.filter(idx.y * window.innerHeight, t);
+    handTargetX = fx; handTargetY = fy;
+
+    // Pinch detection — 3D distance between thumb and index tip
+    const dx = idx.x - thumb.x;
+    const dy = idx.y - thumb.y;
+    const dz = (idx.z || 0) - (thumb.z || 0);
+    const d  = Math.hypot(dx, dy, dz);
+    if (d < 0.055 && !isPinching) {
+      isPinching = true;
+      handCursor.classList.add('pinching');
+      onPinchClick();
+    } else if (d > 0.075 && isPinching) {
+      isPinching = false;
+      handCursor.classList.remove('pinching');
+    }
+  } else {
+    // No hand visible — keep state but don't fire events
+    if (isPinching) { isPinching = false; handCursor.classList.remove('pinching'); }
+    handFilterX.reset(); handFilterY.reset();
+  }
+  updateHudText();
+}
+
+// ── DRAW PIP — single function to render face + hand into corner preview ──
+function drawPip() {
+  pctx.clearRect(0, 0, pipCanvas.width, pipCanvas.height);
+  pctx.drawImage(video, 0, 0, pipCanvas.width, pipCanvas.height);
+  // Face landmarks (key tracking points)
+  if (faceLandmarks) {
+    pctx.fillStyle = '#7a1f2b';
+    [468, 473, 33, 263, 1, 152].forEach(i => {
+      const lm = faceLandmarks[i];
+      pctx.beginPath();
+      pctx.arc(lm.x * pipCanvas.width, lm.y * pipCanvas.height, 2, 0, Math.PI * 2);
+      pctx.fill();
+    });
+  }
+  // Hand landmarks — index fingertip + thumb so the user sees both being tracked
+  if (handLandmarks) {
+    pctx.fillStyle = '#b59446';
+    [4, 8].forEach(i => {
+      const lm = handLandmarks[i];
+      pctx.beginPath();
+      pctx.arc(lm.x * pipCanvas.width, lm.y * pipCanvas.height, 3, 0, Math.PI * 2);
+      pctx.fill();
+    });
+  }
+}
+
+// ── HUD TEXT — single source of truth for the status pill ─────────────────
+function updateHudText() {
+  const face = !!faceLandmarks;
+  const hand = !!handLandmarks && (Date.now() - handLastSeen < 600);
+  if (face && hand)      hudText.textContent = 'tracking · face + hand';
+  else if (face)         hudText.textContent = 'tracking · face only';
+  else if (hand)         hudText.textContent = 'tracking · hand only';
+  else                   hudText.textContent = 'looking for face / hand…';
+}
+
+// ── EYE-ASPECT-RATIO based wink detection ───────────────────────────────────
+// EAR (Tereza Soukupova & Jan Cech 2016) is a classic blink/wink metric:
+// it's the ratio of vertical eye height to horizontal eye width. Open eyes
+// have EAR ~0.3; closed eyes drop below ~0.18.
+function eyeAspectRatio(lms, indices) {
+  // indices = [outerCorner, topUp, topDown, innerCorner, bottomDown, bottomUp]
+  const p = i => lms[indices[i]];
+  const v = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+  const verticalA = v(p(1), p(5));
+  const verticalB = v(p(2), p(4));
+  const horizontal = v(p(0), p(3));
+  return (verticalA + verticalB) / (2.0 * horizontal);
+}
+
+// Standard MediaPipe Face Mesh indices for the 6-point eye outline used in EAR
+const LEFT_EYE_PTS  = [33, 160, 158, 133, 153, 144];   // user's left eye (right side of mirrored screen)
+const RIGHT_EYE_PTS = [263, 387, 385, 362, 380, 373];  // user's right eye
+
+const WINK_THRESH = 0.20;   // below this = closed
+const OPEN_THRESH = 0.27;   // above this = open
+let leftClosedFor = 0, rightClosedFor = 0;
+let lastWinkAt = 0;
+
+function detectWinks(lms) {
+  const lEAR = eyeAspectRatio(lms, LEFT_EYE_PTS);
+  const rEAR = eyeAspectRatio(lms, RIGHT_EYE_PTS);
+
+  const leftClosed = lEAR < WINK_THRESH;
+  const rightClosed = rEAR < WINK_THRESH;
+  const leftOpen = lEAR > OPEN_THRESH;
+  const rightOpen = rEAR > OPEN_THRESH;
+
+  // Both eyes closed = blink, ignore
+  if (leftClosed && rightClosed) {
+    leftClosedFor = 0; rightClosedFor = 0;
+    return;
+  }
+
+  // Track how many frames each eye has been clearly closed while the other is clearly open
+  if (leftClosed && rightOpen) leftClosedFor++; else leftClosedFor = 0;
+  if (rightClosed && leftOpen) rightClosedFor++; else rightClosedFor = 0;
+
+  // Need ~5 frames of held wink (~250ms) to count, and a 1.2s cooldown so
+  // one wink doesn't fire twice
+  const now = Date.now();
+  if (now - lastWinkAt < 1200) return;
+
+  if (leftClosedFor >= 5) {
+    // Note: user's *left* eye on screen is on the *right* side after mirroring.
+    // We treat the user's anatomical left eye as "left wink".
+    onWinkLeft();
+    lastWinkAt = now;
+    leftClosedFor = 0;
+  } else if (rightClosedFor >= 5) {
+    onWinkRight();
+    lastWinkAt = now;
+    rightClosedFor = 0;
+  }
+}
+
+function onWinkLeft() {
+  // Left wink: start step timer
+  if (readerEl.classList.contains('show')) {
+    startTimerForCurrentStep();
+  }
+}
+
+function onWinkRight() {
+  // Right wink: mark current step done
+  if (readerEl.classList.contains('show')) {
+    markCurrentStepDone();
+  }
+}
+
+// ── GAZE COMPUTATION ────────────────────────────────────────────────────────
+function computeGaze() {
+  if (!faceLandmarks || faceLandmarks.length < 478) return null;
+  const leftIris = faceLandmarks[468];
+  const rightIris = faceLandmarks[473];
+  // Average iris position
+  const iX = (leftIris.x + rightIris.x) / 2;
+  const iY = (leftIris.y + rightIris.y) / 2;
+  // Amplify around 0.5 (eyes only move within ~0.35..0.65)
+  const AMP = 4.5;
+  const sx = 0.5 + (iX - 0.5) * AMP;
+  const sy = 0.5 + (iY - 0.5) * AMP * 1.1;
+  // Mirror x (video is mirrored)
+  return { x: (1 - sx) * window.innerWidth + calibOffset.x,
+           y: sy * window.innerHeight + calibOffset.y };
+}
+
+function recenter() {
+  if (smoothX < 0) return;
+  calibOffset.x += (window.innerWidth / 2)  - smoothX;
+  calibOffset.y += (window.innerHeight / 2) - smoothY;
+  calibrated = true;
+  showToast('✓ Recentered — look around');
+}
+window.addEventListener('keydown', e => {
+  if (e.key === 'c' || e.key === 'C') recenter();
+});
+
+// ── RENDER LOOP ─────────────────────────────────────────────────────────────
+function loop() {
+  // Update gaze
+  const g = computeGaze();
+  if (g) {
+    const t = performance.now();
+    gazeX = filterX.filter(g.x, t);
+    gazeY = filterY.filter(g.y, t);
+    if (smoothX < 0) { smoothX = gazeX; smoothY = gazeY; }
+    smoothX += (gazeX - smoothX) * 0.35;
+    smoothY += (gazeY - smoothY) * 0.35;
+    cursor.style.transform = `translate3d(${smoothX - 25}px, ${smoothY - 25}px, 0)`;
+  }
+
+  // Update hand cursor — fade in when hand is recently seen, fade out otherwise
+  const handVisible = handLandmarks && (Date.now() - handLastSeen < 600);
+  if (handVisible && handTargetX > 0) {
+    if (handX < 0) { handX = handTargetX; handY = handTargetY; }
+    handX += (handTargetX - handX) * 0.45;
+    handY += (handTargetY - handY) * 0.45;
+    handCursor.style.opacity = '1';
+    handCursor.style.transform = `translate3d(${handX - 27}px, ${handY - 27}px, 0)`;
+  } else {
+    handCursor.style.opacity = '0';
+  }
+
+  // Edge-zone scrolling (only in reader). Use gaze position — not hand —
+  // because eyes are doing the looking and scrolling should follow the eyes.
+  if (readerEl.classList.contains('show') && smoothX > 0) {
+    const h = window.innerHeight;
+    const topZone = h * 0.14;
+    const bottomZone = h * 0.86;
+    if (smoothY < topZone) {
+      const speed = (topZone - smoothY) / topZone * 14;
+      readerScroll.scrollBy(0, -speed);
+      zoneTop.classList.add('active');
+      zoneBottom.classList.remove('active');
+    } else if (smoothY > bottomZone) {
+      const speed = (smoothY - bottomZone) / (h - bottomZone) * 14;
+      readerScroll.scrollBy(0, speed);
+      zoneBottom.classList.add('active');
+      zoneTop.classList.remove('active');
+    } else {
+      zoneTop.classList.remove('active');
+      zoneBottom.classList.remove('active');
+    }
+  }
+
+  // Hover detection on picker cards
+  if (pickerEl.classList.contains('show') && smoothX > 0) {
+    detectGazeHover();
+  }
+
+  // Hover detection on back button
+  if (readerEl.classList.contains('show') && smoothX > 0) {
+    detectGazeHoverBack();
+  }
+
+  requestAnimationFrame(loop);
+}
+
+// ── PINCH CLICK ────────────────────────────────────────────────────────────
+// When the hand pinches, we click whatever is under the *hand cursor*
+// (not the gaze cursor — the hand is the deliberate, precise pointer).
+function onPinchClick() {
+  if (handX < 0) return;
+  const el = document.elementFromPoint(handX, handY);
+  if (!el) return;
+
+  // Inside reader: pinch on a step marks it done; pinch on the back button goes back
+  if (readerEl.classList.contains('show')) {
+    const step = el.closest('[data-step]');
+    if (step) {
+      const i = parseInt(step.dataset.step);
+      setCurrentStep(i);
+      // If they pinched the *current* step a second time, mark it done.
+      // Otherwise just navigate to it.
+      return;
+    }
+    if (el.id === 'backBtn' || el.closest('#backBtn')) {
+      backToPicker();
+      return;
+    }
+    // Pinch on an ingredient toggles its checked state
+    const ing = el.closest('[data-ing]');
+    if (ing) { ing.click(); return; }
+    return;
+  }
+
+  // Inside picker: pinch on a recipe card opens it
+  if (pickerEl.classList.contains('show')) {
+    const card = el.closest('.recipe-card');
+    if (card) { card.click(); return; }
+  }
+
+  // On the intro: pinch the start button to start
+  const btn = el.closest('button');
+  if (btn) btn.click();
+}
+
+// ── DWELL-TO-CLICK on picker cards ──────────────────────────────────────────
+let hoverEl = null;
+let hoverStart = 0;
+const DWELL_MS = 900;
+
+function detectGazeHover() {
+  const el = document.elementFromPoint(smoothX, smoothY);
+  const card = el && el.closest && el.closest('.recipe-card');
+  if (card !== hoverEl) {
+    if (hoverEl) hoverEl.classList.remove('gaze');
+    hoverEl = card;
+    hoverStart = Date.now();
+    if (hoverEl) hoverEl.classList.add('gaze');
+  } else if (hoverEl && Date.now() - hoverStart > DWELL_MS) {
+    hoverEl.click();
+    hoverEl.classList.remove('gaze');
+    hoverEl = null;
+  }
+}
+
+let backHoverStart = 0;
+function detectGazeHoverBack() {
+  const el = document.elementFromPoint(smoothX, smoothY);
+  const back = el && el.id === 'backBtn';
+  const btn = document.getElementById('backBtn');
+  if (back) {
+    btn.classList.add('gaze');
+    if (!backHoverStart) backHoverStart = Date.now();
+    else if (Date.now() - backHoverStart > DWELL_MS) {
+      btn.click();
+      btn.classList.remove('gaze');
+      backHoverStart = 0;
+    }
+  } else {
+    btn.classList.remove('gaze');
+    backHoverStart = 0;
+  }
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// BOOT
+// ════════════════════════════════════════════════════════════════════════════
+document.getElementById('startBtn').addEventListener('click', async () => {
+  document.getElementById('intro').classList.add('hide');
+  pickerEl.classList.add('show');
+  await startEyeTracking();
+});
+
+renderPicker();
+</script>
+</body>
+</html>

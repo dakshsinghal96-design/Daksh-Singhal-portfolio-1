@@ -1,0 +1,1692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Obliq AI · Voice Calculator | Powered by Digital Hammerr</title>
+<meta name="description" content="Obliq AI — a professional voice-controlled scientific calculator. Powered by Digital Hammerr." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,400;1,9..144,500&family=Manrope:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   THEME — Professional light: navy / white / silver
+============================================================ */
+:root {
+  --bg:           #f6f8fb;
+  --bg-soft:      #eef1f6;
+  --card:         #ffffff;
+  --card-hover:   #fafbfd;
+
+  --navy:         #0e1f44;
+  --navy-deep:    #081330;
+  --navy-mid:     #1c2f5e;
+  --navy-light:   #2c416f;
+
+  --line:         #e3e7ee;
+  --line-strong:  #d2d8e2;
+
+  --text:         #0e1f44;
+  --text-body:    #3d4a64;
+  --text-muted:   #6b7691;
+  --text-faint:   #98a1b5;
+
+  --accent:       #b8863a;          /* muted gold — premium hairline */
+  --accent-soft:  rgba(184, 134, 58, 0.08);
+  --action:       #1d3b78;          /* primary action / focus */
+  --action-bright:#284f9e;
+  --action-soft:  rgba(29, 59, 120, 0.08);
+  --success:      #0a7a4e;
+  --error:        #b53445;
+  --error-soft:   rgba(181, 52, 69, 0.06);
+
+  --serif: 'Fraunces', Georgia, serif;
+  --sans:  'Manrope', system-ui, -apple-system, sans-serif;
+  --mono:  'JetBrains Mono', ui-monospace, monospace;
+
+  --radius:    14px;
+  --radius-sm: 10px;
+  --radius-lg: 20px;
+  --shadow-card:  0 1px 2px rgba(14, 31, 68, 0.04), 0 4px 16px rgba(14, 31, 68, 0.04);
+  --shadow-hover: 0 2px 4px rgba(14, 31, 68, 0.06), 0 12px 28px rgba(14, 31, 68, 0.08);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; min-height: 100vh; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Soft atmospheric background — barely there */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background:
+    radial-gradient(ellipse 60% 40% at 80% 0%,   rgba(29, 59, 120, 0.04), transparent 60%),
+    radial-gradient(ellipse 50% 50% at 0% 100%,  rgba(184, 134, 58, 0.03), transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ============================================================
+   VIEWS
+============================================================ */
+.view {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: none;
+  flex-direction: column;
+  padding: 28px 28px 0;
+  max-width: 1200px;
+  margin: 0 auto;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.view.active { display: flex; opacity: 1; }
+
+/* ============================================================
+   TOP BAR
+============================================================ */
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 36px;
+  gap: 16px;
+}
+
+.brand-mark {
+  display: flex; align-items: center; gap: 14px;
+}
+.logo-mono {
+  width: 46px; height: 46px;
+  background: var(--navy);
+  color: #fff;
+  display: grid; place-items: center;
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 24px;
+  border-radius: 12px;
+  letter-spacing: -0.02em;
+  position: relative;
+}
+.logo-mono::after {
+  content: '';
+  position: absolute; bottom: 6px; right: 6px;
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.brand-name {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 24px;
+  line-height: 1;
+  color: var(--navy);
+  letter-spacing: -0.015em;
+}
+.brand-sub {
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-top: 5px;
+}
+.brand-mark.small .logo-mono { width: 38px; height: 38px; font-size: 19px; }
+.brand-mark.small .brand-name { font-size: 20px; }
+
+/* Language switcher */
+.lang-switcher {
+  display: flex;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 3px;
+  gap: 2px;
+}
+.lang-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 7px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.lang-btn:hover { color: var(--text); }
+.lang-btn.active {
+  background: var(--navy);
+  color: #fff;
+}
+
+/* Back button */
+.back-btn {
+  background: transparent;
+  border: 1px solid var(--line-strong);
+  color: var(--text-body);
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 18px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.back-btn:hover {
+  border-color: var(--navy);
+  color: var(--navy);
+  background: var(--card);
+}
+
+/* ============================================================
+   HOME VIEW — HERO
+============================================================ */
+.hero {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  padding: 50px 0 30px;
+  max-width: 760px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 28px;
+  display: inline-flex; align-items: center; gap: 12px;
+  align-self: center;
+}
+.eyebrow::before, .eyebrow::after {
+  content: ''; width: 28px; height: 1px;
+  background: var(--accent);
+  opacity: 0.5;
+}
+
+.hero-title {
+  font-family: var(--sans);
+  font-weight: 300;
+  font-size: clamp(40px, 6.5vw, 72px);
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  color: var(--navy-deep);
+  margin-bottom: 22px;
+}
+.hero-title em {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 500;
+  color: var(--navy);
+  position: relative;
+}
+.hero-title em::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 4%;
+  bottom: 4px;
+  height: 2px;
+  background: var(--accent);
+  opacity: 0.5;
+}
+
+.hero-sub {
+  color: var(--text-body);
+  font-size: clamp(15px, 1.5vw, 17px);
+  line-height: 1.65;
+  max-width: 560px;
+  margin: 0 auto 50px;
+  font-weight: 400;
+}
+
+/* Hero mic */
+.hero-mic-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 42px;
+}
+.hero-mic {
+  position: relative;
+  width: 124px; height: 124px;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  background: var(--card);
+  cursor: pointer;
+  display: grid; place-items: center;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-card);
+}
+.hero-mic:hover {
+  border-color: var(--navy);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+.hero-mic:active { transform: translateY(0); }
+.hero-mic svg { width: 46px; height: 46px; color: var(--navy); transition: color 0.2s; stroke-width: 1.4; }
+.hero-mic.listening {
+  background: var(--navy);
+  border-color: var(--navy);
+}
+.hero-mic.listening svg { color: #fff; }
+.hero-mic.listening::before,
+.hero-mic.listening::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 2px solid var(--navy);
+  animation: heroRing 1.8s ease-out infinite;
+  pointer-events: none;
+}
+.hero-mic.listening::after { animation-delay: 0.9s; }
+@keyframes heroRing {
+  0%   { transform: scale(1);   opacity: 0.5; }
+  100% { transform: scale(1.7); opacity: 0;   }
+}
+
+.mic-label {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  transition: color 0.2s;
+}
+.mic-label.listening { color: var(--navy); }
+
+/* Phrase strip */
+.phrase-strip {
+  display: flex; flex-wrap: wrap; gap: 10px;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+.phrase {
+  font-family: var(--mono);
+  font-size: 13px;
+  background: var(--card);
+  border: 1px solid var(--line-strong);
+  color: var(--text-body);
+  padding: 11px 20px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-weight: 500;
+}
+.phrase:hover {
+  border-color: var(--navy);
+  color: var(--navy);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-card);
+}
+
+/* Instructions card */
+.instructions {
+  margin-top: 64px;
+  padding: 36px 32px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-top: 2px solid var(--accent);
+  border-radius: var(--radius-lg);
+  text-align: left;
+  max-width: 760px;
+  margin-left: auto;
+  margin-right: auto;
+  box-shadow: var(--shadow-card);
+}
+.instructions h3 {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 22px;
+}
+.instructions ol {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 22px;
+}
+.instructions li {
+  display: flex; gap: 16px; align-items: flex-start;
+  font-size: 14px;
+  color: var(--text-body);
+  line-height: 1.55;
+}
+.instructions li .step-num {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 28px;
+  color: var(--navy);
+  line-height: 1;
+  flex-shrink: 0;
+  letter-spacing: -0.02em;
+}
+.instructions li b { color: var(--navy-deep); font-weight: 600; }
+
+/* Footer band */
+.footer-band {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 32px 0 24px;
+  margin-top: 56px;
+  border-top: 1px solid var(--line);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.footer-band b { color: var(--text-body); font-weight: 600; }
+
+/* ============================================================
+   CALCULATOR VIEW
+============================================================ */
+.calc-container {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 28px;
+  padding: 8px 0 32px;
+  align-items: start;
+}
+@media (max-width: 920px) {
+  .calc-container { grid-template-columns: 1fr; }
+}
+
+/* Display panel */
+.calc-display-panel {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-top: 2px solid var(--accent);
+  border-radius: var(--radius-lg);
+  padding: 34px 30px 28px;
+  box-shadow: var(--shadow-card);
+  position: relative;
+}
+
+.d-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: 8px;
+}
+.d-heard {
+  font-family: var(--mono);
+  font-size: 14px;
+  color: var(--text-muted);
+  min-height: 22px;
+  margin-bottom: 22px;
+  word-break: break-word;
+  line-height: 1.5;
+}
+.d-heard.has-text { color: var(--text-body); }
+.d-heard .interim { color: var(--text-faint); font-style: italic; }
+.d-heard .accumulated { color: var(--text-body); font-weight: 500; }
+
+.d-expr {
+  font-family: var(--mono);
+  font-size: clamp(18px, 2.6vw, 24px);
+  color: var(--text-body);
+  min-height: 32px;
+  margin-bottom: 14px;
+  word-break: break-word;
+  letter-spacing: -0.01em;
+  font-weight: 500;
+}
+
+.d-result {
+  font-family: var(--mono);
+  font-size: clamp(40px, 6.5vw, 64px);
+  font-weight: 600;
+  color: var(--navy-deep);
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+  min-height: 70px;
+  word-break: break-all;
+  transition: color 0.2s;
+}
+.d-result.error { color: var(--error); font-size: clamp(16px, 2.2vw, 20px); font-weight: 500; }
+.d-result.empty { color: var(--text-faint); font-size: clamp(34px, 5vw, 50px); opacity: 0.5; font-weight: 500; }
+
+/* Mic bar */
+.mic-bar {
+  margin-top: 26px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.mic-btn-calc {
+  position: relative;
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  background: var(--card);
+  cursor: pointer;
+  display: grid; place-items: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.mic-btn-calc:hover { border-color: var(--navy); background: var(--card-hover); transform: scale(1.04); }
+.mic-btn-calc:active { transform: scale(0.97); }
+.mic-btn-calc svg { width: 26px; height: 26px; color: var(--navy); transition: color 0.2s; stroke-width: 1.4; }
+.mic-btn-calc.listening { background: var(--navy); border-color: var(--navy); }
+.mic-btn-calc.listening svg { color: #fff; }
+.mic-btn-calc.listening::before,
+.mic-btn-calc.listening::after {
+  content: '';
+  position: absolute; inset: -3px;
+  border-radius: 50%;
+  border: 1.5px solid var(--navy);
+  animation: heroRing 1.6s ease-out infinite;
+  pointer-events: none;
+}
+.mic-btn-calc.listening::after { animation-delay: 0.8s; }
+
+.mic-info-calc { flex: 1; min-width: 140px; }
+.mic-info-calc .ms { color: var(--navy-deep); font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+.mic-info-calc .mh { color: var(--text-muted); font-size: 12px; font-family: var(--mono); }
+
+/* Toggle: TTS */
+.tts-toggle {
+  background: transparent;
+  border: 1px solid var(--line-strong);
+  color: var(--text-muted);
+  padding: 8px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  display: flex; align-items: center; gap: 8px;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.tts-toggle:hover { border-color: var(--text-body); color: var(--text); }
+.tts-toggle.on { color: #fff; border-color: var(--navy); background: var(--navy); }
+.tts-toggle .tts-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-faint); }
+.tts-toggle.on .tts-dot { background: var(--accent); }
+
+/* Manual input */
+.manual-row {
+  margin-top: 16px;
+  display: flex; gap: 8px;
+}
+.manual-row input {
+  flex: 1;
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 14px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: all 0.15s;
+}
+.manual-row input:focus { border-color: var(--navy); background: #fff; box-shadow: 0 0 0 3px var(--action-soft); }
+.manual-row input::placeholder { color: var(--text-faint); }
+.manual-row button {
+  background: var(--navy);
+  color: #fff;
+  border: none;
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  padding: 0 22px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.manual-row button:hover { background: var(--navy-mid); }
+
+/* Keypad */
+.keypad-panel {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-card);
+}
+.keypad-panel h4 {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: 16px;
+}
+
+.btn-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.kbtn {
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 17px;
+  font-weight: 500;
+  padding: 16px 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.12s;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.kbtn:hover { border-color: var(--line-strong); background: #fff; transform: translateY(-1px); }
+.kbtn:active { transform: translateY(0); background: var(--bg); }
+
+.kbtn.sci { color: var(--accent); font-size: 14px; background: #fff; font-weight: 600; }
+.kbtn.sci:hover { border-color: var(--accent); background: var(--accent-soft); }
+
+.kbtn.op { color: var(--navy); font-size: 19px; font-weight: 600; background: #fff; }
+.kbtn.op:hover { border-color: var(--navy); }
+
+.kbtn.eq {
+  background: var(--navy);
+  color: #fff;
+  border-color: var(--navy);
+  font-weight: 700;
+}
+.kbtn.eq:hover { background: var(--navy-mid); border-color: var(--navy-mid); transform: translateY(-1px); }
+
+.kbtn.clr { color: var(--error); background: #fff; font-weight: 600; }
+.kbtn.clr:hover { border-color: var(--error); background: var(--error-soft); }
+
+/* History card */
+.history-card {
+  margin-top: 18px;
+  padding: 22px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+.history-card h4 {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: 14px;
+}
+.hist-list {
+  display: flex; flex-direction: column; gap: 8px;
+  max-height: 220px; overflow-y: auto; padding-right: 4px;
+}
+.hist-list::-webkit-scrollbar { width: 4px; }
+.hist-list::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 4px; }
+.hist-item {
+  font-family: var(--mono);
+  padding: 10px 13px;
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.hist-item:hover { border-color: var(--navy); background: #fff; }
+.hist-item .he { color: var(--text-muted); margin-bottom: 2px; word-break: break-all; }
+.hist-item .hr { color: var(--navy-deep); font-weight: 600; word-break: break-all; }
+.hist-empty { color: var(--text-faint); font-size: 12px; text-align: center; padding: 18px 0; font-family: var(--mono); }
+
+/* Browser warning */
+.browser-warn {
+  background: var(--error-soft);
+  border: 1px solid rgba(181, 52, 69, 0.25);
+  color: var(--error);
+  padding: 14px 20px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  margin-bottom: 22px;
+  display: none;
+  text-align: center;
+  line-height: 1.5;
+}
+.browser-warn.show { display: block; }
+.browser-warn b { font-weight: 700; }
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 30px; left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--navy-deep);
+  color: #fff;
+  padding: 13px 22px;
+  border-radius: 999px;
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 500;
+  z-index: 100;
+  opacity: 0;
+  transition: all 0.3s;
+  pointer-events: none;
+  box-shadow: 0 10px 40px rgba(14, 31, 68, 0.25);
+  max-width: 88vw;
+  text-align: center;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* Processing pulse on the result while debouncing */
+.d-result.processing {
+  position: relative;
+}
+.d-result.processing::after {
+  content: '...';
+  color: var(--accent);
+  margin-left: 8px;
+  animation: dots 1.2s steps(4, end) infinite;
+}
+@keyframes dots {
+  0%, 20% { content: '·'; }
+  40% { content: '··'; }
+  60%, 80% { content: '···'; }
+}
+
+/* ============================================================
+   RESPONSIVE
+============================================================ */
+@media (max-width: 640px) {
+  .view { padding: 18px 16px 0; }
+  .top-bar { padding-bottom: 18px; margin-bottom: 22px; }
+  .brand-sub { display: none; }
+  .hero { padding: 30px 0 20px; }
+  .hero-title { font-size: 42px; }
+  .hero-mic { width: 108px; height: 108px; }
+  .hero-mic svg { width: 38px; height: 38px; }
+  .instructions { padding: 24px 20px; margin-top: 40px; }
+  .instructions ol { grid-template-columns: 1fr; gap: 18px; }
+  .calc-display-panel { padding: 24px 20px; }
+  .keypad-panel { padding: 16px; }
+  .kbtn { font-size: 15px; padding: 13px 0; }
+  .kbtn.sci { font-size: 12px; }
+  .kbtn.op { font-size: 17px; }
+  .footer-band { font-size: 10px; padding: 24px 0 18px; flex-direction: column; align-items: flex-start; }
+}
+
+[data-lang-active="hi"] .hero-title,
+[data-lang-active="hi"] .hero-sub,
+[data-lang-active="hi"] .instructions li {
+  font-family: 'Manrope', 'Noto Sans Devanagari', system-ui, sans-serif;
+}
+</style>
+</head>
+<body>
+
+<!-- ========================================== HOME ========================================== -->
+<section class="view active" id="homeView">
+
+  <header class="top-bar">
+    <div class="brand-mark">
+      <div class="logo-mono">Oa</div>
+      <div>
+        <div class="brand-name">Obliq AI</div>
+        <div class="brand-sub" data-i18n="brandSub">Voice Intelligence</div>
+      </div>
+    </div>
+    <div class="lang-switcher">
+      <button class="lang-btn active" data-lang="en">EN</button>
+      <button class="lang-btn" data-lang="hi">हिं</button>
+    </div>
+  </header>
+
+  <div class="browser-warn" id="browserWarn">
+    <b data-i18n="warnTitle">Heads up:</b>
+    <span data-i18n-html="warnText">Voice recognition isn't supported in this browser. Please use <b>Google Chrome</b> or <b>Microsoft Edge</b>. You can still use the calculator with buttons.</span>
+  </div>
+
+  <div class="hero">
+    <div class="eyebrow" data-i18n="eyebrow">Speak · Compute · Hear</div>
+    <h1 class="hero-title" data-i18n-html="heroTitle">
+      The calculator that <em>listens.</em>
+    </h1>
+    <p class="hero-sub" data-i18n="heroSub">
+      Tap the mic and say "Open Calculator" to begin. Or say "Tell me about you" to learn more about Obliq AI and Digital Hammerr.
+    </p>
+
+    <div class="hero-mic-wrap">
+      <button class="hero-mic" id="homeMic" aria-label="Start listening">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="3" width="6" height="12" rx="3"/>
+          <path d="M5 11a7 7 0 0 0 14 0"/>
+          <line x1="12" y1="19" x2="12" y2="22"/>
+          <line x1="8" y1="22" x2="16" y2="22"/>
+        </svg>
+      </button>
+      <div class="mic-label" id="homeMicLabel" data-i18n="micLabelIdle">Tap to start listening</div>
+    </div>
+
+    <div class="phrase-strip">
+      <button class="phrase" data-cmd="open" data-i18n="phraseOpen">"Open Calculator"</button>
+      <button class="phrase" data-cmd="about" data-i18n="phraseAbout">"Tell me about you"</button>
+    </div>
+  </div>
+
+  <div class="instructions">
+    <h3 data-i18n="howTitle">How to use</h3>
+    <ol>
+      <li>
+        <span class="step-num">01</span>
+        <div data-i18n-html="step1"><b>Tap the mic</b> to grant microphone access and start listening.</div>
+      </li>
+      <li>
+        <span class="step-num">02</span>
+        <div data-i18n-html="step2">Say <b>"Open Calculator"</b> to launch the calculator.</div>
+      </li>
+      <li>
+        <span class="step-num">03</span>
+        <div data-i18n-html="step3">Speak math naturally — pause for a second when you're done.</div>
+      </li>
+      <li>
+        <span class="step-num">04</span>
+        <div data-i18n-html="step4">The answer is shown and spoken back — buttons work as backup.</div>
+      </li>
+    </ol>
+  </div>
+
+  <footer class="footer-band">
+    <div data-i18n="footerLeft">© 2026 Obliq AI · All rights reserved</div>
+    <div data-i18n-html="footerRight">Powered by <b>Digital Hammerr</b></div>
+  </footer>
+</section>
+
+<!-- ========================================== CALC ========================================== -->
+<section class="view" id="calcView">
+
+  <header class="top-bar">
+    <button class="back-btn" id="backBtn" data-i18n="backBtn">← Home</button>
+    <div class="brand-mark small">
+      <div class="logo-mono">Oa</div>
+      <div class="brand-name">Obliq AI</div>
+    </div>
+    <div class="lang-switcher">
+      <button class="lang-btn active" data-lang="en">EN</button>
+      <button class="lang-btn" data-lang="hi">हिं</button>
+    </div>
+  </header>
+
+  <div class="calc-container">
+
+    <div>
+      <div class="calc-display-panel">
+        <div class="d-label" data-i18n="dHeard">Heard</div>
+        <div class="d-heard" id="heardEl">—</div>
+
+        <div class="d-label" data-i18n="dExpr">Expression</div>
+        <div class="d-expr" id="exprEl">—</div>
+
+        <div class="d-label" data-i18n="dResult">Result</div>
+        <div class="d-result empty" id="resultEl">0</div>
+
+        <div class="mic-bar">
+          <button class="mic-btn-calc" id="calcMic" aria-label="Toggle voice">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="3" width="6" height="12" rx="3"/>
+              <path d="M5 11a7 7 0 0 0 14 0"/>
+              <line x1="12" y1="19" x2="12" y2="22"/>
+              <line x1="8" y1="22" x2="16" y2="22"/>
+            </svg>
+          </button>
+          <div class="mic-info-calc">
+            <div class="ms" id="calcMicStatus" data-i18n="calcStatusIdle">Tap mic to speak</div>
+            <div class="mh" data-i18n="calcStatusHelp">say "clear" to reset · "home" to go back</div>
+          </div>
+          <button class="tts-toggle on" id="ttsToggle">
+            <span class="tts-dot"></span>
+            <span data-i18n="ttsLabel">Speak</span>
+          </button>
+        </div>
+
+        <div class="manual-row">
+          <input type="text" id="manualInput" placeholder="Type: 25+30, sqrt(144), 50% of 200..." data-i18n-attr="placeholder|manualPlaceholder">
+          <button id="manualBtn" data-i18n="manualBtn">Calc</button>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="keypad-panel">
+        <h4 data-i18n="keypadTitle">Tap to input</h4>
+        <div class="btn-grid">
+          <button class="kbtn sci" data-fn="sin">sin</button>
+          <button class="kbtn sci" data-fn="cos">cos</button>
+          <button class="kbtn sci" data-fn="tan">tan</button>
+          <button class="kbtn sci" data-fn="log">log</button>
+          <button class="kbtn sci" data-fn="sqrt">√</button>
+          <button class="kbtn sci" data-ins="**">^</button>
+          <button class="kbtn sci" data-ins="(">(</button>
+          <button class="kbtn sci" data-ins=")">)</button>
+          <button class="kbtn clr" data-act="ac">AC</button>
+          <button class="kbtn clr" data-act="back">⌫</button>
+          <button class="kbtn op" data-ins="%">%</button>
+          <button class="kbtn op" data-ins="/">÷</button>
+          <button class="kbtn" data-ins="7">7</button>
+          <button class="kbtn" data-ins="8">8</button>
+          <button class="kbtn" data-ins="9">9</button>
+          <button class="kbtn op" data-ins="*">×</button>
+          <button class="kbtn" data-ins="4">4</button>
+          <button class="kbtn" data-ins="5">5</button>
+          <button class="kbtn" data-ins="6">6</button>
+          <button class="kbtn op" data-ins="-">−</button>
+          <button class="kbtn" data-ins="1">1</button>
+          <button class="kbtn" data-ins="2">2</button>
+          <button class="kbtn" data-ins="3">3</button>
+          <button class="kbtn op" data-ins="+">+</button>
+          <button class="kbtn" data-ins="0">0</button>
+          <button class="kbtn" data-ins=".">.</button>
+          <button class="kbtn sci" data-fn="pi">π</button>
+          <button class="kbtn eq" data-act="eq">=</button>
+        </div>
+      </div>
+
+      <div class="history-card">
+        <h4 data-i18n="historyTitle">History</h4>
+        <div class="hist-list" id="histList">
+          <div class="hist-empty" data-i18n="histEmpty">No calculations yet</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer-band">
+    <div data-i18n-html="footerCalc">Obliq AI · Powered by <b>Digital Hammerr</b></div>
+    <div>v2.0</div>
+  </footer>
+</section>
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+
+/* ============================================================
+   I18N STRINGS (EN + HI)
+============================================================ */
+const I18N = {
+  en: {
+    brandSub: 'Voice Intelligence',
+    warnTitle: 'Heads up:',
+    warnText: 'Voice recognition isn\'t supported in this browser. Please use <b>Google Chrome</b> or <b>Microsoft Edge</b>. You can still use the calculator with buttons.',
+    eyebrow: 'Speak · Compute · Hear',
+    heroTitle: 'The calculator that <em>listens.</em>',
+    heroSub: 'Tap the mic and say "Open Calculator" to begin. Or say "Tell me about you" to learn more about Obliq AI and Digital Hammerr.',
+    micLabelIdle: 'Tap to start listening',
+    micLabelOn:   'Listening — speak any phrase',
+    phraseOpen: '"Open Calculator"',
+    phraseAbout: '"Tell me about you"',
+    howTitle: 'How to use',
+    step1: '<b>Tap the mic</b> to grant microphone access and start listening.',
+    step2: 'Say <b>"Open Calculator"</b> to launch the calculator.',
+    step3: 'Speak math naturally — pause for a second when you\'re done.',
+    step4: 'The answer is shown and spoken back — buttons work as backup.',
+    footerLeft: '© 2026 Obliq AI · All rights reserved',
+    footerRight: 'Powered by <b>Digital Hammerr</b>',
+    backBtn: '← Home',
+    dHeard: 'Heard',
+    dExpr:  'Expression',
+    dResult:'Result',
+    calcStatusIdle: 'Tap mic to speak',
+    calcStatusListen: 'Listening — pause when done',
+    calcStatusHelp: 'say "clear" to reset · "home" to go back',
+    ttsLabel: 'Speak',
+    manualPlaceholder: 'Type: 25+30, sqrt(144), 50% of 200...',
+    manualBtn: 'Calc',
+    keypadTitle: 'Tap to input',
+    historyTitle: 'History',
+    histEmpty: 'No calculations yet',
+    footerCalc: 'Obliq AI · Powered by <b>Digital Hammerr</b>',
+    aboutText: 'Welcome. I am Obliq A.I., a next generation voice controlled intelligent calculator built to make computation effortless. Just speak naturally — whether basic arithmetic, or scientific functions like sine, cosine, square root and powers — and I will compute and speak the answer back to you. This experience is proudly powered by Digital Hammerr, a forward thinking technology studio that crafts intuitive, voice first AI tools for the modern world. Together, Obliq A.I. and Digital Hammerr bring you a calculator that doesn\'t just compute. It converses. To begin, say "open calculator", or tap the calculator icon.',
+    cleared: 'Cleared',
+    answerIs: 'The answer is',
+    didntCatch: 'Sorry, I didn\'t catch that.',
+    micBlocked: 'Microphone access is blocked. Please allow it in browser settings.',
+    openingCalc: 'Opening the calculator.',
+    goingHome: 'Going home.',
+    sayOpen: 'Say "Open Calculator" first',
+    heard: 'Heard',
+  },
+  hi: {
+    brandSub: 'वॉइस इंटेलिजेंस',
+    warnTitle: 'सूचना:',
+    warnText: 'इस ब्राउज़र में वॉइस रिकग्निशन उपलब्ध नहीं है। कृपया <b>Google Chrome</b> या <b>Microsoft Edge</b> इस्तेमाल करें। आप बटनों से भी कैलकुलेटर चला सकते हैं।',
+    eyebrow: 'बोलें · गणना · सुनें',
+    heroTitle: 'कैलकुलेटर जो <em>सुनता है।</em>',
+    heroSub: 'माइक दबाएं और कहें "Open Calculator"। या कहें "Tell me about you" Obliq AI और Digital Hammerr के बारे में जानने के लिए।',
+    micLabelIdle: 'सुनने के लिए माइक दबाएं',
+    micLabelOn:   'सुन रहा हूं — कुछ बोलें',
+    phraseOpen: '"Open Calculator"',
+    phraseAbout: '"Tell me about you"',
+    howTitle: 'कैसे इस्तेमाल करें',
+    step1: '<b>माइक दबाएं</b> और माइक्रोफोन की अनुमति दें।',
+    step2: 'कहें <b>"Open Calculator"</b> कैलकुलेटर खोलने के लिए।',
+    step3: 'गणित बोलें — अंत में एक सेकंड रुकें।',
+    step4: 'जवाब दिखेगा और सुनाया जाएगा — बटन भी काम करते हैं।',
+    footerLeft: '© 2026 Obliq AI · सर्वाधिकार सुरक्षित',
+    footerRight: 'Powered by <b>Digital Hammerr</b>',
+    backBtn: '← होम',
+    dHeard: 'सुना',
+    dExpr:  'गणना',
+    dResult:'परिणाम',
+    calcStatusIdle: 'बोलने के लिए माइक दबाएं',
+    calcStatusListen: 'सुन रहा हूं — अंत में रुकें',
+    calcStatusHelp: 'रीसेट के लिए "clear" · वापस "home"',
+    ttsLabel: 'बोलें',
+    manualPlaceholder: 'टाइप करें: 25+30, sqrt(144), 50% of 200...',
+    manualBtn: 'गणना',
+    keypadTitle: 'टाइप के लिए दबाएं',
+    historyTitle: 'इतिहास',
+    histEmpty: 'अभी कोई गणना नहीं',
+    footerCalc: 'Obliq AI · Powered by <b>Digital Hammerr</b>',
+    aboutText: 'नमस्ते। मैं Obliq AI हूं, एक आधुनिक आवाज़ नियंत्रित बुद्धिमान कैलकुलेटर। मुझे इस विश्वास के साथ बनाया गया है कि तकनीक को इंसानों की सुननी चाहिए। आप बस बोलिए, चाहे साधारण जोड़ घटाव हो, या साइन कोसाइन वर्गमूल जैसी वैज्ञानिक गणनाएं, मैं तुरंत जवाब निकाल कर आपको सुनाऊंगा। यह अनुभव आपको Digital Hammerr प्रदान कर रहा है, जो एक आधुनिक तकनीकी स्टूडियो है। Digital Hammerr का मानना है कि टूल्स प्राकृतिक, सुलभ, और सुंदर होने चाहिए। साथ मिलकर, Obliq AI और Digital Hammerr आपको ऐसा कैलकुलेटर देते हैं जो सिर्फ गणना नहीं करता, बातचीत करता है। शुरू करने के लिए कहिए "open calculator"।',
+    cleared: 'साफ़ कर दिया',
+    answerIs: 'जवाब है',
+    didntCatch: 'माफ़ कीजिए, समझ नहीं आया।',
+    micBlocked: 'माइक्रोफोन ब्लॉक है। कृपया ब्राउज़र सेटिंग्स में अनुमति दें।',
+    openingCalc: 'कैलकुलेटर खोल रहा हूं।',
+    goingHome: 'होम पर जा रहा हूं।',
+    sayOpen: 'पहले कहें "Open Calculator"',
+    heard: 'सुना',
+  }
+};
+
+let currentLang = 'en';
+
+function applyI18n() {
+  document.documentElement.setAttribute('data-lang-active', currentLang);
+  const T = I18N[currentLang];
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const k = el.getAttribute('data-i18n');
+    if (T[k] !== undefined) el.textContent = T[k];
+  });
+  document.querySelectorAll('[data-i18n-html]').forEach(el => {
+    const k = el.getAttribute('data-i18n-html');
+    if (T[k] !== undefined) el.innerHTML = T[k];
+  });
+  document.querySelectorAll('[data-i18n-attr]').forEach(el => {
+    const [attr, key] = el.getAttribute('data-i18n-attr').split('|');
+    if (T[key] !== undefined) el.setAttribute(attr, T[key]);
+  });
+  document.querySelectorAll('.lang-btn').forEach(b => {
+    b.classList.toggle('active', b.getAttribute('data-lang') === currentLang);
+  });
+  if (recognition) recognition.lang = currentLang === 'hi' ? 'hi-IN' : 'en-US';
+}
+
+/* ============================================================
+   NUMBER WORDS — EN + HI (Devanagari + Romanized)
+============================================================ */
+const NUM_EN = {
+  zero:0, oh:0, one:1, two:2, three:3, four:4, five:5, six:6, seven:7,
+  eight:8, nine:9, ten:10, eleven:11, twelve:12, thirteen:13, fourteen:14,
+  fifteen:15, sixteen:16, seventeen:17, eighteen:18, nineteen:19,
+  twenty:20, thirty:30, forty:40, fourty:40, fifty:50, sixty:60, seventy:70,
+  eighty:80, ninety:90, hundred:100, thousand:1000, lakh:100000, lac:100000,
+  crore:10000000, million:1000000, billion:1000000000
+};
+
+const NUM_HI = {
+  'शून्य':0,'ज़ीरो':0,
+  'एक':1,'दो':2,'तीन':3,'चार':4,'पांच':5,'पाँच':5,
+  'छह':6,'छः':6,'सात':7,'आठ':8,'नौ':9,'दस':10,
+  'ग्यारह':11,'बारह':12,'तेरह':13,'चौदह':14,'पंद्रह':15,'पन्द्रह':15,
+  'सोलह':16,'सत्रह':17,'अठारह':18,'उन्नीस':19,'बीस':20,
+  'इक्कीस':21,'बाईस':22,'तेईस':23,'चौबीस':24,'पच्चीस':25,
+  'छब्बीस':26,'सत्ताईस':27,'अट्ठाईस':28,'उनतीस':29,
+  'तीस':30,'इकतीस':31,'बत्तीस':32,'तैंतीस':33,'चौंतीस':34,'पैंतीस':35,
+  'छत्तीस':36,'सैंतीस':37,'अड़तीस':38,'उनतालीस':39,
+  'चालीस':40,'इकतालीस':41,'बयालीस':42,'तैंतालीस':43,'चौवालीस':44,
+  'पैंतालीस':45,'छियालीस':46,'सैंतालीस':47,'अड़तालीस':48,'उनचास':49,
+  'पचास':50,'इक्यावन':51,'बावन':52,'तिरेपन':53,'चौवन':54,'पचपन':55,
+  'छप्पन':56,'सत्तावन':57,'अट्ठावन':58,'उनसठ':59,
+  'साठ':60,'इकसठ':61,'बासठ':62,'तिरेसठ':63,'चौंसठ':64,'पैंसठ':65,
+  'छियासठ':66,'सड़सठ':67,'अड़सठ':68,'उनहत्तर':69,
+  'सत्तर':70,'इकहत्तर':71,'बहत्तर':72,'तिहत्तर':73,'चौहत्तर':74,
+  'पचहत्तर':75,'छिहत्तर':76,'सतहत्तर':77,'अठहत्तर':78,'उन्यासी':79,
+  'अस्सी':80,'इक्यासी':81,'बयासी':82,'तिरासी':83,'चौरासी':84,
+  'पचासी':85,'छियासी':86,'सत्तासी':87,'अट्ठासी':88,'नवासी':89,
+  'नब्बे':90,'इक्यानवे':91,'बानवे':92,'तिरानवे':93,'चौरानवे':94,
+  'पचानवे':95,'छियानवे':96,'सत्तानवे':97,'अट्ठानवे':98,'निन्यानवे':99,
+  'सौ':100,'हज़ार':1000,'हजार':1000,'लाख':100000,'करोड़':10000000,
+  ek:1, do:2, teen:3, char:4, paanch:5, panch:5, chhe:6, saat:7, aath:8,
+  nau:9, das:10, gyarah:11, barah:12, terah:13, chaudah:14, pandrah:15,
+  solah:16, satrah:17, atharah:18, unnees:19, bees:20, tees:30, chalis:40,
+  pachas:50, saath:60, sattar:70, assi:80, nabbe:90, sau:100, hazar:1000,
+  hazaar:1000, lakh:100000, crore:10000000
+};
+
+/* Convert a run of number words to a single number using place-value scaling */
+function wordsToNumberRun(tokens, dict) {
+  if (!tokens.length) return null;
+  const filtered = tokens.filter(t => t !== 'and' && t !== 'और');
+  if (!filtered.length) return null;
+  let total = 0, current = 0, saw = false;
+  for (const w of filtered) {
+    const n = dict[w];
+    if (n === undefined) return null;
+    saw = true;
+    if (n === 100) {
+      current = (current || 1) * 100;
+    } else if (n >= 1000) {
+      total += (current || 1) * n;
+      current = 0;
+    } else {
+      current += n;
+    }
+  }
+  return saw ? total + current : null;
+}
+
+/* ============================================================
+   SPOKEN → MATH EXPRESSION
+============================================================ */
+function spokenToExpression(text, lang) {
+  let s = ' ' + text.toLowerCase().trim() + ' ';
+
+  if (lang === 'en') {
+    s = s.replace(/\b(what'?s|what is|how much is|tell me|please|the answer|the result|equals|equal to|calculate|compute|now)\b/g, ' ');
+
+    s = s.replace(/\bsquare root of\b/g, ' SQRT ');
+    s = s.replace(/\bsquared\b/g, ' SQ ');
+    s = s.replace(/\bcubed\b/g, ' CUBE ');
+    s = s.replace(/\bnatural log of\b|\bln of\b|\bln\b/g, ' LN ');
+    s = s.replace(/\blog of\b|\blogarithm of\b|\blog\b/g, ' LOG ');
+    s = s.replace(/\bsine of\b|\bsin of\b|\bsin\b/g, ' SIN ');
+    s = s.replace(/\bcosine of\b|\bcos of\b|\bcos\b/g, ' COS ');
+    s = s.replace(/\btangent of\b|\btan of\b|\btan\b/g, ' TAN ');
+    s = s.replace(/\bto the power of\b|\braised to\b|\bpower of\b|\bpower\b|\bto the\b/g, ' ** ');
+
+    s = s.replace(/\bpercent of\b/g, ' PERCENTOF ');
+    s = s.replace(/\bpercent\b|%/g, ' PERCENT ');
+
+    s = s.replace(/\bmultiplied by\b/g, ' * ');
+    s = s.replace(/\bdivided by\b/g, ' / ');
+    s = s.replace(/\bdivide by\b/g, ' / ');
+    s = s.replace(/\bplus\b|\badd\b|\badded to\b/g, ' + ');
+    s = s.replace(/\bminus\b|\bsubtract\b|\btake away\b|\bless\b/g, ' - ');
+    s = s.replace(/\btimes\b|\bmultiply\b|\binto\b/g, ' * ');
+    s = s.replace(/\bdivide\b|\bover\b/g, ' / ');
+    s = s.replace(/\bpoint\b|\bdecimal\b/g, '.');
+    s = s.replace(/\bopen bracket\b|\bopen paren\b|\bopen parenthesis\b/g, ' ( ');
+    s = s.replace(/\bclose bracket\b|\bclose paren\b|\bclose parenthesis\b/g, ' ) ');
+    s = s.replace(/\bpi\b/g, ' PI ');
+  }
+
+  if (lang === 'hi') {
+    s = s.replace(/वर्ग\s*मूल|वर्गमूल|स्क्वायर\s*रूट/g, ' SQRT ');
+    s = s.replace(/का\s*वर्ग|वर्ग/g, ' SQ ');
+    s = s.replace(/घन/g, ' CUBE ');
+    s = s.replace(/लॉग|log/gi, ' LOG ');
+    s = s.replace(/साइन|sin/gi, ' SIN ');
+    s = s.replace(/कोसाइन|cos/gi, ' COS ');
+    s = s.replace(/टैन|tan/gi, ' TAN ');
+    s = s.replace(/की\s*घात|पावर|घात/g, ' ** ');
+
+    s = s.replace(/प्रतिशत\s*ऑफ़|प्रतिशत/g, ' PERCENT ');
+    s = s.replace(/जोड़|जोड़ो|प्लस|और/g, ' + ');
+    s = s.replace(/घटा|घटाओ|माइनस/g, ' - ');
+    s = s.replace(/गुणा|गुना|मल्टीप्लाई|इन/g, ' * ');
+    s = s.replace(/भाग|बटा|डिवाइड/g, ' / ');
+    s = s.replace(/दशमलव|पॉइंट/g, '.');
+    s = s.replace(/बराबर|इक्वल/g, ' ');
+    s = s.replace(/पाई/g, ' PI ');
+  }
+
+  // Tokenize — give symbols their own space
+  s = s.replace(/([+\-*/()])/g, ' $1 ');
+  const tokens = s.split(/\s+/).filter(Boolean);
+
+  const dictPrimary = lang === 'hi' ? NUM_HI : NUM_EN;
+  const dictFallback = lang === 'hi' ? NUM_EN : NUM_HI;
+  const isNumWord = (t) => dictPrimary[t] !== undefined || dictFallback[t] !== undefined
+                          || t === 'and' || t === 'और';
+
+  const out = [];
+  let buf = [];
+  const flush = () => {
+    if (!buf.length) return;
+    let n = wordsToNumberRun(buf, dictPrimary);
+    if (n === null) n = wordsToNumberRun(buf, dictFallback);
+    if (n !== null) out.push(String(n));
+    else buf.forEach(b => out.push(b));
+    buf = [];
+  };
+  for (const t of tokens) {
+    if (isNumWord(t)) buf.push(t);
+    else { flush(); out.push(t); }
+  }
+  flush();
+
+  let expr = out.join(' ');
+
+  // Resolve special tokens
+  expr = expr.replace(/\bPI\b/g, 'Math.PI');
+  expr = expr.replace(/(\d+(?:\.\d+)?)\s*PERCENTOF\s*(\d+(?:\.\d+)?)/g, '($1/100)*$2');
+  expr = expr.replace(/(\d+(?:\.\d+)?)\s*PERCENT/g, '($1/100)');
+  expr = expr.replace(/PERCENTOF/g, '*').replace(/PERCENT/g, '');
+
+  expr = expr.replace(/SQRT\s*\(\s*([^()]+?)\s*\)/g, 'Math.sqrt($1)');
+  expr = expr.replace(/SQRT\s*(\d+(?:\.\d+)?)/g, 'Math.sqrt($1)');
+
+  expr = expr.replace(/(\d+(?:\.\d+)?)\s*SQ/g, '($1**2)');
+  expr = expr.replace(/(\d+(?:\.\d+)?)\s*CUBE/g, '($1**3)');
+  expr = expr.replace(/SQ/g, '').replace(/CUBE/g, '');
+
+  expr = expr.replace(/LOG\s*\(\s*([^()]+?)\s*\)/g, 'Math.log10($1)');
+  expr = expr.replace(/LOG\s*(\d+(?:\.\d+)?)/g, 'Math.log10($1)');
+  expr = expr.replace(/LN\s*\(\s*([^()]+?)\s*\)/g, 'Math.log($1)');
+  expr = expr.replace(/LN\s*(\d+(?:\.\d+)?)/g, 'Math.log($1)');
+
+  expr = expr.replace(/SIN\s*\(\s*([^()]+?)\s*\)/g, 'Math.sin(($1)*Math.PI/180)');
+  expr = expr.replace(/SIN\s*(\d+(?:\.\d+)?)/g, 'Math.sin(($1)*Math.PI/180)');
+  expr = expr.replace(/COS\s*\(\s*([^()]+?)\s*\)/g, 'Math.cos(($1)*Math.PI/180)');
+  expr = expr.replace(/COS\s*(\d+(?:\.\d+)?)/g, 'Math.cos(($1)*Math.PI/180)');
+  expr = expr.replace(/TAN\s*\(\s*([^()]+?)\s*\)/g, 'Math.tan(($1)*Math.PI/180)');
+  expr = expr.replace(/TAN\s*(\d+(?:\.\d+)?)/g, 'Math.tan(($1)*Math.PI/180)');
+
+  expr = expr.replace(/\bsqrt\s*\(/gi, 'Math.sqrt(');
+  expr = expr.replace(/\s+/g, ' ').trim();
+  return expr;
+}
+
+/* ============================================================
+   SAFE EVALUATOR
+============================================================ */
+function safeEval(expr) {
+  if (!expr) throw new Error('empty');
+  const stripped = expr
+    .replace(/Math\.(PI|sqrt|log10|log|sin|cos|tan|abs|pow)/g, '')
+    .replace(/\s/g, '');
+  if (!/^[0-9+\-*/.%(),]*$/.test(stripped)) throw new Error('bad chars');
+  if (/[+\-*/]{3,}/.test(stripped) || /^[*/%]/.test(stripped) || /[+\-*/.]$/.test(stripped)) {
+    throw new Error('incomplete');
+  }
+  const val = Function('"use strict"; return (' + expr + ')')();
+  if (typeof val !== 'number' || !isFinite(val)) throw new Error('NaN');
+  return val;
+}
+
+/* Format with full precision — handles large numbers */
+function formatNumber(n) {
+  if (Number.isInteger(n) && Math.abs(n) < 1e16) {
+    return n.toLocaleString('en-US', { useGrouping: true, maximumFractionDigits: 0 });
+  }
+  // Use toPrecision for very large/small, otherwise fixed
+  const abs = Math.abs(n);
+  if (abs >= 1e16 || (abs > 0 && abs < 1e-6)) {
+    return n.toExponential(8).replace(/0+e/, 'e');
+  }
+  // Round to 10 decimals, strip trailing zeros, add thousands separators on integer part
+  const rounded = parseFloat(n.toFixed(10));
+  const parts = rounded.toString().split('.');
+  parts[0] = Number(parts[0]).toLocaleString('en-US');
+  return parts.join('.');
+}
+
+/* ============================================================
+   DOM REFS + STATE
+============================================================ */
+const $ = (id) => document.getElementById(id);
+const homeView = $('homeView');
+const calcView = $('calcView');
+const homeMic  = $('homeMic');
+const calcMic  = $('calcMic');
+const homeMicLabel = $('homeMicLabel');
+const heardEl  = $('heardEl');
+const exprEl   = $('exprEl');
+const resultEl = $('resultEl');
+const calcMicStatus = $('calcMicStatus');
+const histList = $('histList');
+const browserWarn = $('browserWarn');
+const ttsToggle = $('ttsToggle');
+const manualInput = $('manualInput');
+const manualBtn = $('manualBtn');
+const backBtn = $('backBtn');
+const toastEl = $('toast');
+
+let recognition = null;
+let isListening = false;
+let wantListening = false;
+let speakOn = true;
+let currentView = 'home';
+let history = [];
+
+/* Buffer for accumulating long voice phrases */
+let pendingFinalText = '';
+let processingTimer = null;
+const PAUSE_MS = 1200;   // how long to wait after last final result before computing
+
+/* ============================================================
+   VIEW SWITCH
+============================================================ */
+function switchView(view) {
+  currentView = view;
+  homeView.classList.toggle('active', view === 'home');
+  calcView.classList.toggle('active', view === 'calc');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ============================================================
+   TOAST
+============================================================ */
+let toastTimer;
+function toast(msg, dur = 2400) {
+  toastEl.textContent = msg;
+  toastEl.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toastEl.classList.remove('show'), dur);
+}
+
+/* ============================================================
+   TEXT-TO-SPEECH
+============================================================ */
+function speak(text) {
+  if (!speakOn || !('speechSynthesis' in window)) return;
+  try {
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = currentLang === 'hi' ? 'hi-IN' : 'en-US';
+    u.rate = 1.0; u.pitch = 1.0; u.volume = 1.0;
+    const voices = window.speechSynthesis.getVoices();
+    const match = voices.find(v => v.lang.startsWith(currentLang === 'hi' ? 'hi' : 'en'));
+    if (match) u.voice = match;
+    window.speechSynthesis.speak(u);
+  } catch (e) {}
+}
+
+/* ============================================================
+   COMMAND HANDLER (top-level intents)
+============================================================ */
+function handleVoiceCommand(text) {
+  const t = text.toLowerCase().trim();
+
+  if (/open calculator|open the calculator|launch calculator|start calculator|कैलकुलेटर खोलो|कैलकुलेटर खोल|ओपन कैलकुलेटर/i.test(t)) {
+    speak(I18N[currentLang].openingCalc);
+    setTimeout(() => switchView('calc'), 300);
+    return true;
+  }
+  if (/tell me about you|tell me about yourself|about you|who are you|what are you|अपने बारे में बताओ|खुद के बारे में बताओ|तुम कौन हो|आप कौन हैं/i.test(t)) {
+    speak(I18N[currentLang].aboutText);
+    toast(currentLang === 'hi' ? 'आपके बारे में बता रहा हूं…' : 'About Obliq AI…');
+    return true;
+  }
+  if (/^(home|go home|go back|back to home|होम|वापस|घर)$/i.test(t)) {
+    if (currentView === 'calc') {
+      speak(I18N[currentLang].goingHome);
+      setTimeout(() => switchView('home'), 300);
+    }
+    return true;
+  }
+  if (/^(clear|reset|erase|cancel|साफ़|क्लियर|रीसेट|मिटाओ)$/i.test(t)) {
+    if (currentView === 'calc') {
+      heardEl.textContent = '—';
+      heardEl.classList.remove('has-text');
+      exprEl.textContent = '—';
+      resultEl.textContent = '0';
+      resultEl.className = 'd-result empty';
+      manualInput.value = '';
+      speak(I18N[currentLang].cleared);
+    }
+    return true;
+  }
+  if (/^(stop|stop listening|बंद करो|रुको)$/i.test(t)) {
+    stopListening();
+    return true;
+  }
+  return false;
+}
+
+/* ============================================================
+   RUN A CALCULATION
+============================================================ */
+function runCalculation(text, fromVoice = false) {
+  if (!text || !text.trim()) return;
+  if (handleVoiceCommand(text)) return;
+
+  if (currentView === 'home') {
+    toast(I18N[currentLang].sayOpen);
+    return;
+  }
+
+  heardEl.textContent = text;
+  heardEl.classList.add('has-text');
+
+  let expr;
+  try { expr = spokenToExpression(text, currentLang); }
+  catch (e) { showError(I18N[currentLang].didntCatch); return; }
+
+  if (!expr || !/[0-9]/.test(expr)) {
+    showError(I18N[currentLang].didntCatch);
+    return;
+  }
+
+  exprEl.textContent = expr.replace(/Math\./g, '');
+
+  let val;
+  try { val = safeEval(expr); }
+  catch (e) { showError(I18N[currentLang].didntCatch); return; }
+
+  const formatted = formatNumber(val);
+  resultEl.textContent = formatted;
+  resultEl.className = 'd-result';
+
+  addHistory(exprEl.textContent, formatted);
+
+  if (speakOn) {
+    // Strip thousands separators when speaking
+    const spoken = String(val);
+    speak(`${I18N[currentLang].answerIs} ${spoken}`);
+  }
+}
+
+function showError(msg) {
+  resultEl.textContent = msg;
+  resultEl.className = 'd-result error';
+  if (speakOn) speak(msg);
+}
+
+/* ============================================================
+   HISTORY
+============================================================ */
+function addHistory(expr, result) {
+  history.unshift({ expr, result });
+  if (history.length > 15) history.pop();
+  renderHistory();
+}
+function renderHistory() {
+  if (!history.length) {
+    histList.innerHTML = `<div class="hist-empty">${I18N[currentLang].histEmpty}</div>`;
+    return;
+  }
+  histList.innerHTML = history.map(h => `
+    <div class="hist-item" data-result="${esc(String(h.result).replace(/,/g,''))}">
+      <div class="he">${esc(h.expr)}</div>
+      <div class="hr">= ${esc(h.result)}</div>
+    </div>`).join('');
+  // Click to use a previous result
+  histList.querySelectorAll('.hist-item').forEach(el => {
+    el.addEventListener('click', () => {
+      const r = el.getAttribute('data-result');
+      manualInput.value += r;
+      exprEl.textContent = manualInput.value || '—';
+    });
+  });
+}
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* ============================================================
+   SPEECH RECOGNITION — continuous + debounced accumulator
+   --------------------------------------------------------------
+   PROBLEM SOLVED: The earlier version used continuous=false with
+   auto-restart, which made long phrases arrive as broken fragments.
+   Each fragment was evaluated alone and failed. Now we keep one
+   continuous session and use a 1.2-second pause to mark "done".
+============================================================ */
+function setupRecognition() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    browserWarn.classList.add('show');
+    if (homeMic) homeMic.disabled = true;
+    if (calcMic) calcMic.disabled = true;
+    return;
+  }
+  recognition = new SR();
+  recognition.lang = currentLang === 'hi' ? 'hi-IN' : 'en-US';
+  recognition.continuous = true;       // <-- KEY FIX
+  recognition.interimResults = true;
+  recognition.maxAlternatives = 1;
+
+  recognition.onstart = () => {
+    isListening = true;
+    if (currentView === 'home') {
+      homeMic.classList.add('listening');
+      homeMicLabel.classList.add('listening');
+      homeMicLabel.textContent = I18N[currentLang].micLabelOn;
+    } else {
+      calcMic.classList.add('listening');
+      calcMicStatus.textContent = I18N[currentLang].calcStatusListen;
+    }
+  };
+
+  recognition.onresult = (e) => {
+    let interim = '';
+    let newFinal = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const r = e.results[i];
+      if (r.isFinal) newFinal += r[0].transcript + ' ';
+      else interim += r[0].transcript + ' ';
+    }
+
+    if (newFinal) pendingFinalText += newFinal;
+
+    // Live preview of accumulated + interim
+    const acc = pendingFinalText.trim();
+    const interimT = interim.trim();
+    if (acc || interimT) {
+      heardEl.classList.add('has-text');
+      heardEl.innerHTML =
+        (acc ? `<span class="accumulated">${esc(acc)}</span>` : '') +
+        (interimT ? ` <span class="interim">${esc(interimT)}</span>` : '');
+    }
+
+    // Mark result panel as processing while waiting for the pause
+    if (newFinal && currentView === 'calc') {
+      resultEl.classList.add('processing');
+    }
+
+    // Reset the pause timer — process only after PAUSE_MS of silence
+    clearTimeout(processingTimer);
+    if (pendingFinalText.trim()) {
+      processingTimer = setTimeout(() => {
+        const text = pendingFinalText.trim();
+        pendingFinalText = '';
+        resultEl.classList.remove('processing');
+        if (!text) return;
+
+        if (currentView === 'home') {
+          const handled = handleVoiceCommand(text);
+          if (!handled) {
+            toast(`${I18N[currentLang].heard}: "${text}" — ${I18N[currentLang].sayOpen}`);
+          }
+        } else {
+          if (!handleVoiceCommand(text)) runCalculation(text, true);
+        }
+      }, PAUSE_MS);
+    }
+  };
+
+  recognition.onerror = (e) => {
+    if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+      wantListening = false;
+      toast(I18N[currentLang].micBlocked, 4000);
+    }
+    // 'no-speech' and 'aborted' can be ignored — onend will restart if wanted
+  };
+
+  recognition.onend = () => {
+    isListening = false;
+    homeMic.classList.remove('listening');
+    calcMic.classList.remove('listening');
+    homeMicLabel.classList.remove('listening');
+    if (wantListening) {
+      // Some browsers stop continuous after a long quiet period — restart.
+      setTimeout(() => { if (wantListening) startListening(); }, 200);
+    } else {
+      homeMicLabel.textContent = I18N[currentLang].micLabelIdle;
+      calcMicStatus.textContent = I18N[currentLang].calcStatusIdle;
+    }
+  };
+}
+
+function startListening() {
+  if (!recognition) return;
+  wantListening = true;
+  if (isListening) return;
+  try { recognition.start(); }
+  catch (e) {}
+}
+function stopListening() {
+  wantListening = false;
+  pendingFinalText = '';
+  clearTimeout(processingTimer);
+  resultEl.classList.remove('processing');
+  if (recognition && isListening) {
+    try { recognition.stop(); } catch (e) {}
+  }
+  homeMic.classList.remove('listening');
+  calcMic.classList.remove('listening');
+  homeMicLabel.classList.remove('listening');
+  homeMicLabel.textContent = I18N[currentLang].micLabelIdle;
+  calcMicStatus.textContent = I18N[currentLang].calcStatusIdle;
+}
+
+/* ============================================================
+   KEYPAD
+============================================================ */
+function appendToInput(s) {
+  manualInput.value += s;
+  exprEl.textContent = manualInput.value || '—';
+}
+function backspaceInput() {
+  manualInput.value = manualInput.value.slice(0, -1);
+  exprEl.textContent = manualInput.value || '—';
+}
+function acClear() {
+  manualInput.value = '';
+  heardEl.textContent = '—';
+  heardEl.classList.remove('has-text');
+  exprEl.textContent = '—';
+  resultEl.textContent = '0';
+  resultEl.className = 'd-result empty';
+}
+function evaluateBuffer() {
+  const v = manualInput.value.trim();
+  if (!v) return;
+  runCalculation(v, false);
+  manualInput.value = '';
+}
+function applyFunction(fn) {
+  if (fn === 'pi')   appendToInput('Math.PI');
+  else if (fn === 'sqrt') appendToInput('sqrt(');
+  else if (fn === 'sin')  appendToInput('SIN(');
+  else if (fn === 'cos')  appendToInput('COS(');
+  else if (fn === 'tan')  appendToInput('TAN(');
+  else if (fn === 'log')  appendToInput('LOG(');
+}
+
+/* ============================================================
+   EVENTS
+============================================================ */
+homeMic.addEventListener('click', () => { wantListening ? stopListening() : startListening(); });
+calcMic.addEventListener('click', () => { wantListening ? stopListening() : startListening(); });
+backBtn.addEventListener('click', () => switchView('home'));
+
+ttsToggle.addEventListener('click', () => {
+  speakOn = !speakOn;
+  ttsToggle.classList.toggle('on', speakOn);
+});
+
+manualBtn.addEventListener('click', evaluateBuffer);
+manualInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') evaluateBuffer();
+});
+
+document.querySelectorAll('.phrase').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const cmd = btn.getAttribute('data-cmd');
+    if (cmd === 'open')  handleVoiceCommand('open calculator');
+    if (cmd === 'about') handleVoiceCommand('tell me about you');
+  });
+});
+
+document.querySelectorAll('.lang-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    currentLang = b.getAttribute('data-lang');
+    applyI18n();
+    renderHistory();
+  });
+});
+
+document.querySelectorAll('.kbtn').forEach(b => {
+  b.addEventListener('click', () => {
+    const ins = b.getAttribute('data-ins');
+    const act = b.getAttribute('data-act');
+    const fn  = b.getAttribute('data-fn');
+    if (ins !== null) appendToInput(ins);
+    else if (fn) applyFunction(fn);
+    else if (act === 'eq') evaluateBuffer();
+    else if (act === 'ac') acClear();
+    else if (act === 'back') backspaceInput();
+  });
+});
+
+document.addEventListener('keydown', (e) => {
+  if (currentView !== 'calc') return;
+  if (document.activeElement === manualInput) return;
+  if (/^[0-9.+\-*/()%]$/.test(e.key)) appendToInput(e.key);
+  else if (e.key === 'Enter' || e.key === '=') evaluateBuffer();
+  else if (e.key === 'Backspace') backspaceInput();
+  else if (e.key === 'Escape') acClear();
+});
+
+/* ============================================================
+   INIT
+============================================================ */
+applyI18n();
+setupRecognition();
+if ('speechSynthesis' in window) {
+  window.speechSynthesis.onvoiceschanged = () => {};
+  window.speechSynthesis.getVoices();
+}
+</script>
+</body>
+</html>

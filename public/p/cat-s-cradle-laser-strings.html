@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CAT'S CRADLE — Laser Strings</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.3/p5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675466862/camera_utils.js" crossorigin="anonymous"></script>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: #060c1a;   /* midnight blue — matches p5 bg exactly */
+    overflow: hidden;
+    font-family: 'Orbitron', monospace;
+  }
+
+  #app {
+    position: relative;
+    width: 100vw; height: 100vh;
+  }
+
+  /* MediaPipe still needs a video element, but it stays 1×1 and invisible */
+  #input-video {
+    position: absolute;
+    width: 1px; height: 1px;
+    opacity: 0; pointer-events: none;
+  }
+
+  /* p5 canvas fills the window */
+  #defaultCanvas0 {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  /* ═══════════════════════════════════════
+     CRT SCANLINE OVERLAY
+     Three stacked layers for a richer effect:
+       1. Horizontal scanlines (every 3 px)
+       2. Subtle phosphor flicker animation
+       3. Screen-edge burn vignette
+  ═══════════════════════════════════════ */
+  #crt {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 12;
+  }
+
+  /* Fine horizontal lines */
+  #crt::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0px,
+      transparent 2px,
+      rgba(0, 8, 30, 0.28) 2px,
+      rgba(0, 8, 30, 0.28) 3px
+    );
+    /* Slow vertical drift — simulates very faint roll */
+    animation: scanroll 18s linear infinite;
+  }
+
+  /* Phosphor flicker — barely-there brightness pulse */
+  #crt::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: transparent;
+    animation: phosphor 0.1s steps(1) infinite;
+    mix-blend-mode: overlay;
+  }
+
+  @keyframes scanroll {
+    from { background-position: 0 0; }
+    to   { background-position: 0 3px; }
+  }
+
+  @keyframes phosphor {
+    0%  { opacity: 1; }
+    50% { opacity: 0.97; }
+  }
+
+  /* Screen-edge burn — curves the perceived corners */
+  #crt-burn {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 13;
+    background:
+      radial-gradient(ellipse 80% 80% at 50% 50%, transparent 60%, rgba(0,4,16,0.72) 100%);
+  }
+
+  /* ═══════════════════════════════════════
+     HUD  — simplified, precise
+  ═══════════════════════════════════════ */
+  #hud {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 14;
+  }
+
+  /* Corner bracket — 4 instances */
+  .brkt {
+    position: absolute;
+    width: 28px; height: 28px;
+    border-style: solid;
+    border-color: rgba(0, 210, 255, 0.45);
+    opacity: 1;
+  }
+  .brkt.tl { top: 20px; left: 20px; border-width: 1.5px 0 0 1.5px; }
+  .brkt.tr { top: 20px; right: 20px; border-width: 1.5px 1.5px 0 0; }
+  .brkt.bl { bottom: 20px; left: 20px; border-width: 0 0 1.5px 1.5px; }
+  .brkt.br { bottom: 20px; right: 20px; border-width: 0 1.5px 1.5px 0; }
+
+  /* Title — top centre */
+  #title {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 22px;
+    gap: 6px;
+  }
+
+  #title-main {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 9px;
+    color: rgba(0, 210, 255, 0.85);
+    text-shadow: 0 0 10px rgba(0,210,255,0.5);
+    text-transform: uppercase;
+    animation: flicker 9s infinite;
+  }
+
+  #title-sub {
+    font-size: 7px;
+    letter-spacing: 5px;
+    color: rgba(0, 210, 255, 0.30);
+    text-transform: uppercase;
+  }
+
+  /* Horizontal rule under title */
+  #title-rule {
+    position: absolute;
+    top: 58px; left: 50%;
+    transform: translateX(-50%);
+    width: 160px; height: 1px;
+    background: linear-gradient(to right, transparent, rgba(0,210,255,0.3), transparent);
+  }
+
+  /* Combo — fades in below rule */
+  #combo {
+    position: absolute;
+    top: 72px; left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    letter-spacing: 6px;
+    color: #ffe040;
+    text-shadow: 0 0 14px rgba(255,210,0,0.8), 0 0 40px rgba(255,210,0,0.3);
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.12s;
+  }
+
+  /* Status bar — bottom centre */
+  #status-bar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-bottom: 22px;
+    gap: 16px;
+  }
+
+  .status-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: rgba(0,210,255,0.6);
+    box-shadow: 0 0 6px rgba(0,210,255,0.6);
+    animation: blink 2s ease-in-out infinite;
+  }
+
+  #status-text {
+    font-size: 8px;
+    letter-spacing: 5px;
+    color: rgba(0, 210, 255, 0.55);
+    text-transform: uppercase;
+  }
+
+  @keyframes blink  { 0%,100%{opacity:1} 50%{opacity:0.2} }
+  @keyframes flicker {
+    0%,92%,94%,100% { opacity:1 }
+    93% { opacity:0.4 }
+  }
+
+  /* ═══════════════════════════════════════
+     LOADING SCREEN — matches midnight blue
+  ═══════════════════════════════════════ */
+  #loading {
+    position: absolute;
+    inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    background: #060c1a;
+    z-index: 30;
+    gap: 22px;
+    transition: opacity 0.9s ease;
+  }
+  #loading.gone { opacity: 0; pointer-events: none; }
+
+  .ld-ring {
+    width: 72px; height: 72px;
+    border: 1.5px solid rgba(0,210,255,0.15);
+    border-top-color: rgba(0,210,255,0.9);
+    border-radius: 50%;
+    animation: spin 1.1s linear infinite;
+    box-shadow: 0 0 18px rgba(0,210,255,0.2);
+  }
+  .ld-text {
+    font-size: 9px;
+    letter-spacing: 6px;
+    color: rgba(0,210,255,0.7);
+    text-shadow: 0 0 8px rgba(0,210,255,0.4);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes spin  { to { transform: rotate(360deg); } }
+  @keyframes pulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <video id="input-video" playsinline></video>
+
+  <!-- CRT layers -->
+  <div id="crt"></div>
+  <div id="crt-burn"></div>
+
+  <!-- HUD -->
+  <div id="hud">
+    <div class="brkt tl"></div>
+    <div class="brkt tr"></div>
+    <div class="brkt bl"></div>
+    <div class="brkt br"></div>
+
+    <div id="title">
+      <div id="title-main">Cat's Cradle</div>
+      <div id="title-sub">Laser String Array</div>
+    </div>
+    <div id="title-rule"></div>
+
+    <div id="combo"></div>
+
+    <div id="status-bar">
+      <div class="status-dot"></div>
+      <div id="status-text">Awaiting Camera</div>
+      <div class="status-dot"></div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div id="loading">
+    <div class="ld-ring"></div>
+    <div class="ld-text">Initialising</div>
+  </div>
+
+</div><!-- #app -->
+
+<script>
+// ─────────────────────────────────────────────────────
+//  Shared state
+// ─────────────────────────────────────────────────────
+const state = { hands: [], handedness: [], videoReady: false };
+const videoEl    = document.getElementById('input-video');
+const statusEl   = document.getElementById('status-text');
+const loadingEl  = document.getElementById('loading');
+const comboEl    = document.getElementById('combo');
+
+// ─────────────────────────────────────────────────────
+//  MediaPipe Hands
+// ─────────────────────────────────────────────────────
+const mpHands = new Hands({
+  locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${f}`
+});
+mpHands.setOptions({
+  maxNumHands: 2, modelComplexity: 1,
+  minDetectionConfidence: 0.65, minTrackingConfidence: 0.55,
+});
+mpHands.onResults(r => {
+  state.hands      = r.multiHandLandmarks || [];
+  state.handedness = (r.multiHandedness || []).map(h => h.label);
+});
+
+const mpCamera = new Camera(videoEl, {
+  onFrame: async () => { await mpHands.send({ image: videoEl }); },
+  width: 1280, height: 720, facingMode: 'user',
+});
+mpCamera.start().then(() => {
+  state.videoReady = true;
+  statusEl.textContent = 'Laser Array Online';
+  loadingEl.classList.add('gone');
+}).catch(() => {
+  statusEl.textContent = 'Camera Access Denied';
+  document.querySelector('.ld-text').textContent = 'Permission Required';
+});
+
+// ─────────────────────────────────────────────────────
+//  Constants
+// ─────────────────────────────────────────────────────
+const FINGER_TIPS = [4, 8, 12, 16, 20];
+const CONNECTIONS = [
+  [0,1],[1,2],[2,3],[3,4],
+  [0,5],[5,6],[6,7],[7,8],
+  [5,9],[9,10],[10,11],[11,12],
+  [9,13],[13,14],[14,15],[15,16],
+  [13,17],[17,18],[18,19],[19,20],
+  [0,17],[0,5],
+];
+
+// Per-finger laser colours: thumb, index, middle, ring, pinky
+const BEAM_HUES = [185, 300, 55, 130, 25];
+
+// ─────────────────────────────────────────────────────
+//  Particle
+// ─────────────────────────────────────────────────────
+class Particle {
+  constructor(x, y, hue, sk) {
+    this.sk = sk; this.x = x; this.y = y; this.hue = hue;
+    const a = sk.random(sk.TWO_PI), v = sk.random(2.5, 12);
+    this.vx = Math.cos(a) * v; this.vy = Math.sin(a) * v;
+    this.life = 1; this.decay = sk.random(0.018, 0.044);
+    this.size = sk.random(3, 9); this.trail = [];
+    this.spark = sk.random() < 0.35;
+  }
+  update() {
+    this.trail.push({ x: this.x, y: this.y });
+    if (this.trail.length > 7) this.trail.shift();
+    this.vx *= 0.92; this.vy = this.vy * 0.92 + 0.22;
+    this.x += this.vx; this.y += this.vy;
+    this.life -= this.decay;
+  }
+  draw(ctx, sk) {
+    if (this.life <= 0) return;
+    const a = this.life * 100, sz = this.size * this.life;
+    if (this.spark && this.trail.length > 1) {
+      const t = this.trail[0];
+      ctx.save();
+      ctx.shadowColor = `hsla(${this.hue},100%,70%,${this.life})`;
+      ctx.shadowBlur = 10;
+      sk.stroke(this.hue, 90, 100, a * 0.9); sk.strokeWeight(sz * 0.45);
+      sk.line(t.x, t.y, this.x, this.y);
+      ctx.restore();
+    } else {
+      ctx.save();
+      ctx.shadowColor = `hsla(${this.hue},100%,70%,${this.life})`;
+      ctx.shadowBlur = sz * 3;
+      sk.noStroke();
+      sk.fill(this.hue, 80, 100, a * 0.85); sk.ellipse(this.x, this.y, sz * 2);
+      sk.fill(0, 0, 100, a * 0.55);         sk.ellipse(this.x, this.y, sz * 0.65);
+      ctx.restore();
+    }
+  }
+  isDead() { return this.life <= 0; }
+}
+
+// ─────────────────────────────────────────────────────
+//  Shockwave
+// ─────────────────────────────────────────────────────
+class Shockwave {
+  constructor(x, y, hue, sk) {
+    this.sk = sk; this.x = x; this.y = y; this.hue = hue;
+    this.r = 5; this.maxR = sk.random(55, 140); this.life = 1;
+  }
+  update() { this.r = this.sk.lerp(this.r, this.maxR, 0.16); this.life -= 0.042; }
+  draw(ctx, sk) {
+    if (this.life <= 0) return;
+    const a = this.life * 75;
+    ctx.save();
+    ctx.shadowColor = `hsla(${this.hue},100%,70%,${this.life * 0.8})`;
+    ctx.shadowBlur = 22;
+    sk.noFill();
+    sk.stroke(this.hue, 100, 100, a); sk.strokeWeight(2.5 * this.life);
+    sk.ellipse(this.x, this.y, this.r * 2);
+    if (this.r > 18) {
+      sk.stroke(this.hue, 60, 100, a * 0.3); sk.strokeWeight(1);
+      sk.ellipse(this.x, this.y, this.r * 1.6);
+    }
+    ctx.restore();
+  }
+  isDead() { return this.life <= 0; }
+}
+
+// ─────────────────────────────────────────────────────
+//  p5 sketch
+// ─────────────────────────────────────────────────────
+new p5((s) => {
+
+  let pg;                    // persistent glow trail buffer
+  let particles  = [];
+  let shockwaves = [];
+  let colorCycle = 0;
+
+  // Noise field seed offsets for background ambience
+  let noiseOff = 0;
+
+  const TOUCH_PX   = 40;
+  const COOLDOWN_F = 24;
+  let cooldown = [0,0,0,0,0];
+  let totalHits = 0, comboTimer = 0;
+
+  // ── MIDNIGHT BLUE palette (HSB) ──
+  const BG_H = 222, BG_S = 72, BG_B = 8;   // deep midnight blue
+
+  s.setup = () => {
+    s.createCanvas(s.windowWidth, s.windowHeight).parent('app');
+    s.colorMode(s.HSB, 360, 100, 100, 100);
+    s.pixelDensity(Math.min(window.devicePixelRatio, 2));
+    pg = s.createGraphics(s.windowWidth, s.windowHeight);
+    pg.colorMode(s.HSB, 360, 100, 100, 100);
+    pg.pixelDensity(Math.min(window.devicePixelRatio, 2));
+  };
+
+  s.windowResized = () => {
+    s.resizeCanvas(s.windowWidth, s.windowHeight);
+    pg.resizeCanvas(s.windowWidth, s.windowHeight);
+  };
+
+  // Normalised landmark → canvas coords (mirrored X)
+  const L = (lm) => ({ x: (1 - lm.x) * s.width, y: lm.y * s.height, z: lm.z });
+
+  // ── MAIN LOOP ──────────────────────────────────────
+  s.draw = () => {
+    colorCycle = (colorCycle + 0.35) % 360;
+    noiseOff  += 0.002;
+
+    // ── 1. Solid midnight-blue background ──
+    s.background(BG_H, BG_S, BG_B);
+
+    // ── 2. Subtle grid — faint depth layer ──
+    drawGrid();
+
+    // ── 3. Fade the trail buffer each frame ──
+    pg.background(BG_H, BG_S, BG_B, 14);
+
+    // ── 4. Resolve hands ──
+    let leftLm = null, rightLm = null;
+    state.hands.forEach((lm, i) => {
+      if (state.handedness[i] === 'Left')  rightLm = lm;
+      else                                   leftLm  = lm;
+    });
+
+    // ── 5. Hand silhouettes (before lasers so beams sit on top) ──
+    state.hands.forEach(lm => drawSilhouette(lm));
+
+    // ── 6. Laser strings ──
+    if (leftLm && rightLm) drawCradle(leftLm, rightLm);
+    else if (leftLm || rightLm) drawSolo(leftLm || rightLm);
+
+    // ── 7. Joint dots ──
+    state.hands.forEach((lm, hi) => drawJoints(lm, hi));
+
+    // ── 8. Blit trail ──
+    s.image(pg, 0, 0);
+
+    // ── 9. Particles & shockwaves ──
+    for (let i = particles.length - 1; i >= 0; i--) {
+      particles[i].update();
+      particles[i].draw(s.drawingContext, s);
+      if (particles[i].isDead()) particles.splice(i, 1);
+    }
+    for (let i = shockwaves.length - 1; i >= 0; i--) {
+      shockwaves[i].update();
+      shockwaves[i].draw(s.drawingContext, s);
+      if (shockwaves[i].isDead()) shockwaves.splice(i, 1);
+    }
+
+    // ── 10. Tick cooldowns & combo ──
+    for (let i = 0; i < 5; i++) if (cooldown[i] > 0) cooldown[i]--;
+    if (comboTimer > 0) { comboTimer--; comboEl.style.opacity = Math.min(1, comboTimer / 16); }
+    else comboEl.style.opacity = 0;
+  };
+
+  // ── SUBTLE DOT GRID ────────────────────────────────
+  // Gives depth without competing with effects
+  function drawGrid() {
+    const ctx = s.drawingContext;
+    const SPACING = 42;
+    const COLS = Math.ceil(s.width  / SPACING) + 1;
+    const ROWS = Math.ceil(s.height / SPACING) + 1;
+    ctx.save();
+    ctx.fillStyle = 'rgba(40, 90, 160, 0.18)';
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS; c++) {
+        const x = c * SPACING;
+        const y = r * SPACING;
+        // Noise-driven pulse per dot (very gentle)
+        const n = s.noise(c * 0.12 + noiseOff, r * 0.12 + noiseOff * 0.7);
+        const rad = s.map(n, 0, 1, 0.5, 1.4);
+        ctx.beginPath();
+        ctx.arc(x, y, rad, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    ctx.restore();
+  }
+
+  // ── HAND SILHOUETTE ────────────────────────────────
+  // Three paint passes build up an organic body shape:
+  //   Pass A — outer glow aura  (very faint, wide)
+  //   Pass B — filled mass      (dark navy-indigo)
+  //   Pass C — inner highlight  (slightly lighter rim)
+  function drawSilhouette(lm) {
+    const ctx = s.drawingContext;
+    const pts = lm.map(L);
+
+    // ── Pass A: diffuse outer aura ──
+    ctx.save();
+    ctx.shadowColor = 'rgba(30, 80, 200, 0.3)';
+    ctx.shadowBlur  = 28;
+    s.noStroke();
+    s.fill(BG_H + 5, 55, 22, 18);
+    CONNECTIONS.forEach(([a, b]) => {
+      drawThickSeg(s, pts[a], pts[b], 44);
+    });
+    pts.forEach(p => s.ellipse(p.x, p.y, 48));
+    ctx.restore();
+
+    // ── Pass B: solid silhouette body ──
+    s.noStroke();
+    s.fill(BG_H + 8, 58, 17, 94);
+    CONNECTIONS.forEach(([a, b]) => {
+      drawThickSeg(s, pts[a], pts[b], 30);
+    });
+    pts.forEach(p => s.ellipse(p.x, p.y, 34));
+
+    // ── Pass C: bright inner rim (gives translucent depth feel) ──
+    s.fill(BG_H + 10, 45, 30, 55);
+    CONNECTIONS.forEach(([a, b]) => {
+      drawThickSeg(s, pts[a], pts[b], 14);
+    });
+    pts.forEach(p => s.ellipse(p.x, p.y, 18));
+  }
+
+  // Draw a thick capsule (rounded segment) using a rectangle + end circles
+  function drawThickSeg(g, pa, pb, diam) {
+    const dx = pb.x - pa.x, dy = pb.y - pa.y;
+    const dist = Math.hypot(dx, dy);
+    if (dist < 1) return;
+    const ang = Math.atan2(dy, dx);
+    const r   = diam / 2;
+    const ctx = g.drawingContext;
+    ctx.save();
+    ctx.translate(pa.x, pa.y);
+    ctx.rotate(ang);
+    // Rectangle body
+    ctx.fillStyle = g.drawingContext.fillStyle; // carry current fill
+    ctx.beginPath();
+    ctx.rect(0, -r, dist, diam);
+    ctx.fill();
+    ctx.restore();
+    g.ellipse(pa.x, pa.y, diam);
+    g.ellipse(pb.x, pb.y, diam);
+  }
+
+  // ── JOINT DOTS ────────────────────────────────────
+  function drawJoints(lm, hi) {
+    const baseHue = hi === 0 ? 185 : 295;
+    lm.forEach((pt, li) => {
+      const p   = L(pt);
+      const tip = FINGER_TIPS.includes(li);
+      const r   = tip ? 7 : 3.5;
+      const pulse = tip ? 1 + 0.22 * Math.sin(s.frameCount * 0.12 + li) : 1;
+      const hue = (baseHue + li * 4) % 360;
+      s.drawingContext.save();
+      s.drawingContext.shadowColor = `hsla(${hue},100%,70%,0.9)`;
+      s.drawingContext.shadowBlur  = tip ? 20 : 9;
+      s.noStroke();
+      s.fill(hue, 90, 100, tip ? 90 : 60);
+      s.ellipse(p.x, p.y, r * 2 * pulse);
+      s.fill(0, 0, 100, 85);
+      s.ellipse(p.x, p.y, r * 0.5 * pulse);
+      s.drawingContext.restore();
+      if (tip) {
+        pg.drawingContext.save();
+        pg.drawingContext.shadowColor = `hsla(${hue},100%,70%,0.5)`;
+        pg.drawingContext.shadowBlur  = 14;
+        pg.noStroke(); pg.fill(hue, 80, 90, 24);
+        pg.ellipse(p.x, p.y, r * 3);
+        pg.drawingContext.restore();
+      }
+    });
+  }
+
+  // ── CAT'S CRADLE ──────────────────────────────────
+  function drawCradle(leftLm, rightLm) {
+    const LL = FINGER_TIPS.map(i => L(leftLm[i]));
+    const RL = FINGER_TIPS.map(i => L(rightLm[i]));
+
+    // Primary: same-finger laser beams
+    for (let i = 0; i < 5; i++) {
+      const pa = LL[i], pb = RL[i];
+      const dist = Math.hypot(pa.x-pb.x, pa.y-pb.y);
+      const t    = s.constrain(dist / (s.width * 0.85), 0, 1);
+      const intens = 1 - t * 0.42;
+
+      laserBeam(s,  pa, pb, BEAM_HUES[i], intens, true);
+      laserBeam(pg, pa, pb, BEAM_HUES[i], intens * 0.28, false);
+
+      if (dist < TOUCH_PX && cooldown[i] === 0) {
+        cooldown[i] = COOLDOWN_F;
+        const cx = (pa.x+pb.x)/2, cy = (pa.y+pb.y)/2;
+        spawnExplosion(cx, cy, BEAM_HUES[i]);
+        totalHits++;
+        comboEl.textContent = totalHits >= 5 ? `×${totalHits} COMBO` : 'FUSION';
+        comboTimer = 90;
+      }
+    }
+
+    // Cross-weave secondary beams
+    [[0,4],[1,3],[3,1],[4,0],[0,2],[2,4],[1,4],[4,1]].forEach(([li,ri],ci) => {
+      const pa = LL[li], pb = RL[ri];
+      const t  = s.constrain(Math.hypot(pa.x-pb.x,pa.y-pb.y)/(s.width*0.9),0,1);
+      laserBeam(s, pa, pb, (colorCycle+ci*40+30)%360, (1-t)*0.30, false);
+    });
+
+    // Ghost palm-to-palm
+    laserBeam(s, L(leftLm[0]), L(rightLm[0]), (colorCycle+90)%360, 0.10, false);
+  }
+
+  function drawSolo(lm) {
+    const palm = L(lm[0]);
+    FINGER_TIPS.forEach((ti, i) => laserBeam(s, palm, L(lm[ti]), BEAM_HUES[i], 0.50, false));
+  }
+
+  // ── LASER BEAM RENDERER ───────────────────────────
+  // Five paint passes, widest-to-narrowest:
+  //   [shadowBlur, strokeWeight, saturation, brightness, alpha]
+  function laserBeam(g, pa, pb, hue, intensity, primary) {
+    if (intensity <= 0.01) return;
+    const ctx  = g.drawingContext;
+    const dist = Math.hypot(pa.x-pb.x, pa.y-pb.y);
+    const sag  = primary ? dist * 0.04 : 0;
+    const mx   = (pa.x+pb.x)/2, my = (pa.y+pb.y)/2 + sag;
+
+    const L5 = primary
+      ? [[55,20,90,55,10],[30,10,100,72,26],[14,4,100,90,58],[5,1.6,55,100,82],[2,0.6,0,100,96]]
+      : [[24,9,100,60, 7],[11,3,100,85,20],[ 4,1.1,80,100,42],[1,0.4,0,100,60]];
+
+    L5.forEach(([blur,wt,sat,bri,al]) => {
+      ctx.save();
+      ctx.shadowColor = `hsla(${hue},100%,65%,${intensity*0.75})`;
+      ctx.shadowBlur  = blur;
+      g.stroke(sat===0?0:hue, sat, bri, al*intensity);
+      g.strokeWeight(wt); g.noFill();
+      g.beginShape();
+      g.vertex(pa.x,pa.y); g.quadraticVertex(mx,my,pb.x,pb.y);
+      g.endShape();
+      ctx.restore();
+    });
+  }
+
+  // ── EXPLOSION ─────────────────────────────────────
+  function spawnExplosion(x, y, hue) {
+    for (let i = 0; i < 44; i++) {
+      particles.push(new Particle(x, y, hue, s));
+      if (i%4===0) particles.push(new Particle(x, y, (hue+45)%360, s));
+      if (i%7===0) particles.push(new Particle(x, y, (hue-45+360)%360, s));
+    }
+    shockwaves.push(new Shockwave(x, y, hue, s));
+    shockwaves.push(new Shockwave(x, y, (hue+60)%360, s));
+    // Contact flash
+    s.drawingContext.save();
+    s.drawingContext.shadowColor = `hsla(${hue},100%,85%,1)`;
+    s.drawingContext.shadowBlur  = 90;
+    s.noStroke();
+    s.fill(0,0,100,95);       s.ellipse(x,y,24);
+    s.fill(hue,100,100,65);   s.ellipse(x,y,52);
+    s.fill(hue,60,100,22);    s.ellipse(x,y,96);
+    s.drawingContext.restore();
+  }
+
+}); // end p5
+</script>
+</body>
+</html>

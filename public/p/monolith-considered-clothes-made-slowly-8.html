@@ -1,0 +1,1577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MONOLITH — Considered clothes, made slowly</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;0,6..96,700;1,6..96,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --bg-2: #131315;
+    --card: #1a1a1c;
+    --ink: #efefef;
+    --ink-soft: #b8b8bb;
+    --muted: #74747a;
+    --line: #2a2a2d;
+    --hi: #d8d8d8;          /* light grey accent */
+    --hi-soft: #232326;
+    --accent: #ffffff;       /* pure white for max emphasis */
+    --accent-soft: #1f1f22;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    line-height: 1.5;
+    overflow-x: hidden;
+  }
+  body.tracking, body.tracking * { cursor: none !important; }
+  body.tracking { user-select: none; }
+  img { max-width: 100%; display: block; }
+  button { font-family: inherit; }
+  h1, h2, h3, h4 {
+    font-family: 'Bodoni Moda', serif;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    line-height: 1.05;
+  }
+
+  /* ── HEADER ────────────────────────────────────────── */
+  header {
+    position: sticky; top: 0; z-index: 80;
+    background: rgba(10, 10, 10, 0.85);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--line);
+  }
+  .header-bar {
+    max-width: 1320px; margin: 0 auto;
+    padding: 18px 32px;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center; gap: 32px;
+  }
+  .brand {
+    display: flex; align-items: center; gap: 10px;
+    font-family: 'Bodoni Moda', serif;
+    font-size: 24px;
+    color: var(--ink);
+    letter-spacing: 0.18em;
+    font-weight: 500;
+  }
+  .brand em { font-style: italic; font-weight: 400; color: var(--hi); }
+  nav.main-nav {
+    display: flex; gap: 32px; justify-content: center;
+  }
+  nav.main-nav a {
+    color: var(--ink-soft);
+    text-decoration: none;
+    font-size: 13px; font-weight: 500;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 8px 4px;
+    border-bottom: 1px solid transparent;
+    transition: all .2s;
+  }
+  nav.main-nav a:hover, nav.main-nav a.hover {
+    color: var(--ink);
+    border-bottom-color: var(--accent);
+  }
+  .header-actions {
+    display: flex; gap: 12px; justify-content: flex-end; align-items: center;
+  }
+  .icon-btn {
+    width: 42px; height: 42px;
+    border: 1px solid var(--line);
+    background: var(--card);
+    border-radius: 50%;
+    display: grid; place-items: center;
+    transition: all .2s;
+    position: relative;
+    color: var(--ink);
+  }
+  .icon-btn:hover, .icon-btn.hover {
+    border-color: var(--ink);
+    background: var(--hi-soft);
+  }
+  .icon-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.6; }
+  .cart-badge {
+    position: absolute;
+    top: -4px; right: -4px;
+    min-width: 20px; height: 20px;
+    padding: 0 5px;
+    background: var(--accent);
+    color: var(--bg);
+    border-radius: 12px;
+    font-size: 11px; font-weight: 700;
+    display: grid; place-items: center;
+  }
+  .cart-badge.hidden { display: none; }
+
+  /* ── HERO ──────────────────────────────────────────── */
+  .hero {
+    max-width: 1320px; margin: 32px auto 0;
+    padding: 0 32px;
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+    gap: 48px;
+    align-items: stretch;
+  }
+  .hero-text {
+    padding: 24px 0;
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .hero-text .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    color: var(--muted);
+    padding: 6px 0;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.25em; text-transform: uppercase;
+    margin-bottom: 24px;
+    align-self: flex-start;
+  }
+  .hero-text .eyebrow .dot {
+    width: 5px; height: 5px; border-radius: 50%; background: var(--accent);
+  }
+  .hero-text h1 {
+    font-size: clamp(44px, 6.5vw, 96px);
+    margin-bottom: 24px;
+  }
+  .hero-text h1 em { font-style: italic; color: var(--hi); }
+  .hero-text p {
+    font-size: 16px;
+    color: var(--ink-soft);
+    margin-bottom: 28px;
+    max-width: 480px;
+  }
+  .hero-cta { display: flex; gap: 12px; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 14px 28px;
+    border: 1px solid var(--ink);
+    background: var(--ink);
+    color: var(--bg);
+    border-radius: 0;
+    font-size: 13px; font-weight: 600;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    transition: all .2s;
+  }
+  .btn:hover, .btn.hover {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .btn.ghost {
+    background: transparent;
+    color: var(--ink);
+    border-color: var(--line);
+  }
+  .btn.ghost:hover, .btn.ghost.hover {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--bg);
+  }
+  .hero-img {
+    background: var(--bg-2);
+    overflow: hidden;
+    position: relative;
+    min-height: 480px;
+    border: 1px solid var(--line);
+  }
+  .hero-img img {
+    width: 100%; height: 100%; object-fit: cover;
+    position: absolute; inset: 0;
+    filter: grayscale(35%) contrast(1.05);
+  }
+  .hero-tag {
+    position: absolute;
+    bottom: 18px; left: 18px;
+    background: rgba(10, 10, 10, 0.8);
+    border: 1px solid var(--line);
+    backdrop-filter: blur(10px);
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .hero-tag .name { font-weight: 600; font-size: 13px; color: var(--ink); letter-spacing: 0.08em; text-transform: uppercase; }
+  .hero-tag .price { font-family: 'Bodoni Moda', serif; color: var(--ink); font-weight: 500; font-size: 18px; }
+
+  /* ── STATS BAR ─────────────────────────────────────── */
+  .stats {
+    max-width: 1320px; margin: 56px auto 0;
+    padding: 0 32px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    border: 1px solid var(--line);
+    background: var(--card);
+  }
+  .stat {
+    padding: 28px 20px;
+    text-align: center;
+    border-right: 1px solid var(--line);
+  }
+  .stat:last-child { border-right: none; }
+  .stat .num {
+    font-family: 'Bodoni Moda', serif;
+    font-size: 32px;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .stat .lbl {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 8px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* ── SECTION ──────────────────────────────────────── */
+  .section {
+    max-width: 1320px; margin: 80px auto 0;
+    padding: 0 32px;
+  }
+  .section-head {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    margin-bottom: 32px;
+    gap: 16px; flex-wrap: wrap;
+  }
+  .section-head h2 {
+    font-size: clamp(34px, 4.2vw, 60px);
+  }
+  .section-head h2 em { font-style: italic; color: var(--hi); }
+  .section-head .sub {
+    color: var(--ink-soft);
+    font-size: 15px;
+    max-width: 380px;
+    margin-top: 6px;
+  }
+
+  /* CATEGORY PILLS */
+  .cat-strip {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    margin-bottom: 32px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 24px;
+  }
+  .pill {
+    padding: 9px 20px;
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--ink-soft);
+    font-size: 12px; font-weight: 500;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    transition: all .2s;
+  }
+  .pill:hover, .pill.hover {
+    border-color: var(--ink);
+    color: var(--ink);
+  }
+  .pill.active {
+    background: var(--ink);
+    color: var(--bg);
+    border-color: var(--ink);
+  }
+
+  /* PRODUCT GRID */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    overflow: hidden;
+    transition: transform .25s, border-color .25s;
+    display: flex; flex-direction: column;
+  }
+  .card:hover, .card.hover {
+    transform: translateY(-3px);
+    border-color: var(--hi);
+  }
+  .card .img-wrap {
+    aspect-ratio: 4/5;
+    background: var(--bg-2);
+    overflow: hidden; position: relative;
+  }
+  .card .img-wrap img {
+    width: 100%; height: 100%; object-fit: cover;
+    transition: transform .4s, filter .4s;
+    filter: grayscale(40%) contrast(1.05);
+  }
+  .card:hover .img-wrap img, .card.hover .img-wrap img {
+    transform: scale(1.04);
+    filter: grayscale(0%) contrast(1.05);
+  }
+  .card .tag {
+    position: absolute;
+    top: 12px; left: 12px;
+    background: var(--accent);
+    color: var(--bg);
+    font-size: 10px; font-weight: 700;
+    padding: 4px 9px;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    z-index: 2;
+  }
+  .card .body {
+    padding: 16px 18px 20px;
+    display: flex; flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    border-top: 1px solid var(--line);
+  }
+  .card .meta { font-size: 10px; color: var(--muted); font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 4px; }
+  .card .name { font-family: 'Bodoni Moda', serif; font-size: 20px; color: var(--ink); }
+  .card .desc { font-size: 12px; color: var(--ink-soft); }
+  .card .row {
+    margin-top: auto;
+    padding-top: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .card .price {
+    font-family: 'Bodoni Moda', serif;
+    font-size: 20px;
+    color: var(--ink);
+  }
+  .card .price s { color: var(--muted); font-size: 13px; margin-right: 6px; font-family: 'Plus Jakarta Sans', sans-serif; }
+  .add-btn {
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--line);
+    padding: 8px 14px;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    transition: all .2s;
+  }
+  .add-btn:hover, .add-btn.hover {
+    background: var(--ink); color: var(--bg); border-color: var(--ink);
+  }
+
+  /* PROMISE BANNER */
+  .promise {
+    margin-top: 88px;
+    background: #050507;
+    color: var(--ink);
+    padding: 80px 32px;
+    text-align: center;
+    background-image:
+      radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.04), transparent 45%),
+      radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.03), transparent 45%);
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .promise .inner { max-width: 780px; margin: 0 auto; }
+  .promise .label {
+    font-size: 11px; color: var(--muted); letter-spacing: 0.3em; text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+  .promise h2 {
+    font-size: clamp(36px, 5vw, 64px);
+    margin-bottom: 20px;
+  }
+  .promise h2 em { font-style: italic; color: var(--hi); }
+  .promise p {
+    font-size: 17px; color: var(--ink-soft);
+    margin-bottom: 32px; line-height: 1.65;
+  }
+
+  /* STORIES */
+  .stories {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+  .story {
+    background: var(--card);
+    border: 1px solid var(--line);
+    overflow: hidden;
+    transition: transform .25s, border-color .25s;
+  }
+  .story:hover, .story.hover {
+    transform: translateY(-3px);
+    border-color: var(--hi);
+  }
+  .story .img {
+    aspect-ratio: 16/10;
+    background: var(--bg-2);
+    overflow: hidden;
+  }
+  .story .img img {
+    width: 100%; height: 100%; object-fit: cover;
+    filter: grayscale(40%);
+    transition: filter .35s;
+  }
+  .story:hover .img img, .story.hover .img img { filter: grayscale(0%); }
+  .story .body { padding: 24px; }
+  .story .cat {
+    color: var(--ink);
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .story h3 { font-size: 22px; margin-bottom: 10px; color: var(--ink); }
+  .story p { color: var(--ink-soft); font-size: 14px; line-height: 1.55; }
+  .story .read {
+    margin-top: 18px;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--ink);
+  }
+
+  /* NEWSLETTER */
+  .newsletter {
+    margin: 88px 32px 0;
+    max-width: 1320px;
+    margin-left: auto; margin-right: auto;
+    padding: 64px 32px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    text-align: center;
+  }
+  .newsletter h2 { font-size: clamp(28px, 3.4vw, 44px); margin-bottom: 14px; }
+  .newsletter h2 em { font-style: italic; color: var(--hi); }
+  .newsletter p { color: var(--ink-soft); margin-bottom: 28px; max-width: 480px; margin-left: auto; margin-right: auto; }
+  .newsletter-form {
+    display: flex; gap: 8px;
+    max-width: 480px; margin: 0 auto;
+    background: var(--bg);
+    padding: 6px;
+    border: 1px solid var(--line);
+  }
+  .newsletter-form .fake-input {
+    flex: 1; padding: 12px 16px;
+    color: var(--muted);
+    text-align: left;
+    display: flex; align-items: center;
+    font-size: 14px;
+  }
+  .newsletter-form button {
+    background: var(--ink); color: var(--bg);
+    border: none;
+    padding: 12px 22px;
+    font-size: 12px; font-weight: 600;
+    letter-spacing: 0.16em; text-transform: uppercase;
+  }
+  .newsletter-form button:hover, .newsletter-form button.hover {
+    background: var(--accent);
+  }
+
+  /* FOOTER */
+  footer {
+    margin-top: 88px;
+    background: #050506;
+    color: var(--ink-soft);
+    padding: 64px 32px 28px;
+    border-top: 1px solid var(--line);
+  }
+  .foot-grid {
+    max-width: 1320px; margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr 1fr;
+    gap: 48px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid var(--line);
+  }
+  .foot-grid h4 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    margin-bottom: 18px;
+    color: var(--ink);
+  }
+  .foot-grid ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .foot-grid a {
+    color: var(--ink-soft);
+    text-decoration: none;
+    font-size: 13px;
+    transition: color .2s;
+  }
+  .foot-grid a:hover, .foot-grid a.hover { color: var(--ink); }
+  .foot-grid .about {
+    color: var(--ink-soft);
+    font-size: 13px;
+    margin-bottom: 14px;
+    line-height: 1.6;
+  }
+  .foot-bottom {
+    max-width: 1320px; margin: 24px auto 0;
+    display: flex;
+    justify-content: space-between;
+    color: var(--muted);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  /* ── HAND TRACKING UI ──────────────────────────────── */
+  #pip {
+    position: fixed;
+    bottom: 16px; right: 16px;
+    width: 132px; height: 99px;
+    border: 1px solid var(--line);
+    background: #000;
+    overflow: hidden;
+    z-index: 90;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    transition: opacity .35s;
+  }
+  #pip.hidden { opacity: 0; pointer-events: none; }
+  #pip video, #pip canvas {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%;
+    transform: scaleX(-1);
+    object-fit: cover;
+  }
+  #pip .label {
+    position: absolute; top: 6px; left: 8px;
+    font-size: 9px; font-weight: 700;
+    color: white;
+    background: rgba(0,0,0,0.55);
+    padding: 3px 7px;
+    letter-spacing: 0.14em;
+    z-index: 2;
+  }
+  #hud {
+    position: fixed;
+    top: 80px; left: 16px;
+    z-index: 90;
+    display: flex; align-items: center; gap: 8px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    padding: 8px 14px;
+    font-size: 11px; font-weight: 500;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--ink-soft);
+    pointer-events: none;
+  }
+  #hud .led {
+    width: 7px; height: 7px;
+    background: var(--muted);
+  }
+  #hud.tracking .led {
+    background: var(--accent);
+    animation: pulse 1.4s infinite;
+  }
+  @keyframes pulse { 50% { opacity: 0.3; } }
+  #scrollHint {
+    position: fixed;
+    z-index: 70;
+    pointer-events: none;
+    transition: opacity .2s;
+    opacity: 0;
+    color: var(--ink); background: var(--card);
+    border: 1px solid var(--line);
+    padding: 6px 14px;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+  }
+  #scrollHint.up { top: 70px; left: 50%; transform: translateX(-50%); }
+  #scrollHint.down { bottom: 16px; left: 50%; transform: translateX(-50%); }
+  #scrollHint.show { opacity: 1; }
+
+  /* CURSOR */
+  #cursor {
+    position: fixed;
+    top: 0; left: 0;
+    width: 56px; height: 56px;
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0;
+    will-change: transform;
+  }
+  #cursor.visible { opacity: 1; }
+  #cursor svg { width: 100%; height: 100%; overflow: visible; }
+  #cursor .outer {
+    fill: rgba(0,0,0,0.4);
+    stroke: var(--ink);
+    stroke-width: 1.4;
+    transition: stroke .15s, stroke-width .15s, r .2s, fill .15s;
+  }
+  #cursor .inner {
+    fill: var(--ink);
+    transition: r .15s, fill .15s;
+  }
+  #cursor.over .outer { stroke: var(--accent); stroke-width: 1.8; r: 22; }
+  #cursor.over .inner { fill: var(--accent); r: 5; }
+  #cursor.pinch .outer { fill: var(--accent); stroke: var(--accent); }
+  #cursor.pinch .inner { fill: var(--bg); r: 7; }
+
+  /* INTRO */
+  #intro {
+    position: fixed; inset: 0;
+    z-index: 5000;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 32px;
+    text-align: center;
+    transition: opacity .4s;
+  }
+  #intro.hide { opacity: 0; pointer-events: none; }
+  #intro .badge {
+    color: var(--muted);
+    padding: 6px 0;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.3em; text-transform: uppercase;
+    margin-bottom: 28px;
+  }
+  #intro h1 {
+    font-size: clamp(44px, 9vw, 100px);
+    max-width: 900px;
+    margin-bottom: 22px;
+    line-height: 1;
+  }
+  #intro h1 em { font-style: italic; color: var(--hi); }
+  #intro p {
+    color: var(--ink-soft);
+    font-size: 16px;
+    max-width: 540px;
+    margin-bottom: 32px;
+    line-height: 1.6;
+  }
+  #intro .actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  #intro button {
+    padding: 14px 30px;
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    cursor: pointer;
+    transition: all .2s;
+    border: 1px solid var(--ink);
+  }
+  #intro #startBtn {
+    background: var(--ink); color: var(--bg);
+  }
+  #intro #startBtn:hover { background: var(--accent); border-color: var(--accent); }
+  #intro #skipBtn {
+    background: transparent; color: var(--ink);
+    border-color: var(--line);
+  }
+  #intro #skipBtn:hover { border-color: var(--ink); }
+  #intro .tip {
+    margin-top: 24px;
+    font-size: 11px; color: var(--muted);
+    letter-spacing: 0.06em;
+  }
+
+  /* MODAL */
+  .modal {
+    position: fixed; inset: 0;
+    z-index: 4000;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(10px);
+    display: none;
+    align-items: center; justify-content: center;
+    padding: 32px;
+    opacity: 0;
+    transition: opacity .25s;
+  }
+  .modal.open { display: flex; opacity: 1; }
+  .modal-content {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    max-width: 920px; width: 100%;
+    max-height: 86vh;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    position: relative;
+  }
+  #productModal img {
+    width: 100%; height: 100%; object-fit: cover;
+    filter: grayscale(20%) contrast(1.05);
+  }
+  #productModal .body {
+    padding: 40px 32px 28px;
+    display: flex; flex-direction: column;
+    overflow-y: auto;
+  }
+  #productModal .pet {
+    font-size: 11px; color: var(--muted); font-weight: 600;
+    letter-spacing: 0.16em; text-transform: uppercase;
+  }
+  #productModal h3 { font-size: 32px; margin: 8px 0 4px; color: var(--ink); }
+  #productModal .latin { font-size: 13px; color: var(--ink-soft); margin-bottom: 16px; }
+  #productModal .price-big { font-family: 'Bodoni Moda', serif; font-size: 32px; color: var(--ink); margin-bottom: 18px; }
+  #productModal p { font-size: 14px; color: var(--ink-soft); margin-bottom: 16px; line-height: 1.65; }
+  #productModal .specs {
+    list-style: none;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 22px;
+    padding: 16px;
+    background: var(--card);
+    border: 1px solid var(--line);
+  }
+  #productModal .specs li { font-size: 13px; color: var(--ink); }
+  #productModal .specs li b { display: block; color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; margin-bottom: 3px; }
+  #productModal .add-row {
+    display: flex; gap: 10px;
+    margin-top: auto;
+  }
+  #productModal .add-row .btn { flex: 1; justify-content: center; padding: 16px; }
+
+  /* CART MODAL */
+  #cartModal .modal-content {
+    grid-template-columns: 1fr;
+    max-width: 540px;
+    max-height: 80vh;
+  }
+  #cartModal .body {
+    padding: 32px 28px;
+    display: flex; flex-direction: column;
+    overflow-y: auto;
+  }
+  #cartModal h3 { font-size: 28px; margin-bottom: 22px; color: var(--ink); }
+  #cartList { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .cart-item {
+    display: grid;
+    grid-template-columns: 60px 1fr auto;
+    gap: 14px;
+    align-items: center;
+    padding: 12px;
+    background: var(--card);
+    border: 1px solid var(--line);
+  }
+  .cart-item img { width: 60px; height: 60px; object-fit: cover; filter: grayscale(20%); }
+  .cart-item .ci-name { font-weight: 600; font-size: 14px; color: var(--ink); }
+  .cart-item .ci-meta { font-size: 11px; color: var(--muted); margin-top: 3px; letter-spacing: 0.05em; }
+  .cart-item .ci-price { font-family: 'Bodoni Moda', serif; color: var(--ink); font-size: 18px; }
+  .cart-empty { color: var(--muted); text-align: center; padding: 32px 0; font-size: 14px; }
+  .cart-total {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .cart-total .lbl { font-size: 12px; color: var(--ink-soft); letter-spacing: 0.16em; text-transform: uppercase; }
+  .cart-total .val { font-family: 'Bodoni Moda', serif; font-size: 28px; color: var(--ink); }
+  #cartModal .checkout {
+    margin-top: 16px;
+    width: 100%; justify-content: center; padding: 16px;
+  }
+
+  .modal-close {
+    position: absolute;
+    top: 14px; right: 14px;
+    width: 36px; height: 36px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    font-size: 18px;
+    color: var(--ink);
+    z-index: 3;
+    transition: all .2s;
+  }
+  .modal-close:hover, .modal-close.hover { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+
+  /* TOAST */
+  #toast {
+    position: fixed;
+    top: 24px; left: 50%;
+    transform: translateX(-50%) translateY(-200%);
+    background: var(--ink);
+    color: var(--bg);
+    padding: 14px 24px;
+    font-size: 12px; font-weight: 600;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    z-index: 6000;
+    transition: transform .35s cubic-bezier(.2,.7,.2,1);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
+    display: flex; align-items: center; gap: 10px;
+  }
+  #toast.show { transform: translateX(-50%) translateY(0); }
+  #toast .check {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--bg);
+    color: var(--ink);
+    display: grid; place-items: center;
+    font-size: 11px; font-weight: 800;
+  }
+
+  @media (max-width: 1100px) {
+    .grid { grid-template-columns: repeat(3, 1fr); }
+    .stories { grid-template-columns: repeat(2, 1fr); }
+    .foot-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 800px) {
+    .header-bar { grid-template-columns: 1fr auto; gap: 12px; padding: 14px 16px; }
+    nav.main-nav { display: none; }
+    .hero { grid-template-columns: 1fr; padding: 0 16px; gap: 24px; }
+    .hero-img { min-height: 360px; }
+    .stats { grid-template-columns: 1fr 1fr; }
+    .stat:nth-child(2) { border-right: none; }
+    .stat:nth-child(1), .stat:nth-child(2) { border-bottom: 1px solid var(--line); }
+    .section { padding: 0 16px; }
+    .grid { grid-template-columns: repeat(2, 1fr); }
+    .stories { grid-template-columns: 1fr; }
+    .foot-grid { grid-template-columns: 1fr; gap: 24px; }
+    .foot-bottom { flex-direction: column; gap: 8px; }
+    .modal-content { grid-template-columns: 1fr; max-height: 92vh; }
+    #productModal .body { padding: 28px 20px; }
+    .newsletter { margin-left: 16px; margin-right: 16px; }
+    .promise { padding: 56px 24px; }
+  }
+  @media (max-width: 480px) {
+    body { font-size: 15px; }
+    .header-bar { padding: 10px 12px; gap: 8px; }
+    .brand { font-size: 19px; gap: 6px; }
+    .icon-btn { width: 38px; height: 38px; }
+    .icon-btn svg { width: 16px; height: 16px; }
+    .hero { margin-top: 16px; gap: 16px; }
+    .hero-text { padding: 16px 0 0; }
+    .hero-text h1 { font-size: 40px; line-height: 1.02; }
+    .hero-text p { font-size: 15px; }
+    .hero-img { min-height: 280px; }
+    .stats { margin-top: 32px; }
+    .stat { padding: 18px 8px; }
+    .stat .num { font-size: 22px; }
+    .stat .lbl { font-size: 10px; }
+    .section { margin-top: 56px; }
+    .section-head h2 { font-size: 28px; }
+    .grid { gap: 12px; }
+    .card .body { padding: 12px 14px 16px; }
+    .card .name { font-size: 17px; }
+    .card .price { font-size: 17px; }
+    .add-btn { padding: 7px 12px; font-size: 10px; }
+    .promise { padding: 48px 20px; margin-top: 56px; }
+    .promise h2 { font-size: 32px; }
+    .promise p { font-size: 15px; }
+    .newsletter { padding: 40px 24px; margin-top: 56px; }
+    .newsletter-form { flex-direction: column; padding: 8px; }
+    .newsletter-form .fake-input { padding: 12px 14px; }
+    .newsletter-form button { width: 100%; padding: 14px; }
+    footer { padding: 44px 16px 20px; margin-top: 56px; }
+    #cursor { width: 44px; height: 44px; }
+    #pip { width: 92px; height: 70px; bottom: 10px; right: 10px; }
+    #pip .label { font-size: 8px; padding: 2px 5px; }
+    #hud { top: 64px; left: 10px; padding: 6px 10px; font-size: 10px; }
+    #hud .led { width: 6px; height: 6px; }
+    #scrollHint { font-size: 10px; padding: 5px 12px; }
+    #scrollHint.up { top: 60px; }
+    #scrollHint.down { bottom: 90px; }
+    #intro { padding: 24px; }
+    #intro h1 { font-size: 40px; }
+    #intro p { font-size: 15px; margin-bottom: 24px; }
+    #intro button { padding: 12px 22px; font-size: 11px; flex: 1; min-width: 140px; }
+    #intro .actions { width: 100%; max-width: 360px; }
+    #toast { font-size: 12px; padding: 10px 18px; top: 12px; }
+    .modal { padding: 12px; }
+    #productModal img { max-height: 240px; }
+    #productModal h3 { font-size: 24px; }
+    #productModal .price-big { font-size: 24px; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- INTRO -->
+  <div id="intro">
+    <div class="badge">— hands-free shopping —</div>
+    <h1>Browse our store with <em>your hands</em>.</h1>
+    <p>Allow camera access, then point with your index finger to move the cursor. Pinch your thumb + index to click. Drift your hand to the top or bottom of the screen to scroll. Everything runs locally — no data leaves your browser.</p>
+    <div class="actions">
+      <button id="startBtn">Allow camera &amp; enter</button>
+      <button id="skipBtn">Skip — use my mouse</button>
+    </div>
+    <div class="tip">works best in good light · on phone, prop it up and use your other hand · needs https for camera</div>
+  </div>
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-bar">
+      <div class="brand">MONOLITH<em>.</em></div>
+      <nav class="main-nav">
+        <a href="#shop" class="nav-anchor">Shop</a>
+        <a href="#bestsellers" class="nav-anchor">AW26 Edit</a>
+        <a href="#stories" class="nav-anchor">Journal</a>
+        <a href="#promise" class="nav-anchor">About</a>
+      </nav>
+      <div class="header-actions">
+        <button class="icon-btn" data-action="search" aria-label="Search">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        </button>
+        <button class="icon-btn" id="cartIconBtn" aria-label="Cart">
+          <svg viewBox="0 0 24 24"><path d="M5 7h14l-1.5 11a2 2 0 0 1-2 1.7H8.5a2 2 0 0 1-2-1.7L5 7Z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg>
+          <span class="cart-badge hidden" id="cartBadge">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero" id="shop">
+    <div class="hero-text">
+      <div class="eyebrow"><span class="dot"></span>AW26 Collection · just landed</div>
+      <h1>Considered clothes, made <em>slowly</em>.</h1>
+      <p>MONOLITH is a small label producing heavyweight basics in deadstock and certified organic fabrics. Made in batches of 200 in a small factory in Tirupur. New season every six months — sometimes less.</p>
+      <div class="hero-cta">
+        <button class="btn" data-action="shop-all">Shop AW26 →</button>
+        <button class="btn ghost" data-action="lookbook">View lookbook</button>
+      </div>
+    </div>
+    <div class="hero-img">
+      <img src="https://picsum.photos/seed/monoaw26hero/900/1100" alt="Featured piece" />
+      <div class="hero-tag">
+        <span class="name">Heavyweight Hoodie · Charcoal</span>
+        <span class="price">₹ 4,200</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section class="stats">
+    <div class="stat"><div class="num">10k+</div><div class="lbl">pieces shipped</div></div>
+    <div class="stat"><div class="num">30 day</div><div class="lbl">free returns</div></div>
+    <div class="stat"><div class="num">2 <span style="font-size:14px; color:var(--muted)">factories</span></div><div class="lbl">small partners in india</div></div>
+    <div class="stat"><div class="num">100%</div><div class="lbl">organic / deadstock</div></div>
+  </section>
+
+  <!-- BESTSELLERS -->
+  <section class="section" id="bestsellers">
+    <div class="section-head">
+      <div>
+        <h2>The <em>AW26</em> edit</h2>
+        <p class="sub">Eight pieces, two factories, one season. Shop the full collection or filter by category below.</p>
+      </div>
+    </div>
+    <div class="cat-strip" id="catStrip"></div>
+    <div class="grid" id="productGrid"></div>
+  </section>
+
+  <!-- PROMISE -->
+  <section class="promise" id="promise">
+    <div class="inner">
+      <div class="label">— Our way of working —</div>
+      <h2>Made in small batches, by people we <em>know</em>.</h2>
+      <p>Every piece comes from one of two small factories — fifteen people in Tirupur for jersey, twelve in Ludhiana for knitwear. We visit twice a year, pay above market rate, and produce in batches of 200. If something arrives wrong, we'll repair, replace, or refund it — no time limit.</p>
+      <button class="btn" data-action="learn-more">Read the manifesto →</button>
+    </div>
+  </section>
+
+  <!-- STORIES -->
+  <section class="section" id="stories">
+    <div class="section-head">
+      <div>
+        <h2>From the <em>journal</em></h2>
+        <p class="sub">Notes on dressing well, dressing less, and the unglamorous bits of running a small label.</p>
+      </div>
+    </div>
+    <div class="stories" id="storyGrid"></div>
+  </section>
+
+  <!-- NEWSLETTER -->
+  <section class="newsletter">
+    <h2>One <em>letter</em> a week.</h2>
+    <p>New drops, restocks, and the occasional essay on how to wear less. No spam, no daily emails.</p>
+    <div class="newsletter-form">
+      <div class="fake-input">your@email.com</div>
+      <button data-action="subscribe">Subscribe</button>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="foot-grid">
+      <div>
+        <div class="brand" style="color:var(--ink); margin-bottom: 14px">MONOLITH<em>.</em></div>
+        <p class="about">A small clothing label run from a converted warehouse. Heavyweight basics in deadstock and organic fabrics. New seasons every six months.</p>
+      </div>
+      <div>
+        <h4>Shop</h4>
+        <ul>
+          <li><a href="#" class="foot-link">Tops</a></li>
+          <li><a href="#" class="foot-link">Outerwear</a></li>
+          <li><a href="#" class="foot-link">Bottoms</a></li>
+          <li><a href="#" class="foot-link">Knitwear</a></li>
+          <li><a href="#" class="foot-link">Accessories</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Help</h4>
+        <ul>
+          <li><a href="#" class="foot-link">Sizing &amp; fit</a></li>
+          <li><a href="#" class="foot-link">Shipping &amp; returns</a></li>
+          <li><a href="#" class="foot-link">Care guides</a></li>
+          <li><a href="#" class="foot-link">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Studio</h4>
+        <ul>
+          <li><a href="#" class="foot-link">Our story</a></li>
+          <li><a href="#" class="foot-link">Materials</a></li>
+          <li><a href="#" class="foot-link">Manufacturing</a></li>
+          <li><a href="#" class="foot-link">Press</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 Monolith. All rights reserved.</span>
+      <span>Designed in Jodhpur · Made in India</span>
+    </div>
+  </footer>
+
+  <!-- HAND TRACKING UI -->
+  <div id="pip" class="hidden">
+    <div class="label">CAM</div>
+    <video id="video" autoplay playsinline muted></video>
+    <canvas id="pipCanvas"></canvas>
+  </div>
+  <div id="hud"><span class="led"></span><span id="hudText">— hand tracking off</span></div>
+  <div id="scrollHint" class="up">↑ scrolling up</div>
+
+  <!-- CURSOR -->
+  <div id="cursor">
+    <svg viewBox="-28 -28 56 56">
+      <circle class="outer" cx="0" cy="0" r="20" />
+      <circle class="inner" cx="0" cy="0" r="3.5" />
+    </svg>
+  </div>
+
+  <!-- PRODUCT MODAL -->
+  <div class="modal" id="productModal">
+    <div class="modal-content">
+      <img id="pmImg" src="" alt="" />
+      <div class="body">
+        <div class="pet" id="pmPet"></div>
+        <h3 id="pmName"></h3>
+        <div class="latin" id="pmLatin"></div>
+        <div class="price-big" id="pmPrice"></div>
+        <p id="pmDesc"></p>
+        <ul class="specs">
+          <li><b>Fabric</b><span id="pmLight"></span></li>
+          <li><b>Fit</b><span id="pmWater"></span></li>
+          <li><b>Care</b><span id="pmPet2"></span></li>
+          <li><b>Origin</b><span id="pmPot"></span></li>
+        </ul>
+        <div class="add-row">
+          <button class="btn" id="pmAdd">Add to cart</button>
+          <button class="btn ghost" id="pmClose2">Keep browsing</button>
+        </div>
+      </div>
+      <button class="modal-close" data-modal-close="productModal">×</button>
+    </div>
+  </div>
+
+  <!-- CART MODAL -->
+  <div class="modal" id="cartModal">
+    <div class="modal-content">
+      <div class="body">
+        <h3>Your cart</h3>
+        <ul id="cartList"></ul>
+        <div class="cart-empty" id="cartEmpty">Your cart is empty. Pinch a piece to add one.</div>
+        <div class="cart-total" id="cartTotalRow" style="display:none">
+          <span class="lbl">Subtotal</span>
+          <span class="val" id="cartTotal">₹ 0</span>
+        </div>
+        <button class="btn checkout" id="checkoutBtn" style="display:none">Checkout →</button>
+      </div>
+      <button class="modal-close" data-modal-close="cartModal">×</button>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast"><span class="check">✓</span><span id="toastText">Added to cart</span></div>
+
+  <!-- MEDIAPIPE -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+
+  <script>
+    // ── DATA ────────────────────────────────────────────
+    const PRODUCTS = [
+      { id:1, name:'Heavyweight Hoodie',  meta:'Charcoal',  price:4200, was:null, tag:'New',     fabric:'380gsm organic cotton', fit:'Boxy, oversized',  care:'Cold wash, hang dry', origin:'Tirupur, IN', desc:'Our flagship hoodie. Heavyweight 380gsm loopback cotton, boxy cut, dropped shoulder. Pre-shrunk and garment-dyed for that worn-in feel from day one.' },
+      { id:2, name:'Boxy Tee',            meta:'Off Black', price:1890, was:null, tag:'',        fabric:'240gsm organic cotton', fit:'Boxy, true to size',care:'Cold wash, hang dry', origin:'Tirupur, IN', desc:'A heavyweight tee with a boxy silhouette and a slightly higher neck. Garment-dyed in small batches. Wears in beautifully over six months.' },
+      { id:3, name:'Wool Overshirt',      meta:'Slate',     price:5800, was:null, tag:'',        fabric:'70% merino, 30% wool',  fit:'Relaxed, layer-friendly', care:'Dry clean only',     origin:'Ludhiana, IN', desc:'A heavy wool-blend overshirt cut to wear over a hoodie or under a jacket. Two patch pockets, horn buttons, fully lined collar.' },
+      { id:4, name:'Pleated Trousers',    meta:'Stone',     price:4400, was:null, tag:'New',     fabric:'Heavyweight cotton twill',fit:'High-waisted, tapered', care:'Cold wash, low iron',origin:'Tirupur, IN', desc:'Single-pleated trousers in heavyweight twill. High-waisted with a tapered leg and a slight break at the ankle. Comes with belt loops and side pockets.' },
+      { id:5, name:'Knit Cardigan',       meta:'Ash',       price:3900, was:4400, tag:'Sale',    fabric:'100% lambswool',         fit:'Regular, slightly cropped', care:'Hand wash, lay flat',origin:'Ludhiana, IN', desc:'A short-bodied lambswool cardigan with horn buttons and ribbed hems. Heavyweight enough to wear on its own through autumn.' },
+      { id:6, name:'Slim Crew Tee',       meta:'White',     price:1600, was:null, tag:'',        fabric:'180gsm long-staple cotton',fit:'Slim, true to size', care:'Cold wash, hang dry', origin:'Tirupur, IN', desc:'A lighter, slimmer-cut tee. Long-staple combed cotton, ribbed crew, a touch of stretch in the neck so it holds its shape over time.' },
+      { id:7, name:'Canvas Tote',         meta:'Black',     price:1800, was:null, tag:'',        fabric:'14oz natural canvas',    fit:'40 × 38 × 12 cm',  care:'Spot clean only',    origin:'Tirupur, IN', desc:'A heavy 14oz canvas tote with reinforced straps and a small inside pocket. Holds a 13" laptop, a couple of books, and a packed lunch.' },
+      { id:8, name:'Wool Beanie',         meta:'Charcoal',  price:1100, was:null, tag:'Restock', fabric:'100% merino',           fit:'Regular, mid-rise',care:'Hand wash, lay flat',origin:'Ludhiana, IN', desc:'A simple ribbed beanie in soft merino wool. No logo. Comes in three understated colours.' },
+    ];
+
+    const STORIES = [
+      { id:1, cat:'Essay',   title:'The case for boring clothes',         excerpt:'Why owning fewer, plainer things might actually be the more interesting move. A short defence of the wardrobe of seven items.' },
+      { id:2, cat:'Style',   title:'How to layer for a real autumn',     excerpt:'A practical guide to dressing for 11°C mornings and 19°C afternoons. Featuring three of our pieces and one we don\'t make.' },
+      { id:3, cat:'Care',    title:'Caring for raw denim, properly',     excerpt:'When to wash it, when not to, and how to make a pair of jeans last a decade. Spoiler: less than you think on both counts.' },
+    ];
+
+    const CATEGORIES = ['All', 'Tops', 'Outerwear', 'Bottoms', 'Knitwear', 'Accessories'];
+
+    // ── BUILD CATEGORY PILLS ───────────────────────────
+    const catStrip = document.getElementById('catStrip');
+    CATEGORIES.forEach((c, i) => {
+      const p = document.createElement('button');
+      p.className = 'pill' + (i === 0 ? ' active' : '');
+      p.textContent = c;
+      p.dataset.cat = c;
+      catStrip.appendChild(p);
+    });
+    catStrip.addEventListener('click', e => {
+      const p = e.target.closest('.pill');
+      if (!p) return;
+      catStrip.querySelectorAll('.pill').forEach(x => x.classList.remove('active'));
+      p.classList.add('active');
+      showToast('Showing ' + p.dataset.cat.toLowerCase());
+    });
+
+    // ── BUILD PRODUCT GRID ─────────────────────────────
+    const productGrid = document.getElementById('productGrid');
+    PRODUCTS.forEach(p => {
+      const c = document.createElement('div');
+      c.className = 'card';
+      c.dataset.id = p.id;
+      c.innerHTML = `
+        <div class="img-wrap">
+          ${p.tag ? `<span class="tag">${p.tag}</span>` : ''}
+          <img src="https://picsum.photos/seed/mono${p.id}/600/750" alt="${p.name}" loading="lazy" />
+        </div>
+        <div class="body">
+          <div class="meta">${p.meta}</div>
+          <div class="name">${p.name}</div>
+          <div class="row">
+            <div class="price">${p.was ? `<s>₹ ${p.was.toLocaleString('en-IN')}</s>` : ''}₹ ${p.price.toLocaleString('en-IN')}</div>
+            <button class="add-btn" data-add="${p.id}">Add</button>
+          </div>
+        </div>`;
+      productGrid.appendChild(c);
+    });
+
+    // ── BUILD STORIES ──────────────────────────────────
+    const storyGrid = document.getElementById('storyGrid');
+    STORIES.forEach(s => {
+      const c = document.createElement('div');
+      c.className = 'story';
+      c.dataset.story = s.id;
+      c.innerHTML = `
+        <div class="img"><img src="https://picsum.photos/seed/monostory${s.id}/700/440" alt="${s.title}" loading="lazy" /></div>
+        <div class="body">
+          <div class="cat">${s.cat}</div>
+          <h3>${s.title}</h3>
+          <p>${s.excerpt}</p>
+          <div class="read">Read article →</div>
+        </div>`;
+      storyGrid.appendChild(c);
+    });
+
+    // ── CART STATE ─────────────────────────────────────
+    const cart = [];
+    function addToCart(id) {
+      const p = PRODUCTS.find(x => x.id == id);
+      if (!p) return;
+      const existing = cart.find(i => i.id == id);
+      if (existing) existing.qty++;
+      else cart.push({ id: p.id, qty: 1 });
+      renderCart();
+      showToast(`${p.name} added to cart`);
+    }
+    function removeFromCart(id) {
+      const i = cart.findIndex(x => x.id == id);
+      if (i >= 0) cart.splice(i, 1);
+      renderCart();
+    }
+    function cartCount() { return cart.reduce((a, i) => a + i.qty, 0); }
+    function cartSubtotal() { return cart.reduce((a, i) => a + i.qty * PRODUCTS.find(p => p.id == i.id).price, 0); }
+
+    function renderCart() {
+      const badge = document.getElementById('cartBadge');
+      const count = cartCount();
+      badge.textContent = count;
+      badge.classList.toggle('hidden', count === 0);
+
+      const list = document.getElementById('cartList');
+      const empty = document.getElementById('cartEmpty');
+      const totalRow = document.getElementById('cartTotalRow');
+      const checkout = document.getElementById('checkoutBtn');
+
+      list.innerHTML = '';
+      if (cart.length === 0) {
+        empty.style.display = 'block';
+        totalRow.style.display = 'none';
+        checkout.style.display = 'none';
+        return;
+      }
+      empty.style.display = 'none';
+      cart.forEach(item => {
+        const p = PRODUCTS.find(x => x.id == item.id);
+        const li = document.createElement('li');
+        li.className = 'cart-item';
+        li.innerHTML = `
+          <img src="https://picsum.photos/seed/mono${p.id}/120/120" alt="${p.name}" />
+          <div>
+            <div class="ci-name">${p.name}</div>
+            <div class="ci-meta">${p.meta} · Qty ${item.qty}</div>
+          </div>
+          <div style="text-align:right">
+            <div class="ci-price">₹ ${(p.price * item.qty).toLocaleString('en-IN')}</div>
+            <button class="add-btn" style="border:none;color:var(--muted);padding:4px 0;font-size:10px" data-remove="${p.id}">Remove</button>
+          </div>`;
+        list.appendChild(li);
+      });
+      totalRow.style.display = 'flex';
+      checkout.style.display = 'flex';
+      document.getElementById('cartTotal').textContent = `₹ ${cartSubtotal().toLocaleString('en-IN')}`;
+    }
+
+    // ── PRODUCT MODAL ──────────────────────────────────
+    function openProduct(id) {
+      const p = PRODUCTS.find(x => x.id == id);
+      if (!p) return;
+      document.getElementById('pmImg').src = `https://picsum.photos/seed/mono${p.id}/700/900`;
+      document.getElementById('pmPet').textContent = p.meta;
+      document.getElementById('pmName').textContent = p.name;
+      document.getElementById('pmLatin').textContent = p.tag ? `New season · ${p.tag}` : 'AW26 collection';
+      document.getElementById('pmPrice').textContent = `₹ ${p.price.toLocaleString('en-IN')}`;
+      document.getElementById('pmDesc').textContent = p.desc;
+      document.getElementById('pmLight').textContent = p.fabric;
+      document.getElementById('pmWater').textContent = p.fit;
+      document.getElementById('pmPet2').textContent = p.care;
+      document.getElementById('pmPot').textContent = p.origin;
+      document.getElementById('pmAdd').dataset.add = p.id;
+      openModal('productModal');
+    }
+
+    function openModal(id) { document.getElementById(id).classList.add('open'); }
+    function closeModal(id) {
+      if (id) document.getElementById(id).classList.remove('open');
+      else document.querySelectorAll('.modal.open').forEach(m => m.classList.remove('open'));
+    }
+
+    // ── EVENT WIRING ───────────────────────────────────
+    document.addEventListener('click', e => {
+      const addBtn = e.target.closest('[data-add]');
+      if (addBtn) { e.stopPropagation(); addToCart(addBtn.dataset.add); return; }
+
+      const removeBtn = e.target.closest('[data-remove]');
+      if (removeBtn) { e.stopPropagation(); removeFromCart(removeBtn.dataset.remove); return; }
+
+      const card = e.target.closest('.card');
+      if (card) { openProduct(card.dataset.id); return; }
+
+      const story = e.target.closest('.story');
+      if (story) { showToast('Article preview coming soon'); return; }
+
+      const close = e.target.closest('[data-modal-close]');
+      if (close) { closeModal(close.dataset.modalClose); return; }
+
+      const action = e.target.closest('[data-action]');
+      if (action) {
+        const a = action.dataset.action;
+        if (a === 'subscribe') showToast('Subscribed — first letter lands Sunday');
+        else if (a === 'shop-all') document.getElementById('bestsellers').scrollIntoView({behavior:'smooth'});
+        else if (a === 'lookbook') showToast('Lookbook landing soon');
+        else if (a === 'learn-more') showToast('Opening manifesto');
+        else if (a === 'search') showToast('Search coming soon');
+        return;
+      }
+
+      if (e.target.id === 'cartIconBtn' || e.target.closest('#cartIconBtn')) { openModal('cartModal'); return; }
+
+      if (e.target.id === 'pmClose2') { closeModal('productModal'); return; }
+      if (e.target.id === 'checkoutBtn') { showToast('Redirecting to checkout…'); closeModal('cartModal'); return; }
+
+      const modal = e.target.closest('.modal');
+      if (modal && e.target === modal) closeModal(modal.id);
+    });
+
+    document.querySelectorAll('.nav-anchor').forEach(a => {
+      a.addEventListener('click', e => {
+        e.preventDefault();
+        const id = a.getAttribute('href').slice(1);
+        const t = document.getElementById(id);
+        if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+
+    // ── TOAST ──────────────────────────────────────────
+    const toast = document.getElementById('toast');
+    let toastTimer = null;
+    function showToast(msg) {
+      document.getElementById('toastText').textContent = msg;
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 2400);
+    }
+
+    // ═══════════════════════════════════════════════════
+    // HAND TRACKING (unchanged from previous version)
+    // ═══════════════════════════════════════════════════
+
+    class OneEuroFilter {
+      constructor(minCutoff = 1.5, beta = 0.08, dCutoff = 1.0) {
+        this.minCutoff = minCutoff; this.beta = beta; this.dCutoff = dCutoff;
+        this.x = null; this.dx = 0; this.lastTime = null;
+      }
+      _alpha(cutoff, dt) {
+        const tau = 1 / (2 * Math.PI * cutoff);
+        return 1 / (1 + tau / dt);
+      }
+      filter(x, t) {
+        if (this.x === null) { this.x = x; this.lastTime = t; return x; }
+        const dt = Math.max((t - this.lastTime) / 1000, 1e-6);
+        const dx = (x - this.x) / dt;
+        const aD = this._alpha(this.dCutoff, dt);
+        const dxHat = aD * dx + (1 - aD) * this.dx;
+        const cutoff = this.minCutoff + this.beta * Math.abs(dxHat);
+        const a = this._alpha(cutoff, dt);
+        const xHat = a * x + (1 - a) * this.x;
+        this.x = xHat; this.dx = dxHat; this.lastTime = t;
+        return xHat;
+      }
+      reset() { this.x = null; this.dx = 0; this.lastTime = null; }
+    }
+    const filterX = new OneEuroFilter(1.5, 0.08, 1.0);
+    const filterY = new OneEuroFilter(1.5, 0.08, 1.0);
+
+    const cursor = document.getElementById('cursor');
+    const pip = document.getElementById('pip');
+    const pipCanvas = document.getElementById('pipCanvas');
+    const pctx = pipCanvas.getContext('2d');
+    const hud = document.getElementById('hud');
+    const hudText = document.getElementById('hudText');
+    const scrollHint = document.getElementById('scrollHint');
+
+    let targetX = window.innerWidth / 2;
+    let targetY = window.innerHeight / 2;
+    let smoothX = targetX, smoothY = targetY;
+    let isPinching = false;
+    let trackingActive = false;
+    let handVisible = false;
+
+    function elementUnderCursor() {
+      return document.elementFromPoint(smoothX, smoothY);
+    }
+
+    const HOVER_SELECTOR = '.card, .story, .pill, .add-btn, .btn, .icon-btn, .nav-anchor, .foot-link, .modal-close, [data-action], [data-modal-close], #pmAdd, #pmClose2, #checkoutBtn, .newsletter-form button, [data-add], [data-remove]';
+
+    function updateHover() {
+      const el = elementUnderCursor();
+      document.querySelectorAll('.hover').forEach(e => e.classList.remove('hover'));
+      cursor.classList.remove('over');
+      if (!el) return;
+      const t = el.closest(HOVER_SELECTOR);
+      if (t) {
+        t.classList.add('hover');
+        cursor.classList.add('over');
+      }
+    }
+
+    function pinchClick() {
+      const el = elementUnderCursor();
+      if (!el) return;
+      const t = el.closest(HOVER_SELECTOR);
+      if (t) { t.click(); return; }
+      const m = el.closest('.modal.open');
+      if (m && el === m) closeModal(m.id);
+    }
+
+    function applyEdgeScroll() {
+      if (!handVisible) { scrollHint.classList.remove('show'); return; }
+      if (cursor.classList.contains('over')) { scrollHint.classList.remove('show'); return; }
+      if (document.querySelector('.modal.open')) { scrollHint.classList.remove('show'); return; }
+
+      const h = window.innerHeight;
+      const topZone = h * 0.13;
+      const bottomZone = h * 0.87;
+
+      if (smoothY < topZone) {
+        const speed = (topZone - smoothY) / topZone * 16;
+        window.scrollBy(0, -speed);
+        scrollHint.className = 'up show';
+        scrollHint.textContent = '↑ scrolling up';
+      } else if (smoothY > bottomZone) {
+        const speed = (smoothY - bottomZone) / (h - bottomZone) * 16;
+        window.scrollBy(0, speed);
+        scrollHint.className = 'down show';
+        scrollHint.textContent = '↓ scrolling down';
+      } else {
+        scrollHint.classList.remove('show');
+      }
+    }
+
+    function setupPip() {
+      const r = pip.getBoundingClientRect();
+      pipCanvas.width = r.width;
+      pipCanvas.height = r.height;
+    }
+
+    async function startTracking() {
+      const video = document.getElementById('video');
+      setupPip();
+      pip.classList.remove('hidden');
+      cursor.classList.add('visible');
+      hud.classList.add('tracking');
+
+      if (!window.isSecureContext) {
+        hudText.textContent = 'https required';
+        alert(
+          "This page needs HTTPS to use the camera.\n\n" +
+          "You're currently on: " + location.protocol + "//" + (location.host || '(local file)') + "\n\n" +
+          "Drag this .html file onto https://app.netlify.com/drop to get a free https link."
+        );
+        bailOut();
+        return;
+      }
+
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        alert("Your browser doesn't expose the camera API. Try the latest Chrome or Safari.");
+        bailOut();
+        return;
+      }
+
+      hudText.textContent = 'starting camera…';
+
+      const isMobile = window.innerWidth < 700 || /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      const targetW = isMobile ? 320 : 480;
+      const targetH = isMobile ? 240 : 360;
+
+      const constraintSets = [
+        { video: { facingMode: 'user', width: { ideal: targetW }, height: { ideal: targetH } } },
+        { video: { facingMode: 'user' } },
+        { video: true }
+      ];
+
+      let stream = null, lastErr = null;
+      for (const c of constraintSets) {
+        try { stream = await navigator.mediaDevices.getUserMedia(c); break; }
+        catch (err) { lastErr = err; }
+      }
+
+      if (!stream) {
+        hudText.textContent = 'camera blocked';
+        alert("Couldn't open the camera.\n\nReason: " + (lastErr ? `${lastErr.name}: ${lastErr.message}` : 'unknown'));
+        bailOut();
+        return;
+      }
+
+      video.srcObject = stream;
+      video.setAttribute('playsinline', '');
+      video.muted = true;
+      await new Promise(r => {
+        if (video.readyState >= 2) return r();
+        video.onloadedmetadata = () => r();
+      });
+      try { await video.play(); } catch (_) {}
+
+      hudText.textContent = 'loading model…';
+      let hands;
+      try {
+        hands = new Hands({
+          locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+        });
+        hands.setOptions({
+          maxNumHands: 1,
+          modelComplexity: 0,
+          minDetectionConfidence: 0.5,
+          minTrackingConfidence: 0.5
+        });
+        hands.onResults(onResults);
+      } catch (err) {
+        alert("Couldn't load the hand-tracking model.\n\n" + (err.message || err));
+        bailOut();
+        return;
+      }
+
+      hudText.textContent = 'searching for hand…';
+      trackingActive = true;
+
+      let inFlight = false;
+      async function feedFrames() {
+        if (!trackingActive) return;
+        if (!inFlight && video.readyState >= 2) {
+          inFlight = true;
+          try { await hands.send({ image: video }); }
+          catch (err) { console.warn('hands.send error:', err); }
+          inFlight = false;
+        }
+        requestAnimationFrame(feedFrames);
+      }
+      feedFrames();
+
+      requestAnimationFrame(loop);
+    }
+
+    function bailOut() {
+      trackingActive = false;
+      document.body.classList.remove('tracking');
+      cursor.style.display = 'none';
+      pip.style.display = 'none';
+      hud.style.display = 'none';
+      document.getElementById('intro').classList.remove('hide');
+    }
+
+    function onResults(results) {
+      pctx.save();
+      pctx.clearRect(0, 0, pipCanvas.width, pipCanvas.height);
+
+      if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+        handVisible = true;
+        hudText.textContent = 'tracking — pinch to click';
+        const landmarks = results.multiHandLandmarks[0];
+        if (window.drawConnectors && window.HAND_CONNECTIONS) {
+          drawConnectors(pctx, landmarks, HAND_CONNECTIONS, { color: '#ffffff', lineWidth: 1.5 });
+          drawLandmarks(pctx, landmarks, { color: '#d8d8d8', lineWidth: 0.5, radius: 1.5 });
+        }
+        const idx = landmarks[8], thumb = landmarks[4];
+        const now = performance.now();
+        const fx = filterX.filter(1 - idx.x, now);
+        const fy = filterY.filter(idx.y, now);
+        targetX = fx * window.innerWidth;
+        targetY = fy * window.innerHeight;
+        cursor.classList.add('visible');
+
+        const dx = idx.x - thumb.x, dy = idx.y - thumb.y, dz = (idx.z || 0) - (thumb.z || 0);
+        const d = Math.hypot(dx, dy, dz);
+        if (d < 0.055 && !isPinching) {
+          isPinching = true;
+          cursor.classList.add('pinch');
+          pinchClick();
+        } else if (d > 0.075 && isPinching) {
+          isPinching = false;
+          cursor.classList.remove('pinch');
+        }
+        if (!isPinching) updateHover();
+      } else {
+        handVisible = false;
+        hudText.textContent = 'no hand visible';
+        filterX.reset(); filterY.reset();
+      }
+      pctx.restore();
+    }
+
+    function loop() {
+      smoothX += (targetX - smoothX) * 0.55;
+      smoothY += (targetY - smoothY) * 0.55;
+      cursor.style.transform = `translate3d(${smoothX - 28}px, ${smoothY - 28}px, 0)`;
+      applyEdgeScroll();
+      if (trackingActive) requestAnimationFrame(loop);
+    }
+
+    document.getElementById('startBtn').addEventListener('click', () => {
+      document.getElementById('intro').classList.add('hide');
+      document.body.classList.add('tracking');
+      setTimeout(startTracking, 300);
+    });
+    document.getElementById('skipBtn').addEventListener('click', () => {
+      document.getElementById('intro').classList.add('hide');
+      cursor.style.display = 'none';
+      pip.style.display = 'none';
+      hud.style.display = 'none';
+    });
+
+    window.addEventListener('resize', setupPip);
+  </script>
+</body>
+</html>

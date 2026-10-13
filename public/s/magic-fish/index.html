@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#04121f" />
+  <title>AI Magic Fish</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%90%9F%3C/text%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Camera feed (mirrored via CSS), sits behind the canvas. -->
+  <video id="cam" playsinline muted autoplay></video>
+
+  <!-- Transparent drawing surface for fish + particles, on top of the video. -->
+  <canvas id="scene"></canvas>
+
+  <!-- Ambient vignette / underwater tint overlay. -->
+  <div id="tint" aria-hidden="true"></div>
+
+  <!-- Start overlay: required so getUserMedia is triggered by a user gesture.
+       Hidden once the camera is running. -->
+  <div id="startOverlay">
+    <div class="panel">
+      <div class="logo">🐟</div>
+      <h1>AI Magic Fish</h1>
+      <p class="tag">Use camera finger tracking, or guide the fish with mouse or touch.</p>
+      <div class="actions">
+        <button id="startBtn" type="button">Start Camera</button>
+        <button id="mouseBtn" class="secondary" type="button">Use Mouse / Touch</button>
+      </div>
+      <p id="hint" class="hint">Camera mode stays on your device. Mouse mode works without camera access.</p>
+    </div>
+  </div>
+
+  <!-- Status / error line (permission denied, model load failures, etc.). -->
+  <div id="status" role="status" aria-live="polite"></div>
+
+  <!-- Optional on-screen debug HUD (enabled with ?debug=1). -->
+  <div id="hud" hidden></div>
+
+  <script type="module" src="script.js"></script>
+</body>
+</html>

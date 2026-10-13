@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Obliq Ai Face Scan — Camera-based wellness screening demo</title>
+<style>
+  /* ============================================================
+     OBLIQ AI FACE SCAN
+     Single-file demo. All HTML/CSS/JS contained in this document.
+     ============================================================ */
+
+  /* ---------- Reset & base ---------- */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-1: #0a0f1f;
+    --bg-2: #121a36;
+    --bg-3: #1b2150;
+    --accent: #2de2c3;       /* mint/teal */
+    --accent-2: #6c8cff;     /* periwinkle */
+    --accent-3: #b06cff;     /* violet */
+    --text: #e8eefc;
+    --muted: #9aa6c4;
+    --card: rgba(255,255,255,0.06);
+    --card-border: rgba(255,255,255,0.12);
+    --good: #2de2c3;
+    --warn: #ffcb6b;
+    --bad:  #ff7b8a;
+    --shadow: 0 20px 60px rgba(0,0,0,0.45);
+  }
+
+  html, body { height: 100%; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                 Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+    color: var(--text);
+    /* Animated gradient background */
+    background:
+      radial-gradient(1200px 600px at 10% -10%, rgba(108,140,255,0.18), transparent 60%),
+      radial-gradient(900px 500px at 110% 10%, rgba(176,108,255,0.18), transparent 55%),
+      radial-gradient(800px 600px at 50% 120%, rgba(45,226,195,0.14), transparent 60%),
+      linear-gradient(180deg, var(--bg-1), var(--bg-2) 60%, var(--bg-3));
+    min-height: 100%;
+    overflow-x: hidden;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Floating particles backdrop */
+  .bg-orbs {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+  }
+  .bg-orbs span {
+    position: absolute;
+    width: 280px; height: 280px; border-radius: 50%;
+    filter: blur(60px); opacity: 0.35;
+    animation: float 18s ease-in-out infinite;
+  }
+  .bg-orbs span:nth-child(1){ background:#2de2c3; top:-80px; left:-80px; }
+  .bg-orbs span:nth-child(2){ background:#6c8cff; bottom:-60px; right:-60px; animation-delay:-6s;}
+  .bg-orbs span:nth-child(3){ background:#b06cff; top:40%; left:60%; animation-delay:-12s;}
+
+  @keyframes float {
+    0%,100% { transform: translate(0,0) scale(1); }
+    50%     { transform: translate(30px,-30px) scale(1.08); }
+  }
+
+  /* ---------- Layout container ---------- */
+  .app {
+    position: relative; z-index: 1;
+    max-width: 1100px; margin: 0 auto; padding: 28px 20px 48px;
+  }
+
+  /* ---------- Header / brand ---------- */
+  .brand {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 28px;
+  }
+  .brand-mark {
+    width: 38px; height: 38px; border-radius: 12px;
+    background: conic-gradient(from 210deg, var(--accent), var(--accent-2), var(--accent-3), var(--accent));
+    position: relative; box-shadow: 0 8px 24px rgba(45,226,195,0.25);
+  }
+  .brand-mark::after {
+    content: ""; position: absolute; inset: 6px; border-radius: 8px;
+    background: var(--bg-1);
+  }
+  .brand-mark::before {
+    content: ""; position: absolute; inset: 12px; border-radius: 4px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  }
+  .brand-name {
+    font-weight: 700; letter-spacing: 0.3px; font-size: 18px;
+  }
+  .brand-name span { color: var(--accent); }
+
+  /* ---------- Screens ---------- */
+  .screen { display: none; animation: fadeIn .5s ease both; }
+  .screen.active { display: block; }
+  @keyframes fadeIn { from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:none;} }
+
+  /* ---------- Landing ---------- */
+  .hero {
+    text-align: center; padding: 60px 16px 24px;
+  }
+  .hero .pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 12px; font-size: 12px; letter-spacing: 0.4px;
+    background: rgba(45,226,195,0.12); color: var(--accent);
+    border: 1px solid rgba(45,226,195,0.3); border-radius: 999px;
+    text-transform: uppercase;
+  }
+  .hero .pill .dot {
+    width:6px; height:6px; border-radius:50%; background: var(--accent);
+    box-shadow: 0 0 10px var(--accent);
+  }
+  .hero h1 {
+    font-size: clamp(34px, 6vw, 62px);
+    line-height: 1.05; margin: 18px 0 10px; letter-spacing: -0.5px;
+    background: linear-gradient(135deg, #fff 0%, #cfe1ff 50%, #2de2c3 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .hero p.sub {
+    color: var(--muted); font-size: clamp(15px, 2.2vw, 18px);
+    max-width: 620px; margin: 0 auto 28px;
+  }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+    padding: 14px 26px; border-radius: 14px;
+    font-weight: 600; font-size: 15px; letter-spacing: 0.2px;
+    border: 1px solid transparent; cursor: pointer; user-select: none;
+    transition: transform .15s ease, box-shadow .2s ease, background .2s ease, opacity .2s;
+  }
+  .btn:active { transform: translateY(1px); }
+  .btn-primary {
+    color: #06121a;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    box-shadow: 0 12px 30px rgba(45,226,195,0.35);
+  }
+  .btn-primary:hover { box-shadow: 0 16px 40px rgba(45,226,195,0.45); }
+  .btn-ghost {
+    color: var(--text); background: rgba(255,255,255,0.06);
+    border-color: var(--card-border);
+  }
+  .btn-ghost:hover { background: rgba(255,255,255,0.10); }
+  .btn-danger {
+    color: #fff; background: linear-gradient(135deg, #ff7b8a, #b06cff);
+    box-shadow: 0 12px 30px rgba(176,108,255,0.30);
+  }
+  .btn[disabled] { opacity: 0.55; cursor: not-allowed; }
+
+  /* Feature row */
+  .features {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px; margin: 36px auto 0; max-width: 900px;
+  }
+  .feature {
+    background: var(--card); border: 1px solid var(--card-border);
+    border-radius: 16px; padding: 18px; backdrop-filter: blur(10px);
+    text-align: left;
+  }
+  .feature h4 { font-size: 14px; margin-bottom: 6px; color: #fff; }
+  .feature p  { font-size: 13px; color: var(--muted); }
+  .feature .ico {
+    width:34px; height:34px; border-radius:10px; margin-bottom: 10px;
+    background: linear-gradient(135deg, rgba(45,226,195,0.18), rgba(108,140,255,0.18));
+    display:flex; align-items:center; justify-content:center; color: var(--accent);
+    border: 1px solid var(--card-border);
+  }
+
+  /* ---------- Scan screen ---------- */
+  .scan-wrap {
+    display: grid; grid-template-columns: 1.3fr 1fr; gap: 22px;
+    align-items: stretch;
+  }
+  @media (max-width: 880px) {
+    .scan-wrap { grid-template-columns: 1fr; }
+  }
+
+  .video-card {
+    position: relative; background: #000;
+    border-radius: 22px; overflow: hidden; aspect-ratio: 4/3;
+    border: 1px solid var(--card-border); box-shadow: var(--shadow);
+  }
+  #video {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+    transform: scaleX(-1); /* mirror like a selfie cam */
+    background: #000;
+  }
+
+  /* Camera fallback / error overlay */
+  .video-overlay {
+    position: absolute; inset: 0; display: flex; align-items: center;
+    justify-content: center; flex-direction: column; gap: 10px;
+    color: var(--muted); padding: 20px; text-align: center;
+    background: linear-gradient(180deg, #0b1226, #0a0f1f);
+  }
+  .video-overlay.hidden { display: none; }
+  .video-overlay h3 { color:#fff; font-size:16px; }
+  .video-overlay p  { font-size: 13px; max-width: 360px; }
+
+  /* Scan frame & corners */
+  .scan-frame {
+    position: absolute; left: 50%; top: 50%;
+    width: 62%; height: 78%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+  .scan-frame .corner {
+    position: absolute; width: 36px; height: 36px;
+    border: 3px solid var(--accent);
+    box-shadow: 0 0 14px rgba(45,226,195,0.6);
+  }
+  .scan-frame .tl { top:0; left:0; border-right:none; border-bottom:none; border-top-left-radius: 10px;}
+  .scan-frame .tr { top:0; right:0; border-left:none;  border-bottom:none; border-top-right-radius: 10px;}
+  .scan-frame .bl { bottom:0; left:0; border-right:none; border-top:none; border-bottom-left-radius: 10px;}
+  .scan-frame .br { bottom:0; right:0; border-left:none;  border-top:none; border-bottom-right-radius: 10px;}
+  .scan-frame .ring {
+    position:absolute; inset:0;
+    border: 1px dashed rgba(45,226,195,0.35);
+    border-radius: 50% / 45%;
+    animation: pulseRing 2.4s ease-in-out infinite;
+  }
+  @keyframes pulseRing {
+    0%,100% { transform: scale(1);   opacity: 0.6; }
+    50%     { transform: scale(1.03); opacity: 1; }
+  }
+
+  /* Animated scanning line (only while scanning) */
+  .scan-line {
+    position: absolute; left: 6%; right: 6%; top: 12%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    box-shadow: 0 0 18px var(--accent);
+    opacity: 0;
+    pointer-events: none;
+  }
+  .scanning .scan-line {
+    opacity: 1;
+    animation: scanMove 2.6s ease-in-out infinite;
+  }
+  @keyframes scanMove {
+    0%   { top: 12%; }
+    50%  { top: 84%; }
+    100% { top: 12%; }
+  }
+
+  /* HUD chips on video */
+  .hud {
+    position: absolute; top: 12px; left: 12px; right: 12px;
+    display: flex; justify-content: space-between; gap: 8px;
+    pointer-events: none;
+  }
+  .chip {
+    font-size: 11px; letter-spacing: 0.3px; padding: 6px 10px;
+    background: rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 999px; color: #d8e3ff; backdrop-filter: blur(8px);
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .chip .dot { width:6px; height:6px; border-radius:50%; background: var(--accent); box-shadow:0 0 10px var(--accent);}
+  .chip.rec .dot { background:#ff7b8a; box-shadow:0 0 10px #ff7b8a; animation: blink 1s infinite;}
+  @keyframes blink { 50%{opacity: 0.25;} }
+
+  /* Side panel */
+  .panel {
+    background: var(--card); border:1px solid var(--card-border);
+    border-radius: 22px; padding: 22px; backdrop-filter: blur(10px);
+    display: flex; flex-direction: column; gap: 18px; box-shadow: var(--shadow);
+  }
+  .panel h2 { font-size: 18px; }
+  .panel .small { color: var(--muted); font-size: 13px; }
+
+  /* Circular timer */
+  .timer-wrap {
+    display:flex; align-items:center; gap: 16px;
+  }
+  .timer {
+    --size: 120px; --stroke: 10px;
+    width: var(--size); height: var(--size); position: relative; flex-shrink:0;
+  }
+  .timer svg { width:100%; height:100%; transform: rotate(-90deg); }
+  .timer .track { stroke: rgba(255,255,255,0.08); }
+  .timer .bar   { stroke: url(#grad); stroke-linecap: round;
+                  transition: stroke-dashoffset .9s linear; }
+  .timer .label {
+    position:absolute; inset:0; display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+  }
+  .timer .label b { font-size: 26px; }
+  .timer .label small { color: var(--muted); font-size: 11px; letter-spacing: 1px;}
+
+  /* Stage list */
+  .stages { display:flex; flex-direction:column; gap: 8px; }
+  .stage {
+    display:flex; align-items:center; gap: 10px;
+    padding: 10px 12px; border-radius: 12px;
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
+    font-size: 13px; color: var(--muted);
+    transition: all .25s ease;
+  }
+  .stage .marker {
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.2); position: relative; flex-shrink:0;
+  }
+  .stage.active {
+    color: #fff; background: rgba(45,226,195,0.08);
+    border-color: rgba(45,226,195,0.35);
+  }
+  .stage.active .marker {
+    border-color: var(--accent);
+    animation: spin 1s linear infinite;
+    border-top-color: transparent;
+  }
+  .stage.done { color:#fff; }
+  .stage.done .marker {
+    border-color: var(--accent);
+    background: var(--accent);
+  }
+  .stage.done .marker::after{
+    content:""; position:absolute; left:4px; top:1px; width:4px; height:8px;
+    border:solid #06121a; border-width: 0 2px 2px 0; transform: rotate(45deg);
+  }
+  @keyframes spin { to { transform: rotate(360deg);} }
+
+  .status {
+    font-size: 14px; min-height: 22px; color: #d8e3ff;
+  }
+
+  .controls { display:flex; gap: 10px; flex-wrap: wrap; }
+
+  /* ---------- Results ---------- */
+  .results-head {
+    display:flex; flex-wrap:wrap; gap: 16px; align-items:center; justify-content:space-between;
+    margin-bottom: 18px;
+  }
+  .results-head h2 { font-size: 24px; }
+  .score-badge {
+    display:inline-flex; align-items:center; gap: 12px;
+    padding: 10px 16px; border-radius: 999px;
+    background: linear-gradient(135deg, rgba(45,226,195,0.18), rgba(108,140,255,0.18));
+    border:1px solid var(--card-border);
+  }
+  .score-badge b { font-size: 22px; }
+
+  .grid {
+    display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+  }
+  .card {
+    background: var(--card); border:1px solid var(--card-border);
+    border-radius: 18px; padding: 18px; backdrop-filter: blur(10px);
+    position: relative; overflow: hidden;
+  }
+  .card .label {
+    color: var(--muted); font-size: 12px; letter-spacing: 0.4px;
+    text-transform: uppercase;
+  }
+  .card .value {
+    font-size: 32px; font-weight: 700; margin-top: 6px;
+    background: linear-gradient(135deg, #fff, #cfe1ff);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .card .unit { font-size: 14px; color: var(--muted); margin-left: 4px; font-weight: 500; }
+  .card .meta { font-size: 12px; color: var(--muted); margin-top: 8px; }
+  .card .ico {
+    position:absolute; right:14px; top:14px;
+    width:36px; height:36px; border-radius:10px;
+    background: rgba(255,255,255,0.05); border:1px solid var(--card-border);
+    display:flex; align-items:center; justify-content:center; color: var(--accent);
+  }
+  .pill-tag {
+    display:inline-block; padding: 3px 10px; border-radius: 999px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.4px; text-transform: uppercase;
+  }
+  .pill-tag.good { background: rgba(45,226,195,0.15); color: var(--good); border:1px solid rgba(45,226,195,0.35);}
+  .pill-tag.warn { background: rgba(255,203,107,0.15); color: var(--warn); border:1px solid rgba(255,203,107,0.35);}
+  .pill-tag.bad  { background: rgba(255,123,138,0.15); color: var(--bad); border:1px solid rgba(255,123,138,0.35);}
+
+  .recommendation {
+    margin-top: 18px; padding: 18px; border-radius: 18px;
+    background: linear-gradient(135deg, rgba(45,226,195,0.10), rgba(108,140,255,0.10));
+    border:1px solid var(--card-border);
+  }
+  .recommendation h4 { margin-bottom: 6px; }
+  .recommendation p  { color: #d8e3ff; font-size: 14px; }
+
+  /* Disclaimer */
+  .disclaimer {
+    margin-top: 28px; padding: 14px 16px; border-radius: 14px;
+    background: rgba(255,123,138,0.08); border: 1px solid rgba(255,123,138,0.25);
+    color: #ffd2d8; font-size: 13px; display:flex; gap:10px; align-items:flex-start;
+  }
+  .disclaimer svg { flex-shrink:0; margin-top: 2px;}
+
+  /* Footer */
+  footer {
+    margin-top: 30px; text-align:center; color: var(--muted); font-size: 12px;
+  }
+
+  /* Small helpers */
+  .center-row { display:flex; justify-content:center; gap: 12px; flex-wrap:wrap;}
+  .mt-16 { margin-top:16px; } .mt-24 { margin-top:24px; }
+</style>
+</head>
+<body>
+
+  <!-- Decorative background blobs -->
+  <div class="bg-orbs" aria-hidden="true">
+    <span></span><span></span><span></span>
+  </div>
+
+  <div class="app">
+
+    <!-- Brand header -->
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true"></div>
+      <div class="brand-name">Obliq <span>Ai</span> Face Scan</div>
+    </div>
+
+    <!-- ============================================================
+         SCREEN 1: LANDING
+         ============================================================ -->
+    <section id="landing" class="screen active">
+      <div class="hero">
+        <div class="pill"><span class="dot"></span> Wellness Demo</div>
+        <h1>Obliq Ai Face Scan</h1>
+        <p class="sub">Camera-based wellness screening demo. Get a simulated read of your wellness signals using just your webcam — no wearables required.</p>
+        <button class="btn btn-primary" id="btnStart">
+          <!-- play icon -->
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg>
+          Start Scan
+        </button>
+
+        <div class="features">
+          <div class="feature">
+            <div class="ico">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </div>
+            <h4>Heart Rate Estimate</h4>
+            <p>Simulated pulse-signal extraction from skin-tone variation.</p>
+          </div>
+          <div class="feature">
+            <div class="ico">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-9 4 18 3-9h4"/></svg>
+            </div>
+            <h4>Breathing Pattern</h4>
+            <p>Estimates a respiration-rate range from chest micro-motion.</p>
+          </div>
+          <div class="feature">
+            <div class="ico">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+            </div>
+            <h4>30-Second Scan</h4>
+            <p>Quick, contact-free demo. Stay still and well-lit for best results.</p>
+          </div>
+        </div>
+
+        <!-- Disclaimer right on the landing too -->
+        <div class="disclaimer mt-24" style="max-width:760px; margin-left:auto; margin-right:auto; text-align:left;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span><strong>Disclaimer:</strong> Obliq Ai Face Scan is a demonstration only. It does not measure real medical vitals and should not be used for diagnosis or treatment.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SCREEN 2: SCAN
+         ============================================================ -->
+    <section id="scanScreen" class="screen">
+      <div class="scan-wrap">
+
+        <!-- Video card with overlays -->
+        <div class="video-card" id="videoCard">
+          <video id="video" autoplay playsinline muted></video>
+
+          <!-- HUD chips -->
+          <div class="hud">
+            <div class="chip"><span class="dot"></span> Live Camera</div>
+            <div class="chip rec" id="recChip" style="display:none;"><span class="dot"></span> Scanning</div>
+          </div>
+
+          <!-- Scan frame -->
+          <div class="scan-frame">
+            <div class="ring"></div>
+            <div class="corner tl"></div><div class="corner tr"></div>
+            <div class="corner bl"></div><div class="corner br"></div>
+          </div>
+
+          <!-- Moving scan line -->
+          <div class="scan-line"></div>
+
+          <!-- Permission / error overlay -->
+          <div class="video-overlay" id="videoOverlay">
+            <h3 id="overlayTitle">Requesting Camera…</h3>
+            <p id="overlayMsg">Please allow camera access in the browser prompt to begin your wellness scan.</p>
+            <div class="controls" id="overlayActions" style="display:none;">
+              <button class="btn btn-ghost" id="btnRetry">Try Again</button>
+              <button class="btn btn-ghost" id="btnBack">Back</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Side panel: timer, stages, controls -->
+        <aside class="panel">
+          <div>
+            <h2>Wellness Scan</h2>
+            <p class="small">Sit still, face the camera, and ensure your face is evenly lit.</p>
+          </div>
+
+          <!-- Circular timer -->
+          <div class="timer-wrap">
+            <div class="timer">
+              <svg viewBox="0 0 120 120">
+                <defs>
+                  <linearGradient id="grad" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%"  stop-color="#2de2c3"/>
+                    <stop offset="100%" stop-color="#6c8cff"/>
+                  </linearGradient>
+                </defs>
+                <circle class="track" cx="60" cy="60" r="52" fill="none" stroke-width="10"/>
+                <circle class="bar"   cx="60" cy="60" r="52" fill="none" stroke-width="10"
+                        stroke-dasharray="326.7" stroke-dashoffset="326.7" id="timerBar"/>
+              </svg>
+              <div class="label">
+                <b id="timerNum">30</b>
+                <small>SECONDS</small>
+              </div>
+            </div>
+            <div>
+              <div class="status" id="statusMsg">Ready when you are.</div>
+              <div class="small mt-16">Stage progress will appear below.</div>
+            </div>
+          </div>
+
+          <!-- Analysis stages -->
+          <div class="stages" id="stages">
+            <div class="stage" data-stage="0"><div class="marker"></div><span>Face positioning</span></div>
+            <div class="stage" data-stage="1"><div class="marker"></div><span>Light detection</span></div>
+            <div class="stage" data-stage="2"><div class="marker"></div><span>Pulse signal analysis</span></div>
+            <div class="stage" data-stage="3"><div class="marker"></div><span>Breathing pattern analysis</span></div>
+            <div class="stage" data-stage="4"><div class="marker"></div><span>Stress estimation</span></div>
+            <div class="stage" data-stage="5"><div class="marker"></div><span>Report generation</span></div>
+          </div>
+
+          <!-- Buttons -->
+          <div class="controls">
+            <button class="btn btn-primary" id="btnScan">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg>
+              Start Face Scan
+            </button>
+            <button class="btn btn-danger" id="btnStop">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="14" rx="2"/></svg>
+              Stop Camera
+            </button>
+          </div>
+
+          <div class="disclaimer">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span><strong>Demo only.</strong> Obliq Ai Face Scan does not measure real medical vitals and should not be used for diagnosis or treatment.</span>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SCREEN 3: RESULTS
+         ============================================================ -->
+    <section id="resultsScreen" class="screen">
+      <div class="results-head">
+        <div>
+          <h2>Your Wellness Snapshot</h2>
+          <p class="small">Simulated results based on your 30-second scan.</p>
+        </div>
+        <div class="score-badge">
+          <span class="small">Wellness Score</span>
+          <b id="scoreNum">—</b>
+        </div>
+      </div>
+
+      <!-- Result cards -->
+      <div class="grid">
+        <div class="card">
+          <div class="ico">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </div>
+          <div class="label">Heart Rate</div>
+          <div class="value"><span id="rHr">—</span><span class="unit">bpm</span></div>
+          <div class="meta" id="rHrTag"></div>
+        </div>
+
+        <div class="card">
+          <div class="ico">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-9 4 18 3-9h4"/></svg>
+          </div>
+          <div class="label">Breathing Rate</div>
+          <div class="value"><span id="rBr">—</span><span class="unit">/min</span></div>
+          <div class="meta" id="rBrTag"></div>
+        </div>
+
+        <div class="card">
+          <div class="ico">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+          </div>
+          <div class="label">Stress Level</div>
+          <div class="value" id="rStress">—</div>
+          <div class="meta" id="rStressTag"></div>
+        </div>
+
+        <div class="card">
+          <div class="ico">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          </div>
+          <div class="label">Blood Pressure (est.)</div>
+          <div class="value" id="rBp">—<span class="unit">mmHg</span></div>
+          <div class="meta" id="rBpTag"></div>
+        </div>
+
+        <div class="card">
+          <div class="ico">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+          </div>
+          <div class="label">Wellness Score</div>
+          <div class="value"><span id="rScore">—</span><span class="unit">/100</span></div>
+          <div class="meta" id="rScoreTag"></div>
+        </div>
+
+        <div class="card">
+          <div class="ico">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          </div>
+          <div class="label">Signal Confidence</div>
+          <div class="value"><span id="rConf">—</span><span class="unit">%</span></div>
+          <div class="meta">Based on lighting & motion stability</div>
+        </div>
+      </div>
+
+      <!-- Recommendation block -->
+      <div class="recommendation">
+        <h4>Recommendation</h4>
+        <p id="rRecommendation">—</p>
+      </div>
+
+      <!-- Bottom action row -->
+      <div class="center-row mt-24">
+        <button class="btn btn-primary" id="btnAgain">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          Scan Again
+        </button>
+        <button class="btn btn-ghost" id="btnHome">Back to Home</button>
+        <button class="btn btn-danger" id="btnStop2">Stop Camera</button>
+      </div>
+
+      <!-- Final disclaimer -->
+      <div class="disclaimer">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span><strong>Disclaimer:</strong> Obliq Ai Face Scan is a demonstration only. It does not measure real medical vitals and should not be used for diagnosis or treatment. Always consult a qualified healthcare professional.</span>
+      </div>
+
+      <footer>© Obliq Ai Face Scan — Wellness screening demo</footer>
+    </section>
+
+  </div>
+
+<script>
+/* ============================================================
+   APP LOGIC
+   - Manages screen routing
+   - Requests webcam via getUserMedia
+   - Runs a 30s scan with simulated stages
+   - Generates randomized but realistic wellness results
+   ============================================================ */
+(function () {
+  // ---------- DOM helpers ----------
+  const $ = (id) => document.getElementById(id);
+  const screens = {
+    landing: $('landing'),
+    scan:    $('scanScreen'),
+    results: $('resultsScreen'),
+  };
+  function show(name) {
+    Object.values(screens).forEach(s => s.classList.remove('active'));
+    screens[name].classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ---------- State ----------
+  let mediaStream = null;     // active MediaStream
+  let scanTimer   = null;     // interval ID for countdown
+  let stageTimers = [];       // setTimeout IDs for stage progression
+  let scanning    = false;    // is a scan currently running?
+
+  // ---------- Stage list (must match HTML order) ----------
+  const STAGES = [
+    { msg: "Detecting face position…",        dur: 4 },
+    { msg: "Analyzing ambient lighting…",     dur: 4 },
+    { msg: "Extracting pulse signal…",        dur: 6 },
+    { msg: "Reading breathing pattern…",      dur: 6 },
+    { msg: "Estimating stress markers…",      dur: 5 },
+    { msg: "Generating wellness report…",     dur: 5 },
+  ]; // Total = 30s
+
+  // ============================================================
+  // CAMERA HANDLING
+  // ============================================================
+  async function startCamera() {
+    const overlay     = $('videoOverlay');
+    const overlayTtl  = $('overlayTitle');
+    const overlayMsg  = $('overlayMsg');
+    const overlayBtns = $('overlayActions');
+
+    overlay.classList.remove('hidden');
+    overlayBtns.style.display = 'none';
+    overlayTtl.textContent = 'Requesting Camera…';
+    overlayMsg.textContent = 'Please allow camera access in the browser prompt to begin your wellness scan.';
+
+    // Check for browser support
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      overlayTtl.textContent = 'Camera Not Supported';
+      overlayMsg.textContent = 'Your browser does not support camera access (getUserMedia). Try Chrome, Edge, Firefox or Safari over HTTPS.';
+      overlayBtns.style.display = 'flex';
+      return false;
+    }
+
+    try {
+      // Prefer the user-facing camera, ignore audio
+      mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
+        audio: false,
+      });
+      const video = $('video');
+      video.srcObject = mediaStream;
+      // Once metadata loads, hide the overlay
+      video.onloadedmetadata = () => {
+        overlay.classList.add('hidden');
+        $('statusMsg').textContent = 'Camera ready. Press “Start Face Scan”.';
+      };
+      return true;
+    } catch (err) {
+      // Common errors: NotAllowedError, NotFoundError, NotReadableError
+      console.warn('Camera error:', err);
+      overlayBtns.style.display = 'flex';
+      if (err && (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError')) {
+        overlayTtl.textContent = 'Camera Permission Denied';
+        overlayMsg.textContent = 'You blocked camera access. Please allow it in your browser settings, then try again.';
+      } else if (err && err.name === 'NotFoundError') {
+        overlayTtl.textContent = 'No Camera Found';
+        overlayMsg.textContent = 'We could not detect a camera on this device. Connect one and try again.';
+      } else if (err && err.name === 'NotReadableError') {
+        overlayTtl.textContent = 'Camera Unavailable';
+        overlayMsg.textContent = 'Another application may be using your camera. Close it and try again.';
+      } else {
+        overlayTtl.textContent = 'Camera Error';
+        overlayMsg.textContent = 'Something went wrong while accessing the camera. Please try again.';
+      }
+      return false;
+    }
+  }
+
+  function stopCamera() {
+    if (mediaStream) {
+      mediaStream.getTracks().forEach(t => t.stop());
+      mediaStream = null;
+    }
+    const video = $('video');
+    if (video) video.srcObject = null;
+  }
+
+  // ============================================================
+  // SCAN LOGIC
+  // ============================================================
+  function resetScanUI() {
+    // Reset countdown ring
+    const bar = $('timerBar');
+    bar.style.transition = 'none';
+    bar.style.strokeDashoffset = '326.7';
+    // Force reflow so transition resumes correctly afterward
+    void bar.getBoundingClientRect();
+    bar.style.transition = '';
+
+    $('timerNum').textContent = '30';
+    $('statusMsg').textContent = 'Camera ready. Press “Start Face Scan”.';
+    $('recChip').style.display = 'none';
+    $('videoCard').classList.remove('scanning');
+
+    // Reset stage list
+    document.querySelectorAll('.stage').forEach(s => {
+      s.classList.remove('active', 'done');
+    });
+
+    // Clear any running timers
+    if (scanTimer) clearInterval(scanTimer);
+    stageTimers.forEach(t => clearTimeout(t));
+    stageTimers = [];
+    scanning = false;
+
+    $('btnScan').disabled = false;
+  }
+
+  function startScan() {
+    if (!mediaStream) {
+      $('statusMsg').textContent = 'Camera not ready.';
+      return;
+    }
+    if (scanning) return;
+    scanning = true;
+
+    // UI: scanning state
+    $('btnScan').disabled = true;
+    $('recChip').style.display = 'inline-flex';
+    $('videoCard').classList.add('scanning');
+
+    // Animate the circular progress ring over 30 seconds
+    const bar = $('timerBar');
+    bar.style.transition = 'stroke-dashoffset 30s linear';
+    // small delay so transition is registered
+    requestAnimationFrame(() => { bar.style.strokeDashoffset = '0'; });
+
+    // Numeric countdown
+    let remaining = 30;
+    $('timerNum').textContent = remaining;
+    scanTimer = setInterval(() => {
+      remaining--;
+      $('timerNum').textContent = Math.max(0, remaining);
+      if (remaining <= 0) {
+        clearInterval(scanTimer);
+      }
+    }, 1000);
+
+    // Drive stages sequentially
+    let elapsed = 0;
+    STAGES.forEach((stage, i) => {
+      // Mark stage active at start
+      const startAt = elapsed * 1000;
+      stageTimers.push(setTimeout(() => {
+        // mark previous as done
+        document.querySelectorAll('.stage').forEach((el, idx) => {
+          el.classList.remove('active');
+          if (idx < i) el.classList.add('done');
+        });
+        const cur = document.querySelector(`.stage[data-stage="${i}"]`);
+        if (cur) cur.classList.add('active');
+        $('statusMsg').textContent = stage.msg;
+      }, startAt));
+      elapsed += stage.dur;
+    });
+
+    // Final completion
+    stageTimers.push(setTimeout(() => {
+      document.querySelectorAll('.stage').forEach(el => {
+        el.classList.remove('active');
+        el.classList.add('done');
+      });
+      $('statusMsg').textContent = 'Analysis complete.';
+      finishScan();
+    }, 30000));
+  }
+
+  function finishScan() {
+    scanning = false;
+    $('videoCard').classList.remove('scanning');
+    $('recChip').style.display = 'none';
+    showResults(generateResults());
+  }
+
+  // ============================================================
+  // RESULT GENERATION (random but realistic ranges)
+  // ============================================================
+  function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+  function generateResults() {
+    const hr = rand(60, 100);                                // Heart Rate
+    const br = rand(12, 20);                                 // Breathing Rate
+    const stressRoll = Math.random();
+    const stress = stressRoll < 0.55 ? 'Low'
+                 : stressRoll < 0.85 ? 'Moderate' : 'High';
+    const sys = rand(108, 132);                              // Systolic
+    const dia = rand(68, 86);                                // Diastolic
+    const conf = rand(78, 97);                               // Signal confidence
+
+    // Wellness score (70–98) with mild correlation to other signals
+    let score = rand(70, 98);
+    if (stress === 'High') score = Math.min(score, 82);
+    if (hr > 92) score = Math.min(score, 88);
+    if (sys > 128 || dia > 84) score = Math.min(score, 86);
+
+    return { hr, br, stress, bp: `${sys}/${dia}`, sys, dia, score, conf };
+  }
+
+  function tagFor(metric, value, extra) {
+    // Returns { text, cls } where cls is 'good' | 'warn' | 'bad'
+    if (metric === 'hr') {
+      if (value < 70)  return { text: 'Resting & calm', cls: 'good' };
+      if (value <= 85) return { text: 'Within normal range', cls: 'good' };
+      if (value <= 95) return { text: 'Slightly elevated', cls: 'warn' };
+      return { text: 'Elevated — consider relaxing', cls: 'bad' };
+    }
+    if (metric === 'br') {
+      if (value <= 14) return { text: 'Steady & relaxed', cls: 'good' };
+      if (value <= 18) return { text: 'Within normal range', cls: 'good' };
+      return { text: 'Slightly fast', cls: 'warn' };
+    }
+    if (metric === 'stress') {
+      if (value === 'Low')      return { text: 'You appear relaxed',  cls: 'good' };
+      if (value === 'Moderate') return { text: 'Some tension detected', cls: 'warn' };
+      return { text: 'High tension — take a break', cls: 'bad' };
+    }
+    if (metric === 'bp') {
+      const { sys, dia } = extra;
+      if (sys < 120 && dia < 80)            return { text: 'Optimal range',   cls: 'good' };
+      if (sys < 130 && dia < 85)            return { text: 'Normal range',    cls: 'good' };
+      return { text: 'Mildly elevated',                          cls: 'warn' };
+    }
+    if (metric === 'score') {
+      if (value >= 90) return { text: 'Excellent overall',  cls: 'good' };
+      if (value >= 80) return { text: 'Good — keep it up',  cls: 'good' };
+      return { text: 'Room to improve',                     cls: 'warn' };
+    }
+    return { text: '', cls: 'good' };
+  }
+
+  function pillHTML(t) { return `<span class="pill-tag ${t.cls}">${t.text}</span>`; }
+
+  function showResults(r) {
+    // Fill numeric values
+    $('rHr').textContent     = r.hr;
+    $('rBr').textContent     = r.br;
+    $('rStress').textContent = r.stress;
+    $('rBp').innerHTML       = `${r.bp}<span class="unit">mmHg</span>`;
+    $('rScore').textContent  = r.score;
+    $('rConf').textContent   = r.conf;
+    $('scoreNum').textContent = r.score + '/100';
+
+    // Tag chips for each metric
+    $('rHrTag').innerHTML     = pillHTML(tagFor('hr', r.hr));
+    $('rBrTag').innerHTML     = pillHTML(tagFor('br', r.br));
+    $('rStressTag').innerHTML = pillHTML(tagFor('stress', r.stress));
+    $('rBpTag').innerHTML     = pillHTML(tagFor('bp', null, { sys: r.sys, dia: r.dia }));
+    $('rScoreTag').innerHTML  = pillHTML(tagFor('score', r.score));
+
+    // Build a recommendation string
+    const tips = [];
+    if (r.stress === 'High') tips.push('Try a 2-minute breathing exercise to lower stress.');
+    else if (r.stress === 'Moderate') tips.push('Take a short break and stretch to ease tension.');
+    if (r.hr > 92) tips.push('Your heart rate looks elevated — hydrate and rest for a few minutes.');
+    if (r.sys > 128 || r.dia > 84) tips.push('Reduce caffeine and salt intake today.');
+    if (r.score >= 90) tips.push('Your readings look great — keep up your routine!');
+    if (tips.length === 0) tips.push('Your wellness signals look balanced. Maintain regular sleep, hydration, and movement.');
+
+    $('rRecommendation').textContent = tips.join(' ');
+
+    show('results');
+  }
+
+  // ============================================================
+  // EVENT WIRING
+  // ============================================================
+  // Landing → Scan
+  $('btnStart').addEventListener('click', async () => {
+    show('scan');
+    resetScanUI();
+    await startCamera();
+  });
+
+  // Start the actual scan
+  $('btnScan').addEventListener('click', startScan);
+
+  // Stop camera (from scan screen)
+  $('btnStop').addEventListener('click', () => {
+    stopCamera();
+    if (scanTimer) clearInterval(scanTimer);
+    stageTimers.forEach(t => clearTimeout(t));
+    stageTimers = [];
+    scanning = false;
+    $('statusMsg').textContent = 'Camera stopped.';
+    $('overlayTitle').textContent = 'Camera Stopped';
+    $('overlayMsg').textContent = 'Press “Try Again” to restart your camera, or go back to the home screen.';
+    $('videoOverlay').classList.remove('hidden');
+    $('overlayActions').style.display = 'flex';
+    $('videoCard').classList.remove('scanning');
+    $('recChip').style.display = 'none';
+    $('btnScan').disabled = false;
+  });
+
+  // Stop camera (from results screen)
+  $('btnStop2').addEventListener('click', () => {
+    stopCamera();
+    show('landing');
+  });
+
+  // Retry / Back from camera-error overlay
+  $('btnRetry').addEventListener('click', async () => {
+    resetScanUI();
+    await startCamera();
+  });
+  $('btnBack').addEventListener('click', () => {
+    stopCamera();
+    show('landing');
+  });
+
+  // Results → Scan again
+  $('btnAgain').addEventListener('click', async () => {
+    show('scan');
+    resetScanUI();
+    if (!mediaStream) await startCamera();
+    else $('statusMsg').textContent = 'Camera ready. Press “Start Face Scan”.';
+  });
+
+  // Results → Home
+  $('btnHome').addEventListener('click', () => {
+    stopCamera();
+    show('landing');
+  });
+
+  // Cleanup on page unload
+  window.addEventListener('beforeunload', stopCamera);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>ANATOMIX · AI Medical Anatomy Intelligence Platform</title>
+<style>
+  :root{
+    --cyan:#33d6ff; --cyan2:#0aa6e0; --ice:#bfefff; --slate:#7fb0c8; --deep:#040a14;
+    --panel:rgba(10,26,42,.55); --line:rgba(51,214,255,.28); --good:#5effc0; --warn:#ff8a6b; --art:#ff5a6e; --vein:#4aa8ff;
+    --font:'Segoe UI',system-ui,-apple-system,Roboto,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;overflow:hidden;color:#cfeefb;font-family:var(--font);
+    background:radial-gradient(ellipse at 50% 35%,#0a1c2e 0%,#06111d 55%,#03080f 100%);}
+  canvas{display:block}
+  .hidden{display:none!important}
+
+  /* glass panels */
+  .glass{background:var(--panel);border:1px solid var(--line);border-radius:10px;
+    backdrop-filter:blur(13px);-webkit-backdrop-filter:blur(13px);
+    box-shadow:0 8px 34px rgba(0,0,0,.55),inset 0 0 26px rgba(51,214,255,.05);}
+  .ttl{font-size:10px;letter-spacing:3px;color:var(--cyan);text-transform:uppercase;opacity:.92;
+    display:flex;align-items:center;gap:7px;margin-bottom:9px}
+  .ttl::before{content:"";width:5px;height:5px;background:var(--cyan);box-shadow:0 0 8px var(--cyan);transform:rotate(45deg)}
+  ::-webkit-scrollbar{width:7px;height:7px}::-webkit-scrollbar-thumb{background:rgba(51,214,255,.28);border-radius:4px}
+
+  /* ===== App layout ===== */
+  #app{position:fixed;inset:0}
+  #scene{position:absolute;inset:0;z-index:0}
+
+  /* top bar */
+  #topbar{position:absolute;top:0;left:0;right:0;height:50px;z-index:5;display:flex;align-items:center;
+    justify-content:space-between;padding:0 18px;background:linear-gradient(180deg,rgba(6,16,26,.85),rgba(6,16,26,0));
+    border-bottom:1px solid rgba(51,214,255,.12)}
+  #topbar .b1{font-size:17px;letter-spacing:7px;color:#eaffff;text-shadow:0 0 16px rgba(51,214,255,.55)}
+  #topbar .b2{font-size:8px;letter-spacing:4px;color:var(--cyan2);margin-top:2px}
+  #topbar .right{display:flex;gap:18px;font-size:10px;letter-spacing:2px;color:var(--slate)}
+  #topbar .right b{color:#dff6ff}
+  .pill{padding:2px 9px;border-radius:10px;font-size:9px;letter-spacing:1px}
+  .pill.ok{background:rgba(94,255,192,.12);color:var(--good)}
+
+  /* left explorer */
+  #left{position:absolute;left:14px;top:62px;bottom:84px;width:248px;z-index:5;padding:13px 10px;display:flex;flex-direction:column}
+  #left h2{margin:0 0 2px;font-size:13px;letter-spacing:1px;color:#eaffff;font-weight:600;padding:0 4px}
+  #left .sub{font-size:9px;color:var(--slate);letter-spacing:1px;margin:0 4px 10px;padding-bottom:8px;border-bottom:1px solid rgba(51,214,255,.12)}
+  #tree{overflow-y:auto;flex:1;padding-right:4px}
+  .cat{margin-bottom:3px}
+  .cat>.row{display:flex;align-items:center;gap:8px;padding:8px 9px;border-radius:7px;cursor:pointer;
+    font-size:12.5px;letter-spacing:.5px;color:#bfe1ee;transition:.13s;border-left:2px solid transparent}
+  .cat>.row:hover{background:rgba(51,214,255,.09)}
+  .cat.on>.row{background:rgba(51,214,255,.16);color:#eaffff;border-left-color:var(--cyan)}
+  .cat>.row .ic{width:9px;height:9px;border-radius:2px;flex:0 0 auto;box-shadow:0 0 7px currentColor}
+  .cat>.row .ar{margin-left:auto;font-size:9px;color:var(--slate);transition:.2s}
+  .cat.open>.row .ar{transform:rotate(90deg)}
+  .kids{max-height:0;overflow:hidden;transition:max-height .25s ease}
+  .cat.open .kids{max-height:520px}
+  .kid{padding:6px 9px 6px 28px;font-size:11.5px;color:#9fc8d8;cursor:pointer;border-radius:6px;transition:.12s}
+  .kid:hover{background:rgba(51,214,255,.08);color:#dff6ff}
+  .kid.sel{background:rgba(51,214,255,.18);color:#eaffff}
+
+  /* right column */
+  #right{position:absolute;right:14px;top:62px;bottom:84px;width:340px;z-index:5;display:flex;flex-direction:column;gap:12px}
+  #vitals{padding:12px;flex:0 0 auto}
+  .vrow{display:flex;align-items:center;gap:8px;margin:6px 0}
+  .vrow .lab{width:46px;font-size:9px;letter-spacing:1px;color:var(--slate)}
+  .vrow canvas{flex:1;height:26px;background:rgba(0,0,0,.22);border:1px solid rgba(51,214,255,.12);border-radius:4px}
+  .vrow .val{width:62px;text-align:right;font-size:12px;color:#eaffff;font-weight:600}
+  #intel{padding:13px;flex:1;overflow-y:auto;min-height:0}
+  #intel.empty{display:flex;align-items:center;justify-content:center;text-align:center;color:#5f8294;font-size:12px;line-height:1.7;padding:24px}
+  #intel h3{margin:2px 0 1px;font-size:18px;color:#eaffff;letter-spacing:.5px}
+  #intel .sci{font-size:11px;color:var(--cyan);font-style:italic;letter-spacing:.5px}
+  #intel .sys{display:inline-block;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#021018;
+    background:var(--cyan);padding:2px 8px;border-radius:10px;margin:8px 0 4px}
+  .aibtns{display:flex;flex-wrap:wrap;gap:5px;margin:10px 0 6px}
+  .aibtns button{font-family:inherit;font-size:10px;letter-spacing:.5px;cursor:pointer;color:#cfeefb;
+    background:rgba(51,214,255,.07);border:1px solid rgba(51,214,255,.2);border-radius:14px;padding:5px 10px;transition:.13s}
+  .aibtns button:hover{background:rgba(51,214,255,.18);border-color:var(--cyan);color:#eaffff}
+  #aiout{font-size:12px;line-height:1.6;color:#bcd9e6;background:rgba(51,214,255,.05);border-left:2px solid var(--cyan);
+    border-radius:6px;padding:9px 11px;margin:8px 0;min-height:18px}
+  .fld{margin:9px 0}
+  .fld .k{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--slate)}
+  .fld .v{font-size:12.5px;line-height:1.55;color:#cfe7f2;margin-top:2px}
+  .chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+  .chip{font-size:11px;color:#9fd4e6;background:rgba(51,214,255,.07);border:1px solid rgba(51,214,255,.18);
+    border-radius:13px;padding:3px 10px;cursor:pointer}
+  .chip:hover{border-color:var(--cyan);color:#eaffff}
+  .chip.art{color:#ffb3bd;border-color:rgba(255,90,110,.4)}
+  .chip.vein{color:#bcd9ff;border-color:rgba(74,168,255,.4)}
+
+  /* bottom control deck */
+  #deck{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);z-index:6;display:flex;gap:7px;padding:9px 12px;flex-wrap:wrap;justify-content:center;max-width:62vw}
+  .ctl{font-family:inherit;cursor:pointer;color:#cfeefb;background:rgba(51,214,255,.06);border:1px solid rgba(51,214,255,.22);
+    border-radius:7px;padding:8px 12px;font-size:10px;letter-spacing:1.5px;transition:.13s;white-space:nowrap}
+  .ctl:hover{background:rgba(51,214,255,.16);border-color:var(--cyan);transform:translateY(-2px)}
+  .ctl.on{background:rgba(51,214,255,.26);border-color:var(--cyan);color:#eaffff;box-shadow:0 0 18px rgba(51,214,255,.4)}
+
+  /* pins */
+  #pins{position:absolute;inset:0;z-index:4;pointer-events:none}
+  .pin{position:absolute;transform:translate(-50%,-50%);pointer-events:auto;cursor:pointer;display:flex;align-items:center;gap:6px;
+    font-size:10.5px;color:#dff4fb;white-space:nowrap}
+  .pin .d{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--cyan);background:rgba(51,214,255,.25);
+    box-shadow:0 0 8px rgba(51,214,255,.6);flex:0 0 auto;transition:.15s}
+  .pin .l{background:rgba(5,16,24,.72);border:1px solid rgba(51,214,255,.22);border-radius:4px;padding:1px 6px;opacity:0;transition:.15s}
+  .pin:hover .l{opacity:1}.pin:hover .d{background:rgba(51,214,255,.6)}
+  .pin.art .d{border-color:var(--art);background:rgba(255,90,110,.25);box-shadow:0 0 8px rgba(255,90,110,.6)}
+  .pin.vein .d{border-color:var(--vein);background:rgba(74,168,255,.25);box-shadow:0 0 8px rgba(74,168,255,.6)}
+  .pin.sel .d{animation:pp 1s ease-in-out infinite}.pin.sel .l{opacity:1}
+  @keyframes pp{0%,100%{transform:scale(1)}50%{transform:scale(1.6)}}
+
+  #hint{position:absolute;left:14px;bottom:18px;z-index:5;font-size:9px;letter-spacing:1px;color:#4d7588;pointer-events:none}
+  .kbd{border:1px solid #2c4a57;border-radius:3px;padding:1px 5px;color:#9fd4e6;margin:0 2px}
+
+  /* splash */
+  #splash{position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;
+    background:radial-gradient(ellipse at 50% 40%,#0a1c2e,#03080f 72%);transition:opacity .7s}
+  #splash .c{text-align:center}
+  #splash h1{font-size:50px;letter-spacing:14px;margin:0;font-weight:200;
+    background:linear-gradient(180deg,#eaffff,#33d6ff 60%,#0a6f96);-webkit-background-clip:text;background-clip:text;color:transparent}
+  #splash p{letter-spacing:4px;color:#7fd6ef;font-size:12px;margin:10px 0 26px}
+  #go{cursor:pointer;border:1px solid var(--cyan);background:rgba(51,214,255,.08);color:#eaffff;padding:14px 42px;
+    letter-spacing:5px;font-size:13px;border-radius:4px;transition:.2s;font-family:inherit}
+  #go:hover{background:rgba(51,214,255,.2);box-shadow:0 0 30px rgba(51,214,255,.5)}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="scene"></div>
+  <div id="pins"></div>
+
+  <div id="topbar">
+    <div><div class="b1">ANATOMIX</div><div class="b2">AI MEDICAL ANATOMY INTELLIGENCE PLATFORM</div></div>
+    <div class="right">
+      <span>PATIENT <b>A. DOE</b></span><span>ID <b>ANX-1047</b></span>
+      <span>STATUS <span class="pill ok">STABLE</span></span><span>FPS <b id="fps">—</b></span>
+    </div>
+  </div>
+
+  <!-- LEFT: Anatomy Explorer -->
+  <div id="left" class="glass">
+    <h2>Anatomy Explorer</h2>
+    <div class="sub">12 SYSTEMS · HIERARCHICAL INDEX</div>
+    <div id="tree"></div>
+  </div>
+
+  <!-- RIGHT: Vitals + Intelligence -->
+  <div id="right">
+    <div id="vitals" class="glass">
+      <div class="ttl">Live Patient Data</div>
+      <div class="vrow"><span class="lab">HR</span><canvas id="vHr"></canvas><span class="val" id="dHr">72 bpm</span></div>
+      <div class="vrow"><span class="lab">RESP</span><canvas id="vResp"></canvas><span class="val" id="dResp">14 /min</span></div>
+      <div class="vrow"><span class="lab">TEMP</span><canvas id="vTemp"></canvas><span class="val" id="dTemp">36.6°C</span></div>
+      <div class="vrow"><span class="lab">BP</span><canvas id="vBp"></canvas><span class="val" id="dBp">120/80</span></div>
+      <div class="vrow"><span class="lab">SpO₂</span><canvas id="vO2"></canvas><span class="val" id="dO2">98%</span></div>
+      <div class="vrow"><span class="lab">ECG</span><canvas id="vEcg"></canvas><span class="val" id="dEcg">NSR</span></div>
+    </div>
+    <div id="intel" class="glass empty">Select any structure — click it on the model, a pin, or the Anatomy Explorer — to open its AI intelligence profile.</div>
+  </div>
+
+  <!-- BOTTOM control deck -->
+  <div id="deck" class="glass">
+    <button class="ctl" data-c="scan">SCAN</button>
+    <button class="ctl" data-c="dissect">DISSECT</button>
+    <button class="ctl" data-c="slice">SLICE</button>
+    <button class="ctl" data-c="isolate">ISOLATE</button>
+    <button class="ctl" data-c="xray">X-RAY</button>
+    <button class="ctl" data-c="mri">MRI</button>
+    <button class="ctl" data-c="ct">CT</button>
+    <button class="ctl" data-c="blood">BLOOD FLOW</button>
+    <button class="ctl" data-c="nerve">NERVE FLOW</button>
+    <button class="ctl" data-c="annotate">ANNOTATE</button>
+    <button class="ctl" data-c="compare">COMPARE</button>
+    <button class="ctl" data-c="ai">AI EXPLAIN</button>
+  </div>
+
+  <div id="hint"><span class="kbd">drag</span>orbit <span class="kbd">wheel</span>zoom <span class="kbd">click</span>select</div>
+</div>
+
+<div id="splash"><div class="c">
+  <h1>ANATOMIX</h1><p>AI ANATOMY INTELLIGENCE WORKSTATION</p>
+  <button id="go">ENTER WORKSTATION</button>
+</div></div>
+
+<script src="https://unpkg.com/three@0.140.0/build/three.min.js"></script>
+<script>
+'use strict';
+const TAU=Math.PI*2, lerp=(a,b,t)=>a+(b-a)*t, clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
+
+/* ===================== KNOWLEDGE BASE ===================== */
+// Fields: name, sci, system, loc, fn, blood, venous, nerve, lymph, physio, clinical, diseases, disorders, dx, imaging, surgical, connected[]
+// Vessels add: vessel:{origin,termination,branches[],tributaries[],flow,oxygen,organs[],vessels[],pathway,conditions[]}
+function S(o){return o;}
+const KB={
+  heart:S({name:'Heart',sci:'Cor',system:'cardiovascular',loc:'Middle mediastinum, posterior to the sternum',
+    fn:'A four-chambered muscular pump that drives the pulmonary and systemic circulations.',
+    blood:'Right and left coronary arteries (from the ascending aorta).',venous:'Coronary sinus → right atrium.',
+    nerve:'Cardiac plexus (sympathetic + vagal parasympathetic).',lymph:'Cardiac lymphatics → tracheobronchial nodes.',
+    physio:'Generates ~5 L/min cardiac output; intrinsic SA-node pacemaking at 60–100 bpm.',
+    clinical:'Central to ischemic, valvular, and electrical disease; reference organ for resuscitation.',
+    diseases:['Coronary artery disease','Heart failure','Cardiomyopathy'],disorders:['Arrhythmia','Valve stenosis/regurgitation'],
+    dx:['ECG','Echocardiography','Cardiac catheterization'],imaging:['Echo','Cardiac MRI','Coronary CT angiography'],
+    surgical:'CABG, valve repair/replacement, transplantation; access via median sternotomy.',
+    connected:['la','ra','lv','rv','mitral','aortic_valve','coronary','aorta','pulm_artery','svc','ivc']}),
+  la:S({name:'Left Atrium',sci:'Atrium sinistrum',system:'cardiovascular',loc:'Posterior-superior heart',
+    fn:'Receives oxygenated blood from the pulmonary veins and fills the left ventricle.',
+    blood:'Left coronary circumflex branch.',venous:'Thebesian veins.',nerve:'Cardiac plexus.',lymph:'Cardiac plexus nodes.',
+    physio:'Acts as a reservoir and booster pump; the "atrial kick" adds ~20% of LV filling.',
+    clinical:'Enlargement is a marker of chronic mitral disease and hypertension.',
+    diseases:['Atrial fibrillation','LA enlargement'],disorders:['Mitral stenosis effects'],dx:['Echo','ECG'],imaging:['TEE','Cardiac MRI'],
+    surgical:'Maze procedure for AF; LA appendage closure.',connected:['heart','mitral','pulm_vein','lv']}),
+  ra:S({name:'Right Atrium',sci:'Atrium dextrum',system:'cardiovascular',loc:'Right-superior heart',
+    fn:'Receives deoxygenated blood from the venae cavae and coronary sinus; houses the SA node.',
+    blood:'Right coronary artery (SA nodal branch).',venous:'Thebesian veins.',nerve:'Cardiac plexus; SA/AV nodes.',lymph:'Cardiac nodes.',
+    physio:'Pacemaker chamber — the sinoatrial node initiates each heartbeat here.',
+    clinical:'Site of central venous catheter tips and pacemaker leads.',
+    diseases:['Right heart failure'],disorders:['SA node dysfunction','Atrial flutter'],dx:['ECG','Echo'],imaging:['Echo','CT'],
+    surgical:'Pacemaker lead placement; cannulation for bypass.',connected:['heart','svc','ivc','rv']}),
+  lv:S({name:'Left Ventricle',sci:'Ventriculus sinister',system:'cardiovascular',loc:'Left-inferior heart, forming the apex',
+    fn:'The main pumping chamber ejecting oxygenated blood into the aorta.',
+    blood:'Left anterior descending + circumflex coronaries.',venous:'Coronary sinus.',nerve:'Cardiac plexus.',lymph:'Cardiac nodes.',
+    physio:'Thickest wall; generates systemic pressure (~120 mmHg systolic).',
+    clinical:'Ejection fraction here defines systolic heart-failure severity.',
+    diseases:['LV hypertrophy','Dilated cardiomyopathy'],disorders:['Systolic dysfunction'],dx:['Echo (EF)','Cardiac MRI'],
+    imaging:['Echo','MRI','SPECT'],surgical:'LV assist devices; aneurysm repair.',connected:['heart','aortic_valve','mitral','aorta']}),
+  rv:S({name:'Right Ventricle',sci:'Ventriculus dexter',system:'cardiovascular',loc:'Anterior-right heart',
+    fn:'Pumps deoxygenated blood into the pulmonary trunk for oxygenation.',
+    blood:'Right coronary artery.',venous:'Coronary sinus.',nerve:'Cardiac plexus.',lymph:'Cardiac nodes.',
+    physio:'Low-pressure pump (~25 mmHg systolic) matched to pulmonary resistance.',
+    clinical:'Fails in pulmonary hypertension and large PE.',
+    diseases:['RV failure','ARVC'],disorders:['Pulmonary hypertension strain'],dx:['Echo','Cardiac MRI'],imaging:['Echo','MRI'],
+    surgical:'RVOT reconstruction in congenital disease.',connected:['heart','pulm_artery','ra']}),
+  mitral:S({name:'Mitral Valve',sci:'Valva atrioventricularis sinistra',system:'cardiovascular',loc:'Between left atrium and left ventricle',
+    fn:'Bicuspid valve preventing backflow from LV into LA during systole.',
+    blood:'Circumflex coronary.',venous:'—',nerve:'—',lymph:'—',physio:'Opens in diastole, closes in systole (first heart sound, M1).',
+    clinical:'Common site of rheumatic and degenerative valve disease.',
+    diseases:['Mitral stenosis','Mitral regurgitation','Prolapse'],disorders:['Endocarditis'],dx:['Echo','Auscultation'],imaging:['TEE','MRI'],
+    surgical:'Mitral repair (annuloplasty) or replacement; MitraClip.',connected:['la','lv','heart']}),
+  aortic_valve:S({name:'Aortic Valve',sci:'Valva aortae',system:'cardiovascular',loc:'Between left ventricle and aorta',
+    fn:'Tricuspid semilunar valve preventing aortic backflow into the LV.',
+    blood:'Coronary ostia arise just above it.',venous:'—',nerve:'—',lymph:'—',physio:'Closes in diastole (aortic component of S2).',
+    clinical:'Calcific stenosis is the most common valve lesion in older adults.',
+    diseases:['Aortic stenosis','Aortic regurgitation','Bicuspid valve'],disorders:['Endocarditis'],dx:['Echo','Cardiac cath'],
+    imaging:['Echo','CT (TAVR planning)'],surgical:'SAVR or transcatheter TAVR.',connected:['lv','aorta','coronary']}),
+  coronary:S({name:'Coronary Arteries',sci:'Arteriae coronariae',system:'cardiovascular',loc:'Epicardial surface of the heart',
+    fn:'Supply oxygenated blood to the myocardium.',blood:'Branch directly from the ascending aorta.',
+    venous:'Drain via the coronary sinus.',nerve:'Sympathetic vasomotor.',lymph:'Cardiac plexus.',
+    physio:'Perfuse mainly during diastole; autoregulated to demand.',
+    clinical:'Occlusion causes myocardial infarction; the LAD is the "widow-maker".',
+    diseases:['Atherosclerosis','MI'],disorders:['Angina','Spasm'],dx:['Coronary angiography','Stress test'],
+    imaging:['CT angiography','Invasive angiography'],surgical:'PCI/stenting; CABG grafting.',
+    connected:['aorta','heart','lv'],
+    vessel:{origin:'Ascending aorta (above the aortic valve)',termination:'Myocardial capillary beds',
+      branches:['Left main → LAD + Circumflex','Right coronary artery'],tributaries:['—'],
+      flow:'Aorta → epicardial arteries → myocardium',oxygen:'Oxygenated',organs:['Myocardium'],vessels:['Aorta','Coronary sinus'],
+      pathway:'Aortic sinuses → epicardial course → intramyocardial penetrators',conditions:['CAD','MI','Spasm']}}),
+  aorta:S({name:'Aorta',sci:'Aorta',system:'arterial',loc:'From the LV, arching and descending through thorax and abdomen',
+    fn:'The largest artery; distributes oxygenated blood to the entire body.',
+    blood:'Vasa vasorum.',venous:'—',nerve:'Aortic plexus; baroreceptors at the arch.',lymph:'Para-aortic nodes.',
+    physio:'Windkessel vessel — elastic recoil sustains diastolic perfusion.',
+    clinical:'Aneurysm and dissection are life-threatening emergencies.',
+    diseases:['Aortic aneurysm','Aortic dissection','Atherosclerosis'],disorders:['Coarctation'],dx:['CT angiography','Ultrasound'],
+    imaging:['CT angiography','MRA','TEE'],surgical:'Open or endovascular (EVAR/TEVAR) repair.',
+    connected:['lv','aortic_valve','coronary','carotid','femoral_a'],
+    vessel:{origin:'Left ventricle',termination:'Bifurcates into the common iliac arteries (~L4)',
+      branches:['Ascending aorta','Aortic arch (brachiocephalic, L common carotid, L subclavian)','Descending thoracic aorta','Abdominal aorta (celiac, SMA, renals, IMA)'],
+      tributaries:['—'],flow:'LV → systemic arteries',oxygen:'Oxygenated',organs:['Brain','Heart','Liver','Kidneys','Limbs'],
+      vessels:['Coronary arteries','Carotids','Renal arteries','Iliac arteries'],
+      pathway:'LV → ascending → arch → descending thoracic → abdominal → iliac bifurcation',
+      conditions:['Aneurysm','Aortic dissection','Atherosclerosis']}}),
+  pulm_artery:S({name:'Pulmonary Artery',sci:'Arteria pulmonalis',system:'arterial',loc:'From the RV to the lungs',
+    fn:'Carries deoxygenated blood from the right ventricle to the lungs (the only artery carrying deoxygenated blood).',
+    blood:'Vasa vasorum.',venous:'—',nerve:'Pulmonary plexus.',lymph:'Tracheobronchial nodes.',
+    physio:'Low-pressure, high-compliance pulmonary circuit.',
+    clinical:'Target of pulmonary embolism and pulmonary hypertension.',
+    diseases:['Pulmonary embolism','Pulmonary hypertension'],disorders:['PA stenosis'],dx:['CT pulmonary angiogram','Right heart cath'],
+    imaging:['CTPA','V/Q scan'],surgical:'Pulmonary endarterectomy.',connected:['rv','heart','lungs'],
+    vessel:{origin:'Right ventricle (via pulmonary valve)',termination:'Pulmonary capillaries',
+      branches:['Right pulmonary artery','Left pulmonary artery'],tributaries:['—'],flow:'RV → lungs',oxygen:'Deoxygenated',
+      organs:['Lungs'],vessels:['Pulmonary trunk','Pulmonary veins'],pathway:'RV → pulmonary trunk → L/R PA → lobar arteries',
+      conditions:['PE','Pulmonary hypertension']}}),
+  pulm_vein:S({name:'Pulmonary Vein',sci:'Venae pulmonales',system:'venous',loc:'From lungs to the left atrium',
+    fn:'Return oxygenated blood from the lungs to the left atrium (the only veins carrying oxygenated blood).',
+    blood:'—',venous:'Drain to LA.',nerve:'Pulmonary plexus.',lymph:'Tracheobronchial nodes.',
+    physio:'Complete the pulmonary circuit; four veins enter the LA.',clinical:'Source of ectopic foci in atrial fibrillation.',
+    diseases:['PV stenosis'],disorders:['AF triggers'],dx:['Echo','CT'],imaging:['CT','MRI'],
+    surgical:'PV isolation (ablation) for AF.',connected:['lungs','la','heart'],
+    vessel:{origin:'Pulmonary capillaries',termination:'Left atrium',branches:['—'],
+      tributaries:['Right superior/inferior','Left superior/inferior'],flow:'Lungs → LA',oxygen:'Oxygenated',
+      organs:['Lungs','Heart'],vessels:['Left atrium'],pathway:'Alveolar capillaries → venules → 4 pulmonary veins → LA',
+      conditions:['AF foci','PV stenosis']}}),
+  svc:S({name:'Superior Vena Cava',sci:'Vena cava superior',system:'venous',loc:'Right superior mediastinum',
+    fn:'Returns deoxygenated blood from the head, neck, and upper limbs to the right atrium.',
+    blood:'—',venous:'Drains to RA.',nerve:'—',lymph:'—',physio:'Large-capacitance central vein.',
+    clinical:'SVC obstruction (often malignant) causes facial/upper-body congestion.',
+    diseases:['SVC syndrome'],disorders:['Thrombosis'],dx:['CT venography'],imaging:['CT','MRI'],
+    surgical:'Stenting; central line target.',connected:['ra','jugular','heart'],
+    vessel:{origin:'Union of the brachiocephalic veins',termination:'Right atrium',branches:['—'],
+      tributaries:['Right + left brachiocephalic veins','Azygos vein'],flow:'Upper body → RA',oxygen:'Deoxygenated',
+      organs:['Head','Neck','Upper limbs'],vessels:['Brachiocephalic veins','Right atrium'],
+      pathway:'Brachiocephalic confluence → SVC → RA',conditions:['SVC syndrome','Thrombosis']}}),
+  ivc:S({name:'Inferior Vena Cava',sci:'Vena cava inferior',system:'venous',loc:'Right of the abdominal aorta',
+    fn:'Returns deoxygenated blood from the lower body and abdomen to the right atrium.',
+    blood:'—',venous:'Drains to RA.',nerve:'—',lymph:'—',physio:'Largest vein; respiratory diameter variation reflects volume status.',
+    clinical:'Site of IVC filters for recurrent PE.',diseases:['IVC thrombosis'],disorders:['Compression (tumor/pregnancy)'],
+    dx:['Ultrasound','CT venography'],imaging:['US','CT'],surgical:'IVC filter placement.',connected:['ra','femoral_v','heart'],
+    vessel:{origin:'Union of the common iliac veins (~L5)',termination:'Right atrium',branches:['—'],
+      tributaries:['Common iliac veins','Renal veins','Hepatic veins'],flow:'Lower body → RA',oxygen:'Deoxygenated',
+      organs:['Abdomen','Pelvis','Lower limbs'],vessels:['Iliac veins','Hepatic veins','Right atrium'],
+      pathway:'Iliac confluence → abdominal IVC → through diaphragm → RA',conditions:['Thrombosis','Tumor invasion']}}),
+  carotid:S({name:'Carotid Artery',sci:'Arteria carotis communis',system:'arterial',loc:'Anterolateral neck',
+    fn:'Supplies the head and neck; the internal carotid feeds the brain.',
+    blood:'Vasa vasorum.',venous:'—',nerve:'Carotid sinus/body (CN IX) for baro/chemoreception.',lymph:'Deep cervical nodes.',
+    physio:'Carotid sinus regulates blood pressure via baroreflex.',
+    clinical:'Atherosclerotic stenosis is a major stroke source.',
+    diseases:['Carotid stenosis','Dissection'],disorders:['TIA/stroke'],dx:['Carotid duplex ultrasound'],
+    imaging:['Duplex US','CTA','MRA'],surgical:'Carotid endarterectomy; stenting.',connected:['aorta','jugular','brain'],
+    vessel:{origin:'Brachiocephalic trunk (right) / aortic arch (left)',termination:'Bifurcates into internal + external carotid',
+      branches:['Internal carotid (brain, eye)','External carotid (face, scalp)'],tributaries:['—'],
+      flow:'Aorta → head/brain',oxygen:'Oxygenated',organs:['Brain','Face','Scalp'],vessels:['Circle of Willis','External carotid branches'],
+      pathway:'Arch → common carotid → bifurcation at C4 → ICA/ECA',conditions:['Stenosis','Dissection','Stroke']}}),
+  jugular:S({name:'Jugular Vein',sci:'Vena jugularis interna',system:'venous',loc:'Within the carotid sheath, lateral neck',
+    fn:'Drains blood from the brain, face, and neck.',
+    blood:'—',venous:'Joins the subclavian → brachiocephalic vein.',nerve:'—',lymph:'Jugular lymphatic trunk runs alongside.',
+    physio:'JVP reflects right atrial pressure.',clinical:'Central venous access site; JVP exam in heart failure.',
+    diseases:['Jugular thrombosis'],disorders:['Raised JVP'],dx:['Ultrasound','JVP inspection'],imaging:['US','CT venography'],
+    surgical:'Central line insertion; neck dissection landmark.',connected:['svc','carotid','brain'],
+    vessel:{origin:'Sigmoid sinus at the jugular foramen',termination:'Brachiocephalic vein (with subclavian)',
+      branches:['—'],tributaries:['Facial','Lingual','Superior/middle thyroid veins'],flow:'Brain/face → SVC',oxygen:'Deoxygenated',
+      organs:['Brain','Face','Neck'],vessels:['Subclavian vein','Brachiocephalic vein'],
+      pathway:'Cranial dural sinuses → IJV → brachiocephalic → SVC',conditions:['Thrombosis','Raised JVP']}}),
+  femoral_a:S({name:'Femoral Artery',sci:'Arteria femoralis',system:'arterial',loc:'Femoral triangle, anterior thigh',
+    fn:'Main arterial supply to the lower limb.',
+    blood:'—',venous:'—',nerve:'Adjacent femoral nerve (lateral in the triangle).',lymph:'Inguinal nodes nearby.',
+    physio:'Palpable pulse at the mid-inguinal point; common access route.',
+    clinical:'Primary access for cardiac catheterization and angiography.',
+    diseases:['Peripheral artery disease','Aneurysm'],disorders:['Claudication'],dx:['ABI','Duplex US','Angiography'],
+    imaging:['Duplex US','CTA'],surgical:'Femoral access; bypass grafting; endarterectomy.',connected:['aorta','femoral_v'],
+    vessel:{origin:'Continuation of the external iliac artery (below the inguinal ligament)',termination:'Becomes the popliteal artery (adductor hiatus)',
+      branches:['Profunda femoris (deep femoral)','Superficial femoral'],tributaries:['—'],flow:'Iliac → leg',oxygen:'Oxygenated',
+      organs:['Thigh','Leg','Foot'],vessels:['External iliac','Popliteal artery'],
+      pathway:'External iliac → femoral triangle → adductor canal → popliteal',conditions:['PAD','Aneurysm','Access complications']}}),
+  femoral_v:S({name:'Femoral Vein',sci:'Vena femoralis',system:'venous',loc:'Femoral triangle, medial to the artery',
+    fn:'Drains the lower limb; continues as the external iliac vein.',
+    blood:'—',venous:'→ external iliac vein.',nerve:'—',lymph:'Inguinal nodes.',
+    physio:'Major deep vein; valves prevent reflux.',clinical:'Common site of deep vein thrombosis (DVT) and venous access.',
+    diseases:['DVT'],disorders:['Venous insufficiency'],dx:['Venous duplex US'],imaging:['US','CT/MR venography'],
+    surgical:'Central venous access; thrombectomy.',connected:['ivc','femoral_a'],
+    vessel:{origin:'Continuation of the popliteal vein',termination:'Becomes the external iliac vein',branches:['—'],
+      tributaries:['Profunda femoris vein','Great saphenous vein'],flow:'Leg → IVC',oxygen:'Deoxygenated',
+      organs:['Lower limb'],vessels:['Popliteal vein','External iliac vein'],
+      pathway:'Popliteal → femoral → external iliac → common iliac → IVC',conditions:['DVT','Insufficiency']}}),
+  brain:S({name:'Brain',sci:'Encephalon',system:'nervous',loc:'Cranial cavity',
+    fn:'Central control of cognition, movement, sensation, and autonomic regulation.',
+    blood:'Internal carotid + vertebral arteries (Circle of Willis).',venous:'Dural venous sinuses → internal jugular veins.',
+    nerve:'Origin of 12 cranial nerves.',lymph:'Glymphatic system / meningeal lymphatics.',
+    physio:'~86 billion neurons; uses ~20% of resting oxygen and glucose.',
+    clinical:'Stroke and trauma are leading causes of disability.',
+    diseases:['Stroke','Tumor','Neurodegeneration'],disorders:['Epilepsy','Migraine'],dx:['CT','MRI','EEG'],
+    imaging:['MRI','CT','fMRI','PET'],surgical:'Craniotomy; tumor resection; clot evacuation.',connected:['carotid','jugular','nerve']}),
+  lungs:S({name:'Lungs',sci:'Pulmones',system:'respiratory',loc:'Thoracic cavity, either side of the mediastinum',
+    fn:'Exchange oxygen and carbon dioxide between air and blood.',
+    blood:'Bronchial arteries (nutritive) + pulmonary arteries (gas exchange).',venous:'Pulmonary + bronchial veins.',
+    nerve:'Pulmonary plexus (vagus + sympathetic).',lymph:'Tracheobronchial + hilar nodes.',
+    physio:'~300 million alveoli; ~70 m² gas-exchange surface.',
+    clinical:'Target of asthma, COPD, infection, and embolism.',
+    diseases:['Pneumonia','COPD','Lung cancer'],disorders:['Asthma','Embolism'],dx:['Spirometry','Chest X-ray','CT'],
+    imaging:['Chest X-ray','CT','V/Q scan'],surgical:'Lobectomy; pneumonectomy; transplant.',connected:['pulm_artery','pulm_vein','heart']}),
+  liver:S({name:'Liver',sci:'Hepar',system:'digestive',loc:'Right upper quadrant, under the diaphragm',
+    fn:'Metabolic hub: processes nutrients, detoxifies blood, and produces bile.',
+    blood:'Hepatic artery (25%) + hepatic portal vein (75%).',venous:'Hepatic veins → IVC.',
+    nerve:'Hepatic plexus.',lymph:'Hepatic + celiac nodes.',
+    physio:'Performs 500+ functions; the only organ that regenerates.',
+    clinical:'Cirrhosis and portal hypertension drive major morbidity.',
+    diseases:['Cirrhosis','Hepatitis','HCC'],disorders:['Fatty liver','Portal hypertension'],dx:['LFTs','Ultrasound','Biopsy'],
+    imaging:['US','CT','MRI'],surgical:'Resection; transplantation.',connected:['ivc','aorta','pancreas']}),
+  kidney:S({name:'Kidney',sci:'Ren',system:'urinary',loc:'Retroperitoneum, T12–L3',
+    fn:'Filters blood, balances fluids/electrolytes, and produces urine.',
+    blood:'Renal arteries (direct from the abdominal aorta).',venous:'Renal veins → IVC.',
+    nerve:'Renal plexus.',lymph:'Lateral aortic (lumbar) nodes.',
+    physio:'Filter ~180 L of plasma daily; regulate BP via renin.',
+    clinical:'Central to chronic kidney disease and hypertension.',
+    diseases:['CKD','Stones','Renal cell carcinoma'],disorders:['AKI','Pyelonephritis'],dx:['Creatinine/eGFR','Ultrasound'],
+    imaging:['US','CT urogram','MRI'],surgical:'Nephrectomy; transplantation.',connected:['aorta','ivc']}),
+  pancreas:S({name:'Pancreas',sci:'Pancreas',system:'endocrine',loc:'Retroperitoneum, across L1–L2',
+    fn:'Exocrine: digestive enzymes; Endocrine: insulin and glucagon.',
+    blood:'Splenic + pancreaticoduodenal arteries.',venous:'Portal venous system.',
+    nerve:'Celiac/superior mesenteric plexus.',lymph:'Pancreaticosplenic + celiac nodes.',
+    physio:'Islets of Langerhans regulate blood glucose.',
+    clinical:'Pancreatic cancer carries a poor prognosis; diabetes is highly prevalent.',
+    diseases:['Diabetes mellitus','Pancreatic cancer'],disorders:['Pancreatitis'],dx:['Glucose/HbA1c','Lipase','CT'],
+    imaging:['CT','MRI/MRCP','EUS'],surgical:'Whipple procedure; distal pancreatectomy.',connected:['aorta','liver']}),
+  bone:S({name:'Bone (Skeletal)',sci:'Os',system:'skeletal',loc:'Throughout the body (206 bones)',
+    fn:'Provide structure, protect organs, store minerals, and produce blood cells.',
+    blood:'Nutrient + periosteal arteries.',venous:'Periosteal/medullary veins.',nerve:'Periosteal nerves (pain).',lymph:'Periosteal lymphatics.',
+    physio:'Continuous remodeling by osteoblasts and osteoclasts.',clinical:'Fracture, osteoporosis, and metastasis are common.',
+    diseases:['Osteoporosis','Fracture','Bone tumor'],disorders:['Osteoarthritis'],dx:['X-ray','DEXA'],imaging:['X-ray','CT','MRI','Bone scan'],
+    surgical:'ORIF; arthroplasty.',connected:['muscle']}),
+  muscle:S({name:'Muscle (Skeletal)',sci:'Musculus',system:'muscular',loc:'Attached across joints throughout the body',
+    fn:'Generate force and movement via actin–myosin contraction.',
+    blood:'Segmental muscular arteries.',venous:'Accompanying veins.',nerve:'Somatic motor + proprioceptive nerves.',lymph:'Deep lymphatics.',
+    physio:'Convert chemical energy to mechanical work; ~40% of body mass.',clinical:'Strains, dystrophies, and compartment syndrome.',
+    diseases:['Muscular dystrophy','Myopathy'],disorders:['Strain','Cramp'],dx:['EMG','CK','MRI'],imaging:['MRI','US'],
+    surgical:'Repair; tendon transfer; fasciotomy.',connected:['bone','nerve']}),
+  nerve:S({name:'Nerve (Peripheral)',sci:'Nervus',system:'nervous',loc:'Throughout the body',
+    fn:'Transmit electrical impulses for sensation and motor control.',
+    blood:'Vasa nervorum.',venous:'Accompanying veins.',nerve:'—',lymph:'Endoneurial fluid clearance.',
+    physio:'Conduct at up to ~120 m/s via saltatory conduction.',clinical:'Compression and neuropathy are widespread.',
+    diseases:['Peripheral neuropathy','Nerve injury'],disorders:['Entrapment (e.g. carpal tunnel)'],dx:['Nerve conduction studies','EMG'],
+    imaging:['US','MRI neurography'],surgical:'Decompression; nerve repair/graft.',connected:['brain','muscle']}),
+  lymph:S({name:'Lymph Node',sci:'Nodus lymphoideus',system:'lymphatic',loc:'Clustered along lymphatic vessels',
+    fn:'Filter lymph and mount immune responses.',
+    blood:'Hilar arterioles.',venous:'Hilar venules.',nerve:'Autonomic to vessels.',lymph:'Afferent + efferent lymphatics.',
+    physio:'Site of antigen presentation and lymphocyte activation.',clinical:'Enlargement signals infection or malignancy; key in cancer staging.',
+    diseases:['Lymphoma','Metastasis'],disorders:['Lymphadenopathy','Lymphedema'],dx:['Examination','Biopsy','US'],
+    imaging:['US','CT','PET'],surgical:'Excisional biopsy; sentinel node biopsy; dissection.',connected:['lymph']})
+};
+
+/* ===================== EXPLORER TREE ===================== */
+const SYSTEMS=[
+  ['skeletal','Skeletal','#cfe9f6',['bone']],
+  ['muscular','Muscular','#ff6a5a',['muscle']],
+  ['cardiovascular','Cardiovascular','#ff5a6e',['heart','la','ra','lv','rv','mitral','aortic_valve','coronary']],
+  ['arterial','Arterial Network','#ff8090',['aorta','pulm_artery','carotid','coronary','femoral_a']],
+  ['venous','Venous Network','#4aa8ff',['svc','ivc','jugular','pulm_vein','femoral_v']],
+  ['nervous','Nervous','#ffd24a',['brain','nerve']],
+  ['respiratory','Respiratory','#7ad0ff',['lungs','pulm_artery','pulm_vein']],
+  ['digestive','Digestive','#d6a36a',['liver','pancreas']],
+  ['urinary','Urinary','#6ad0b0',['kidney']],
+  ['endocrine','Endocrine','#c89aff',['pancreas']],
+  ['lymphatic','Lymphatic','#9fe0c0',['lymph']],
+  ['reproductive','Reproductive','#ff9ac0',[]]
+];
+
+/* ===================== THREE.JS SCENE ===================== */
+const host=$('#scene');
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+renderer.setSize(innerWidth,innerHeight); renderer.setPixelRatio(Math.min(devicePixelRatio,1.8));
+renderer.outputEncoding=THREE.sRGBEncoding; renderer.toneMapping=THREE.ACESFilmicToneMapping; host.appendChild(renderer.domElement);
+const scene=new THREE.Scene(); scene.fog=new THREE.FogExp2(0x04101c,0.02);
+const camera=new THREE.PerspectiveCamera(52,innerWidth/innerHeight,0.1,200); camera.position.set(0,1,9);
+scene.add(new THREE.AmbientLight(0x335577,0.7));
+const kl=new THREE.PointLight(0x33d6ff,1.3,80); kl.position.set(6,7,9); scene.add(kl);
+const rl=new THREE.PointLight(0x2a6cff,0.9,80); rl.position.set(-7,3,-5); scene.add(rl);
+
+const U={t:{value:0},pulse:{value:0},scan:{value:0},mode:{value:0},slice:{value:5}};
+function holo(col,opts){opts=opts||{};const solid=!!opts.solid;
+  return new THREE.ShaderMaterial({transparent:true,depthWrite:solid,blending:solid?THREE.NormalBlending:THREE.AdditiveBlending,
+    side:solid?THREE.FrontSide:THREE.DoubleSide,
+    uniforms:{t:U.t,pulse:U.pulse,scan:U.scan,mode:U.mode,slice:U.slice,col:{value:new THREE.Color(col)},
+      glow:{value:opts.glow||1},solid:{value:solid?1:0},base:{value:opts.base!=null?opts.base:(solid?0.9:0.16)},fade:{value:1}},
+    vertexShader:`varying vec3 vN;varying vec3 vW;varying vec3 vV;void main(){vN=normalize(normalMatrix*normal);
+      vec4 w=modelMatrix*vec4(position,1.);vW=w.xyz;vec4 m=modelViewMatrix*vec4(position,1.);vV=m.xyz;gl_Position=projectionMatrix*m;}`,
+    fragmentShader:`varying vec3 vN;varying vec3 vW;varying vec3 vV;uniform float t,pulse,scan,mode,slice,glow,solid,base,fade;uniform vec3 col;
+      void main(){vec3 V=normalize(-vV);vec3 N=normalize(vN);float fr=pow(1.-abs(dot(V,N)),2.2);
+      float sc=0.86+0.14*sin(vW.y*20.-t*2.);vec3 L=normalize(vec3(.45,.75,.6));float df=.42+.58*max(dot(N,L),0.);
+      vec3 c=col*mix(1.,df,solid)*sc*glow*(1.+pulse*.4);c=c*mix(.55,1.,solid)+col*fr*mix(1.3,.45,solid);
+      float a=mix(.14+fr*.9,base+fr*.12,solid)*fade;
+      if(mode>.5&&mode<1.5){a+=scan*.25;c+=col*scan*.8;}
+      else if(mode>1.5&&mode<2.5){float e=abs(vW.y-slice);c+=vec3(.6,1.,1.)*smoothstep(.1,0.,e)*2.*scan;if(vW.y>slice)a*=mix(1.,.05,scan);}
+      else if(mode>2.5){a=mix(a,(.1+fr*.8)*.5,scan);c=mix(c,vec3(.7,.85,1.)*(fr*1.5+.2),scan);}
+      gl_FragColor=vec4(c,clamp(a,0.,1.));}`});
+}
+
+/* holographic deck */
+const deck=new THREE.Group(); deck.position.y=-3.4; scene.add(deck);
+const rings=[];
+[[2.3,.05,.5],[1.9,.02,.35],[1.5,.06,.5],[1.0,.03,.3]].forEach((d,i)=>{
+  const g=new THREE.RingGeometry(d[0],d[0]+d[1],96),m=new THREE.MeshBasicMaterial({color:0x33d6ff,transparent:true,opacity:d[2],
+    blending:THREE.AdditiveBlending,side:THREE.DoubleSide,depthWrite:false});
+  const r=new THREE.Mesh(g,m);r.rotation.x=-Math.PI/2;r.userData.s=(i%2?1:-1)*(0.12+i*0.05);deck.add(r);rings.push(r);});
+
+/* ===== procedural body ===== */
+const bodyRoot=new THREE.Group(); scene.add(bodyRoot);
+const groups={}; ['skeletal','muscular','cardiovascular','nervous','respiratory','digestive','urinary'].forEach(k=>{groups[k]=new THREE.Group();bodyRoot.add(groups[k]);});
+const pickable=[]; // meshes with userData.key
+const matBone=holo(0xd7ecf6,{solid:true,glow:1.05}), matSkin=holo(0x4ad0ff,{glow:.7,base:.13}), matMus=holo(0xf06450,{solid:true});
+const _Y=new THREE.Vector3(0,1,0);
+function ell(rx,ry,rz,m){const e=new THREE.Mesh(new THREE.SphereGeometry(1,20,15),m);e.scale.set(rx,ry,rz);return e;}
+function cyl(a,b,rt,rb,m){const A=new THREE.Vector3(...a),B=new THREE.Vector3(...b),d=B.clone().sub(A),l=Math.max(d.length(),1e-3);
+  const me=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,l,10),m);me.position.copy(A).add(B).multiplyScalar(.5);me.quaternion.setFromUnitVectors(_Y,d.clone().normalize());return me;}
+function reg(mesh,key,grp){mesh.userData.key=key;groups[grp].add(mesh);if(key)pickable.push(mesh);return mesh;}
+
+/* silhouette skin */
+const silhouette=new THREE.Group(); bodyRoot.add(silhouette);
+(function(){const add=m=>silhouette.add(m);
+  const head=ell(.3,.36,.33,matSkin);head.position.set(0,3.04,0);add(head);
+  add(cyl([0,2.62,0],[0,2.96,0],.15,.17,matSkin));
+  const tho=ell(.6,.52,.4,matSkin);tho.position.set(0,1.95,0);add(tho);
+  const ab=ell(.5,.46,.36,matSkin);ab.position.set(0,1.18,0);add(ab);
+  const hip=ell(.58,.4,.4,matSkin);hip.position.set(0,.52,0);add(hip);
+  [-1,1].forEach(s=>{add(cyl([s*.78,2.32,.02],[s*.92,1.22,.04],.15,.11,matSkin));add(cyl([s*.92,1.2,.04],[s*.99,.16,.07],.11,.08,matSkin));
+    const h=ell(.1,.16,.05,matSkin);h.position.set(s*1.01,0,.07);add(h);
+    add(cyl([s*.34,.34,0],[s*.32,-1.45,.03],.25,.17,matSkin));add(cyl([s*.32,-1.45,.02],[s*.3,-3.02,0],.17,.09,matSkin));
+    const f=ell(.11,.07,.24,matSkin);f.position.set(s*.3,-3.28,.1);add(f);});
+})();
+
+/* skeleton */
+(function(){const B=matBone;
+  reg(ell(.27,.31,.3,B),'bone','skeletal').position.set(0,3.1,0);
+  reg(ell(.17,.12,.18,B),null,'skeletal').position.set(0,2.72,.05);
+  for(let i=0;i<22;i++){const t=i/21,y=2.6-t*2.1,z=-.07*Math.sin(t*6-.6);const v=ell(.07,.05,.07,B);v.position.set(0,y,z);reg(v,null,'skeletal');}
+  const ribY=[2.3,2.1,1.9,1.7,1.5];ribY.forEach((y,i)=>{const sp=.34+Math.sin(i/5*Math.PI)*.2;[-1,1].forEach(s=>{
+    const c=new THREE.Mesh(new THREE.TorusGeometry(sp,.02,6,18,Math.PI*.95),B);c.position.set(0,y,.04);c.rotation.y=s>0?0:Math.PI;c.rotation.z=Math.PI/2;c.scale.z=.6;reg(c,'bone','skeletal');});});
+  reg(ell(.05,.3,.04,B),null,'skeletal').position.set(0,1.95,.32);
+  [-1,1].forEach(s=>{reg(cyl([s*.66,2.4,.04],[s*.8,1.25,.06],.048,.043,B),'bone','skeletal');
+    reg(cyl([s*.8,1.25,.06],[s*.92,.2,.09],.04,.03,B),'bone','skeletal');
+    reg(cyl([s*.32,.45,.02],[s*.32,-1.42,.05],.07,.052,B),'bone','skeletal');
+    reg(cyl([s*.3,-1.42,.05],[s*.3,-3,0],.055,.038,B),'bone','skeletal');});
+  const pel=new THREE.Mesh(new THREE.TorusGeometry(.34,.07,8,18,Math.PI),B);pel.position.set(0,.55,0);pel.rotation.x=.3;reg(pel,'bone','skeletal');
+})();
+
+/* muscles (toggle) */
+(function(){const M=matMus,put=(rx,ry,rz,x,y,z)=>{const m=ell(rx,ry,rz,M);m.position.set(x,y,z);reg(m,'muscle','muscular');};
+  [-1,1].forEach(s=>put(.19,.13,.13,s*.19,2.06,.3));[-1,1].forEach(s=>put(.16,.18,.16,s*.74,2.32,.02));
+  for(let r=0;r<3;r++)for(let c=0;c<2;c++)put(.095,.095,.08,(c?1:-1)*.12,1.52-r*.21,.34);
+  [-1,1].forEach(s=>put(.16,.48,.16,s*.34,-.5,.12));[-1,1].forEach(s=>put(.085,.21,.085,s*.78,1.85,.11));})();
+groups.muscular.visible=false;
+
+/* nervous */
+(function(){const N=holo(0xffd24a,{solid:true,glow:1});
+  reg(ell(.16,.17,.19,N),'brain','nervous').position.set(0,3.1,.01);
+  reg(new THREE.Mesh(new THREE.CylinderGeometry(.035,.04,2.0,8),N),'nerve','nervous').position.set(0,1.6,-.04);
+  for(let i=0;i<7;i++){const y=2.3-i*.26;[-1,1].forEach(s=>{const nv=cyl([0,y,-.02],[s*.5,y-.2,.05],.012,.012,N);reg(nv,'nerve','nervous');});}})();
+groups.nervous.visible=false;
+
+/* cardiovascular */
+let heartMesh; const vessels=[];
+(function(){const H=holo(0xff4d5e,{solid:true,glow:1.15}),Vm=holo(0xff7a86,{solid:true,glow:1});
+  heartMesh=ell(.2,.22,.18,H);heartMesh.position.set(.05,1.9,.13);reg(heartMesh,'heart','cardiovascular');
+  const apex=new THREE.Mesh(new THREE.ConeGeometry(.12,.22,14),H);apex.position.set(.11,1.72,.13);apex.rotation.z=.6;reg(apex,'heart','cardiovascular');
+  const archPts=[[.04,2.0,.11],[.06,2.32,.05],[0,2.46,-.06],[-.09,2.24,-.12],[-.04,1.4,-.05],[0,.5,-.02]];
+  const arch=new THREE.CatmullRomCurve3(archPts.map(p=>new THREE.Vector3(...p)));
+  const aortaM=new THREE.Mesh(new THREE.TubeGeometry(arch,40,.045,8),Vm);reg(aortaM,'aorta','cardiovascular');vessels.push({curve:arch,art:true});
+  [[[0,.5,-.02],[-.3,-.4,.02],[-.3,-2.8,0]],[[0,.5,-.02],[.3,-.4,.02],[.3,-2.8,0]],
+   [[0,2.3,-.04],[0,2.8,0],[0,3.05,.02]],[[.04,2,.1],[.5,2,.04],[.86,1,.06]]].forEach(pp=>{
+    const cv=new THREE.CatmullRomCurve3(pp.map(p=>new THREE.Vector3(...p)));
+    reg(new THREE.Mesh(new THREE.TubeGeometry(cv,30,.022,6),Vm),'aorta','cardiovascular');vessels.push({curve:cv,art:true});});
+  // veins (bluish)
+  const Vv=holo(0x4aa8ff,{solid:true,glow:1});
+  [[[0,.5,.04],[.32,-.4,.06],[.3,-2.8,.04]],[[-.06,2.2,.02],[-.2,2.5,.02],[-.16,2.9,.04]]].forEach(pp=>{
+    const cv=new THREE.CatmullRomCurve3(pp.map(p=>new THREE.Vector3(...p)));
+    reg(new THREE.Mesh(new THREE.TubeGeometry(cv,30,.02,6),Vv),'ivc','cardiovascular');vessels.push({curve:cv,art:false});});
+})();
+
+/* respiratory */
+let lungL,lungR;
+(function(){const L=holo(0x9fd2e8,{solid:true,glow:1});
+  lungR=ell(.3,.52,.32,L);lungR.position.set(-.34,1.96,0);reg(lungR,'lungs','respiratory');
+  lungL=ell(.26,.5,.3,L);lungL.position.set(.36,1.96,0);reg(lungL,'lungs','respiratory');})();
+groups.respiratory.visible=false;
+
+/* digestive + urinary */
+(function(){reg(ell(.32,.18,.26,holo(0xb0563c,{solid:true,glow:1})),'liver','digestive').position.set(-.22,1.46,.12);
+  reg(ell(.16,.2,.14,holo(0xcf8a5a,{solid:true})),'liver','digestive').position.set(.22,1.46,.1);
+  reg(ell(.22,.05,.06,holo(0xd8b070,{solid:true})),'pancreas','digestive').position.set(0,1.36,-.02);
+  const kid=holo(0x6ad0b0,{solid:true,glow:1});
+  [-1,1].forEach(s=>reg(ell(.1,.16,.085,kid),'kidney','urinary').position.set(s*.22,1.16,-.18));})();
+groups.digestive.visible=false; groups.urinary.visible=false; groups.cardiovascular.visible=true;
+
+/* ===================== PARTICLES (blood / nerve flow) ===================== */
+function flow(curves,count,color){
+  const g=new THREE.BufferGeometry(),pos=new Float32Array(count*3),seed=new Float32Array(count),which=new Float32Array(count);
+  const samples=curves.map(c=>c.curve.getSpacedPoints(80));
+  for(let i=0;i<count;i++){seed[i]=Math.random();which[i]=Math.floor(Math.random()*curves.length);}
+  g.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  const m=new THREE.ShaderMaterial({transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,uniforms:{c:{value:new THREE.Color(color)}},
+    vertexShader:`void main(){vec4 mv=modelViewMatrix*vec4(position,1.);gl_PointSize=70./-mv.z;gl_Position=projectionMatrix*mv;}`,
+    fragmentShader:`uniform vec3 c;void main(){vec2 d=gl_PointCoord-.5;if(length(d)>.5)discard;gl_FragColor=vec4(c,.9);}`});
+  const p=new THREE.Points(g,m);p.userData={samples,seed,which,count,attr:g.getAttribute('position'),curves};return p;
+}
+const bloodPts=flow(vessels,1800,0xff5a6e); groups.cardiovascular.add(bloodPts);
+const nerveCurves=[];for(let i=0;i<7;i++){const y=2.3-i*.26;nerveCurves.push({curve:new THREE.CatmullRomCurve3([new THREE.Vector3(0,2.6,-.02),new THREE.Vector3(0,y,-.03),new THREE.Vector3((i%2?1:-1)*.5,y-.2,.05)])});}
+const nervePts=flow(nerveCurves,900,0xffd24a); groups.nervous.add(nervePts);
+function updFlow(p,t,speed,oxToggle){const u=p.userData,a=u.attr.array;
+  for(let i=0;i<u.count;i++){let tt=(t*speed*(.6+u.seed[i]*.8)+u.seed[i])%1;const s=u.samples[u.which[i]];const v=s[Math.floor(tt*(s.length-1))];a[i*3]=v.x;a[i*3+1]=v.y;a[i*3+2]=v.z;}u.attr.needsUpdate=true;}
+let flowState={blood:true,nerve:false};
+
+/* ===================== STATE / MODES ===================== */
+const ST={selected:null,system:'cardiovascular',scanMode:'none',scanProg:0,isolate:false,explode:0,hr:72,beat:0,breath:0,annotate:false};
+const SCANMAP={none:0,xray:3,mri:0,ct:2};
+
+/* ===================== ORBIT CONTROL ===================== */
+const orbit={az:0,el:.05,dist:8.4,tAz:0,tEl:.05,tDist:8.4,tFocus:1.2,focus:1.2};
+let drag=false,lx=0,ly=0;
+renderer.domElement.addEventListener('mousedown',e=>{drag=true;lx=e.clientX;ly=e.clientY;});
+addEventListener('mouseup',()=>drag=false);
+addEventListener('mousemove',e=>{if(drag){orbit.tAz-=(e.clientX-lx)*.005;orbit.tEl=clamp(orbit.tEl+(e.clientY-ly)*.005,-1.2,1.2);lx=e.clientX;ly=e.clientY;}});
+renderer.domElement.addEventListener('wheel',e=>{e.preventDefault();orbit.tDist=clamp(orbit.tDist+e.deltaY*.01,3,18);},{passive:false});
+const ray=new THREE.Raycaster(),ndc=new THREE.Vector2();
+renderer.domElement.addEventListener('click',e=>{ndc.x=e.clientX/innerWidth*2-1;ndc.y=-(e.clientY/innerHeight)*2+1;ray.setFromCamera(ndc,camera);
+  const vis=pickable.filter(m=>m.parent&&m.parent.visible!==false&&m.userData.key);
+  const hit=ray.intersectObjects(vis,false)[0];if(hit&&hit.object.userData.key)select(hit.object.userData.key);});
+
+/* ===================== EXPLORER TREE ===================== */
+(function buildTree(){const tree=$('#tree');
+  SYSTEMS.forEach(([key,label,color,ids])=>{
+    const cat=document.createElement('div');cat.className='cat';cat.dataset.sys=key;
+    const row=document.createElement('div');row.className='row';
+    row.innerHTML=`<span class="ic" style="background:${color};color:${color}"></span>${label}<span class="ar">▶</span>`;
+    const kids=document.createElement('div');kids.className='kids';
+    ids.forEach(id=>{if(!KB[id])return;const k=document.createElement('div');k.className='kid';k.dataset.id=id;k.textContent=KB[id].name;
+      k.onclick=ev=>{ev.stopPropagation();select(id);};kids.appendChild(k);});
+    if(!ids.length){const k=document.createElement('div');k.className='kid';k.style.opacity=.5;k.textContent='(model pending)';kids.appendChild(k);}
+    row.onclick=()=>{document.querySelectorAll('.cat').forEach(c=>{if(c!==cat)c.classList.remove('open');});
+      cat.classList.toggle('open');setSystem(key);};
+    cat.appendChild(row);cat.appendChild(kids);tree.appendChild(cat);
+  });
+})();
+function setSystem(key){ST.system=key;
+  document.querySelectorAll('.cat').forEach(c=>c.classList.toggle('on',c.dataset.sys===key));
+  // map to a 3D group when present
+  const MAP={skeletal:'skeletal',muscular:'muscular',cardiovascular:'cardiovascular',arterial:'cardiovascular',venous:'cardiovascular',
+    nervous:'nervous',respiratory:'respiratory',digestive:'digestive',urinary:'urinary',endocrine:'digestive',lymphatic:null,reproductive:null};
+  const g=MAP[key];Object.keys(groups).forEach(k=>{groups[k].visible=(k===g)|| (k==='skeletal'&&g==null);});
+  if(g)groups[g].visible=true; silhouette.visible=!ST.isolate;
+}
+
+/* ===================== SELECT + INTELLIGENCE PANEL ===================== */
+let aiTone='student';
+function select(id){const d=KB[id];if(!d)return;ST.selected=id;
+  document.querySelectorAll('.kid').forEach(k=>k.classList.toggle('sel',k.dataset.id===id));
+  pins.forEach(p=>p.el.classList.toggle('sel',p.id===id));
+  highlight(id);renderIntel(d);Audio.ping();
+}
+function fld(k,v){return v?`<div class="fld"><div class="k">${k}</div><div class="v">${v}</div></div>`:'';}
+function chips(k,arr,cls){if(!arr||!arr.length)return '';return `<div class="fld"><div class="k">${k}</div><div class="chips">`+
+  arr.map(x=>`<span class="chip ${cls||''}">${x}</span>`).join('')+`</div></div>`;}
+function renderIntel(d){const el=$('#intel');el.classList.remove('empty');
+  let h=`<h3>${d.name}</h3><div class="sci">${d.sci||''}</div><span class="sys">${d.system}</span>`;
+  h+=`<div class="aibtns">
+    <button data-tone="student">🎓 Student</button><button data-tone="doctor">🩺 Doctor</button><button data-tone="surgeon">🔪 Surgeon</button>
+    <button data-act="blood">Blood Supply</button><button data-act="nerve">Nerve Supply</button><button data-act="dis">Diseases</button>
+    <button data-act="surg">Surgical</button><button data-act="conn">Connected</button></div>`;
+  h+=`<div id="aiout">${aiExplain(d,aiTone)}</div>`;
+  h+=fld('Anatomical Location',d.loc)+fld('Function',d.fn);
+  if(d.vessel){const v=d.vessel;
+    h+=`<div class="fld"><div class="k">Vessel Intelligence</div></div>`;
+    h+=fld('Origin',v.origin)+fld('Termination',v.termination)+chips('Branches',v.branches)+chips('Tributaries',v.tributaries)
+      +fld('Blood Flow Direction',v.flow)+fld('Oxygenation',v.oxygen)+chips('Connected Organs',v.organs)+chips('Connected Vessels',v.vessels)
+      +fld('Anatomical Pathway',v.pathway)+chips('Clinical Conditions',v.conditions);
+  }
+  h+=fld('Blood Supply',d.blood)+fld('Venous Drainage',d.venous)+fld('Nerve Supply',d.nerve)+fld('Lymphatic Drainage',d.lymph)
+    +fld('Physiological Role',d.physio)+fld('Clinical Importance',d.clinical)
+    +chips('Associated Diseases',d.diseases)+chips('Common Disorders',d.disorders)
+    +chips('Diagnostic Procedures',d.dx)+chips('Medical Imaging',d.imaging)+fld('Surgical Relevance',d.surgical);
+  if(d.connected&&d.connected.length){h+=`<div class="fld"><div class="k">Connected Structures</div><div class="chips">`+
+    d.connected.map(cid=>KB[cid]?`<span class="chip" data-go="${cid}">${KB[cid].name}</span>`:'').join('')+`</div></div>`;}
+  el.innerHTML=h;el.scrollTop=0;
+  el.querySelectorAll('[data-tone]').forEach(b=>b.onclick=()=>{aiTone=b.dataset.tone;$('#aiout').innerHTML=aiExplain(d,aiTone);});
+  el.querySelectorAll('[data-act]').forEach(b=>b.onclick=()=>doAct(b.dataset.act,d));
+  el.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>select(b.dataset.go));
+}
+function aiExplain(d,tone){
+  if(tone==='student')return `<b>Student view:</b> The ${d.name.toLowerCase()} is part of the ${d.system} system. In simple terms — ${d.fn}`;
+  if(tone==='doctor')return `<b>Clinical view:</b> ${d.fn} Blood supply: ${d.blood} Innervation: ${d.nerve} Key clinical point: ${d.clinical}`;
+  return `<b>Surgical view:</b> Location — ${d.loc}. ${d.surgical} Watch the connected structures: ${(d.connected||[]).map(c=>KB[c]?KB[c].name:'').filter(Boolean).join(', ')||'—'}.`;
+}
+function doAct(a,d){const o=$('#aiout');
+  if(a==='blood'){setFlow('blood',true);o.innerHTML=`<b>Blood supply:</b> ${d.blood||'—'} &nbsp; <b>Venous:</b> ${d.venous||'—'}`;}
+  else if(a==='nerve'){setFlow('nerve',true);o.innerHTML=`<b>Nerve supply:</b> ${d.nerve||'—'}`;}
+  else if(a==='dis')o.innerHTML=`<b>Associated diseases:</b> ${(d.diseases||[]).join(', ')||'—'}. <b>Disorders:</b> ${(d.disorders||[]).join(', ')||'—'}`;
+  else if(a==='surg')o.innerHTML=`<b>Surgical anatomy:</b> ${d.surgical||'—'}`;
+  else if(a==='conn')o.innerHTML=`<b>Connected structures:</b> ${(d.connected||[]).map(c=>KB[c]?KB[c].name:'').filter(Boolean).join(', ')||'—'}`;
+}
+
+/* highlight selected meshes (pulse the matching key) */
+let hlKey=null;
+function highlight(key){hlKey=key;}
+function applyHighlight(){pickable.forEach(m=>{const on=(m.userData.key===hlKey);
+  const tgt=on?1.18:1; m.scale.x+=(m.userData._bx?m.userData._bx:(m.userData._bx=m.scale.x),0); });}
+// simpler: store base scale once and pulse
+pickable.forEach(m=>m.userData._b=m.scale.clone());
+function pulseHighlight(t){pickable.forEach(m=>{const on=m.userData.key===hlKey;const b=m.userData._b;
+  const k=on?1+Math.sin(t*5)*.06+0.12:1;m.scale.set(b.x*k,b.y*k,b.z*k);
+  if(m.material&&m.material.uniforms&&m.material.uniforms.glow){m.material.uniforms.glow.value=on?1.8:(m.userData._g||(m.userData._g=m.material.uniforms.glow.value));}});}
+
+/* ===================== PINS (vessels overlay) ===================== */
+const PIN_DEFS=[
+  ['aorta',[0,1.4,-.04],'art'],['carotid',[-.12,2.7,.06],'art'],['femoral_a',[.34,0,.1],'art'],['coronary',[.05,2.0,.16],'art'],['pulm_artery',[0,2.15,.08],'art'],
+  ['jugular',[.16,2.65,.08],'vein'],['svc',[-.06,2.2,0],'vein'],['ivc',[.06,1.3,-.06],'vein'],['femoral_v',[.3,0,.12],'vein'],['pulm_vein',[.25,2.0,-.04],'vein']
+];
+const pins=[]; const _pv=new THREE.Vector3();
+(function buildPins(){const layer=$('#pins');PIN_DEFS.forEach(([id,pos,cls])=>{if(!KB[id])return;
+  const el=document.createElement('div');el.className='pin '+cls;el.innerHTML=`<span class="d"></span><span class="l">${KB[id].name}</span>`;
+  el.onclick=()=>select(id);layer.appendChild(el);pins.push({el,id,pos,cls});});})();
+function updatePins(){const W=innerWidth,H=innerHeight,show=(ST.system==='cardiovascular'||ST.system==='arterial'||ST.system==='venous');
+  pins.forEach(p=>{ if(!show){p.el.style.display='none';return;}
+    if(ST.system==='arterial'&&p.cls!=='art'){p.el.style.display='none';return;}
+    if(ST.system==='venous'&&p.cls!=='vein'){p.el.style.display='none';return;}
+    _pv.set(p.pos[0],p.pos[1],p.pos[2]).project(camera);const x=(_pv.x*.5+.5)*W,y=(-_pv.y*.5+.5)*H;
+    if(_pv.z>1||x<260||x>W-352||y<54){p.el.style.display='none';return;}
+    p.el.style.display='flex';p.el.style.left=x+'px';p.el.style.top=y+'px';});}
+
+/* ===================== AUDIO (tiny) ===================== */
+const Audio=(()=>{let ctx,m;function init(){if(ctx)return;ctx=new(window.AudioContext||window.webkitAudioContext)();m=ctx.createGain();m.gain.value=.3;m.connect(ctx.destination);}
+  function tone(f,d,t){if(!ctx)return;const o=ctx.createOscillator(),g=ctx.createGain();o.type=t||'sine';o.frequency.value=f;
+    g.gain.setValueAtTime(.0001,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.2,ctx.currentTime+.01);g.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+d);
+    o.connect(g);g.connect(m);o.start();o.stop(ctx.currentTime+d+.02);}
+  return{init,ping:()=>tone(880,.12,'triangle'),beat:()=>tone(60,.18)};})();
+
+/* ===================== CONTROL DECK ===================== */
+function setFlow(which,on){flowState[which]=on!==undefined?on:!flowState[which];
+  bloodPts.visible=flowState.blood&&groups.cardiovascular.visible; nervePts.visible=flowState.nerve&&groups.nervous.visible;
+  $$('[data-c="blood"]')[0].classList.toggle('on',flowState.blood);$$('[data-c="nerve"]')[0].classList.toggle('on',flowState.nerve);}
+function setScan(mode){ST.scanMode=(ST.scanMode===mode)?'none':mode;U.mode.value=SCANMAP[ST.scanMode]||0;
+  $$('.ctl[data-c]').forEach(b=>{if(['xray','mri','ct','scan'].includes(b.dataset.c))b.classList.toggle('on',b.dataset.c===ST.scanMode);});
+  if(ST.scanMode==='xray')setSystem('skeletal');}
+$$('.ctl').forEach(b=>b.onclick=()=>{const c=b.dataset.c;
+  if(c==='xray'||c==='ct'||c==='mri'||c==='scan')setScan(c==='scan'?'ct':c);
+  else if(c==='blood')setFlow('blood');
+  else if(c==='nerve'){setFlow('nerve');if(flowState.nerve)setSystem('nervous');}
+  else if(c==='isolate'){ST.isolate=!ST.isolate;b.classList.toggle('on',ST.isolate);silhouette.visible=!ST.isolate;}
+  else if(c==='slice'){ST.scanMode=ST.scanMode==='ct'?'none':'ct';U.mode.value=SCANMAP[ST.scanMode];b.classList.toggle('on',ST.scanMode==='ct');}
+  else if(c==='explode'||c==='dissect'){ST.explode=ST.explode?0:1;b.classList.toggle('on',!!ST.explode);}
+  else if(c==='annotate'){ST.annotate=!ST.annotate;b.classList.toggle('on',ST.annotate);$('#pins').style.opacity=ST.annotate?1:1;}
+  else if(c==='compare'){toast('Compare mode: select two structures to contrast (demo).');}
+  else if(c==='ai'){if(ST.selected){aiTone='doctor';$('#aiout')&&($('#aiout').innerHTML=aiExplain(KB[ST.selected],'doctor'));}else toast('Select a structure first, then AI Explain.');}
+});
+function toast(m){const t=document.createElement('div');t.textContent=m;t.style.cssText='position:absolute;left:50%;bottom:74px;transform:translateX(-50%);background:rgba(8,22,34,.9);border:1px solid var(--line);border-radius:18px;padding:8px 18px;font-size:11px;letter-spacing:1px;color:#dff6ff;z-index:9';$('#app').appendChild(t);setTimeout(()=>t.remove(),2200);}
+
+/* explode offsets */
+const exploded=[{g:'respiratory',o:[0,0,1]},{g:'digestive',o:[0,-.4,1]},{g:'urinary',o:[0,0,-1]}];
+function applyExplode(){const k=ST.explode; Object.keys(groups).forEach(gk=>{const e=exploded.find(x=>x.g===gk);if(e)groups[gk].position.set(e.o[0]*k,e.o[1]*k,e.o[2]*k);});}
+
+/* ===================== VITALS ===================== */
+const Vitals=(()=>{const defs=[
+  ['vHr','#ff5a6e',()=>.5+U.pulse.value*.9],['vResp','#5effc0',()=>.5+.45*Math.sin(ST.breath*TAU)],
+  ['vTemp','#8ab4f8',()=>.5+.05*Math.sin(performance.now()*.0005)],['vBp','#ffd24a',()=>.5+.3*Math.sin(ST.beat*6)],
+  ['vO2','#7ad0ff',()=>.5+.04*Math.sin(performance.now()*.0009)],['vEcg','#33d6ff',ecg]];
+  let ctxs=null,bufs=defs.map(()=>{const a=[];for(let i=0;i<70;i++)a.push(.5);return a;}),acc=0,ep=0;
+  function ecg(){ep=(ep+0.06)%1;const x=ep; // synthetic PQRST
+    if(x<.1)return .5; if(x<.16)return .5+.12*Math.sin((x-.1)/.06*Math.PI); // P
+    if(x<.2)return .5; if(x<.23)return .5-.2*((x-.2)/.03); if(x<.26)return .3+1.4*((x-.23)/.03); // Q,R
+    if(x<.29)return 1.7-1.5*((x-.26)/.03); if(x<.33)return .2+.3*((x-.29)/.04); // S
+    if(x<.5)return .5; if(x<.6)return .5+.16*Math.sin((x-.5)/.1*Math.PI); return .5;}
+  function init(){ctxs=defs.map(d=>{const c=$('#'+d[0]);c.width=c.clientWidth*1.5;c.height=c.clientHeight*1.5;return c.getContext('2d');});}
+  function tick(dt){if(!ctxs)init();acc+=dt;if(acc<.035)return;acc=0;
+    defs.forEach((d,k)=>{bufs[k].push(clamp(d[2]()+(Math.random()-.5)*.03,.03,.97));if(bufs[k].length>70)bufs[k].shift();
+      const c=ctxs[k],W=c.canvas.width,H=c.canvas.height;c.clearRect(0,0,W,H);c.strokeStyle=d[1];c.lineWidth=2;c.shadowColor=d[1];c.shadowBlur=5;c.beginPath();
+      bufs[k].forEach((v,i)=>{const x=i/(bufs[k].length-1)*W,y=H-v*H;i?c.lineTo(x,y):c.moveTo(x,y);});c.stroke();});
+    $('#dHr').textContent=Math.round(ST.hr)+' bpm';$('#dTemp').textContent=(36.6+Math.sin(performance.now()*.0003)*.1).toFixed(1)+'°C';
+    $('#dO2').textContent=(97+Math.round(Math.sin(performance.now()*.001)+1))+'%';$('#dBp').textContent='12'+(Math.round(Math.sin(performance.now()*.001)*0+0))+'0/80';
+  }return{tick};})();
+
+/* ===================== ANIMATE ===================== */
+const clock=new THREE.Clock(); let fT=0,fN=0;
+let lastBeat=0;
+function animate(){requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.05);U.t.value+=dt;const t=U.t.value;
+  // heartbeat
+  ST.beat+=dt*(ST.hr/60);const hp=ST.beat%1;const pulse=Math.exp(-Math.pow(hp*6,2))+.6*Math.exp(-Math.pow((hp-.28)*7,2));U.pulse.value=pulse;
+  if(hp<lastBeat){Audio.beat();}lastBeat=hp; if(heartMesh){const s=1+pulse*.14;const b=heartMesh.userData._b;heartMesh.scale.set(b.x*s,b.y*s,b.z*s);}
+  ST.breath+=dt*(14/60);
+  if(lungL){const s=1+(Math.sin(ST.breath*TAU)*.5+.5)*.13;const bl=lungL.userData._b,br=lungR.userData._b;lungL.scale.set(bl.x*s,bl.y*s,bl.z*s);lungR.scale.set(br.x*s,br.y*s,br.z*s);}
+  // scan progress
+  ST.scanProg=lerp(ST.scanProg,ST.scanMode==='none'?0:1,clamp(dt*3,0,1));U.scan.value=ST.scanProg;
+  if(ST.scanMode==='ct')U.slice.value=lerp(3.2,-2,(Math.sin(t*.4)*.5+.5));
+  // flows
+  if(bloodPts.visible)updFlow(bloodPts,t,.2);
+  if(nervePts.visible)updFlow(nervePts,t,.5);
+  bloodPts.visible=flowState.blood&&groups.cardiovascular.visible;nervePts.visible=flowState.nerve&&groups.nervous.visible;
+  // highlight + explode
+  pulseHighlight(t); applyExplode();
+  // camera
+  orbit.az=lerp(orbit.az,orbit.tAz,.1);orbit.el=lerp(orbit.el,orbit.tEl,.1);orbit.dist=lerp(orbit.dist,orbit.tDist,.08);orbit.focus=lerp(orbit.focus,orbit.tFocus,.1);
+  camera.position.set(Math.sin(orbit.az)*Math.cos(orbit.el)*orbit.dist,orbit.focus+Math.sin(orbit.el)*orbit.dist,Math.cos(orbit.az)*Math.cos(orbit.el)*orbit.dist);
+  camera.lookAt(0,orbit.focus,0);
+  rings.forEach(r=>r.rotation.z+=dt*r.userData.s); bodyRoot.rotation.y+=dt*0.04;
+  updatePins(); Vitals.tick(dt);
+  renderer.render(scene,camera);
+  fN++;fT+=dt;if(fT>=.5){$('#fps').textContent=Math.round(fN/fT);fN=0;fT=0;}
+}
+
+/* ===================== BOOT ===================== */
+$('#go').onclick=()=>{Audio.init();const sp=$('#splash');sp.style.opacity='0';setTimeout(()=>sp.classList.add('hidden'),700);
+  setSystem('cardiovascular');document.querySelector('.cat[data-sys="cardiovascular"]').classList.add('open');
+  setFlow('blood',true); select('heart');};
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
+animate();
+window.ANATOMIX={KB,select,setSystem,ST};
+</script>
+</body>
+</html>

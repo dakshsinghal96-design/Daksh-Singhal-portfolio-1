@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Black Hole Physics Simulator: Interactive Astrophysics Lab</title>
+<style>
+:root{
+--bg:#020611;
+--panel:#081120;
+--panel2:#0f1c33;
+--accent:#37d5ff;
+--accent2:#7a7cff;
+--text:#eef7ff;
+--muted:#9db2c7;
+--danger:#ff6b81;
+--success:#6bffb0;
+--grid:rgba(55,213,255,.09);
+--shadow:0 10px 30px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:radial-gradient(circle at top,#0b1832,#020611 60%);color:var(--text);font-family:Inter,Segoe UI,Arial,sans-serif;scroll-behavior:smooth;overflow-x:hidden}
+body.reduced-motion *{animation:none!important;transition:none!important}
+header{position:sticky;top:0;z-index:999;background:rgba(2,6,17,.9);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.08)}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;gap:10px}
+.logo{font-size:1rem;font-weight:800;letter-spacing:.08em;color:var(--accent)}
+nav{display:flex;gap:8px;overflow:auto;padding-bottom:4px}
+nav button{min-height:48px;padding:10px 14px;border-radius:14px;border:none;background:var(--panel2);color:var(--text);cursor:pointer;white-space:nowrap}
+nav button.active,nav button:hover{background:linear-gradient(135deg,var(--accent2),var(--accent));color:#001219}
+main{padding:16px;max-width:1600px;margin:auto}
+.page{display:none;animation:fade .5s ease}
+.page.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.grid{display:grid;grid-template-columns:1.2fr .8fr;gap:18px}
+.card{background:linear-gradient(180deg,rgba(10,20,40,.9),rgba(5,10,22,.92));border:1px solid rgba(255,255,255,.08);border-radius:24px;padding:18px;box-shadow:var(--shadow)}
+.hero{display:flex;flex-direction:column;gap:18px}
+canvas{width:100%;display:block;border-radius:18px;background:#020611;border:1px solid rgba(255,255,255,.08)}
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+select,input,button,textarea{width:100%;min-height:48px;border-radius:14px;border:1px solid rgba(255,255,255,.1);background:#09111f;color:var(--text);padding:12px}
+button.primary{background:linear-gradient(135deg,var(--accent2),var(--accent));color:#03131b;font-weight:800;cursor:pointer}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.stat{padding:14px;border-radius:18px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06)}
+.stat h4{margin:0 0 8px;color:var(--accent)}
+.table{overflow:auto}
+table{width:100%;border-collapse:collapse}
+th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,.08);text-align:left}
+h1,h2,h3{margin-top:0}
+.small{font-size:.9rem;color:var(--muted)}
+.badge{display:inline-block;padding:6px 10px;border-radius:999px;background:rgba(55,213,255,.15);color:var(--accent);font-size:.8rem;margin:4px}
+.two{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.progress{height:12px;background:#111d33;border-radius:999px;overflow:hidden}
+.progress span{display:block;height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent))}
+footer{text-align:center;padding:40px 20px;color:var(--muted)}
+.search{max-width:320px}
+#toast{position:fixed;bottom:16px;right:16px;background:#081120;padding:12px 16px;border-radius:14px;border:1px solid rgba(255,255,255,.08);opacity:0;pointer-events:none;transition:.3s}
+#toast.show{opacity:1}
+.chart{height:240px;position:relative;border-radius:18px;background:rgba(255,255,255,.02);overflow:hidden}
+.chart canvas{height:240px!important}
+.kpi{font-family:Consolas,monospace;color:var(--accent)}
+@media(max-width:900px){.grid,.two,.three{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+<div class="topbar">
+<div class="logo">BLACK HOLE PHYSICS SIMULATOR</div>
+<input class="search" id="searchInput" placeholder="Search concepts, black holes, formulas..." aria-label="Search" />
+</div>
+<nav id="nav"></nav>
+</header>
+<main id="pages"></main>
+<div id="toast"></div>
+<footer>
+Interactive Astrophysics Laboratory • Offline NASA-inspired Educational Simulator • Data stored locally in your browser.
+</footer>
+<script>
+const pagesData=[
+['Visualizer','Interactive black hole simulation'],
+['Event Horizon','Schwarzschild radius explorer'],
+['Escape Velocity','Escape calculations'],
+['Relativity','Spacetime and time dilation'],
+['Types','Black hole classifications'],
+['Database','Famous black holes'],
+['Observations','Real astronomy discoveries'],
+['Scenarios','Interactive challenges'],
+['Education','Physics learning center'],
+['Calculators','Advanced tools'],
+['Statistics','Progress and achievements'],
+['Settings','Customization'],
+['About','Credits and information']
+];
+const nav=document.getElementById('nav');
+const pages=document.getElementById('pages');
+let state=JSON.parse(localStorage.getItem('bhState')||'{}');
+state.stats=state.stats||{drops:0,escapes:0,orbits:0,simulations:0,closest:999999};
+state.settings=Object.assign({theme:'dark',speed:1,grid:true,stars:120,reduced:false},state.settings||{});
+state.achievements=state.achievements||[];
+const BH={mass:8.54e36,radius:12600000};
+const G=6.6743e-11,c=299792458;
+function save(){localStorage.setItem('bhState',JSON.stringify(state));}
+function toast(t){const el=document.getElementById('toast');el.textContent=t;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2000)}
+pagesData.forEach((p,i)=>{
+const b=document.createElement('button');b.textContent=p[0];if(i===0)b.classList.add('active');
+b.onclick=()=>showPage(i);nav.appendChild(b);
+const page=document.createElement('section');page.className='page'+(i===0?' active':'');page.id='page'+i;
+pages.appendChild(page);
+});
+function showPage(i){document.querySelectorAll('.page').forEach((p,idx)=>p.classList.toggle('active',idx===i));document.querySelectorAll('nav button').forEach((b,idx)=>b.classList.toggle('active',idx===i));window.scrollTo(0,0)}
+function unlock(name){if(!state.achievements.includes(name)){state.achievements.push(name);toast('Achievement unlocked: '+name);save();renderStats();}}
+function page0(){
+return `
+<div class='grid'>
+<div class='card hero'>
+<h1>Interactive Black Hole Visualizer</h1>
+<p class='small'>Explore realistic orbital mechanics, event horizons, gravitational lensing, tidal forces, and spacetime curvature around a simulated black hole.</p>
+<canvas id='sim' width='900' height='620' aria-label='Black hole simulation'></canvas>
+<div class='controls'>
+<select id='objectType'>
+<option>Earth</option><option>Jupiter</option><option>Mars</option><option>Sun</option><option>Massive Star</option><option>Asteroid Small</option><option>Asteroid Large</option><option>Spaceship</option>
+</select>
+<input id='customMass' type='number' placeholder='Custom mass (kg)' />
+<button class='primary' id='dropBtn'>Drop Object</button>
+<button id='pauseBtn'>Pause</button>
+<button id='resetBtn'>Reset</button>
+</div>
+<div class='stats' id='liveStats'></div>
+</div>
+<div class='card'>
+<h2>Physics Dashboard</h2>
+<div class='stat'><h4>Schwarzschild Radius</h4><div class='kpi' id='schwarz'></div></div>
+<div class='stat'><h4>Escape Velocity</h4><div class='kpi' id='escv'></div></div>
+<div class='stat'><h4>Time Dilation</h4><div class='kpi' id='timeDil'></div></div>
+<div class='stat'><h4>Tidal Forces</h4><div class='kpi' id='tidal'></div></div>
+<h3>Core Equations</h3>
+<p>Newtonian Gravity:</p>
+genui{"math_block_widget_always_prefetch_v2":{"content":"F = \\frac{GMm}{r^2}"}}
+<p>Escape Velocity:</p>
+genui{"math_block_widget_always_prefetch_v2":{"content":"v = \\sqrt{\\frac{2GM}{r}}"}}
+<p>Schwarzschild Radius:</p>
+genui{"math_block_widget_always_prefetch_v2":{"content":"r_s = \\frac{2GM}{c^2}"}}
+</div></div>`}
+function page1(){return `<div class='card'><h1>Event Horizon Explorer</h1><div class='two'><div><p>The event horizon is the boundary beyond which no signal, not even light, can escape.</p><input id='massSlider' type='range' min='1' max='10000000000' value='4000000'><div id='massOut'></div><div id='radiusOut'></div><div id='areaOut'></div></div><div><canvas id='horizonCanvas' width='500' height='320'></canvas></div></div><div class='table'><table><tr><th>Black Hole</th><th>Mass</th><th>Radius</th></tr><tr><td>Sagittarius A*</td><td>4.1 million solar masses</td><td>12 million km</td></tr><tr><td>M87*</td><td>6.5 billion solar masses</td><td>19 billion km</td></tr><tr><td>TON 618</td><td>66 billion solar masses</td><td>194 billion km</td></tr></table></div></div>`}
+function page2(){return `<div class='card'><h1>Escape Velocity Calculator</h1><div class='three'><input id='massInput' type='number' value='8.54e36'><input id='distanceInput' type='number' value='50000000'><button class='primary' id='calcEscape'>Calculate</button></div><div class='stats'><div class='stat'><h4>km/s</h4><div id='out1'></div></div><div class='stat'><h4>% Speed of Light</h4><div id='out2'></div></div><div class='stat'><h4>Can You Escape?</h4><div id='out3'></div></div></div><canvas id='escapeGraph' width='900' height='260'></canvas></div>`}
+function page3(){return `<div class='card'><h1>Spacetime & Relativity</h1><div class='grid'><div><canvas id='relCanvas' width='800' height='500'></canvas></div><div><h3>Time Dilation Tool</h3><input type='range' id='velSlider' min='0' max='99.9' step='0.1' value='50'><div id='velOut'></div><p>Einstein showed that gravity is the curvature of spacetime itself. Massive objects bend spacetime and objects follow geodesics through that curvature.</p><div class='badge'>Light Cones</div><div class='badge'>Geodesics</div><div class='badge'>Relativistic Time</div></div></div></div>`}
+function page4(){return `<div class='card'><h1>Black Hole Types</h1><div class='three'><div class='stat'><h3>Stellar</h3><p>5-20 solar masses formed from collapsing stars.</p></div><div class='stat'><h3>Supermassive</h3><p>Millions to billions of solar masses at galaxy centers.</p></div><div class='stat'><h3>Primordial</h3><p>Theoretical black holes formed in the early universe.</p></div></div><div class='two'><div class='stat'><h3>Kerr Black Holes</h3><p>Rotating black holes drag spacetime around them through frame dragging.</p></div><div class='stat'><h3>Charged Black Holes</h3><p>Reissner–Nordström solutions are theoretical because charge neutralizes quickly in nature.</p></div></div></div>`}
+function page5(){
+const list=[['Sagittarius A*','4.1 million'],['M87*','6.5 billion'],['TON 618','66 billion'],['Phoenix A','100 billion'],['Cygnus X-1','21'],['V616 Mon','3.8'],['GRS 1915+105','12.4'],['GW150914','62']];
+return `<div class='card'><h1>Famous Black Holes Database</h1><div class='table'><table><tr><th>Name</th><th>Mass (Solar)</th><th>Discovery</th></tr>${list.map(i=>`<tr><td>${i[0]}</td><td>${i[1]}</td><td>X-ray, radio, or gravitational wave methods</td></tr>`).join('')}</table></div><canvas id='dbChart' width='900' height='280'></canvas></div>`}
+function page6(){return `<div class='card'><h1>Real Observations & Science</h1><div class='three'><div class='stat'><h3>Event Horizon Telescope</h3><p>The EHT captured the first black hole shadow image of M87* in 2019 using a planet-scale radio telescope array.</p></div><div class='stat'><h3>Gravitational Waves</h3><p>LIGO detected spacetime ripples from merging black holes beginning with GW150914.</p></div><div class='stat'><h3>X-ray Astronomy</h3><p>Hot accretion disks emit intense X-rays revealing hidden black holes.</p></div></div><canvas id='waveCanvas' width='900' height='300'></canvas></div>`}
+function page7(){return `<div class='card'><h1>Interactive Scenarios</h1><div class='three'><div class='stat'><h3>Escape the Black Hole</h3><button class='primary scenario' data-type='escape'>Launch Scenario</button></div><div class='stat'><h3>Build Stable Orbit</h3><button class='primary scenario' data-type='orbit'>Launch Scenario</button></div><div class='stat'><h3>Time Dilation Adventure</h3><button class='primary scenario' data-type='time'>Launch Scenario</button></div></div><div id='scenarioOut'></div></div>`}
+function page8(){return `<div class='card'><h1>Educational Content</h1><div class='two'><div><h3>Core Concepts</h3><ul><li>Gravity and curved spacetime</li><li>Event horizons and escape velocity</li><li>Tidal forces and spaghettification</li><li>Gravitational lensing</li><li>Relativistic time dilation</li></ul></div><div><h3>Glossary</h3><input id='glossSearch' placeholder='Search glossary'><div id='glossary'></div></div></div></div>`}
+function page9(){return `<div class='card'><h1>Advanced Calculations</h1><div class='three'><input id='calcMass' type='number' value='1e31'><input id='calcDist' type='number' value='1000000'><button class='primary' id='advCalc'>Run Calculations</button></div><div class='stats' id='advResults'></div><h3>Create Custom Black Hole</h3><div class='three'><input id='bhName' placeholder='Name'><input id='bhMass' placeholder='Mass'><button class='primary' id='saveBH'>Save Black Hole</button></div><div id='savedBH'></div></div>`}
+function page10(){return `<div class='card'><h1>Statistics & Achievements</h1><div class='stats' id='statsWrap'></div><h3>Achievements</h3><div id='achievements'></div></div>`}
+function page11(){return `<div class='card'><h1>Settings & Customization</h1><div class='three'><label>Simulation Speed<input type='range' id='speed' min='0.25' max='5' step='0.25'></label><label>Star Density<input type='range' id='starDensity' min='20' max='300'></label><button id='toggleMotion'>Toggle Reduced Motion</button></div><div class='two'><button id='exportData'>Export Data</button><button id='clearData'>Clear Saved Data</button></div></div>`}
+function page12(){return `<div class='card'><h1>About & Information</h1><p>This simulator combines real astrophysics equations with interactive visualization to teach black hole physics, general relativity, orbital mechanics, and observational astronomy.</p><p>Scientific inspirations include research from NASA, ESA, LIGO, the Event Horizon Telescope collaboration, and the equations of Einstein, Schwarzschild, and Hawking.</p><h3>How to Use</h3><ul><li>Drop objects into the simulator</li><li>Experiment with orbital velocity</li><li>Compare famous black holes</li><li>Learn through scenarios and calculators</li></ul></div>`}
+const builders=[page0,page1,page2,page3,page4,page5,page6,page7,page8,page9,page10,page11,page12];
+document.querySelectorAll('.page').forEach((p,i)=>p.innerHTML=builders[i]());
+const sim=document.getElementById('sim');
+const ctx=sim.getContext('2d');
+let objects=[];let paused=false;let stars=[];
+function makeStars(){stars=[];for(let i=0;i<state.settings.stars;i++)stars.push({x:Math.random()*sim.width,y:Math.random()*sim.height,r:Math.random()*2})}
+makeStars();
+const objectMasses={Earth:5.972e24,Jupiter:1.898e27,Mars:6.39e23,Sun:1.989e30,'Massive Star':6e31,'Asteroid Small':1e12,'Asteroid Large':1e16,Spaceship:2e5};
+function addObject(){
+const t=document.getElementById('objectType').value;
+const mass=parseFloat(document.getElementById('customMass').value)||objectMasses[t];
+objects.push({x:100+Math.random()*100,y:100+Math.random()*100,vx:0,vy:1+Math.random()*2,mass,path:[],name:t,color:'#fff'});
+state.stats.drops++;unlock('First Drop');save();renderStats();
+}
+document.getElementById('dropBtn').onclick=addObject;
+document.getElementById('pauseBtn').onclick=()=>paused=!paused;
+document.getElementById('resetBtn').onclick=()=>{objects=[];toast('Simulation reset')};
+function physics(o){
+const cx=sim.width/2,cy=sim.height/2;
+const dx=cx-o.x,dy=cy-o.y;
+const r=Math.max(40,Math.hypot(dx,dy)*100000);
+const a=G*BH.mass/(r*r);
+const ang=Math.atan2(dy,dx);
+ o.vx+=Math.cos(ang)*a*0.0000000003*state.settings.speed;
+ o.vy+=Math.sin(ang)*a*0.0000000003*state.settings.speed;
+ o.x+=o.vx;
+ o.y+=o.vy;
+ o.path.push([o.x,o.y]);if(o.path.length>120)o.path.shift();
+ const screenDist=Math.hypot(dx,dy);
+ if(screenDist<50){toast('Object crossed event horizon');objects=objects.filter(x=>x!==o)}
+ if(screenDist<120){unlock('Survivor');state.stats.closest=Math.min(state.stats.closest,screenDist)}
+}
+function draw(){
+ctx.clearRect(0,0,sim.width,sim.height);
+ctx.fillStyle='#020611';ctx.fillRect(0,0,sim.width,sim.height);
+ctx.strokeStyle='rgba(55,213,255,.08)';
+for(let x=0;x<sim.width;x+=30){ctx.beginPath();for(let y=0;y<sim.height;y+=8){const dx=x-sim.width/2,dy=y-sim.height/2;const d=Math.hypot(dx,dy);const warp=25000/(d*d+5000);ctx.lineTo(x+dx*warp,y+dy*warp)}ctx.stroke()}
+ctx.fillStyle='#fff';stars.forEach(s=>{ctx.globalAlpha=.7;ctx.fillRect(s.x,s.y,s.r,s.r)});ctx.globalAlpha=1;
+const cx=sim.width/2,cy=sim.height/2;
+ctx.save();ctx.translate(cx,cy);
+for(let i=0;i<5;i++){
+ctx.rotate(0.003*(i+1));
+ctx.strokeStyle=`hsla(${190+i*20},100%,60%,${0.12+i*.05})`;
+ctx.lineWidth=12-i;
+ctx.beginPath();ctx.ellipse(0,0,90+i*14,40+i*10,0,0,Math.PI*2);ctx.stroke();
+}
+ctx.restore();
+ctx.beginPath();ctx.arc(cx,cy,48,0,Math.PI*2);ctx.fillStyle='#000';ctx.fill();
+ctx.strokeStyle='rgba(55,213,255,.8)';ctx.lineWidth=3;ctx.beginPath();ctx.arc(cx,cy,52,0,Math.PI*2);ctx.stroke();
+objects.forEach(o=>{
+if(!paused)physics(o);
+ctx.strokeStyle='rgba(255,255,255,.3)';ctx.beginPath();o.path.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.stroke();
+ctx.fillStyle=o.color;ctx.beginPath();ctx.arc(o.x,o.y,5,0,Math.PI*2);ctx.fill();
+});
+requestAnimationFrame(draw);
+}
+draw();
+function renderLive(){
+const wrap=document.getElementById('liveStats');
+wrap.innerHTML=objects.slice(0,6).map(o=>{
+const d=Math.hypot(sim.width/2-o.x,sim.height/2-o.y)*1000;
+const v=Math.hypot(o.vx,o.vy)*100;
+return `<div class='stat'><h4>${o.name}</h4><div>Mass: ${o.mass.toExponential(2)} kg</div><div>Distance: ${(d/1000).toFixed(0)} km</div><div>Velocity: ${v.toFixed(2)} km/s</div><div>Escape Velocity: ${(Math.sqrt(2*G*BH.mass/d)/1000).toFixed(2)} km/s</div></div>`;
+}).join('');
+const rs=(2*G*BH.mass)/(c*c);
+document.getElementById('schwarz').textContent=(rs/1000).toLocaleString()+' km';
+document.getElementById('escv').textContent=(Math.sqrt(2*G*BH.mass/(rs*3))/1000).toFixed(0)+' km/s';
+document.getElementById('timeDil').textContent=(1/Math.sqrt(1-rs/(rs*4))).toFixed(3)+'× slower';
+document.getElementById('tidal').textContent='Extreme';
+requestAnimationFrame(renderLive);
+}
+renderLive();
+const massSlider=document.getElementById('massSlider');
+if(massSlider){
+function updateEH(){const m=Number(massSlider.value)*1.989e30;const rs=(2*G*m)/(c*c);document.getElementById('massOut').textContent='Mass: '+Number(massSlider.value).toLocaleString()+' solar masses';document.getElementById('radiusOut').textContent='Event Horizon Radius: '+(rs/1000).toLocaleString(undefined,{maximumFractionDigits:0})+' km';document.getElementById('areaOut').textContent='Surface Area: '+(4*Math.PI*rs*rs).toExponential(3)+' m²';const hc=document.getElementById('horizonCanvas').getContext('2d');hc.clearRect(0,0,500,320);hc.fillStyle='#020611';hc.fillRect(0,0,500,320);hc.beginPath();hc.arc(250,160,Math.min(120,rs/100000000),0,Math.PI*2);hc.fillStyle='#000';hc.fill();hc.strokeStyle='#37d5ff';hc.lineWidth=5;hc.stroke();}
+massSlider.oninput=updateEH;updateEH();}
+document.getElementById('calcEscape')?.addEventListener('click',()=>{const m=+document.getElementById('massInput').value;const r=+document.getElementById('distanceInput').value;const v=Math.sqrt(2*G*m/r);document.getElementById('out1').textContent=(v/1000).toFixed(2);document.getElementById('out2').textContent=((v/c)*100).toFixed(3)+'%';document.getElementById('out3').textContent=v<c?'Possible':'Impossible';unlock('Escape Artist')});
+function graph(canvasId,fn){const cv=document.getElementById(canvasId);if(!cv)return;const cx=cv.getContext('2d');function loop(){cx.clearRect(0,0,cv.width,cv.height);cx.strokeStyle='#37d5ff';cx.beginPath();for(let x=0;x<cv.width;x++){const y=fn(x);x?cx.lineTo(x,y):cx.moveTo(x,y)}cx.stroke();requestAnimationFrame(loop)}loop()}
+graph('escapeGraph',x=>240-Math.log(x+10)*30);
+graph('dbChart',x=>140+Math.sin(x/40)*50);
+graph('waveCanvas',x=>150+Math.sin(x/20+performance.now()/500)*40*Math.sin(x/100));
+const velSlider=document.getElementById('velSlider');
+if(velSlider){velSlider.oninput=()=>{const v=velSlider.value/100;const gamma=1/Math.sqrt(1-v*v);document.getElementById('velOut').innerHTML=`Velocity: ${velSlider.value}% c<br>Time dilation factor γ = ${gamma.toFixed(3)}<br>1 year onboard = ${(1/gamma).toFixed(3)} Earth years`;};velSlider.oninput();}
+const rel=document.getElementById('relCanvas');
+if(rel){const rc=rel.getContext('2d');(function anim(){rc.clearRect(0,0,rel.width,rel.height);for(let x=0;x<rel.width;x+=25){rc.beginPath();for(let y=0;y<rel.height;y+=8){const dx=x-rel.width/2,dy=y-rel.height/2,d=Math.hypot(dx,dy);const warp=8000/(d*d+500);rc.lineTo(x+dx*warp,y+dy*warp)}rc.strokeStyle='rgba(55,213,255,.2)';rc.stroke()}rc.fillStyle='#000';rc.beginPath();rc.arc(rel.width/2,rel.height/2,50,0,Math.PI*2);rc.fill();requestAnimationFrame(anim)})();}
+const glossary=['Accretion Disk','Event Horizon','Geodesic','Singularity','Spaghettification','Frame Dragging','Schwarzschild Radius','Photon Sphere','Tidal Force','Gravitational Lensing'];
+const gloss=document.getElementById('glossary');if(gloss){function renderGloss(q=''){gloss.innerHTML=glossary.filter(g=>g.toLowerCase().includes(q.toLowerCase())).map(g=>`<div class='badge'>${g}</div>`).join('')}renderGloss();document.getElementById('glossSearch').oninput=e=>renderGloss(e.target.value)}
+document.querySelectorAll('.scenario').forEach(b=>b.onclick=()=>{const type=b.dataset.type;const out=document.getElementById('scenarioOut');if(type==='escape')out.innerHTML='<div class="stat">You accelerated to 0.22c and escaped the black hole gravity well. Relativistic kinetic energy increased dramatically.</div>';if(type==='orbit'){out.innerHTML='<div class="stat">Stable orbit achieved near the innermost stable circular orbit. Orbital period: 14 minutes.</div>';unlock('Orbital Mechanics')}if(type==='time')out.innerHTML='<div class="stat">After one year near the black hole, 12 years passed on Earth due to gravitational time dilation.</div>'});
+function renderStats(){const s=state.stats;document.getElementById('statsWrap').innerHTML=`<div class='stat'><h4>Objects Dropped</h4>${s.drops}</div><div class='stat'><h4>Escapes</h4>${s.escapes}</div><div class='stat'><h4>Stable Orbits</h4>${s.orbits}</div><div class='stat'><h4>Closest Approach</h4>${s.closest.toFixed(1)}</div>`;document.getElementById('achievements').innerHTML=state.achievements.map(a=>`<span class='badge'>${a}</span>`).join('');}
+renderStats();
+document.getElementById('advCalc')?.addEventListener('click',()=>{const m=+document.getElementById('calcMass').value;const r=+document.getElementById('calcDist').value;const rs=2*G*m/(c*c);const esc=Math.sqrt(2*G*m/r);const grav=G*m/(r*r);document.getElementById('advResults').innerHTML=`<div class='stat'><h4>Schwarzschild Radius</h4>${rs.toExponential(3)} m</div><div class='stat'><h4>Escape Velocity</h4>${(esc/1000).toFixed(2)} km/s</div><div class='stat'><h4>Gravity</h4>${grav.toExponential(3)} m/s²</div>`});
+document.getElementById('saveBH')?.addEventListener('click',()=>{const list=state.customBH||[];list.push({name:bhName.value,mass:bhMass.value});state.customBH=list;save();document.getElementById('savedBH').innerHTML=list.map(x=>`<div class='badge'>${x.name}: ${x.mass}</div>`).join('')});
+document.getElementById('speed').value=state.settings.speed;document.getElementById('starDensity').value=state.settings.stars;
+document.getElementById('speed').oninput=e=>{state.settings.speed=e.target.value;save()};
+document.getElementById('starDensity').oninput=e=>{state.settings.stars=e.target.value;makeStars();save()};
+document.getElementById('toggleMotion').onclick=()=>{document.body.classList.toggle('reduced-motion');state.settings.reduced=!state.settings.reduced;save()};
+document.getElementById('exportData').onclick=()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='black-hole-simulator-data.json';a.click()};
+document.getElementById('clearData').onclick=()=>{localStorage.clear();location.reload()};
+document.getElementById('searchInput').oninput=e=>{const q=e.target.value.toLowerCase();document.querySelectorAll('.page').forEach((p,i)=>{p.style.outline=q&&p.innerText.toLowerCase().includes(q)?'2px solid var(--accent)':'none'})};
+if(state.settings.reduced)document.body.classList.add('reduced-motion');
+save();
+</script>
+</body>
+</html>

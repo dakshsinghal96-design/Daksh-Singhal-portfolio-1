@@ -1,0 +1,709 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Obliq AI Career Platform - Beginner Tutorial</title>
+  <style>
+    :root {
+      --ink: #101828;
+      --muted: #475467;
+      --soft: #667085;
+      --line: #d0d5dd;
+      --panel: #f8fafc;
+      --brand: #6d28d9;
+      --brand-2: #0891b2;
+      --accent: #ec4899;
+      --ok: #047857;
+      --warn: #b45309;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      color: var(--ink);
+      background: #ffffff;
+      line-height: 1.62;
+      font-size: 15px;
+    }
+
+    body { padding: 34px; }
+
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .cover {
+      min-height: 680px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 56px;
+      background:
+        radial-gradient(circle at 20% 10%, rgba(109, 40, 217, .12), transparent 30%),
+        radial-gradient(circle at 85% 20%, rgba(8, 145, 178, .10), transparent 32%),
+        linear-gradient(135deg, #ffffff, #f8fafc);
+      page-break-after: always;
+    }
+
+    .kicker {
+      color: var(--brand);
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      font-size: 12px;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      font-size: 44px;
+      line-height: 1.08;
+      margin: 0 0 18px;
+      letter-spacing: -.03em;
+      color: #0f172a;
+    }
+
+    .subtitle {
+      max-width: 680px;
+      color: var(--muted);
+      font-size: 18px;
+      margin: 0 0 36px;
+    }
+
+    .meta {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 36px;
+    }
+
+    .meta div,
+    .note,
+    .callout,
+    .example,
+    .warning {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #ffffff;
+      padding: 14px 16px;
+    }
+
+    .meta strong { display: block; color: var(--ink); }
+    .meta span { color: var(--muted); font-size: 14px; }
+
+    h2 {
+      font-size: 28px;
+      margin: 34px 0 12px;
+      color: #111827;
+      page-break-after: avoid;
+    }
+
+    h3 {
+      font-size: 20px;
+      margin: 26px 0 8px;
+      color: #1f2937;
+      page-break-after: avoid;
+    }
+
+    h4 {
+      font-size: 16px;
+      margin: 18px 0 6px;
+      color: #344054;
+      page-break-after: avoid;
+    }
+
+    p { margin: 0 0 11px; }
+    a { color: var(--brand); }
+
+    .toc {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 22px;
+      background: var(--panel);
+      margin: 18px 0 28px;
+    }
+
+    .toc ol { margin: 0; padding-left: 24px; }
+    .toc li { margin: 4px 0; }
+
+    ul, ol {
+      margin: 8px 0 16px;
+      padding-left: 24px;
+    }
+
+    li { margin: 5px 0; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 22px;
+      page-break-inside: avoid;
+    }
+
+    th, td {
+      border: 1px solid var(--line);
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #eef2ff;
+      color: #1e1b4b;
+      font-weight: 800;
+    }
+
+    td { background: #ffffff; }
+
+    .callout {
+      border-left: 5px solid var(--brand);
+      background: #f5f3ff;
+      margin: 14px 0 20px;
+    }
+
+    .note {
+      border-left: 5px solid var(--brand-2);
+      background: #ecfeff;
+      margin: 14px 0 20px;
+    }
+
+    .warning {
+      border-left: 5px solid var(--warn);
+      background: #fffbeb;
+      margin: 14px 0 20px;
+    }
+
+    .example {
+      border-left: 5px solid var(--accent);
+      background: #fdf2f8;
+      margin: 14px 0 20px;
+      page-break-inside: avoid;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 10px 0 18px;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 5px 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #ffffff;
+      color: #344054;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .section {
+      page-break-inside: auto;
+    }
+
+    .avoid-break {
+      page-break-inside: avoid;
+    }
+
+    .small { font-size: 13px; color: var(--muted); }
+    .good { color: var(--ok); font-weight: 700; }
+    .bad { color: #b42318; font-weight: 700; }
+    code {
+      font-family: Consolas, "Courier New", monospace;
+      background: #f2f4f7;
+      border: 1px solid #eaecf0;
+      border-radius: 6px;
+      padding: 1px 5px;
+      font-size: 13px;
+    }
+
+    .footer-note {
+      margin-top: 40px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+      color: var(--soft);
+      font-size: 12px;
+    }
+
+    @page {
+      size: A4;
+      margin: 18mm 16mm;
+    }
+
+    @media print {
+      body { padding: 0; }
+      .page { max-width: none; }
+      .cover {
+        border-radius: 0;
+        border: 0;
+        min-height: 245mm;
+      }
+      h2 { page-break-before: auto; }
+      a { color: #111827; text-decoration: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="cover">
+      <div class="kicker">Beginner Tutorial</div>
+      <h1>Obliq AI Career Platform</h1>
+      <p class="subtitle">A complete plain-language guide to the career counseling app, including what it does, how it works, how to use it, and how each part of the system fits together.</p>
+      <div class="meta">
+        <div>
+          <strong>Audience</strong>
+          <span>Beginners, students, parents, schools, counsellors, and reviewers</span>
+        </div>
+        <div>
+          <strong>Format</strong>
+          <span>Single-file HTML/CSS/JavaScript app tutorial</span>
+        </div>
+        <div>
+          <strong>Focus</strong>
+          <span>Career guidance workflow, assessment, reports, dashboard, privacy, and admin areas</span>
+        </div>
+        <div>
+          <strong>Important note</strong>
+          <span>AI output is guidance, not a final decision or guarantee</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="toc">
+      <h2>Contents</h2>
+      <ol>
+        <li>Quick Start Guide</li>
+        <li>Overview</li>
+        <li>Key Components</li>
+        <li>How It Works</li>
+        <li>How to Use It</li>
+        <li>Practical Examples</li>
+        <li>Features and Benefits</li>
+        <li>Best Practices</li>
+        <li>Common Mistakes to Avoid</li>
+        <li>Glossary</li>
+      </ol>
+    </section>
+
+    <section class="section">
+      <h2>1. Quick Start Guide</h2>
+      <p>This section is for someone who wants to try the app immediately without reading the full document first.</p>
+      <ol>
+        <li>Open <code>Obliq-AI-Career-Platform.html</code> in a browser.</li>
+        <li>Click the intro screen to enter the app.</li>
+        <li>Select your role, usually <strong>Student</strong> for the main journey.</li>
+        <li>Use the login or register screen to continue through the demo flow.</li>
+        <li>Choose a language and accept the consent and privacy screens.</li>
+        <li>Complete the profile form with class, age, city, stream, subjects, marks, and career dreams.</li>
+        <li>Select interest cards that match what you enjoy.</li>
+        <li>Choose an assessment mode and begin the assessment.</li>
+        <li>Answer the questions honestly. Some questions use options, ratings, rankings, or short text.</li>
+        <li>Complete optional portfolio and parent input sections.</li>
+        <li>Wait for the AI processing screen to finish.</li>
+        <li>Review career results, stream guidance, courses, colleges, budget, roadmap, chat, report, and dashboard.</li>
+        <li>Use <strong>Download / Print Report</strong> to print or save the report as a PDF.</li>
+      </ol>
+
+      <div class="callout">
+        <strong>Simple rule:</strong> The app is designed to help you explore better choices. It should not be treated as a final authority. Important education and career choices should still be discussed with parents, teachers, counsellors, or mentors.
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>2. Overview</h2>
+      <p><strong>Obliq AI Career Platform</strong> is a web-based career counseling prototype. It helps a student understand possible career directions by combining profile information, interest choices, assessment answers, adaptive questions, parent input, portfolio information, and report generation.</p>
+
+      <p>The project is built as a single HTML file with inline CSS and JavaScript. This means the user can open the app directly in a browser without installing a backend server. The app stores demo data in the browser using <code>localStorage</code>, so progress can remain after refreshing the page.</p>
+
+      <p>The main purpose is to create a guided career counseling experience that feels modern, visual, and easy to use. It includes student-facing guidance screens, parent and counsellor views, school analytics, admin management sections, a privacy center, and print-ready reports.</p>
+
+      <h3>Main Purpose</h3>
+      <ul>
+        <li>Help students discover career paths that match their interests, strengths, values, and preferences.</li>
+        <li>Suggest streams, courses, colleges, and practical next steps.</li>
+        <li>Give parents a simple way to support the student without pressure.</li>
+        <li>Allow counsellors to review reports and add human validation.</li>
+        <li>Provide schools and admins with management and analytics-style prototype screens.</li>
+        <li>Keep privacy, consent, data export, delete options, and AI disclaimers visible.</li>
+      </ul>
+
+      <div class="warning">
+        <strong>Important:</strong> The system is AI-assisted guidance. It does not guarantee admission, marks, salary, career success, or a perfect personal match.
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>3. Key Components</h2>
+      <p>This project has many screens, but they can be understood as a few major areas.</p>
+
+      <h3>3.1 Intro and Visual Experience</h3>
+      <table>
+        <thead>
+          <tr><th>Component</th><th>What it does</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Intro splash screen</td><td>Shows the first visual hero page. Clicking or pressing Enter/Space starts the app.</td></tr>
+          <tr><td>Animated background</td><td>Uses visual effects such as brain-wave background, glow, and movement to create a futuristic career intelligence feel.</td></tr>
+          <tr><td>Dark/light theme toggle</td><td>Allows the user to switch between dark mode and light mode. The selected theme is saved in the browser.</td></tr>
+          <tr><td>Reduced motion support</td><td>Reduces heavy animations for users who prefer less motion.</td></tr>
+        </tbody>
+      </table>
+
+      <h3>3.2 User Roles</h3>
+      <p>The app supports several roles. Each role leads to a different experience.</p>
+      <table>
+        <thead>
+          <tr><th>Role</th><th>Purpose</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Student</td><td>Completes the main career assessment and views results, report, roadmap, chat, and dashboard.</td></tr>
+          <tr><td>Parent</td><td>Views a simplified parent dashboard with child guidance, suggested stream, and support tips.</td></tr>
+          <tr><td>Counsellor</td><td>Reviews reports, adds notes, and validates AI recommendations.</td></tr>
+          <tr><td>Admin</td><td>Manages users, questions, careers, courses, colleges, pricing, AI settings, schools, analytics, and audit logs in prototype form.</td></tr>
+          <tr><td>School</td><td>Views institution-level analytics, student lists, stream distribution, and parent meeting support.</td></tr>
+        </tbody>
+      </table>
+
+      <h3>3.3 Onboarding Screens</h3>
+      <ul>
+        <li><strong>Welcome:</strong> Introduces the platform.</li>
+        <li><strong>Role selection:</strong> Lets the user choose Student, Parent, Counsellor, Admin, or School.</li>
+        <li><strong>Login/Register:</strong> Provides entry into the demo account flow.</li>
+        <li><strong>Language:</strong> Lets the user choose preferred language.</li>
+        <li><strong>Consent:</strong> Explains privacy, AI use, and permission choices.</li>
+        <li><strong>Comfort setup:</strong> Introduces support for calm and focus during assessment.</li>
+        <li><strong>Profile setup:</strong> Collects student details.</li>
+      </ul>
+
+      <h3>3.4 Assessment System</h3>
+      <p>The assessment is the heart of the student journey. It uses multiple question styles and modules to build a more complete picture of the student.</p>
+      <div class="pill-row">
+        <span class="pill">Interest Inventory</span>
+        <span class="pill">Aptitude</span>
+        <span class="pill">Personality</span>
+        <span class="pill">EQ</span>
+        <span class="pill">Situational Judgment</span>
+        <span class="pill">Skills</span>
+        <span class="pill">Values</span>
+        <span class="pill">Lifestyle</span>
+      </div>
+
+      <table>
+        <thead>
+          <tr><th>Question Type</th><th>Meaning</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Multiple choice</td><td>The user selects one option from a list.</td></tr>
+          <tr><td>Rating</td><td>The user rates agreement or confidence on a scale.</td></tr>
+          <tr><td>Ranking</td><td>The user orders items by importance.</td></tr>
+          <tr><td>Short answer</td><td>The user types a brief response.</td></tr>
+          <tr><td>Adaptive follow-up</td><td>The app asks a follow-up based on the user's earlier signals.</td></tr>
+          <tr><td>Validation question</td><td>The app checks possible conflict between dream career and assessment result.</td></tr>
+        </tbody>
+      </table>
+
+      <h3>3.5 Focus and Calm Mode</h3>
+      <p>Focus and Calm Mode is designed to support students during the assessment. It can ask for camera permission and track interaction signals such as time taken, answer changes, inactivity, and calm break usage. It can offer breathing support or easier question handling when a student appears stuck.</p>
+      <p>This feature is meant to reduce stress, not punish the student. It should be used with clear consent and care.</p>
+
+      <h3>3.6 Results and Guidance</h3>
+      <ul>
+        <li><strong>Career results:</strong> Shows top career matches and fit percentages.</li>
+        <li><strong>Stream guidance:</strong> Suggests primary and backup streams.</li>
+        <li><strong>Course guidance:</strong> Shows course paths linked to career goals.</li>
+        <li><strong>College recommendations:</strong> Lists India, abroad, online, and certification options with filters.</li>
+        <li><strong>Budget planner:</strong> Helps estimate practical education cost choices.</li>
+        <li><strong>90-day roadmap:</strong> Gives actionable weekly growth steps.</li>
+      </ul>
+
+      <h3>3.7 Report, Chat, and Dashboard</h3>
+      <ul>
+        <li><strong>Report:</strong> A detailed printable summary of results, career fit, stream recommendation, roadmap, parent input, focus mode notes, and disclaimers.</li>
+        <li><strong>AI mentor chat:</strong> Lets the user ask simple questions about report, career choices, stream, college, or plan.</li>
+        <li><strong>Voice assistant:</strong> Provides a prototype voice-style interaction screen.</li>
+        <li><strong>Dashboard:</strong> Shows progress metrics such as confidence, top career, plan progress, and next steps.</li>
+      </ul>
+
+      <h3>3.8 Privacy, Compliance, and Data Controls</h3>
+      <p>The platform includes screens for privacy policy, terms, consent history, audit log, compliance checklist, data export, and data deletion. This is important because career guidance uses personal information.</p>
+
+      <table>
+        <thead>
+          <tr><th>Control</th><th>Why it matters</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Consent history</td><td>Shows that user permission was recorded.</td></tr>
+          <tr><td>Audit log</td><td>Records important actions such as role selection, profile save, assessment start, assessment completion, and counsellor review.</td></tr>
+          <tr><td>Export data</td><td>Allows the user to download their data from the browser.</td></tr>
+          <tr><td>Delete data</td><td>Allows the user to remove demo data from the browser.</td></tr>
+          <tr><td>Print report</td><td>Creates a clean paper/PDF copy of the report.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <h2>4. How It Works</h2>
+      <p>This section explains the main workflow in simple steps.</p>
+
+      <h3>Step 1: The User Enters the App</h3>
+      <p>The user sees the intro screen and clicks anywhere or presses Enter/Space. The app then moves to the welcome screen. The intro is decorative but also sets the tone for the product.</p>
+
+      <h3>Step 2: The User Chooses a Role</h3>
+      <p>The role controls the path. A student enters the full assessment journey. Parent, counsellor, admin, and school roles open their own dashboards or management screens.</p>
+
+      <h3>Step 3: The App Collects Consent</h3>
+      <p>The consent screen explains what the app does with user information. The app stores consent records in the local demo state and audit log.</p>
+
+      <h3>Step 4: The Profile Is Saved</h3>
+      <p>The student profile includes items such as age, class, city, board, current stream, subjects, marks, dream career, and confusion level. This information helps personalize the results.</p>
+
+      <h3>Step 5: Interest Cards Are Selected</h3>
+      <p>Interest cards help the app understand natural preferences before formal assessment begins. For example, a student may select technology, design, healthcare, law, sports, business, or other interest areas.</p>
+
+      <h3>Step 6: The Assessment Starts</h3>
+      <p>The app builds a fresh assessment set from its internal question bank. Questions are shuffled and tracked so the same user does not always receive identical questions in the same order.</p>
+
+      <h3>Step 7: The Student Answers Questions</h3>
+      <p>Answers are stored in the app state. Some answers add weight to career clusters such as healthcare, technology, business, creative, humanities, physical, or broad exploration.</p>
+
+      <h3>Step 8: Adaptive and Validation Logic Runs</h3>
+      <p>If the user's answers strongly point to a cluster, the app may ask an adaptive follow-up question. If the student's dream career conflicts with the strongest result, the app may ask a validation question to decide how to treat the dream career in the report.</p>
+
+      <h3>Step 9: Optional Portfolio and Parent Input Are Added</h3>
+      <p>The portfolio screen lets the student describe projects, achievements, or interests. Parent input can include budget, city preference, college type, abroad comfort, support style, and concerns.</p>
+
+      <h3>Step 10: The Processing Screen Builds the Result</h3>
+      <p>The processing screen shows messages such as reviewing responses, mapping personality, matching careers, and composing the report. Behind the scenes, the app computes results and prepares the guidance screens.</p>
+
+      <h3>Step 11: Results Are Displayed</h3>
+      <p>The app shows top career matches with fit percentages, reasons, stream suggestions, course options, college options, budget details, and a 90-day roadmap.</p>
+
+      <h3>Step 12: The User Continues with Dashboard, Report, and Chat</h3>
+      <p>The dashboard helps the user keep track of progress. The report can be printed. The AI mentor chat gives basic guidance based on the stored result. The user can also export or delete data from privacy screens.</p>
+
+      <div class="note">
+        <strong>Data flow in simple words:</strong> User input goes into the app state, the app scores the input, results are generated, and screens render those results. The browser saves the state with <code>localStorage</code> so the demo can continue after refresh.
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>5. How to Use It</h2>
+
+      <h3>5.1 Setup</h3>
+      <ol>
+        <li>Keep the app file named <code>Obliq-AI-Career-Platform.html</code>.</li>
+        <li>Keep any referenced asset folder, such as <code>assets</code>, beside the HTML file if images are used.</li>
+        <li>Open the HTML file in a modern browser such as Chrome, Edge, or another Chromium-based browser.</li>
+        <li>No backend server is required for the basic demo because the app is a single-file HTML/CSS/JS prototype.</li>
+      </ol>
+
+      <h3>5.2 Everyday Student Use</h3>
+      <ol>
+        <li>Open the app and enter from the intro screen.</li>
+        <li>Select <strong>Student</strong>.</li>
+        <li>Complete login/register flow.</li>
+        <li>Choose language.</li>
+        <li>Read and accept consent.</li>
+        <li>Fill profile honestly. Avoid guessing marks, subjects, or dream career if unsure.</li>
+        <li>Select interests that genuinely feel exciting.</li>
+        <li>Choose assessment mode.</li>
+        <li>Answer all questions calmly and honestly.</li>
+        <li>Use Focus and Calm Mode only if comfortable giving permission.</li>
+        <li>Review results with a parent, teacher, or counsellor.</li>
+        <li>Use the 90-day plan for action, not just reading.</li>
+      </ol>
+
+      <h3>5.3 Parent Use</h3>
+      <p>Parents can use the parent dashboard to understand the student's top guidance in a simple format. Parents can also provide input about budget, preferred city, college type, abroad comfort, support style, and concerns.</p>
+      <p>The best parent approach is supportive, not forceful. Use the report to start a conversation instead of making an instant decision.</p>
+
+      <h3>5.4 Counsellor Use</h3>
+      <p>Counsellors can review student reports, update review status, and add notes. This is important because human validation can catch nuance that a prototype scoring system may miss.</p>
+
+      <h3>5.5 School Use</h3>
+      <p>The school dashboard is designed for institution-level insight. It can show student overview, stream distribution, counsellor allocation, parent meeting support, and analytics-style sections.</p>
+
+      <h3>5.6 Admin Use</h3>
+      <p>The admin panel is a prototype management area. It includes users, question bank, career database, course database, college database, report builder, AI settings, pricing, coupons, schools, counsellors, analytics, feedback loop, and audit logs.</p>
+
+      <h3>5.7 Printing or Saving a Report</h3>
+      <ol>
+        <li>Complete the assessment journey.</li>
+        <li>Open the report screen.</li>
+        <li>Click <strong>Download / Print Report</strong>.</li>
+        <li>Use the browser print dialog to print on paper or save as PDF.</li>
+      </ol>
+
+      <h3>5.8 Resetting Demo Data</h3>
+      <p>The app has a reset option that clears demo data from the browser and reloads the app. This is useful when testing with a new student profile.</p>
+    </section>
+
+    <section class="section">
+      <h2>6. Practical Examples</h2>
+
+      <div class="example">
+        <h3>Example 1: Class 10 Student Choosing a Stream</h3>
+        <p>A Class 10 student is confused between Science and Commerce. They complete the assessment and the app shows strong technology and analytical signals. The stream guidance suggests Science PCM as the primary path and PCMB as backup. The student then views courses, colleges, and a 90-day plan for coding, math practice, and career interviews.</p>
+      </div>
+
+      <div class="example">
+        <h3>Example 2: Student Has a Dream Career That May Not Match</h3>
+        <p>A student enters "Doctor" as a dream career, but their answers point more strongly toward creative design. The app asks a validation question: should the dream career be prioritized, kept as backup, or replaced by best-fit careers? This gives the student control instead of ignoring their dream.</p>
+      </div>
+
+      <div class="example">
+        <h3>Example 3: Parent Wants a Practical College Plan</h3>
+        <p>A parent adds budget range, preferred city, and college type. The final report includes parent input and the college section can be filtered by India, abroad, online, certifications, budget, eligibility, exams, and scholarships.</p>
+      </div>
+
+      <div class="example">
+        <h3>Example 4: Counsellor Reviews an AI Report</h3>
+        <p>A counsellor opens the counsellor dashboard, selects a report, adds notes, and marks it as approved or needing follow-up. This keeps the app human-centered and avoids relying only on automated guidance.</p>
+      </div>
+
+      <div class="example">
+        <h3>Example 5: School Uses Group Insights</h3>
+        <p>A school can view stream distribution and student guidance summaries. This can help plan parent meetings, counsellor allocation, workshops, and stream counseling sessions.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>7. Features and Benefits</h2>
+
+      <table>
+        <thead>
+          <tr><th>Feature</th><th>Benefit</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Adaptive assessment</td><td>Asks more relevant follow-up questions based on earlier answers.</td></tr>
+          <tr><td>Career matching</td><td>Turns answers into practical career suggestions with fit percentages.</td></tr>
+          <tr><td>Stream guidance</td><td>Helps students understand which academic stream may support their goals.</td></tr>
+          <tr><td>Course and college guidance</td><td>Connects careers to education paths, institutions, fees, eligibility, and scholarships.</td></tr>
+          <tr><td>90-day roadmap</td><td>Turns guidance into action through weekly tasks.</td></tr>
+          <tr><td>AI mentor chat</td><td>Lets users ask simple questions about results and next steps.</td></tr>
+          <tr><td>Focus and Calm Mode</td><td>Supports students who feel stuck or stressed during assessment.</td></tr>
+          <tr><td>Parent input</td><td>Includes real family constraints such as budget, city, and support style.</td></tr>
+          <tr><td>Counsellor review</td><td>Adds human validation to AI-assisted output.</td></tr>
+          <tr><td>Privacy controls</td><td>Supports consent, export, delete, audit logs, and transparency.</td></tr>
+          <tr><td>Dark/light theme</td><td>Improves comfort and visual accessibility for different users.</td></tr>
+          <tr><td>Print-ready report</td><td>Makes results easy to share with family, teachers, and counsellors.</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Problems It Solves</h3>
+      <ul>
+        <li>Students often choose streams based only on marks, pressure, or peer influence.</li>
+        <li>Parents may not know how to discuss career options without creating stress.</li>
+        <li>Schools need clearer ways to guide many students at once.</li>
+        <li>Counsellors need structured report information before human review.</li>
+        <li>Career exploration can feel scattered across many unrelated websites.</li>
+      </ul>
+
+      <h3>Why It Is Useful</h3>
+      <p>The platform brings assessment, guidance, planning, reporting, and support into one flow. A beginner user does not need to understand career psychology, software architecture, or AI scoring to use it. They simply follow the screens and review the final guidance.</p>
+    </section>
+
+    <section class="section">
+      <h2>8. Best Practices</h2>
+
+      <h3>For Students</h3>
+      <ul>
+        <li>Answer honestly, not according to what sounds impressive.</li>
+        <li>Do not rush the assessment.</li>
+        <li>Use the report as a conversation starter.</li>
+        <li>Compare top careers instead of focusing only on the first result.</li>
+        <li>Follow the 90-day roadmap in small steps.</li>
+      </ul>
+
+      <h3>For Parents</h3>
+      <ul>
+        <li>Ask open-ended questions such as "What feels interesting about this path?"</li>
+        <li>Avoid forcing a career based only on salary or social status.</li>
+        <li>Discuss budget and location honestly.</li>
+        <li>Encourage exploration before final decisions.</li>
+        <li>Use counsellor review for important choices.</li>
+      </ul>
+
+      <h3>For Counsellors</h3>
+      <ul>
+        <li>Review both the results and the student's written context.</li>
+        <li>Look for contradictions between interests, values, and family constraints.</li>
+        <li>Add human notes that explain why a recommendation should be followed or adjusted.</li>
+        <li>Remind users that AI output is guidance, not guarantee.</li>
+      </ul>
+
+      <h3>For Schools and Admins</h3>
+      <ul>
+        <li>Keep question banks clear and age-appropriate.</li>
+        <li>Review career, course, and college data regularly.</li>
+        <li>Use audit logs for accountability.</li>
+        <li>Do not collect more personal data than needed.</li>
+        <li>Make consent and privacy policies easy to understand.</li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <h2>9. Common Mistakes to Avoid</h2>
+      <table>
+        <thead>
+          <tr><th>Mistake</th><th>Better approach</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Treating the top career as the only correct answer</td><td>Review the top 3 to 10 matches and compare risk, scope, course path, and interest fit.</td></tr>
+          <tr><td>Entering fake profile information</td><td>Use realistic age, class, subjects, city, and interests.</td></tr>
+          <tr><td>Ignoring the backup stream</td><td>Backup streams keep options open and reduce pressure.</td></tr>
+          <tr><td>Skipping parent input</td><td>Family budget, city, and support style can change practical decisions.</td></tr>
+          <tr><td>Using Focus Mode without consent</td><td>Always ask permission and explain why it is used.</td></tr>
+          <tr><td>Not reading privacy screens</td><td>Users should know what data is stored and how to export or delete it.</td></tr>
+          <tr><td>Printing before completing the assessment</td><td>Complete the assessment first so the report has meaningful content.</td></tr>
+          <tr><td>Assuming prototype data is live college data</td><td>Verify admission, fees, scholarships, and eligibility with official sources before real decisions.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <h2>10. Glossary</h2>
+      <table>
+        <thead>
+          <tr><th>Term</th><th>Meaning</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>AI-assisted guidance</td><td>Recommendations created with software logic and AI-style scoring. It helps decision-making but is not a final decision.</td></tr>
+          <tr><td>Assessment</td><td>A set of questions used to understand interests, strengths, personality, values, and preferences.</td></tr>
+          <tr><td>Adaptive question</td><td>A follow-up question that changes based on earlier answers.</td></tr>
+          <tr><td>Career cluster</td><td>A broad category of careers, such as healthcare, technology, business, creative, humanities, physical, or broad exploration.</td></tr>
+          <tr><td>Fit percentage</td><td>A score that estimates how strongly a career matches the user's answers.</td></tr>
+          <tr><td>Stream</td><td>An academic path such as Science PCM, Science PCB, Commerce, Humanities, or a hybrid path.</td></tr>
+          <tr><td>Roadmap</td><td>A step-by-step plan for what the student should do next.</td></tr>
+          <tr><td>Portfolio</td><td>A collection or description of projects, achievements, interests, and work samples.</td></tr>
+          <tr><td>Focus and Calm Mode</td><td>A support feature that can suggest breaks, breathing, or easier question handling when a student seems stuck.</td></tr>
+          <tr><td>Consent</td><td>Permission given by the user before the app stores or uses information.</td></tr>
+          <tr><td>Audit log</td><td>A record of important actions inside the app.</td></tr>
+          <tr><td>localStorage</td><td>A browser feature that stores small pieces of data locally on the user's device.</td></tr>
+          <tr><td>Print CSS</td><td>Styles that make a web page look clean when printed or saved as a PDF.</td></tr>
+          <tr><td>Prototype</td><td>An early working model used to demonstrate and test an idea.</td></tr>
+          <tr><td>Human review</td><td>A counsellor or expert checking the AI-assisted report and adding professional judgment.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <h2>Final Summary</h2>
+      <p>The Obliq AI Career Platform is a complete career guidance prototype that combines student onboarding, consent, profile setup, interest discovery, adaptive assessment, results, stream/course/college guidance, budget planning, roadmap, chat, report printing, parent support, counsellor review, school analytics, admin management, and privacy controls.</p>
+
+      <p>For beginners, the most important idea is simple: the app collects useful information, converts it into career guidance, and presents next steps in a way that students and families can understand. It is not meant to replace human thinking. It is meant to make better conversations possible.</p>
+
+      <div class="footer-note">
+        Tutorial generated for the Obliq AI Career Platform single-file HTML app. Use this document as a beginner training guide and project explanation reference.
+      </div>
+    </section>
+  </main>
+</body>
+</html>

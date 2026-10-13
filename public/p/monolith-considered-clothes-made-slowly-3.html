@@ -1,0 +1,2046 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MONOLITH — Considered clothes, made slowly</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;0,6..96,700;1,6..96,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --bg-2: #131315;
+    --card: #1a1a1c;
+    --ink: #efefef;
+    --ink-soft: #b8b8bb;
+    --muted: #74747a;
+    --line: #2a2a2d;
+    --hi: #d8d8d8;
+    --hi-soft: #232326;
+    --accent: #ffffff;
+    --accent-soft: #1f1f22;
+    --sale: #ff5757;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    line-height: 1.5;
+    overflow-x: hidden;
+  }
+  body.tracking, body.tracking * { cursor: none !important; }
+  body.tracking { user-select: none; }
+  img { max-width: 100%; display: block; }
+  button { font-family: inherit; }
+  h1, h2, h3, h4 {
+    font-family: 'Bodoni Moda', serif;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    line-height: 1.05;
+  }
+
+  /* ── ANNOUNCEMENT BAR ─────────────────────────────── */
+  .announce {
+    background: var(--accent);
+    color: var(--bg);
+    padding: 9px 16px;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .announce span { padding: 0 14px; }
+  .announce span + span::before { content: '·'; padding-right: 28px; color: rgba(0,0,0,0.4); }
+
+  /* ── HEADER ────────────────────────────────────────── */
+  header {
+    position: sticky; top: 0; z-index: 80;
+    background: rgba(10, 10, 10, 0.92);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--line);
+  }
+  .header-bar {
+    max-width: 1320px; margin: 0 auto;
+    padding: 18px 32px;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center; gap: 32px;
+  }
+  .brand {
+    display: flex; align-items: center; gap: 10px;
+    font-family: 'Bodoni Moda', serif;
+    font-size: 24px;
+    color: var(--ink);
+    letter-spacing: 0.18em;
+    font-weight: 500;
+  }
+  .brand em { font-style: italic; font-weight: 400; color: var(--hi); }
+  nav.main-nav {
+    display: flex; gap: 30px; justify-content: center;
+  }
+  nav.main-nav a {
+    color: var(--ink-soft);
+    text-decoration: none;
+    font-size: 12px; font-weight: 500;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    padding: 8px 4px;
+    border-bottom: 1px solid transparent;
+    transition: all .2s;
+  }
+  nav.main-nav a:hover, nav.main-nav a.hover {
+    color: var(--ink);
+    border-bottom-color: var(--accent);
+  }
+  .header-actions {
+    display: flex; gap: 10px; justify-content: flex-end; align-items: center;
+  }
+  .icon-btn {
+    width: 40px; height: 40px;
+    border: 1px solid var(--line);
+    background: var(--card);
+    border-radius: 50%;
+    display: grid; place-items: center;
+    transition: all .2s;
+    position: relative;
+    color: var(--ink);
+  }
+  .icon-btn:hover, .icon-btn.hover {
+    border-color: var(--ink);
+    background: var(--hi-soft);
+  }
+  .icon-btn svg { width: 17px; height: 17px; stroke: currentColor; fill: none; stroke-width: 1.6; }
+  .cart-badge, .wish-badge {
+    position: absolute;
+    top: -4px; right: -4px;
+    min-width: 20px; height: 20px;
+    padding: 0 5px;
+    background: var(--accent);
+    color: var(--bg);
+    border-radius: 12px;
+    font-size: 11px; font-weight: 700;
+    display: grid; place-items: center;
+  }
+  .wish-badge { background: var(--sale); color: white; }
+  .cart-badge.hidden, .wish-badge.hidden { display: none; }
+
+  /* ── HERO ──────────────────────────────────────────── */
+  .hero {
+    max-width: 1320px; margin: 32px auto 0;
+    padding: 0 32px;
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+    gap: 48px;
+    align-items: stretch;
+  }
+  .hero-text {
+    padding: 24px 0;
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .hero-text .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    color: var(--muted);
+    padding: 6px 0;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.25em; text-transform: uppercase;
+    margin-bottom: 24px;
+    align-self: flex-start;
+  }
+  .hero-text .eyebrow .dot {
+    width: 5px; height: 5px; border-radius: 50%; background: var(--accent);
+  }
+  .hero-text h1 {
+    font-size: clamp(44px, 6.5vw, 96px);
+    margin-bottom: 24px;
+  }
+  .hero-text h1 em { font-style: italic; color: var(--hi); }
+  .hero-text p {
+    font-size: 16px;
+    color: var(--ink-soft);
+    margin-bottom: 28px;
+    max-width: 480px;
+  }
+  .hero-cta { display: flex; gap: 12px; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 14px 28px;
+    border: 1px solid var(--ink);
+    background: var(--ink);
+    color: var(--bg);
+    border-radius: 0;
+    font-size: 12px; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    transition: all .2s;
+  }
+  .btn:hover, .btn.hover {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .btn.ghost {
+    background: transparent;
+    color: var(--ink);
+    border-color: var(--line);
+  }
+  .btn.ghost:hover, .btn.ghost.hover {
+    background: var(--ink); border-color: var(--ink); color: var(--bg);
+  }
+  .hero-img {
+    background: var(--bg-2);
+    overflow: hidden;
+    position: relative;
+    min-height: 480px;
+    border: 1px solid var(--line);
+  }
+  .hero-img img {
+    width: 100%; height: 100%; object-fit: cover;
+    position: absolute; inset: 0;
+    filter: grayscale(35%) contrast(1.05);
+  }
+  .hero-tag {
+    position: absolute;
+    bottom: 18px; left: 18px;
+    background: rgba(10, 10, 10, 0.85);
+    border: 1px solid var(--line);
+    backdrop-filter: blur(10px);
+    padding: 12px 16px;
+  }
+  .hero-tag .name { font-weight: 600; font-size: 12px; color: var(--ink); letter-spacing: 0.1em; text-transform: uppercase; }
+  .hero-tag .price { font-family: 'Bodoni Moda', serif; color: var(--ink); font-weight: 500; font-size: 18px; margin-top: 4px; display:block; }
+
+  /* ── CATEGORY TILES ───────────────────────────────── */
+  .cat-tiles {
+    max-width: 1320px; margin: 64px auto 0;
+    padding: 0 32px;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 14px;
+  }
+  .cat-tile {
+    aspect-ratio: 3/4;
+    background: var(--card);
+    border: 1px solid var(--line);
+    overflow: hidden;
+    position: relative;
+    transition: transform .25s, border-color .25s;
+  }
+  .cat-tile img {
+    width: 100%; height: 100%; object-fit: cover;
+    filter: grayscale(60%) contrast(1.05) brightness(0.6);
+    transition: filter .35s, transform .4s;
+  }
+  .cat-tile:hover, .cat-tile.hover {
+    border-color: var(--ink);
+    transform: translateY(-3px);
+  }
+  .cat-tile:hover img, .cat-tile.hover img {
+    filter: grayscale(20%) contrast(1.05) brightness(0.75);
+    transform: scale(1.06);
+  }
+  .cat-tile .label {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 16px;
+    color: var(--ink);
+    font-family: 'Bodoni Moda', serif;
+    font-size: 18px;
+    text-shadow: 0 1px 8px rgba(0,0,0,0.6);
+    z-index: 2;
+  }
+
+  /* ── SECTION ──────────────────────────────────────── */
+  .section {
+    max-width: 1320px; margin: 88px auto 0;
+    padding: 0 32px;
+  }
+  .section-head {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    margin-bottom: 32px;
+    gap: 16px; flex-wrap: wrap;
+  }
+  .section-head h2 {
+    font-size: clamp(34px, 4.2vw, 60px);
+  }
+  .section-head h2 em { font-style: italic; color: var(--hi); }
+  .section-head .sub {
+    color: var(--ink-soft);
+    font-size: 15px;
+    max-width: 380px;
+    margin-top: 6px;
+  }
+
+  /* CATEGORY PILLS (filter row) */
+  .cat-strip {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    margin-bottom: 32px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 24px;
+  }
+  .pill {
+    padding: 9px 20px;
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--ink-soft);
+    font-size: 12px; font-weight: 500;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    transition: all .2s;
+  }
+  .pill:hover, .pill.hover {
+    border-color: var(--ink);
+    color: var(--ink);
+  }
+  .pill.active {
+    background: var(--ink);
+    color: var(--bg);
+    border-color: var(--ink);
+  }
+
+  /* PRODUCT GRID */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    overflow: hidden;
+    transition: transform .25s, border-color .25s;
+    display: flex; flex-direction: column;
+    position: relative;
+  }
+  .card:hover, .card.hover {
+    transform: translateY(-3px);
+    border-color: var(--hi);
+  }
+  .card .img-wrap {
+    aspect-ratio: 4/5;
+    background: var(--bg-2);
+    overflow: hidden; position: relative;
+  }
+  .card .img-wrap img {
+    width: 100%; height: 100%; object-fit: cover;
+    filter: grayscale(40%) contrast(1.05);
+    position: absolute; inset: 0;
+    transition: opacity .4s, transform .5s;
+  }
+  .card .img-wrap img.alt {
+    opacity: 0;
+  }
+  .card:hover .img-wrap img.main, .card.hover .img-wrap img.main {
+    opacity: 0;
+  }
+  .card:hover .img-wrap img.alt, .card.hover .img-wrap img.alt {
+    opacity: 1;
+    transform: scale(1.04);
+    filter: grayscale(15%) contrast(1.05);
+  }
+  .card .badges {
+    position: absolute;
+    top: 12px; left: 12px;
+    display: flex; flex-direction: column; gap: 5px;
+    z-index: 2;
+  }
+  .badge {
+    background: var(--accent);
+    color: var(--bg);
+    font-size: 9px; font-weight: 700;
+    padding: 4px 9px;
+    letter-spacing: 0.16em; text-transform: uppercase;
+  }
+  .badge.sale { background: var(--sale); color: white; }
+  .badge.dark { background: var(--ink); color: var(--bg); }
+  .heart-btn {
+    position: absolute;
+    top: 10px; right: 10px;
+    width: 34px; height: 34px;
+    background: rgba(10, 10, 10, 0.7);
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    color: var(--ink);
+    backdrop-filter: blur(6px);
+    display: grid; place-items: center;
+    z-index: 2;
+    transition: all .2s;
+  }
+  .heart-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.8; transition: fill .2s; }
+  .heart-btn:hover, .heart-btn.hover {
+    border-color: var(--ink);
+    background: rgba(10,10,10, 0.9);
+  }
+  .heart-btn.active svg { fill: var(--sale); stroke: var(--sale); }
+  .card .body {
+    padding: 14px 16px 18px;
+    display: flex; flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    border-top: 1px solid var(--line);
+  }
+  .card .name { font-family: 'Bodoni Moda', serif; font-size: 19px; color: var(--ink); }
+  .card .meta-row { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 2px; letter-spacing: 0.04em; }
+  .card .meta-row .colors { display: flex; gap: 4px; }
+  .card .meta-row .swatch-mini {
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+  .card .rating { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--ink-soft); margin-top: 4px; }
+  .card .rating .star { color: var(--hi); }
+  .card .row {
+    margin-top: auto;
+    padding-top: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .card .price-block { display: flex; gap: 8px; align-items: baseline; }
+  .card .price { font-family: 'Bodoni Moda', serif; font-size: 20px; color: var(--ink); }
+  .card .price.was { color: var(--muted); text-decoration: line-through; font-size: 13px; font-family: 'Plus Jakarta Sans', sans-serif; }
+  .card .price.sale-now { color: var(--sale); }
+  .add-btn {
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--line);
+    padding: 7px 12px;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    transition: all .2s;
+  }
+  .add-btn:hover, .add-btn.hover {
+    background: var(--ink); color: var(--bg); border-color: var(--ink);
+  }
+
+  /* ── SALE BANNER ──────────────────────────────────── */
+  .sale-banner {
+    margin-top: 88px;
+    background: #000;
+    padding: 48px 32px;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 32px;
+    max-width: 1320px;
+    margin-left: auto; margin-right: auto;
+  }
+  .sale-banner .lhs { display: flex; flex-direction: column; gap: 8px; }
+  .sale-banner .tag {
+    font-size: 11px; color: var(--sale); font-weight: 700;
+    letter-spacing: 0.3em; text-transform: uppercase;
+  }
+  .sale-banner h2 { font-size: clamp(28px, 3.6vw, 48px); }
+  .sale-banner h2 em { font-style: italic; color: var(--hi); }
+  .sale-banner p { color: var(--ink-soft); font-size: 14px; max-width: 480px; }
+
+  /* PROMISE BANNER */
+  .promise {
+    margin-top: 88px;
+    background: #050507;
+    color: var(--ink);
+    padding: 80px 32px;
+    text-align: center;
+    background-image:
+      radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.04), transparent 45%),
+      radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.03), transparent 45%);
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .promise .inner { max-width: 780px; margin: 0 auto; }
+  .promise .label {
+    font-size: 11px; color: var(--muted); letter-spacing: 0.3em; text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+  .promise h2 {
+    font-size: clamp(36px, 5vw, 64px);
+    margin-bottom: 20px;
+  }
+  .promise h2 em { font-style: italic; color: var(--hi); }
+  .promise p { font-size: 16px; color: var(--ink-soft); margin-bottom: 32px; line-height: 1.65; }
+
+  /* NEWSLETTER */
+  .newsletter {
+    margin: 88px 32px 0;
+    max-width: 1320px;
+    margin-left: auto; margin-right: auto;
+    padding: 56px 32px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    text-align: center;
+  }
+  .newsletter h2 { font-size: clamp(26px, 3.2vw, 40px); margin-bottom: 12px; }
+  .newsletter h2 em { font-style: italic; color: var(--hi); }
+  .newsletter p { color: var(--ink-soft); margin-bottom: 24px; max-width: 480px; margin-left: auto; margin-right: auto; }
+  .newsletter-form {
+    display: flex; gap: 8px;
+    max-width: 480px; margin: 0 auto;
+    background: var(--bg);
+    padding: 6px;
+    border: 1px solid var(--line);
+  }
+  .newsletter-form .fake-input {
+    flex: 1; padding: 12px 16px;
+    color: var(--muted);
+    text-align: left;
+    display: flex; align-items: center;
+    font-size: 14px;
+  }
+  .newsletter-form button {
+    background: var(--ink); color: var(--bg);
+    border: none;
+    padding: 12px 22px;
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.18em; text-transform: uppercase;
+  }
+  .newsletter-form button:hover, .newsletter-form button.hover {
+    background: var(--accent);
+  }
+
+  /* FOOTER */
+  footer {
+    margin-top: 88px;
+    background: #050506;
+    color: var(--ink-soft);
+    padding: 64px 32px 28px;
+    border-top: 1px solid var(--line);
+  }
+  .foot-grid {
+    max-width: 1320px; margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr 1fr;
+    gap: 48px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid var(--line);
+  }
+  .foot-grid h4 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    margin-bottom: 18px;
+    color: var(--ink);
+  }
+  .foot-grid ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .foot-grid a {
+    color: var(--ink-soft);
+    text-decoration: none;
+    font-size: 13px;
+    transition: color .2s;
+  }
+  .foot-grid a:hover, .foot-grid a.hover { color: var(--ink); }
+  .foot-grid .about {
+    color: var(--ink-soft);
+    font-size: 13px;
+    margin-bottom: 14px;
+    line-height: 1.6;
+  }
+  .foot-bottom {
+    max-width: 1320px; margin: 24px auto 0;
+    display: flex;
+    justify-content: space-between;
+    color: var(--muted);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  /* ── HAND TRACKING UI ──────────────────────────────── */
+  #pip {
+    position: fixed;
+    bottom: 16px; right: 16px;
+    width: 132px; height: 99px;
+    border: 1px solid var(--line);
+    background: #000;
+    overflow: hidden;
+    z-index: 90;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    transition: opacity .35s;
+  }
+  #pip.hidden { opacity: 0; pointer-events: none; }
+  #pip video, #pip canvas {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%;
+    transform: scaleX(-1);
+    object-fit: cover;
+  }
+  #pip .label {
+    position: absolute; top: 6px; left: 8px;
+    font-size: 9px; font-weight: 700;
+    color: white;
+    background: rgba(0,0,0,0.55);
+    padding: 3px 7px;
+    letter-spacing: 0.14em;
+    z-index: 2;
+  }
+  #hud {
+    position: fixed;
+    top: 80px; left: 16px;
+    z-index: 90;
+    display: flex; align-items: center; gap: 8px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    padding: 8px 14px;
+    font-size: 11px; font-weight: 500;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--ink-soft);
+    pointer-events: none;
+  }
+  #hud .led { width: 7px; height: 7px; background: var(--muted); }
+  #hud.tracking .led {
+    background: var(--accent);
+    animation: pulse 1.4s infinite;
+  }
+  @keyframes pulse { 50% { opacity: 0.3; } }
+  #scrollHint {
+    position: fixed;
+    z-index: 70;
+    pointer-events: none;
+    transition: opacity .2s;
+    opacity: 0;
+    color: var(--ink); background: var(--card);
+    border: 1px solid var(--line);
+    padding: 6px 14px;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+  }
+  #scrollHint.up { top: 70px; left: 50%; transform: translateX(-50%); }
+  #scrollHint.down { bottom: 16px; left: 50%; transform: translateX(-50%); }
+  #scrollHint.show { opacity: 1; }
+
+  /* DEBUG PANEL */
+  #debugPanel {
+    position: fixed;
+    top: 124px; left: 16px;
+    z-index: 95;
+    background: rgba(20, 20, 22, 0.95);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    padding: 10px 14px;
+    font-family: 'Plus Jakarta Sans', monospace;
+    font-size: 11px;
+    line-height: 1.55;
+    max-width: 280px;
+    pointer-events: none;
+    display: none;
+  }
+  #debugPanel.show { display: block; }
+  #debugPanel .lab { color: var(--muted); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; }
+  #debugPanel .val { color: var(--accent); font-weight: 600; word-break: break-all; }
+
+  /* CURSOR */
+  #cursor {
+    position: fixed;
+    top: 0; left: 0;
+    width: 56px; height: 56px;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0;
+    will-change: transform;
+  }
+  #cursor.visible { opacity: 1; }
+  #cursor svg { width: 100%; height: 100%; overflow: visible; }
+  #cursor .outer {
+    fill: rgba(0,0,0,0.4);
+    stroke: var(--ink);
+    stroke-width: 1.4;
+    transition: stroke .15s, stroke-width .15s, r .2s, fill .15s;
+  }
+  #cursor .inner {
+    fill: var(--ink);
+    transition: r .15s, fill .15s;
+  }
+  #cursor.over .outer { stroke: var(--accent); stroke-width: 1.8; r: 22; }
+  #cursor.over .inner { fill: var(--accent); r: 5; }
+  #cursor.pinch .outer { fill: var(--accent); stroke: var(--accent); }
+  #cursor.pinch .inner { fill: var(--bg); r: 7; }
+
+  /* INTRO */
+  #intro {
+    position: fixed; inset: 0;
+    z-index: 5000;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 32px;
+    text-align: center;
+    transition: opacity .4s;
+  }
+  #intro.hide { opacity: 0; pointer-events: none; }
+  #intro .badge {
+    color: var(--muted);
+    padding: 6px 0;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.3em; text-transform: uppercase;
+    margin-bottom: 28px;
+  }
+  #intro h1 {
+    font-size: clamp(44px, 9vw, 100px);
+    max-width: 900px;
+    margin-bottom: 22px;
+    line-height: 1;
+  }
+  #intro h1 em { font-style: italic; color: var(--hi); }
+  #intro p { color: var(--ink-soft); font-size: 16px; max-width: 540px; margin-bottom: 32px; line-height: 1.6; }
+  #intro .actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  #intro button {
+    padding: 14px 30px;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    cursor: pointer;
+    transition: all .2s;
+    border: 1px solid var(--ink);
+  }
+  #intro #startBtn {
+    background: var(--ink); color: var(--bg);
+  }
+  #intro #startBtn:hover { background: var(--accent); border-color: var(--accent); }
+  #intro #skipBtn {
+    background: transparent; color: var(--ink);
+    border-color: var(--line);
+  }
+  #intro #skipBtn:hover { border-color: var(--ink); }
+  #intro .tip {
+    margin-top: 24px;
+    font-size: 11px; color: var(--muted);
+    letter-spacing: 0.06em;
+  }
+
+  /* MODAL */
+  .modal {
+    position: fixed; inset: 0;
+    z-index: 4000;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(10px);
+    display: none;
+    align-items: center; justify-content: center;
+    padding: 32px;
+    opacity: 0;
+    transition: opacity .25s;
+  }
+  .modal.open { display: flex; opacity: 1; }
+  .modal-content {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    max-width: 980px; width: 100%;
+    max-height: 88vh;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    position: relative;
+  }
+  #productModal img.main-img {
+    width: 100%; height: 100%; object-fit: cover;
+    filter: grayscale(20%) contrast(1.05);
+  }
+  #productModal .body {
+    padding: 36px 32px 24px;
+    display: flex; flex-direction: column;
+    overflow-y: auto;
+    gap: 14px;
+  }
+  #productModal .pm-cat {
+    font-size: 11px; color: var(--muted); font-weight: 600;
+    letter-spacing: 0.2em; text-transform: uppercase;
+  }
+  #productModal h3 { font-size: 32px; line-height: 1.05; color: var(--ink); }
+  #productModal .pm-rating { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--ink-soft); }
+  #productModal .pm-rating .stars { color: var(--hi); letter-spacing: 1px; font-size: 14px; }
+  #productModal .pm-rating a { color: var(--muted); text-decoration: underline; cursor: inherit; }
+  #productModal .price-row { display: flex; gap: 12px; align-items: baseline; padding-top: 4px; padding-bottom: 4px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding-top: 14px; padding-bottom: 14px; }
+  #productModal .pm-price { font-family: 'Bodoni Moda', serif; font-size: 30px; color: var(--ink); }
+  #productModal .pm-was { color: var(--muted); text-decoration: line-through; font-size: 16px; }
+  #productModal .pm-off { background: var(--sale); color: white; padding: 3px 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; }
+
+  /* color row */
+  .pm-section .lbl {
+    display: flex; justify-content: space-between;
+    font-size: 11px; color: var(--ink-soft); font-weight: 600;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .pm-section .lbl .val { color: var(--ink); font-weight: 500; }
+  .swatches { display: flex; gap: 8px; }
+  .swatch {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    position: relative;
+    transition: all .2s;
+  }
+  .swatch:hover, .swatch.hover { border-color: var(--ink); transform: scale(1.08); }
+  .swatch.active::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border: 1px solid var(--ink);
+    border-radius: 50%;
+  }
+
+  /* size row */
+  .sizes { display: flex; gap: 6px; flex-wrap: wrap; }
+  .size-pill {
+    min-width: 44px;
+    padding: 9px 12px;
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--ink);
+    font-size: 12px; font-weight: 600;
+    letter-spacing: 0.1em;
+    transition: all .2s;
+    text-transform: uppercase;
+  }
+  .size-pill:hover, .size-pill.hover {
+    border-color: var(--ink);
+  }
+  .size-pill.active {
+    background: var(--ink); color: var(--bg); border-color: var(--ink);
+  }
+  .size-pill.disabled {
+    color: var(--muted); border-color: var(--line);
+    text-decoration: line-through;
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+  .pm-stock { font-size: 12px; color: var(--ink-soft); margin-top: 6px; letter-spacing: 0.04em; }
+  .pm-stock.low { color: var(--sale); }
+  .pm-stock.out { color: var(--sale); font-weight: 700; }
+
+  /* add row */
+  #productModal .add-row {
+    display: flex; gap: 8px;
+    margin-top: 8px;
+  }
+  #productModal .add-row .btn { flex: 1; justify-content: center; padding: 16px; }
+  #productModal .add-row .btn.disabled {
+    background: var(--card); color: var(--muted); border-color: var(--line);
+    cursor: not-allowed;
+  }
+  #productModal .heart-add {
+    width: 52px;
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--ink);
+    transition: all .2s;
+    display: grid; place-items: center;
+  }
+  #productModal .heart-add:hover, #productModal .heart-add.hover {
+    border-color: var(--ink);
+  }
+  #productModal .heart-add.active {
+    color: var(--sale); border-color: var(--sale);
+  }
+  #productModal .heart-add svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+  #productModal .heart-add.active svg { fill: var(--sale); stroke: var(--sale); }
+
+  #productModal .pm-desc { font-size: 14px; color: var(--ink-soft); line-height: 1.65; padding-top: 8px; border-top: 1px solid var(--line); margin-top: 6px; }
+  #productModal .specs {
+    list-style: none;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 14px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    margin-top: 6px;
+  }
+  #productModal .specs li { font-size: 12px; color: var(--ink); }
+  #productModal .specs li b { display: block; color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; margin-bottom: 3px; }
+
+  /* CART MODAL */
+  #cartModal .modal-content {
+    grid-template-columns: 1fr;
+    max-width: 540px;
+    max-height: 84vh;
+  }
+  #cartModal .body {
+    padding: 32px 28px;
+    display: flex; flex-direction: column;
+    overflow-y: auto;
+  }
+  #cartModal h3 { font-size: 28px; margin-bottom: 22px; color: var(--ink); }
+  #cartList { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .cart-item {
+    display: grid;
+    grid-template-columns: 64px 1fr auto;
+    gap: 14px;
+    align-items: center;
+    padding: 12px;
+    background: var(--card);
+    border: 1px solid var(--line);
+  }
+  .cart-item img { width: 64px; height: 64px; object-fit: cover; filter: grayscale(20%); }
+  .cart-item .ci-name { font-weight: 600; font-size: 14px; color: var(--ink); }
+  .cart-item .ci-meta { font-size: 11px; color: var(--muted); margin-top: 3px; letter-spacing: 0.04em; }
+  .cart-item .ci-price { font-family: 'Bodoni Moda', serif; color: var(--ink); font-size: 18px; }
+  .cart-empty { color: var(--muted); text-align: center; padding: 32px 0; font-size: 14px; }
+  .cart-shipping { font-size: 12px; color: var(--ink-soft); padding: 12px 0; border-bottom: 1px solid var(--line); margin-top: 12px; }
+  .cart-shipping b { color: var(--ink); }
+  .cart-total {
+    margin-top: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .cart-total .lbl { font-size: 12px; color: var(--ink-soft); letter-spacing: 0.16em; text-transform: uppercase; }
+  .cart-total .val { font-family: 'Bodoni Moda', serif; font-size: 28px; color: var(--ink); }
+  #cartModal .checkout {
+    margin-top: 16px;
+    width: 100%; justify-content: center; padding: 16px;
+  }
+
+  .modal-close {
+    position: absolute;
+    top: 14px; right: 14px;
+    width: 36px; height: 36px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    font-size: 18px;
+    color: var(--ink);
+    z-index: 3;
+    transition: all .2s;
+  }
+  .modal-close:hover, .modal-close.hover { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+
+  /* TOAST */
+  #toast {
+    position: fixed;
+    top: 24px; left: 50%;
+    transform: translateX(-50%) translateY(-200%);
+    background: var(--ink);
+    color: var(--bg);
+    padding: 14px 24px;
+    font-size: 12px; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    z-index: 6000;
+    transition: transform .35s cubic-bezier(.2,.7,.2,1);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
+    display: flex; align-items: center; gap: 10px;
+    max-width: 92vw;
+  }
+  #toast.show { transform: translateX(-50%) translateY(0); }
+  #toast .check {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--bg);
+    color: var(--ink);
+    display: grid; place-items: center;
+    font-size: 11px; font-weight: 800;
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 1100px) {
+    .grid { grid-template-columns: repeat(3, 1fr); }
+    .cat-tiles { grid-template-columns: repeat(3, 1fr); }
+    .foot-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 800px) {
+    .header-bar { grid-template-columns: 1fr auto; gap: 12px; padding: 14px 16px; }
+    nav.main-nav { display: none; }
+    .hero { grid-template-columns: 1fr; padding: 0 16px; gap: 24px; }
+    .hero-img { min-height: 360px; }
+    .cat-tiles { padding: 0 16px; }
+    .section { padding: 0 16px; }
+    .grid { grid-template-columns: repeat(2, 1fr); }
+    .sale-banner { grid-template-columns: 1fr; padding: 36px 24px; margin-left: 16px; margin-right: 16px; }
+    .foot-grid { grid-template-columns: 1fr; gap: 24px; }
+    .foot-bottom { flex-direction: column; gap: 8px; }
+    .modal-content { grid-template-columns: 1fr; max-height: 92vh; }
+    #productModal .body { padding: 28px 20px; }
+    #productModal .modal-content img.main-img { max-height: 280px; }
+    .newsletter { margin-left: 16px; margin-right: 16px; }
+    .promise { padding: 56px 24px; }
+  }
+  @media (max-width: 480px) {
+    body { font-size: 15px; }
+    .announce { font-size: 10px; padding: 7px 12px; }
+    .header-bar { padding: 10px 12px; gap: 8px; }
+    .brand { font-size: 19px; gap: 6px; }
+    .icon-btn { width: 36px; height: 36px; }
+    .icon-btn svg { width: 15px; height: 15px; }
+    .hero { margin-top: 16px; gap: 16px; }
+    .hero-text { padding: 12px 0 0; }
+    .hero-text h1 { font-size: 40px; line-height: 1.02; }
+    .hero-text p { font-size: 15px; }
+    .hero-img { min-height: 280px; }
+    .cat-tiles { grid-template-columns: repeat(2, 1fr); margin-top: 40px; }
+    .section { margin-top: 56px; }
+    .section-head h2 { font-size: 28px; }
+    .grid { gap: 12px; }
+    .card .body { padding: 12px 14px 14px; }
+    .card .name { font-size: 16px; }
+    .card .price { font-size: 17px; }
+    .add-btn { padding: 6px 10px; font-size: 9px; }
+    .promise { padding: 48px 20px; margin-top: 56px; }
+    .promise h2 { font-size: 30px; }
+    .promise p { font-size: 14px; }
+    .newsletter { padding: 36px 20px; margin-top: 56px; }
+    .newsletter-form { flex-direction: column; padding: 8px; }
+    .newsletter-form .fake-input { padding: 12px 14px; }
+    .newsletter-form button { width: 100%; padding: 14px; }
+    footer { padding: 44px 16px 20px; margin-top: 56px; }
+    #cursor { width: 44px; height: 44px; }
+    #pip { width: 92px; height: 70px; bottom: 10px; right: 10px; }
+    #pip .label { font-size: 8px; padding: 2px 5px; }
+    #hud { top: 64px; left: 10px; padding: 6px 10px; font-size: 10px; }
+    #hud .led { width: 6px; height: 6px; }
+    #scrollHint { font-size: 10px; padding: 5px 12px; }
+    #scrollHint.up { top: 60px; }
+    #scrollHint.down { bottom: 90px; }
+    #intro { padding: 24px; }
+    #intro h1 { font-size: 38px; }
+    #intro p { font-size: 14px; margin-bottom: 24px; }
+    #intro button { padding: 12px 20px; font-size: 10px; flex: 1; min-width: 140px; }
+    #intro .actions { width: 100%; max-width: 360px; }
+    #toast { font-size: 11px; padding: 10px 18px; top: 12px; }
+    .modal { padding: 12px; }
+    #productModal h3 { font-size: 24px; }
+    #productModal .pm-price { font-size: 24px; }
+    #productModal .add-row { flex-direction: row; }
+    .size-pill { min-width: 40px; padding: 8px 10px; font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- INTRO -->
+  <div id="intro">
+    <div class="badge">— hands-free shopping —</div>
+    <h1>Browse our store with <em>your hands</em>.</h1>
+    <p>Allow camera access, then point with your index finger to move the cursor. Pinch your thumb + index to click. Drift your hand to the top or bottom of the screen to scroll.</p>
+    <div class="actions">
+      <button id="startBtn">Allow camera &amp; enter</button>
+      <button id="skipBtn">Skip — use my mouse</button>
+    </div>
+    <div class="tip">works best in good light · on phone, prop it up and use your other hand · needs https for camera</div>
+  </div>
+
+  <!-- ANNOUNCEMENT -->
+  <div class="announce">
+    <span>Free shipping over ₹3,000</span>
+    <span>30-day returns</span>
+    <span>Made in India</span>
+  </div>
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-bar">
+      <div class="brand">MONOLITH<em>.</em></div>
+      <nav class="main-nav">
+        <a href="#shop" class="nav-anchor">Shop all</a>
+        <a href="#bestsellers" class="nav-anchor">Latest Drop</a>
+        <a href="#sale" class="nav-anchor">Sale</a>
+        <a href="#promise" class="nav-anchor">About</a>
+      </nav>
+      <div class="header-actions">
+        <button class="icon-btn" data-action="search" aria-label="Search">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        </button>
+        <button class="icon-btn" id="wishIconBtn" aria-label="Wishlist">
+          <svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.5-9.5-9.5C1.4 8.4 3 5 6 5c1.8 0 3.4 1 4.2 2.5h3.6C14.6 6 16.2 5 18 5c3 0 4.6 3.4 3.5 6.5C19.5 16.5 12 21 12 21z"/></svg>
+          <span class="wish-badge hidden" id="wishBadge">0</span>
+        </button>
+        <button class="icon-btn" id="cartIconBtn" aria-label="Cart">
+          <svg viewBox="0 0 24 24"><path d="M5 7h14l-1.5 11a2 2 0 0 1-2 1.7H8.5a2 2 0 0 1-2-1.7L5 7Z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg>
+          <span class="cart-badge hidden" id="cartBadge">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero" id="shop">
+    <div class="hero-text">
+      <div class="eyebrow"><span class="dot"></span>Latest Drop · just landed</div>
+      <h1>Considered clothes, made <em>slowly</em>.</h1>
+      <p>MONOLITH is a small label producing heavyweight basics in deadstock and certified organic fabrics. Made in batches of 200 in two small factories — fifteen people in Tirupur, twelve in Ludhiana.</p>
+      <div class="hero-cta">
+        <button class="btn" data-action="shop-all">Shop the drop →</button>
+        <button class="btn ghost" data-action="lookbook">View lookbook</button>
+      </div>
+    </div>
+    <div class="hero-img">
+      <img src="https://picsum.photos/seed/monoaw26hero/900/1100" alt="Latest drop hero" />
+      <div class="hero-tag">
+        <span class="name">Heavyweight Hoodie · Charcoal</span>
+        <span class="price">₹ 4,200</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- CATEGORY TILES -->
+  <section class="cat-tiles">
+    <div class="cat-tile" data-cat="Tops"><img src="https://picsum.photos/seed/cattops/300/400" /><div class="label">Tops</div></div>
+    <div class="cat-tile" data-cat="Outerwear"><img src="https://picsum.photos/seed/catout/300/400" /><div class="label">Outerwear</div></div>
+    <div class="cat-tile" data-cat="Bottoms"><img src="https://picsum.photos/seed/catbottom/300/400" /><div class="label">Bottoms</div></div>
+    <div class="cat-tile" data-cat="Knitwear"><img src="https://picsum.photos/seed/catknit/300/400" /><div class="label">Knitwear</div></div>
+    <div class="cat-tile" data-cat="Accessories"><img src="https://picsum.photos/seed/catacc/300/400" /><div class="label">Accessories</div></div>
+    <div class="cat-tile" data-cat="Sale"><img src="https://picsum.photos/seed/catsale/300/400" /><div class="label" style="color: var(--sale)">Sale</div></div>
+  </section>
+
+  <!-- BESTSELLERS -->
+  <section class="section" id="bestsellers">
+    <div class="section-head">
+      <div>
+        <h2>The <em>latest</em> drop</h2>
+        <p class="sub">Eight pieces, two factories, one season. Filter by category below.</p>
+      </div>
+    </div>
+    <div class="cat-strip" id="catStrip"></div>
+    <div class="grid" id="productGrid"></div>
+  </section>
+
+  <!-- SALE BANNER -->
+  <section class="sale-banner" id="sale">
+    <div class="lhs">
+      <div class="tag">— end of season —</div>
+      <h2>Up to <em>40% off</em> selected pieces</h2>
+      <p>A handful of last-season knits, tees, and accessories at lower prices. Limited stock. Final sale.</p>
+    </div>
+    <button class="btn" data-action="shop-sale">Shop sale →</button>
+  </section>
+
+  <!-- PROMISE -->
+  <section class="promise" id="promise">
+    <div class="inner">
+      <div class="label">— Our way of working —</div>
+      <h2>Made in small batches, by people we <em>know</em>.</h2>
+      <p>Every piece comes from one of two small factories — fifteen people in Tirupur for jersey, twelve in Ludhiana for knitwear. We visit twice a year, pay above market rate, and produce in batches of 200. If something arrives wrong, we'll repair, replace, or refund it — no time limit.</p>
+      <button class="btn" data-action="learn-more">Read the manifesto →</button>
+    </div>
+  </section>
+
+  <!-- NEWSLETTER -->
+  <section class="newsletter">
+    <h2>One <em>letter</em> a week.</h2>
+    <p>New drops, restocks, and the occasional essay on dressing well. No spam, no daily emails.</p>
+    <div class="newsletter-form">
+      <div class="fake-input">your@email.com</div>
+      <button data-action="subscribe">Subscribe</button>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="foot-grid">
+      <div>
+        <div class="brand" style="color:var(--ink); margin-bottom: 14px">MONOLITH<em>.</em></div>
+        <p class="about">A small clothing label run from a converted warehouse. Heavyweight basics in deadstock and organic fabrics.</p>
+      </div>
+      <div>
+        <h4>Shop</h4>
+        <ul>
+          <li><a href="#" class="foot-link">Tops</a></li>
+          <li><a href="#" class="foot-link">Outerwear</a></li>
+          <li><a href="#" class="foot-link">Bottoms</a></li>
+          <li><a href="#" class="foot-link">Knitwear</a></li>
+          <li><a href="#" class="foot-link">Accessories</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Help</h4>
+        <ul>
+          <li><a href="#" class="foot-link">Sizing &amp; fit</a></li>
+          <li><a href="#" class="foot-link">Shipping &amp; returns</a></li>
+          <li><a href="#" class="foot-link">Care guides</a></li>
+          <li><a href="#" class="foot-link">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Studio</h4>
+        <ul>
+          <li><a href="#" class="foot-link">Our story</a></li>
+          <li><a href="#" class="foot-link">Materials</a></li>
+          <li><a href="#" class="foot-link">Manufacturing</a></li>
+          <li><a href="#" class="foot-link">Press</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 Monolith. All rights reserved.</span>
+      <span>Designed in Jodhpur · Made in India</span>
+    </div>
+  </footer>
+
+  <!-- HAND TRACKING UI -->
+  <div id="pip" class="hidden">
+    <div class="label">CAM</div>
+    <video id="video" autoplay playsinline muted></video>
+    <canvas id="pipCanvas"></canvas>
+  </div>
+  <div id="hud"><span class="led"></span><span id="hudText">— hand tracking off</span></div>
+  <div id="scrollHint" class="up">↑ scrolling up</div>
+  <div id="debugPanel">
+    <div><span class="lab">over:</span> <span class="val" id="dbgOver">—</span></div>
+    <div><span class="lab">last pinch:</span> <span class="val" id="dbgPinch">—</span></div>
+  </div>
+
+  <!-- CURSOR -->
+  <div id="cursor">
+    <svg viewBox="-28 -28 56 56">
+      <circle class="outer" cx="0" cy="0" r="20" />
+      <circle class="inner" cx="0" cy="0" r="3.5" />
+    </svg>
+  </div>
+
+  <!-- PRODUCT MODAL -->
+  <div class="modal" id="productModal">
+    <div class="modal-content">
+      <img class="main-img" id="pmImg" src="" alt="" />
+      <div class="body">
+        <div class="pm-cat" id="pmCat"></div>
+        <h3 id="pmName"></h3>
+        <div class="pm-rating">
+          <span class="stars" id="pmStars">★★★★★</span>
+          <span id="pmRatingText"></span>
+        </div>
+        <div class="price-row">
+          <span class="pm-price" id="pmPrice"></span>
+          <span class="pm-was" id="pmWas" style="display:none"></span>
+          <span class="pm-off" id="pmOff" style="display:none"></span>
+        </div>
+        <div class="pm-section">
+          <div class="lbl"><span>Colour</span><span class="val" id="pmColorName">—</span></div>
+          <div class="swatches" id="pmColors"></div>
+        </div>
+        <div class="pm-section">
+          <div class="lbl"><span>Size</span><a class="val" data-action="size-guide">Size guide ↗</a></div>
+          <div class="sizes" id="pmSizes"></div>
+          <div class="pm-stock" id="pmStock"></div>
+        </div>
+        <div class="add-row">
+          <button class="btn" id="pmAdd">Add to bag</button>
+          <button class="heart-add" id="pmHeart" aria-label="Add to wishlist">
+            <svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.5-9.5-9.5C1.4 8.4 3 5 6 5c1.8 0 3.4 1 4.2 2.5h3.6C14.6 6 16.2 5 18 5c3 0 4.6 3.4 3.5 6.5C19.5 16.5 12 21 12 21z"/></svg>
+          </button>
+        </div>
+        <p class="pm-desc" id="pmDesc"></p>
+        <ul class="specs">
+          <li><b>Fabric</b><span id="pmFabric"></span></li>
+          <li><b>Fit</b><span id="pmFit"></span></li>
+          <li><b>Care</b><span id="pmCare"></span></li>
+          <li><b>Origin</b><span id="pmOrigin"></span></li>
+        </ul>
+      </div>
+      <button class="modal-close" data-modal-close="productModal">×</button>
+    </div>
+  </div>
+
+  <!-- CART MODAL -->
+  <div class="modal" id="cartModal">
+    <div class="modal-content">
+      <div class="body">
+        <h3>Your bag</h3>
+        <ul id="cartList"></ul>
+        <div class="cart-empty" id="cartEmpty">Your bag is empty. Pinch a piece to add one.</div>
+        <div class="cart-shipping" id="cartShipping" style="display:none"></div>
+        <div class="cart-total" id="cartTotalRow" style="display:none">
+          <span class="lbl">Subtotal</span>
+          <span class="val" id="cartTotal">₹ 0</span>
+        </div>
+        <button class="btn checkout" id="checkoutBtn" style="display:none">Checkout →</button>
+      </div>
+      <button class="modal-close" data-modal-close="cartModal">×</button>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast"><span class="check">✓</span><span id="toastText">Added to bag</span></div>
+
+  <!-- MEDIAPIPE -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+
+  <script>
+    // ── DATA ────────────────────────────────────────────
+    const PRODUCTS = [
+      {
+        id:1, name:'Heavyweight Hoodie', category:'Tops',
+        price:4200, salePrice:null,
+        rating:4.8, reviews:142,
+        colors:[{name:'Charcoal',hex:'#3a3a3d'},{name:'Off-Black',hex:'#15151a'},{name:'Stone',hex:'#a8a39c'}],
+        sizes:['XS','S','M','L','XL'],
+        stock:{XS:0,S:4,M:12,L:8,XL:2},
+        tag:'New', tagSale:false,
+        fabric:'380gsm organic loopback cotton', fit:'Boxy oversized — size down for regular',
+        care:'Cold wash, hang dry', origin:'Tirupur, India',
+        desc:'Our flagship hoodie. Heavyweight 380gsm loopback cotton, boxy cut, dropped shoulder, ribbed cuffs. Pre-shrunk and garment-dyed for that worn-in feel from day one.'
+      },
+      {
+        id:2, name:'Boxy Tee', category:'Tops',
+        price:1890, salePrice:null,
+        rating:4.7, reviews:218,
+        colors:[{name:'Off-Black',hex:'#15151a'},{name:'Bone',hex:'#e9e2d4'},{name:'Olive',hex:'#5a6149'}],
+        sizes:['XS','S','M','L','XL','XXL'],
+        stock:{XS:6,S:14,M:22,L:18,XL:9,XXL:2},
+        tag:'Bestseller',
+        fabric:'240gsm organic cotton', fit:'Boxy, true to size',
+        care:'Cold wash, hang dry', origin:'Tirupur, India',
+        desc:'A heavyweight tee with a boxy silhouette and a slightly higher neck. Garment-dyed in small batches. Wears in beautifully over six months.'
+      },
+      {
+        id:3, name:'Wool Overshirt', category:'Outerwear',
+        price:5800, salePrice:null,
+        rating:4.9, reviews:64,
+        colors:[{name:'Slate',hex:'#52555a'},{name:'Charcoal',hex:'#2e2e32'}],
+        sizes:['S','M','L','XL'],
+        stock:{S:3,M:6,L:4,XL:0},
+        tag:'New',
+        fabric:'70% merino, 30% wool', fit:'Relaxed, layer-friendly',
+        care:'Dry clean only', origin:'Ludhiana, India',
+        desc:'A heavy wool-blend overshirt cut to wear over a hoodie or under a jacket. Two patch pockets, horn buttons, fully lined collar.'
+      },
+      {
+        id:4, name:'Pleated Trousers', category:'Bottoms',
+        price:4400, salePrice:null,
+        rating:4.6, reviews:91,
+        colors:[{name:'Stone',hex:'#a8a39c'},{name:'Charcoal',hex:'#2e2e32'},{name:'Off-Black',hex:'#15151a'}],
+        sizes:['28','30','32','34','36'],
+        stock:{'28':4,'30':9,'32':12,'34':6,'36':2},
+        tag:'',
+        fabric:'Heavyweight cotton twill', fit:'High-waisted, tapered',
+        care:'Cold wash, low iron', origin:'Tirupur, India',
+        desc:'Single-pleated trousers in heavyweight twill. High-waisted with a tapered leg and a slight break at the ankle. Belt loops, side pockets, button-and-zip fly.'
+      },
+      {
+        id:5, name:'Lambswool Cardigan', category:'Knitwear',
+        price:3500, salePrice:2450,
+        rating:4.8, reviews:73,
+        colors:[{name:'Ash',hex:'#9b9ea0'},{name:'Camel',hex:'#a48766'}],
+        sizes:['S','M','L','XL'],
+        stock:{S:0,M:2,L:1,XL:0},
+        tag:'-30%', tagSale:true,
+        fabric:'100% lambswool', fit:'Regular, slightly cropped',
+        care:'Hand wash, lay flat', origin:'Ludhiana, India',
+        desc:'A short-bodied lambswool cardigan with horn buttons and ribbed hems. Heavyweight enough to wear on its own through autumn. Last few from our previous drop.'
+      },
+      {
+        id:6, name:'Slim Crew Tee', category:'Tops',
+        price:1600, salePrice:null,
+        rating:4.5, reviews:312,
+        colors:[{name:'White',hex:'#ffffff'},{name:'Black',hex:'#0a0a0a'},{name:'Heather Grey',hex:'#8c8c8f'}],
+        sizes:['XS','S','M','L','XL','XXL'],
+        stock:{XS:11,S:24,M:32,L:28,XL:14,XXL:5},
+        tag:'',
+        fabric:'180gsm long-staple cotton', fit:'Slim, true to size',
+        care:'Cold wash, hang dry', origin:'Tirupur, India',
+        desc:'A lighter, slimmer-cut tee. Long-staple combed cotton, ribbed crew, a touch of stretch in the neck so it holds its shape over time.'
+      },
+      {
+        id:7, name:'Canvas Tote', category:'Accessories',
+        price:1800, salePrice:null,
+        rating:4.7, reviews:156,
+        colors:[{name:'Black',hex:'#0a0a0a'},{name:'Natural',hex:'#d6cdb8'}],
+        sizes:['One size'],
+        stock:{'One size':18},
+        tag:'',
+        fabric:'14oz natural canvas', fit:'40 × 38 × 12 cm',
+        care:'Spot clean only', origin:'Tirupur, India',
+        desc:'A heavy 14oz canvas tote with reinforced straps and a small inside pocket. Holds a 13" laptop, a couple of books, and a packed lunch.'
+      },
+      {
+        id:8, name:'Merino Beanie', category:'Accessories',
+        price:1100, salePrice:null,
+        rating:4.6, reviews:88,
+        colors:[{name:'Charcoal',hex:'#2e2e32'},{name:'Black',hex:'#0a0a0a'},{name:'Oat',hex:'#d6c5a3'}],
+        sizes:['One size'],
+        stock:{'One size':22},
+        tag:'Restock',
+        fabric:'100% merino wool', fit:'Regular, mid-rise',
+        care:'Hand wash, lay flat', origin:'Ludhiana, India',
+        desc:'A simple ribbed beanie in soft merino wool. No logo. Comes in three understated colours.'
+      },
+    ];
+
+    const CATEGORIES = ['All', 'Tops', 'Outerwear', 'Bottoms', 'Knitwear', 'Accessories'];
+
+    // ── BUILD CATEGORY PILLS ───────────────────────────
+    const catStrip = document.getElementById('catStrip');
+    let activeCat = 'All';
+    CATEGORIES.forEach((c, i) => {
+      const p = document.createElement('button');
+      p.className = 'pill' + (i === 0 ? ' active' : '');
+      p.textContent = c;
+      p.dataset.cat = c;
+      catStrip.appendChild(p);
+    });
+    catStrip.addEventListener('click', e => {
+      const p = e.target.closest('.pill');
+      if (!p) return;
+      activeCat = p.dataset.cat;
+      catStrip.querySelectorAll('.pill').forEach(x => x.classList.toggle('active', x.dataset.cat === activeCat));
+      renderProductGrid();
+    });
+
+    // ── PRODUCT GRID ───────────────────────────────────
+    const productGrid = document.getElementById('productGrid');
+    function renderProductGrid() {
+      productGrid.innerHTML = '';
+      const list = activeCat === 'All' ? PRODUCTS : PRODUCTS.filter(p => p.category === activeCat);
+      if (list.length === 0) {
+        productGrid.innerHTML = '<div style="grid-column: 1/-1; padding: 48px; text-align:center; color: var(--muted)">No pieces in this category yet.</div>';
+        return;
+      }
+      list.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.dataset.id = p.id;
+        const isWished = wishlist.has(p.id);
+        const showPrice = p.salePrice ? `<span class="price was">₹ ${p.price.toLocaleString('en-IN')}</span><span class="price sale-now">₹ ${p.salePrice.toLocaleString('en-IN')}</span>` : `<span class="price">₹ ${p.price.toLocaleString('en-IN')}</span>`;
+        card.innerHTML = `
+          <div class="img-wrap">
+            <div class="badges">
+              ${p.tag ? `<span class="badge ${p.tagSale ? 'sale' : ''}">${p.tag}</span>` : ''}
+            </div>
+            <button class="heart-btn ${isWished ? 'active' : ''}" data-wish="${p.id}" aria-label="Wishlist">
+              <svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.5-9.5-9.5C1.4 8.4 3 5 6 5c1.8 0 3.4 1 4.2 2.5h3.6C14.6 6 16.2 5 18 5c3 0 4.6 3.4 3.5 6.5C19.5 16.5 12 21 12 21z"/></svg>
+            </button>
+            <img class="main" src="https://picsum.photos/seed/mono${p.id}a/600/750" alt="${p.name}" loading="lazy" />
+            <img class="alt" src="https://picsum.photos/seed/mono${p.id}b/600/750" alt="${p.name} alt" loading="lazy" />
+          </div>
+          <div class="body">
+            <div class="name">${p.name}</div>
+            <div class="meta-row">
+              <span>${p.colors.length} colour${p.colors.length>1?'s':''}</span>
+              <div class="colors">${p.colors.slice(0,3).map(c => `<span class="swatch-mini" style="background:${c.hex}"></span>`).join('')}</div>
+            </div>
+            <div class="rating"><span class="star">★</span> <span>${p.rating}</span> <span style="color:var(--muted)">(${p.reviews})</span></div>
+            <div class="row">
+              <div class="price-block">${showPrice}</div>
+              <button class="add-btn" data-quick-view="${p.id}">View</button>
+            </div>
+          </div>`;
+        productGrid.appendChild(card);
+      });
+    }
+
+    // ── WISHLIST ───────────────────────────────────────
+    const wishlist = new Set();
+    function toggleWish(id) {
+      id = Number(id);
+      if (wishlist.has(id)) wishlist.delete(id); else wishlist.add(id);
+      const badge = document.getElementById('wishBadge');
+      badge.textContent = wishlist.size;
+      badge.classList.toggle('hidden', wishlist.size === 0);
+      // re-render to update heart states
+      renderProductGrid();
+      const heartBtn = document.getElementById('pmHeart');
+      if (heartBtn && modalState.productId == id) heartBtn.classList.toggle('active', wishlist.has(id));
+    }
+
+    // ── PRODUCT MODAL STATE ────────────────────────────
+    let modalState = { productId: null, selectedColor: null, selectedSize: null };
+
+    function openProduct(id) {
+      const p = PRODUCTS.find(x => x.id == id);
+      if (!p) return;
+      const firstAvailableSize = p.sizes.find(s => p.stock[s] > 0) || p.sizes[0];
+      modalState = {
+        productId: p.id,
+        selectedColor: p.colors[0].name,
+        selectedSize: firstAvailableSize
+      };
+      renderProductModal();
+      openModalEl('productModal');
+    }
+
+    function renderProductModal() {
+      const p = PRODUCTS.find(x => x.id == modalState.productId);
+      if (!p) return;
+      document.getElementById('pmImg').src = `https://picsum.photos/seed/mono${p.id}a/700/900`;
+      document.getElementById('pmCat').textContent = p.category.toUpperCase() + (p.tag ? ' · ' + p.tag.toUpperCase() : '');
+      document.getElementById('pmName').textContent = p.name;
+      document.getElementById('pmRatingText').textContent = `${p.rating} · ${p.reviews} reviews`;
+
+      // Price
+      if (p.salePrice) {
+        document.getElementById('pmPrice').textContent = `₹ ${p.salePrice.toLocaleString('en-IN')}`;
+        document.getElementById('pmPrice').style.color = 'var(--sale)';
+        const wasEl = document.getElementById('pmWas');
+        wasEl.textContent = `₹ ${p.price.toLocaleString('en-IN')}`;
+        wasEl.style.display = 'inline';
+        const off = Math.round((1 - p.salePrice / p.price) * 100);
+        const offEl = document.getElementById('pmOff');
+        offEl.textContent = `−${off}%`;
+        offEl.style.display = 'inline-block';
+      } else {
+        document.getElementById('pmPrice').textContent = `₹ ${p.price.toLocaleString('en-IN')}`;
+        document.getElementById('pmPrice').style.color = 'var(--ink)';
+        document.getElementById('pmWas').style.display = 'none';
+        document.getElementById('pmOff').style.display = 'none';
+      }
+
+      // Colors
+      const colorsEl = document.getElementById('pmColors');
+      colorsEl.innerHTML = '';
+      p.colors.forEach(c => {
+        const sw = document.createElement('button');
+        sw.className = 'swatch' + (c.name === modalState.selectedColor ? ' active' : '');
+        sw.style.background = c.hex;
+        sw.dataset.colorPick = c.name;
+        sw.title = c.name;
+        if (c.hex === '#ffffff') sw.style.border = '1px solid var(--ink-soft)';
+        colorsEl.appendChild(sw);
+      });
+      document.getElementById('pmColorName').textContent = modalState.selectedColor;
+
+      // Sizes
+      const sizesEl = document.getElementById('pmSizes');
+      sizesEl.innerHTML = '';
+      p.sizes.forEach(s => {
+        const px = document.createElement('button');
+        const stock = p.stock[s] || 0;
+        px.className = 'size-pill'
+          + (s === modalState.selectedSize ? ' active' : '')
+          + (stock === 0 ? ' disabled' : '');
+        px.textContent = s;
+        px.dataset.sizePick = s;
+        if (stock === 0) px.disabled = true;
+        sizesEl.appendChild(px);
+      });
+
+      // Stock
+      const stockEl = document.getElementById('pmStock');
+      const cur = p.stock[modalState.selectedSize] || 0;
+      stockEl.classList.remove('low', 'out');
+      if (cur === 0) {
+        stockEl.textContent = `Out of stock in size ${modalState.selectedSize}`;
+        stockEl.classList.add('out');
+      } else if (cur <= 3) {
+        stockEl.textContent = `Only ${cur} left in size ${modalState.selectedSize}`;
+        stockEl.classList.add('low');
+      } else {
+        stockEl.textContent = `In stock`;
+      }
+
+      // Add button state
+      const addBtn = document.getElementById('pmAdd');
+      if (cur === 0) {
+        addBtn.classList.add('disabled');
+        addBtn.textContent = 'Out of stock';
+      } else {
+        addBtn.classList.remove('disabled');
+        addBtn.textContent = 'Add to bag';
+      }
+
+      // Heart state
+      document.getElementById('pmHeart').classList.toggle('active', wishlist.has(p.id));
+
+      // Specs
+      document.getElementById('pmDesc').textContent = p.desc;
+      document.getElementById('pmFabric').textContent = p.fabric;
+      document.getElementById('pmFit').textContent = p.fit;
+      document.getElementById('pmCare').textContent = p.care;
+      document.getElementById('pmOrigin').textContent = p.origin;
+    }
+
+    function selectColor(name) {
+      modalState.selectedColor = name;
+      renderProductModal();
+    }
+    function selectSize(s) {
+      const p = PRODUCTS.find(x => x.id == modalState.productId);
+      if (!p || (p.stock[s] || 0) === 0) return;
+      modalState.selectedSize = s;
+      renderProductModal();
+    }
+
+    // ── CART ───────────────────────────────────────────
+    const cart = []; // { id, size, color, qty }
+    function addToBag() {
+      const p = PRODUCTS.find(x => x.id == modalState.productId);
+      if (!p) return;
+      const stock = p.stock[modalState.selectedSize] || 0;
+      if (stock === 0) { showToast('Out of stock in this size'); return; }
+      const existing = cart.find(i => i.id == p.id && i.size === modalState.selectedSize && i.color === modalState.selectedColor);
+      if (existing) existing.qty++;
+      else cart.push({ id: p.id, size: modalState.selectedSize, color: modalState.selectedColor, qty: 1 });
+      renderCart();
+      showToast(`${p.name} (${modalState.selectedSize}, ${modalState.selectedColor}) added`);
+    }
+    function removeCartItem(idx) {
+      cart.splice(idx, 1);
+      renderCart();
+    }
+    function cartCount() { return cart.reduce((a, i) => a + i.qty, 0); }
+    function cartSubtotal() {
+      return cart.reduce((a, i) => {
+        const p = PRODUCTS.find(x => x.id == i.id);
+        const price = p.salePrice || p.price;
+        return a + price * i.qty;
+      }, 0);
+    }
+
+    function renderCart() {
+      const badge = document.getElementById('cartBadge');
+      const count = cartCount();
+      badge.textContent = count;
+      badge.classList.toggle('hidden', count === 0);
+
+      const list = document.getElementById('cartList');
+      const empty = document.getElementById('cartEmpty');
+      const totalRow = document.getElementById('cartTotalRow');
+      const checkout = document.getElementById('checkoutBtn');
+      const shipping = document.getElementById('cartShipping');
+
+      list.innerHTML = '';
+      if (cart.length === 0) {
+        empty.style.display = 'block';
+        totalRow.style.display = 'none';
+        checkout.style.display = 'none';
+        shipping.style.display = 'none';
+        return;
+      }
+      empty.style.display = 'none';
+      cart.forEach((item, idx) => {
+        const p = PRODUCTS.find(x => x.id == item.id);
+        const price = p.salePrice || p.price;
+        const li = document.createElement('li');
+        li.className = 'cart-item';
+        li.innerHTML = `
+          <img src="https://picsum.photos/seed/mono${p.id}a/120/120" alt="${p.name}" />
+          <div>
+            <div class="ci-name">${p.name}</div>
+            <div class="ci-meta">${item.color} · Size ${item.size} · Qty ${item.qty}</div>
+          </div>
+          <div style="text-align:right">
+            <div class="ci-price">₹ ${(price * item.qty).toLocaleString('en-IN')}</div>
+            <button class="add-btn" style="border:none;color:var(--muted);padding:4px 0;font-size:10px" data-cart-remove="${idx}">Remove</button>
+          </div>`;
+        list.appendChild(li);
+      });
+
+      const sub = cartSubtotal();
+      const freeShipThreshold = 3000;
+      shipping.style.display = 'block';
+      if (sub >= freeShipThreshold) {
+        shipping.innerHTML = `🎉 You qualify for <b>free shipping</b>.`;
+      } else {
+        const remaining = freeShipThreshold - sub;
+        shipping.innerHTML = `Add <b>₹ ${remaining.toLocaleString('en-IN')}</b> more for free shipping.`;
+      }
+
+      totalRow.style.display = 'flex';
+      checkout.style.display = 'flex';
+      document.getElementById('cartTotal').textContent = `₹ ${sub.toLocaleString('en-IN')}`;
+    }
+
+    // ── MODAL HELPERS ──────────────────────────────────
+    function openModalEl(id) { document.getElementById(id).classList.add('open'); }
+    function closeModalEl(id) {
+      if (id) document.getElementById(id).classList.remove('open');
+      else document.querySelectorAll('.modal.open').forEach(m => m.classList.remove('open'));
+    }
+
+    // ── EVENT WIRING ───────────────────────────────────
+    document.addEventListener('click', e => {
+      // wishlist heart on card
+      const wishBtn = e.target.closest('[data-wish]');
+      if (wishBtn) { e.stopPropagation(); toggleWish(wishBtn.dataset.wish); return; }
+
+      // quick view button on card
+      const quick = e.target.closest('[data-quick-view]');
+      if (quick) { e.stopPropagation(); openProduct(quick.dataset.quickView); return; }
+
+      // any card body opens product
+      const card = e.target.closest('.card');
+      if (card) { openProduct(card.dataset.id); return; }
+
+      // category tile (top of page)
+      const tile = e.target.closest('.cat-tile');
+      if (tile) {
+        const c = tile.dataset.cat;
+        if (c === 'Sale') {
+          document.getElementById('sale').scrollIntoView({behavior:'smooth'});
+        } else {
+          activeCat = c;
+          catStrip.querySelectorAll('.pill').forEach(x => x.classList.toggle('active', x.dataset.cat === activeCat));
+          renderProductGrid();
+          document.getElementById('bestsellers').scrollIntoView({behavior:'smooth'});
+        }
+        return;
+      }
+
+      // size pick in modal
+      const sizePick = e.target.closest('[data-size-pick]');
+      if (sizePick && !sizePick.disabled) { selectSize(sizePick.dataset.sizePick); return; }
+
+      // color pick in modal
+      const colorPick = e.target.closest('[data-color-pick]');
+      if (colorPick) { selectColor(colorPick.dataset.colorPick); return; }
+
+      // pmAdd in modal
+      if (e.target.id === 'pmAdd' || e.target.closest('#pmAdd')) {
+        const btn = document.getElementById('pmAdd');
+        if (btn.classList.contains('disabled')) return;
+        addToBag();
+        return;
+      }
+
+      // pmHeart in modal
+      if (e.target.id === 'pmHeart' || e.target.closest('#pmHeart')) {
+        toggleWish(modalState.productId);
+        return;
+      }
+
+      // cart remove
+      const cr = e.target.closest('[data-cart-remove]');
+      if (cr) { e.stopPropagation(); removeCartItem(parseInt(cr.dataset.cartRemove)); return; }
+
+      // modal close
+      const close = e.target.closest('[data-modal-close]');
+      if (close) { closeModalEl(close.dataset.modalClose); return; }
+
+      // generic actions
+      const action = e.target.closest('[data-action]');
+      if (action) {
+        const a = action.dataset.action;
+        if (a === 'subscribe') showToast('Subscribed — first letter lands Sunday');
+        else if (a === 'shop-all') document.getElementById('bestsellers').scrollIntoView({behavior:'smooth'});
+        else if (a === 'shop-sale') {
+          activeCat = 'All';
+          renderProductGrid();
+          showToast('Showing sale pieces');
+          document.getElementById('bestsellers').scrollIntoView({behavior:'smooth'});
+        }
+        else if (a === 'lookbook') showToast('Lookbook landing soon');
+        else if (a === 'learn-more') showToast('Opening manifesto');
+        else if (a === 'search') showToast('Search coming soon');
+        else if (a === 'size-guide') showToast('Size guide opening soon');
+        return;
+      }
+
+      // header icons
+      if (e.target.closest('#cartIconBtn')) { openModalEl('cartModal'); return; }
+      if (e.target.closest('#wishIconBtn')) { showToast(`${wishlist.size} item${wishlist.size===1?'':'s'} in wishlist`); return; }
+      if (e.target.id === 'checkoutBtn') { showToast('Redirecting to checkout…'); closeModalEl('cartModal'); return; }
+
+      // backdrop closes modal
+      const modal = e.target.closest('.modal');
+      if (modal && e.target === modal) closeModalEl(modal.id);
+    });
+
+    document.querySelectorAll('.nav-anchor').forEach(a => {
+      a.addEventListener('click', e => {
+        e.preventDefault();
+        const id = a.getAttribute('href').slice(1);
+        const t = document.getElementById(id);
+        if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+
+    // ── TOAST ──────────────────────────────────────────
+    const toast = document.getElementById('toast');
+    let toastTimer = null;
+    function showToast(msg) {
+      document.getElementById('toastText').textContent = msg;
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 2400);
+    }
+
+    // initial render
+    renderProductGrid();
+    renderCart();
+
+    // ═══════════════════════════════════════════════════
+    // HAND TRACKING
+    // ═══════════════════════════════════════════════════
+
+    class OneEuroFilter {
+      constructor(minCutoff = 1.5, beta = 0.08, dCutoff = 1.0) {
+        this.minCutoff = minCutoff; this.beta = beta; this.dCutoff = dCutoff;
+        this.x = null; this.dx = 0; this.lastTime = null;
+      }
+      _alpha(cutoff, dt) {
+        const tau = 1 / (2 * Math.PI * cutoff);
+        return 1 / (1 + tau / dt);
+      }
+      filter(x, t) {
+        if (this.x === null) { this.x = x; this.lastTime = t; return x; }
+        const dt = Math.max((t - this.lastTime) / 1000, 1e-6);
+        const dx = (x - this.x) / dt;
+        const aD = this._alpha(this.dCutoff, dt);
+        const dxHat = aD * dx + (1 - aD) * this.dx;
+        const cutoff = this.minCutoff + this.beta * Math.abs(dxHat);
+        const a = this._alpha(cutoff, dt);
+        const xHat = a * x + (1 - a) * this.x;
+        this.x = xHat; this.dx = dxHat; this.lastTime = t;
+        return xHat;
+      }
+      reset() { this.x = null; this.dx = 0; this.lastTime = null; }
+    }
+    const filterX = new OneEuroFilter(1.5, 0.08, 1.0);
+    const filterY = new OneEuroFilter(1.5, 0.08, 1.0);
+
+    const cursor = document.getElementById('cursor');
+    const pip = document.getElementById('pip');
+    const pipCanvas = document.getElementById('pipCanvas');
+    const pctx = pipCanvas.getContext('2d');
+    const hud = document.getElementById('hud');
+    const hudText = document.getElementById('hudText');
+    const scrollHint = document.getElementById('scrollHint');
+
+    let targetX = window.innerWidth / 2;
+    let targetY = window.innerHeight / 2;
+    let smoothX = targetX, smoothY = targetY;
+    let isPinching = false;
+    let trackingActive = false;
+    let handVisible = false;
+
+    function elementUnderCursor() {
+      return document.elementFromPoint(smoothX, smoothY);
+    }
+
+    function describeElement(el) {
+      if (!el) return '—';
+      const t = el.closest(HOVER_SELECTOR);
+      const target = t || el;
+      let name = target.tagName.toLowerCase();
+      if (target.id) name += '#' + target.id;
+      if (target.className && typeof target.className === 'string') {
+        const cls = target.className.split(' ').filter(c => c && c !== 'hover').slice(0, 2).join('.');
+        if (cls) name += '.' + cls;
+      }
+      const txt = (target.textContent || '').trim().slice(0, 20);
+      if (txt) name += ' "' + txt + '"';
+      return name + (t ? ' ✓' : ' (no handler)');
+    }
+
+    const dbgOver = document.getElementById('dbgOver');
+    const dbgPinch = document.getElementById('dbgPinch');
+    const debugPanel = document.getElementById('debugPanel');
+
+    const HOVER_SELECTOR = '.card, .cat-tile, .pill, .add-btn, .btn, .icon-btn, .nav-anchor, .foot-link, .modal-close, .heart-btn, .swatch, .size-pill, .heart-add, [data-action], [data-modal-close], [data-quick-view], [data-wish], [data-color-pick], [data-size-pick], [data-cart-remove], #pmAdd, #pmHeart, #checkoutBtn, .newsletter-form button';
+
+    function updateHover() {
+      const el = elementUnderCursor();
+      document.querySelectorAll('.hover').forEach(e => e.classList.remove('hover'));
+      cursor.classList.remove('over');
+      dbgOver.textContent = describeElement(el);
+      if (!el) return;
+      const t = el.closest(HOVER_SELECTOR);
+      if (t && !t.classList.contains('disabled')) {
+        t.classList.add('hover');
+        cursor.classList.add('over');
+      }
+    }
+
+    function pinchClick() {
+      const el = elementUnderCursor();
+      if (!el) { dbgPinch.textContent = '(empty)'; return; }
+      const t = el.closest(HOVER_SELECTOR);
+      if (t && !t.classList.contains('disabled')) {
+        dbgPinch.textContent = 'click → ' + describeElement(t).split(' ✓')[0];
+        t.click();
+        return;
+      }
+      const m = el.closest('.modal.open');
+      if (m && el === m) {
+        dbgPinch.textContent = 'close modal';
+        closeModalEl(m.id);
+      } else {
+        dbgPinch.textContent = 'no handler @ ' + describeElement(el);
+      }
+    }
+
+    function applyEdgeScroll() {
+      if (!handVisible) { scrollHint.classList.remove('show'); return; }
+      if (cursor.classList.contains('over')) { scrollHint.classList.remove('show'); return; }
+
+      // If a modal is open, scroll the modal body instead of the page.
+      const openModal = document.querySelector('.modal.open');
+      let scrollFn;
+      if (openModal) {
+        const body = openModal.querySelector('.body');
+        if (!body) { scrollHint.classList.remove('show'); return; }
+        scrollFn = (dy) => { body.scrollTop += dy; };
+      } else {
+        scrollFn = (dy) => window.scrollBy(0, dy);
+      }
+
+      const h = window.innerHeight;
+      const topZone = h * 0.13;
+      const bottomZone = h * 0.87;
+
+      if (smoothY < topZone) {
+        const speed = (topZone - smoothY) / topZone * 16;
+        scrollFn(-speed);
+        scrollHint.className = 'up show';
+        scrollHint.textContent = '↑ scrolling up';
+      } else if (smoothY > bottomZone) {
+        const speed = (smoothY - bottomZone) / (h - bottomZone) * 16;
+        scrollFn(speed);
+        scrollHint.className = 'down show';
+        scrollHint.textContent = '↓ scrolling down';
+      } else {
+        scrollHint.classList.remove('show');
+      }
+    }
+
+    function setupPip() {
+      const r = pip.getBoundingClientRect();
+      pipCanvas.width = r.width;
+      pipCanvas.height = r.height;
+    }
+
+    async function startTracking() {
+      const video = document.getElementById('video');
+      setupPip();
+      pip.classList.remove('hidden');
+      cursor.classList.add('visible');
+      hud.classList.add('tracking');
+      debugPanel.classList.add('show');
+
+      if (!window.isSecureContext) {
+        hudText.textContent = 'https required';
+        alert("This page needs HTTPS to use the camera.\n\n" +
+          "Drag this .html file onto https://app.netlify.com/drop to get a free https link.");
+        bailOut(); return;
+      }
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        alert("Your browser doesn't expose the camera API. Try the latest Chrome or Safari.");
+        bailOut(); return;
+      }
+
+      hudText.textContent = 'starting camera…';
+
+      const isMobile = window.innerWidth < 700 || /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      const targetW = isMobile ? 320 : 480;
+      const targetH = isMobile ? 240 : 360;
+
+      const constraintSets = [
+        { video: { facingMode: 'user', width: { ideal: targetW }, height: { ideal: targetH } } },
+        { video: { facingMode: 'user' } },
+        { video: true }
+      ];
+
+      let stream = null, lastErr = null;
+      for (const c of constraintSets) {
+        try { stream = await navigator.mediaDevices.getUserMedia(c); break; }
+        catch (err) { lastErr = err; }
+      }
+      if (!stream) {
+        hudText.textContent = 'camera blocked';
+        alert("Couldn't open the camera.\n\nReason: " + (lastErr ? `${lastErr.name}: ${lastErr.message}` : 'unknown'));
+        bailOut(); return;
+      }
+
+      video.srcObject = stream;
+      video.setAttribute('playsinline', '');
+      video.muted = true;
+      await new Promise(r => {
+        if (video.readyState >= 2) return r();
+        video.onloadedmetadata = () => r();
+      });
+      try { await video.play(); } catch (_) {}
+
+      hudText.textContent = 'loading model…';
+      let hands;
+      try {
+        hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
+        hands.setOptions({ maxNumHands: 1, modelComplexity: 0, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
+        hands.onResults(onResults);
+      } catch (err) {
+        alert("Couldn't load the hand-tracking model.\n\n" + (err.message || err));
+        bailOut(); return;
+      }
+
+      hudText.textContent = 'searching for hand…';
+      trackingActive = true;
+
+      let inFlight = false;
+      async function feedFrames() {
+        if (!trackingActive) return;
+        if (!inFlight && video.readyState >= 2) {
+          inFlight = true;
+          try { await hands.send({ image: video }); }
+          catch (err) { console.warn('hands.send error:', err); }
+          inFlight = false;
+        }
+        requestAnimationFrame(feedFrames);
+      }
+      feedFrames();
+      requestAnimationFrame(loop);
+    }
+
+    function bailOut() {
+      trackingActive = false;
+      document.body.classList.remove('tracking');
+      cursor.style.display = 'none';
+      pip.style.display = 'none';
+      hud.style.display = 'none';
+      document.getElementById('intro').classList.remove('hide');
+    }
+
+    function onResults(results) {
+      pctx.save();
+      pctx.clearRect(0, 0, pipCanvas.width, pipCanvas.height);
+
+      if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+        handVisible = true;
+        hudText.textContent = 'tracking — pinch to click';
+        const landmarks = results.multiHandLandmarks[0];
+        if (window.drawConnectors && window.HAND_CONNECTIONS) {
+          drawConnectors(pctx, landmarks, HAND_CONNECTIONS, { color: '#ffffff', lineWidth: 1.5 });
+          drawLandmarks(pctx, landmarks, { color: '#d8d8d8', lineWidth: 0.5, radius: 1.5 });
+        }
+        const idx = landmarks[8], thumb = landmarks[4];
+        const now = performance.now();
+        const fx = filterX.filter(1 - idx.x, now);
+        const fy = filterY.filter(idx.y, now);
+        targetX = fx * window.innerWidth;
+        targetY = fy * window.innerHeight;
+        cursor.classList.add('visible');
+
+        const dx = idx.x - thumb.x, dy = idx.y - thumb.y, dz = (idx.z || 0) - (thumb.z || 0);
+        const d = Math.hypot(dx, dy, dz);
+        if (d < 0.055 && !isPinching) {
+          isPinching = true;
+          cursor.classList.add('pinch');
+          pinchClick();
+        } else if (d > 0.075 && isPinching) {
+          isPinching = false;
+          cursor.classList.remove('pinch');
+        }
+        if (!isPinching) updateHover();
+      } else {
+        handVisible = false;
+        hudText.textContent = 'no hand visible';
+        filterX.reset(); filterY.reset();
+      }
+      pctx.restore();
+    }
+
+    function loop() {
+      smoothX += (targetX - smoothX) * 0.55;
+      smoothY += (targetY - smoothY) * 0.55;
+      cursor.style.transform = `translate3d(${smoothX - 28}px, ${smoothY - 28}px, 0)`;
+      applyEdgeScroll();
+      if (trackingActive) requestAnimationFrame(loop);
+    }
+
+    document.getElementById('startBtn').addEventListener('click', () => {
+      document.getElementById('intro').classList.add('hide');
+      document.body.classList.add('tracking');
+      setTimeout(startTracking, 300);
+    });
+    document.getElementById('skipBtn').addEventListener('click', () => {
+      document.getElementById('intro').classList.add('hide');
+      cursor.style.display = 'none';
+      pip.style.display = 'none';
+      hud.style.display = 'none';
+    });
+
+    window.addEventListener('resize', setupPip);
+  </script>
+</body>
+</html>

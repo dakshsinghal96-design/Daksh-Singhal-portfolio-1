@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Obliq AI — Career Intelligence Platform</title>
+<style>
+/* Purple / pastel theme variables */
+:root {
+  --primary:#6a4bcf;
+  --primary-light:#8b6ee5;
+  --accent:#d8b4ff;
+  --background:#f7f6fb;
+  --surface:#ffffff;
+  --text:#1a1a1a;
+  --text-muted:#5a5a5a;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.08);
+  --shadow:0 6px 20px rgba(0,0,0,.08);
+  --r:10px;
+  --r-lg:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:sans-serif;background:var(--background);color:var(--text);margin:0;}
+.topbar{position:sticky;top:0;background:var(--primary);color:#fff;display:flex;align-items:center;padding:12px 20px;box-shadow:var(--shadow);}
+.topbar .brand{font-weight:700;font-size:18px;}
+.topbar .top-buttons{margin-left:auto;display:flex;gap:10px;}
+.main{padding:20px;}
+.screen{display:none;}
+.screen.active{display:block;}
+.card{background:var(--surface);border-radius:var(--r-lg);padding:20px;box-shadow:var(--shadow-sm);margin-bottom:20px;}
+.btn{padding:10px 18px;border:none;border-radius:var(--r);cursor:pointer;font-weight:600;transition:all .2s;}
+.btn-primary{background:var(--primary);color:#fff;}
+.btn-primary:hover{background:var(--primary-light);}
+.btn-accent{background:var(--accent);color:var(--primary);}
+.role-grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));}
+.role-card{padding:15px;border-radius:var(--r);text-align:center;background:var(--surface);cursor:pointer;transition:transform .2s;}
+.role-card:hover{transform:scale(1.04);box-shadow:var(--shadow);}
+.interest-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-top:12px;}
+.interest-card{padding:12px;background:var(--surface);border-radius:var(--r);text-align:center;cursor:pointer;transition:transform .2s;}
+.interest-card:hover{transform:scale(1.04);box-shadow:var(--shadow);}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">Obliq AI</div>
+  <div class="top-buttons">
+    <button class="btn btn-accent" onclick="toggleFullscreen()">Fullscreen</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- Splash Screen -->
+  <div id="screen-splash" class="screen active">
+    <div class="card">
+      <h1>Obliq AI — Career Intelligence Platform</h1>
+      <p>AI-assisted career guidance for students. Discover your interests, strengths, and future paths.</p>
+      <button class="btn btn-primary" onclick="go('role')">Begin Journey</button>
+    </div>
+  </div>
+
+  <!-- Role Selection -->
+  <div id="screen-role" class="screen">
+    <div class="card">
+      <h1>Select Your Role</h1>
+      <div class="role-grid" id="roleGrid"></div>
+      <button class="btn btn-primary" onclick="proceedFromRole()">Continue</button>
+    </div>
+  </div>
+
+  <!-- Assessment Question Screen -->
+  <div id="screen-assessment" class="screen">
+    <div class="card">
+      <h1>Assessment Module</h1>
+      <div id="qText">Question will appear here.</div>
+      <div id="qOptions"></div>
+      <button class="btn btn-primary" onclick="nextQuestion()" id="qNextBtn" disabled>Next</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// State
+var STATE={role:null,interests:[],answers:[]};
+
+// Fullscreen
+function toggleFullscreen(){
+  var el=document.documentElement;
+  if(!document.fullscreenElement){el.requestFullscreen?.();}
+  else {document.exitFullscreen?.();}
+}
+
+// Navigation
+function go(screen){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+screen).classList.add('active');
+}
+
+// Role Selection
+var ROLES=[{id:'Student'},{id:'Parent'},{id:'Counsellor'},{id:'Admin'},{id:'School'}];
+function renderRoles(){
+  document.getElementById('roleGrid').innerHTML=ROLES.map(r=>'<div class="role-card" onclick="pickRole(\''+r.id+'\')">'+r.id+'</div>').join('');
+}
+function pickRole(r){STATE.role=r; go('screen-assessment');}
+function proceedFromRole(){if(!STATE.role){alert('Please pick a role.');return;} go('screen-assessment');}
+renderRoles();
+
+// Assessment (mock)
+function nextQuestion(){alert('Next question clicked — placeholder for assessment logic.');}
+
+</script>
+</body>
+</html>

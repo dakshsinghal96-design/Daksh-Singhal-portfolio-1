@@ -1,0 +1,1669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Fern & Forest — Houseplants delivered to your door</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf6ef;
+    --bg-2: #f0eadd;
+    --card: #ffffff;
+    --ink: #1f2a22;
+    --ink-soft: #5a6359;
+    --muted: #8a8f87;
+    --line: #e3ddd0;
+    --leaf: #2d4a3a;
+    --leaf-soft: #b8c9a9;
+    --accent: #e76f51;
+    --accent-soft: #fce6df;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    line-height: 1.5;
+    overflow-x: hidden;
+  }
+  body.tracking, body.tracking * { cursor: none !important; }
+  body.tracking { user-select: none; }
+  img { max-width: 100%; display: block; }
+  button { font-family: inherit; }
+  h1, h2, h3, h4 {
+    font-family: 'DM Serif Display', serif;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    line-height: 1.1;
+  }
+
+  /* ── HEADER ────────────────────────────────────────── */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 80;
+    background: rgba(250, 246, 239, 0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line);
+  }
+  .header-bar {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 18px 32px;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 32px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    color: var(--leaf);
+    letter-spacing: 0.01em;
+  }
+  .brand-mark {
+    width: 32px; height: 32px;
+    background: var(--leaf);
+    border-radius: 50%;
+    display: grid; place-items: center;
+    color: var(--bg);
+    font-size: 16px;
+  }
+  .brand em { font-style: italic; color: var(--accent); }
+  nav.main-nav {
+    display: flex;
+    gap: 32px;
+    justify-content: center;
+  }
+  nav.main-nav a {
+    color: var(--ink);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 8px 4px;
+    border-bottom: 2px solid transparent;
+    transition: all .2s;
+  }
+  nav.main-nav a:hover, nav.main-nav a.hover {
+    border-bottom-color: var(--leaf);
+  }
+  .header-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    align-items: center;
+  }
+  .icon-btn {
+    width: 42px; height: 42px;
+    border: 1px solid var(--line);
+    background: var(--card);
+    border-radius: 50%;
+    display: grid; place-items: center;
+    transition: all .2s;
+    position: relative;
+  }
+  .icon-btn:hover, .icon-btn.hover {
+    border-color: var(--leaf);
+    background: var(--leaf-soft);
+  }
+  .icon-btn svg { width: 18px; height: 18px; stroke: var(--ink); fill: none; stroke-width: 1.8; }
+  .cart-badge {
+    position: absolute;
+    top: -4px; right: -4px;
+    min-width: 20px; height: 20px;
+    padding: 0 5px;
+    background: var(--accent);
+    color: white;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    display: grid; place-items: center;
+  }
+  .cart-badge.hidden { display: none; }
+
+  /* ── HERO ──────────────────────────────────────────── */
+  .hero {
+    max-width: 1320px;
+    margin: 32px auto 0;
+    padding: 0 32px;
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 48px;
+    align-items: stretch;
+  }
+  .hero-text {
+    padding: 32px 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .hero-text .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--leaf-soft);
+    color: var(--leaf);
+    padding: 6px 14px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    align-self: flex-start;
+  }
+  .hero-text .eyebrow .dot {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--leaf);
+  }
+  .hero-text h1 {
+    font-size: clamp(40px, 5.2vw, 76px);
+    margin-bottom: 20px;
+  }
+  .hero-text h1 em {
+    color: var(--accent);
+  }
+  .hero-text p {
+    font-size: 17px;
+    color: var(--ink-soft);
+    margin-bottom: 28px;
+    max-width: 480px;
+  }
+  .hero-cta {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 24px;
+    border: 1px solid var(--ink);
+    background: var(--ink);
+    color: var(--bg);
+    border-radius: 100px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all .2s;
+  }
+  .btn:hover, .btn.hover {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .btn.ghost {
+    background: transparent;
+    color: var(--ink);
+  }
+  .btn.ghost:hover, .btn.ghost.hover {
+    background: var(--ink);
+    color: var(--bg);
+  }
+  .hero-img {
+    background: var(--bg-2);
+    border-radius: 24px;
+    overflow: hidden;
+    position: relative;
+    min-height: 440px;
+  }
+  .hero-img img {
+    width: 100%; height: 100%; object-fit: cover;
+    position: absolute; inset: 0;
+  }
+  .hero-tag {
+    position: absolute;
+    bottom: 20px; left: 20px;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(8px);
+    padding: 14px 18px;
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .hero-tag .name { font-weight: 700; font-size: 14px; }
+  .hero-tag .price { color: var(--accent); font-weight: 700; font-size: 14px; }
+
+  /* ── STATS BAR ─────────────────────────────────────── */
+  .stats {
+    max-width: 1320px;
+    margin: 56px auto 0;
+    padding: 0 32px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    overflow: hidden;
+    background: var(--card);
+  }
+  .stat {
+    padding: 24px;
+    text-align: center;
+    border-right: 1px solid var(--line);
+  }
+  .stat:last-child { border-right: none; }
+  .stat .num {
+    font-family: 'DM Serif Display', serif;
+    font-size: 32px;
+    color: var(--leaf);
+    line-height: 1;
+  }
+  .stat .lbl {
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-top: 6px;
+  }
+
+  /* ── SECTION ──────────────────────────────────────── */
+  .section {
+    max-width: 1320px;
+    margin: 80px auto 0;
+    padding: 0 32px;
+  }
+  .section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 28px;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .section-head h2 {
+    font-size: clamp(30px, 3.6vw, 48px);
+  }
+  .section-head .sub {
+    color: var(--ink-soft);
+    font-size: 15px;
+    max-width: 380px;
+  }
+
+  /* CATEGORY PILLS */
+  .cat-strip {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 32px;
+  }
+  .pill {
+    padding: 10px 20px;
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--ink);
+    border-radius: 100px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all .2s;
+  }
+  .pill:hover, .pill.hover {
+    border-color: var(--leaf);
+    color: var(--leaf);
+  }
+  .pill.active {
+    background: var(--leaf);
+    color: var(--bg);
+    border-color: var(--leaf);
+  }
+
+  /* PRODUCT GRID */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    overflow: hidden;
+    transition: transform .25s, box-shadow .25s, border-color .25s;
+    display: flex;
+    flex-direction: column;
+  }
+  .card:hover, .card.hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 40px rgba(31, 42, 34, 0.1);
+    border-color: var(--leaf-soft);
+  }
+  .card .img-wrap {
+    aspect-ratio: 1;
+    background: var(--bg-2);
+    overflow: hidden;
+    position: relative;
+  }
+  .card .img-wrap img {
+    width: 100%; height: 100%; object-fit: cover;
+    transition: transform .35s;
+  }
+  .card:hover .img-wrap img, .card.hover .img-wrap img {
+    transform: scale(1.05);
+  }
+  .card .tag {
+    position: absolute;
+    top: 12px; left: 12px;
+    background: var(--accent);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 100px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .card .body {
+    padding: 16px 18px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+  }
+  .card .pet { font-size: 11px; color: var(--leaf); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+  .card .name { font-family: 'DM Serif Display', serif; font-size: 20px; }
+  .card .latin { font-size: 12px; color: var(--muted); font-style: italic; }
+  .card .row {
+    margin-top: auto;
+    padding-top: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .card .price {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    color: var(--leaf);
+  }
+  .card .price s { color: var(--muted); font-size: 14px; margin-right: 6px; font-family: 'Plus Jakarta Sans', sans-serif; }
+  .add-btn {
+    background: var(--ink);
+    color: var(--bg);
+    border: none;
+    padding: 10px 18px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 600;
+    transition: background .2s;
+  }
+  .add-btn:hover, .add-btn.hover { background: var(--accent); }
+
+  /* PROMISE BANNER */
+  .promise {
+    margin-top: 80px;
+    background: var(--leaf);
+    color: var(--bg);
+    padding: 56px 32px;
+    border-radius: 0;
+    text-align: center;
+    background-image:
+      radial-gradient(circle at 20% 30%, rgba(184, 201, 169, 0.18), transparent 40%),
+      radial-gradient(circle at 80% 70%, rgba(231, 111, 81, 0.15), transparent 40%);
+  }
+  .promise .inner { max-width: 800px; margin: 0 auto; }
+  .promise h2 {
+    font-size: clamp(32px, 4vw, 56px);
+    margin-bottom: 16px;
+  }
+  .promise h2 em { color: var(--accent); font-style: italic; }
+  .promise p {
+    font-size: 17px;
+    opacity: 0.85;
+    margin-bottom: 28px;
+  }
+
+  /* STORIES */
+  .stories {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+  .story {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    overflow: hidden;
+    transition: transform .25s, box-shadow .25s;
+  }
+  .story:hover, .story.hover {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 36px rgba(31, 42, 34, 0.08);
+  }
+  .story .img {
+    aspect-ratio: 16/10;
+    background: var(--bg-2);
+    overflow: hidden;
+  }
+  .story .img img { width: 100%; height: 100%; object-fit: cover; }
+  .story .body { padding: 22px; }
+  .story .cat {
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .story h3 { font-size: 22px; margin-bottom: 10px; }
+  .story p { color: var(--ink-soft); font-size: 14px; }
+  .story .read {
+    margin-top: 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--leaf);
+    display: inline-flex;
+    gap: 4px;
+  }
+
+  /* NEWSLETTER */
+  .newsletter {
+    margin: 80px auto 0;
+    max-width: 1320px;
+    padding: 56px 32px;
+    background: var(--bg-2);
+    border-radius: 24px;
+    text-align: center;
+    margin-left: 32px;
+    margin-right: 32px;
+  }
+  .newsletter h2 { font-size: clamp(28px, 3.4vw, 44px); margin-bottom: 12px; }
+  .newsletter p { color: var(--ink-soft); margin-bottom: 24px; }
+  .newsletter-form {
+    display: flex;
+    gap: 8px;
+    max-width: 460px;
+    margin: 0 auto;
+    background: var(--card);
+    padding: 6px;
+    border-radius: 100px;
+    border: 1px solid var(--line);
+  }
+  .newsletter-form .fake-input {
+    flex: 1;
+    padding: 10px 18px;
+    color: var(--muted);
+    text-align: left;
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+  }
+  .newsletter-form button {
+    border-radius: 100px;
+    background: var(--leaf);
+    color: var(--bg);
+    border: none;
+    padding: 12px 24px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .newsletter-form button:hover, .newsletter-form button.hover {
+    background: var(--accent);
+  }
+
+  /* FOOTER */
+  footer {
+    margin-top: 80px;
+    background: var(--ink);
+    color: var(--bg);
+    padding: 56px 32px 24px;
+  }
+  .foot-grid {
+    max-width: 1320px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr 1fr;
+    gap: 48px;
+    padding-bottom: 36px;
+    border-bottom: 1px solid rgba(255,255,255,0.12);
+  }
+  .foot-grid h4 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+    color: var(--leaf-soft);
+  }
+  .foot-grid ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .foot-grid a {
+    color: rgba(250,246,239,0.7);
+    text-decoration: none;
+    font-size: 14px;
+    transition: color .2s;
+  }
+  .foot-grid a:hover, .foot-grid a.hover { color: var(--accent); }
+  .foot-grid .about {
+    color: rgba(250,246,239,0.7);
+    font-size: 14px;
+    margin-bottom: 16px;
+  }
+  .foot-bottom {
+    max-width: 1320px;
+    margin: 24px auto 0;
+    display: flex;
+    justify-content: space-between;
+    color: rgba(250,246,239,0.5);
+    font-size: 13px;
+  }
+
+  /* ── HAND TRACKING UI ──────────────────────────────── */
+  #pip {
+    position: fixed;
+    bottom: 16px; right: 16px;
+    width: 132px; height: 99px;
+    border: 2px solid var(--card);
+    background: #000;
+    overflow: hidden;
+    z-index: 90;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+    transition: opacity .35s;
+  }
+  #pip.hidden { opacity: 0; pointer-events: none; }
+  #pip video, #pip canvas {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%;
+    transform: scaleX(-1);
+    object-fit: cover;
+  }
+  #pip .label {
+    position: absolute; top: 6px; left: 8px;
+    font-size: 10px; font-weight: 700;
+    color: white;
+    background: rgba(0,0,0,0.5);
+    padding: 3px 7px;
+    border-radius: 100px;
+    letter-spacing: 0.1em;
+    z-index: 2;
+  }
+  #hud {
+    position: fixed;
+    top: 80px; left: 16px;
+    z-index: 90;
+    display: flex; align-items: center; gap: 8px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    padding: 8px 14px;
+    border-radius: 100px;
+    font-size: 12px;
+    color: var(--ink-soft);
+    box-shadow: 0 4px 14px rgba(31, 42, 34, 0.08);
+    pointer-events: none;
+  }
+  #hud .led {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--muted);
+  }
+  #hud.tracking .led {
+    background: #20c065;
+    animation: pulse 1.4s infinite;
+  }
+  @keyframes pulse { 50% { opacity: 0.3; } }
+  #scrollHint {
+    position: fixed;
+    z-index: 70;
+    pointer-events: none;
+    transition: opacity .2s;
+    opacity: 0;
+    color: var(--leaf);
+    background: var(--card);
+    border: 1px solid var(--leaf-soft);
+    padding: 6px 14px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 600;
+    box-shadow: 0 4px 14px rgba(31, 42, 34, 0.1);
+  }
+  #scrollHint.up { top: 70px; left: 50%; transform: translateX(-50%); }
+  #scrollHint.down { bottom: 16px; left: 50%; transform: translateX(-50%); }
+  #scrollHint.show { opacity: 1; }
+
+  /* CURSOR */
+  #cursor {
+    position: fixed;
+    top: 0; left: 0;
+    width: 56px; height: 56px;
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0;
+    will-change: transform;
+  }
+  #cursor.visible { opacity: 1; }
+  #cursor svg { width: 100%; height: 100%; overflow: visible; }
+  #cursor .outer {
+    fill: rgba(255,255,255,0.85);
+    stroke: var(--ink);
+    stroke-width: 1.4;
+    transition: stroke .15s, stroke-width .15s, r .2s;
+  }
+  #cursor .inner {
+    fill: var(--ink);
+    transition: r .15s, fill .15s;
+  }
+  #cursor.over .outer { stroke: var(--leaf); stroke-width: 1.8; r: 22; }
+  #cursor.over .inner { fill: var(--leaf); r: 5; }
+  #cursor.pinch .outer { fill: var(--accent); stroke: var(--accent); }
+  #cursor.pinch .inner { fill: white; r: 7; }
+
+  /* INTRO */
+  #intro {
+    position: fixed; inset: 0;
+    z-index: 5000;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px;
+    text-align: center;
+    transition: opacity .4s;
+  }
+  #intro.hide { opacity: 0; pointer-events: none; }
+  #intro .badge {
+    background: var(--leaf-soft);
+    color: var(--leaf);
+    padding: 6px 14px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 24px;
+  }
+  #intro h1 {
+    font-size: clamp(40px, 8vw, 88px);
+    max-width: 800px;
+    margin-bottom: 18px;
+  }
+  #intro h1 em { color: var(--accent); }
+  #intro p {
+    color: var(--ink-soft);
+    font-size: 17px;
+    max-width: 540px;
+    margin-bottom: 30px;
+  }
+  #intro .actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  #intro button {
+    padding: 14px 28px;
+    border-radius: 100px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  #intro #startBtn {
+    background: var(--ink); color: var(--bg);
+    border: 1px solid var(--ink);
+  }
+  #intro #startBtn:hover { background: var(--accent); border-color: var(--accent); }
+  #intro #skipBtn {
+    background: transparent; color: var(--ink);
+    border: 1px solid var(--line);
+  }
+  #intro #skipBtn:hover { border-color: var(--ink); }
+  #intro .tip {
+    margin-top: 22px;
+    font-size: 12px; color: var(--muted);
+  }
+
+  /* MODAL */
+  .modal {
+    position: fixed; inset: 0;
+    z-index: 4000;
+    background: rgba(31, 42, 34, 0.55);
+    backdrop-filter: blur(8px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 32px;
+    opacity: 0;
+    transition: opacity .25s;
+  }
+  .modal.open { display: flex; opacity: 1; }
+  .modal-content {
+    background: var(--bg);
+    max-width: 880px;
+    width: 100%;
+    max-height: 86vh;
+    border-radius: 24px;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    position: relative;
+  }
+  #productModal img {
+    width: 100%; height: 100%; object-fit: cover;
+  }
+  #productModal .body {
+    padding: 36px 32px 28px;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+  #productModal .pet { font-size: 11px; color: var(--leaf); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+  #productModal h3 { font-size: 32px; margin: 8px 0 4px; }
+  #productModal .latin { font-size: 13px; color: var(--muted); font-style: italic; margin-bottom: 14px; }
+  #productModal .price-big { font-family: 'DM Serif Display', serif; font-size: 32px; color: var(--leaf); margin-bottom: 16px; }
+  #productModal p { font-size: 14px; color: var(--ink-soft); margin-bottom: 16px; }
+  #productModal .specs {
+    list-style: none;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 22px;
+    padding: 14px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+  }
+  #productModal .specs li { font-size: 13px; }
+  #productModal .specs li b { display: block; color: var(--muted); font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 2px; }
+  #productModal .add-row {
+    display: flex; gap: 10px;
+    margin-top: auto;
+  }
+  #productModal .add-row .btn { flex: 1; justify-content: center; padding: 16px; }
+
+  /* CART MODAL */
+  #cartModal .modal-content {
+    grid-template-columns: 1fr;
+    max-width: 540px;
+    max-height: 80vh;
+  }
+  #cartModal .body {
+    padding: 32px 28px;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+  #cartModal h3 { font-size: 28px; margin-bottom: 20px; }
+  #cartList { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+  .cart-item {
+    display: grid;
+    grid-template-columns: 60px 1fr auto;
+    gap: 14px;
+    align-items: center;
+    padding: 12px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+  }
+  .cart-item img { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; }
+  .cart-item .ci-name { font-weight: 600; font-size: 14px; }
+  .cart-item .ci-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .cart-item .ci-price { font-family: 'DM Serif Display', serif; color: var(--leaf); font-size: 20px; }
+  .cart-empty { color: var(--muted); text-align: center; padding: 32px 0; }
+  .cart-total {
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .cart-total .lbl { font-size: 14px; color: var(--ink-soft); }
+  .cart-total .val { font-family: 'DM Serif Display', serif; font-size: 28px; color: var(--leaf); }
+  #cartModal .checkout {
+    margin-top: 16px;
+    width: 100%; justify-content: center; padding: 16px;
+  }
+
+  .modal-close {
+    position: absolute;
+    top: 14px; right: 14px;
+    width: 36px; height: 36px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    font-size: 18px;
+    z-index: 3;
+    transition: all .2s;
+  }
+  .modal-close:hover, .modal-close.hover { background: var(--accent); border-color: var(--accent); color: white; }
+
+  /* TOAST */
+  #toast {
+    position: fixed;
+    top: 24px; left: 50%;
+    transform: translateX(-50%) translateY(-200%);
+    background: var(--ink);
+    color: var(--bg);
+    padding: 14px 24px;
+    border-radius: 100px;
+    font-size: 14px;
+    font-weight: 600;
+    z-index: 6000;
+    transition: transform .35s cubic-bezier(.2,.7,.2,1);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  #toast.show { transform: translateX(-50%) translateY(0); }
+  #toast .check {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--leaf-soft);
+    color: var(--leaf);
+    display: grid; place-items: center;
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  @media (max-width: 1100px) {
+    .grid { grid-template-columns: repeat(3, 1fr); }
+    .stories { grid-template-columns: repeat(2, 1fr); }
+    .foot-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 800px) {
+    .header-bar { grid-template-columns: 1fr auto; gap: 12px; padding: 14px 16px; }
+    nav.main-nav { display: none; }
+    .hero { grid-template-columns: 1fr; padding: 0 16px; gap: 24px; }
+    .hero-img { min-height: 320px; }
+    .stats { grid-template-columns: 1fr 1fr; }
+    .stat:nth-child(2) { border-right: none; }
+    .stat:nth-child(1), .stat:nth-child(2) { border-bottom: 1px solid var(--line); }
+    .section { padding: 0 16px; }
+    .grid { grid-template-columns: repeat(2, 1fr); }
+    .stories { grid-template-columns: 1fr; }
+    .foot-grid { grid-template-columns: 1fr; gap: 24px; }
+    .foot-bottom { flex-direction: column; gap: 8px; }
+    .modal-content { grid-template-columns: 1fr; max-height: 92vh; }
+    #productModal .body { padding: 24px; }
+    .newsletter { margin-left: 16px; margin-right: 16px; }
+  }
+  @media (max-width: 480px) {
+    body { font-size: 15px; }
+    .header-bar { padding: 10px 12px; gap: 8px; }
+    .brand { font-size: 17px; gap: 6px; }
+    .brand-mark { width: 28px; height: 28px; font-size: 14px; }
+    .icon-btn { width: 38px; height: 38px; }
+    .icon-btn svg { width: 16px; height: 16px; }
+    .hero { margin-top: 16px; gap: 16px; }
+    .hero-text { padding: 16px 0 0; }
+    .hero-text h1 { font-size: 36px; line-height: 1.05; }
+    .hero-text p { font-size: 15px; }
+    .hero-img { min-height: 240px; border-radius: 18px; }
+    .stats { margin-top: 32px; }
+    .stat { padding: 18px 8px; }
+    .stat .num { font-size: 22px; }
+    .stat .lbl { font-size: 11px; }
+    .section { margin-top: 48px; }
+    .section-head h2 { font-size: 26px; }
+    .grid { gap: 12px; }
+    .card .body { padding: 12px 14px 14px; }
+    .card .name { font-size: 17px; }
+    .card .price { font-size: 18px; }
+    .add-btn { padding: 8px 14px; font-size: 12px; }
+    .promise { padding: 40px 20px; margin-top: 56px; }
+    .promise h2 { font-size: 28px; }
+    .promise p { font-size: 15px; }
+    .newsletter { padding: 36px 20px; margin-top: 56px; }
+    .newsletter-form { flex-direction: column; border-radius: 18px; padding: 8px; }
+    .newsletter-form .fake-input { padding: 12px 14px; }
+    .newsletter-form button { width: 100%; padding: 14px; }
+    footer { padding: 40px 16px 20px; margin-top: 56px; }
+    /* Tracking UI scaled down */
+    #cursor { width: 44px; height: 44px; }
+    #cursor svg { viewBox: -22 -22 44 44; }
+    #pip { width: 92px; height: 70px; bottom: 10px; right: 10px; border-radius: 8px; }
+    #pip .label { font-size: 8px; padding: 2px 5px; }
+    #hud { top: 64px; left: 10px; padding: 6px 10px; font-size: 11px; }
+    #hud .led { width: 6px; height: 6px; }
+    #scrollHint { font-size: 11px; padding: 5px 12px; }
+    #scrollHint.up { top: 60px; }
+    #scrollHint.down { bottom: 90px; }   /* clear of PIP */
+    /* Intro tightened */
+    #intro { padding: 24px; }
+    #intro h1 { font-size: 36px; line-height: 1.05; }
+    #intro p { font-size: 15px; margin-bottom: 24px; }
+    #intro button { padding: 12px 20px; font-size: 13px; flex: 1; min-width: 140px; }
+    #intro .actions { width: 100%; max-width: 360px; }
+    /* Toast smaller */
+    #toast { font-size: 13px; padding: 10px 18px; top: 12px; }
+    /* Modal */
+    .modal { padding: 12px; }
+    #productModal img { max-height: 200px; }
+    #productModal h3 { font-size: 24px; }
+    #productModal .price-big { font-size: 26px; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- INTRO -->
+  <div id="intro">
+    <div class="badge">🌿 HANDS-FREE BROWSING</div>
+    <h1>Shop our store with <em>your hands</em>.</h1>
+    <p>Allow camera access, then point with your index finger to move the cursor. Pinch your thumb + index to click. Drift your hand to the top or bottom of the screen to scroll. Everything runs locally in your browser.</p>
+    <div class="actions">
+      <button id="startBtn">Allow camera & shop</button>
+      <button id="skipBtn">Skip — use my mouse</button>
+    </div>
+    <div class="tip">works best in good light · on phone, prop it up and use your other hand · needs https for camera</div>
+  </div>
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-bar">
+      <div class="brand"><span class="brand-mark">✿</span>Fern <em>&amp;</em> Forest</div>
+      <nav class="main-nav">
+        <a href="#shop" class="nav-anchor">Shop</a>
+        <a href="#bestsellers" class="nav-anchor">Bestsellers</a>
+        <a href="#stories" class="nav-anchor">Care guides</a>
+        <a href="#promise" class="nav-anchor">About</a>
+      </nav>
+      <div class="header-actions">
+        <button class="icon-btn" data-action="search" aria-label="Search">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        </button>
+        <button class="icon-btn" id="cartIconBtn" aria-label="Cart">
+          <svg viewBox="0 0 24 24"><path d="M5 7h14l-1.5 11a2 2 0 0 1-2 1.7H8.5a2 2 0 0 1-2-1.7L5 7Z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg>
+          <span class="cart-badge hidden" id="cartBadge">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero" id="shop">
+    <div class="hero-text">
+      <div class="eyebrow"><span class="dot"></span>Spring 2026 collection</div>
+      <h1>Real plants, <em>delivered</em> to your real door.</h1>
+      <p>Hand-picked houseplants from small growers, shipped in recyclable packaging with a 30-day "still-alive" guarantee. We even include a name tag.</p>
+      <div class="hero-cta">
+        <button class="btn" data-action="shop-all">Shop all plants →</button>
+        <button class="btn ghost" data-action="quiz">Take the plant quiz</button>
+      </div>
+    </div>
+    <div class="hero-img">
+      <img src="https://picsum.photos/seed/heroplant42/900/700" alt="Featured plant" />
+      <div class="hero-tag">
+        <span class="name">Monstera Deliciosa · L</span>
+        <span class="price">₹ 1,890</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section class="stats">
+    <div class="stat"><div class="num">12k+</div><div class="lbl">happy plants delivered</div></div>
+    <div class="stat"><div class="num">30 day</div><div class="lbl">still-alive guarantee</div></div>
+    <div class="stat"><div class="num">48 hr</div><div class="lbl">across-India shipping</div></div>
+    <div class="stat"><div class="num">100%</div><div class="lbl">recyclable packaging</div></div>
+  </section>
+
+  <!-- BESTSELLERS -->
+  <section class="section" id="bestsellers">
+    <div class="section-head">
+      <div>
+        <h2>This week's bestsellers</h2>
+        <p class="sub" style="margin-top:6px">The plants our customers can't stop buying — and the ones we can't stop replacing on the shelves.</p>
+      </div>
+    </div>
+    <div class="cat-strip" id="catStrip"></div>
+    <div class="grid" id="productGrid"></div>
+  </section>
+
+  <!-- PROMISE -->
+  <section class="promise" id="promise">
+    <div class="inner">
+      <h2>Plants that arrive <em>alive</em>.</h2>
+      <p>Every plant ships in a custom-engineered box with shock-absorbing inserts. If yours arrives wilted or damaged, we'll send a replacement free, no questions asked. We've been doing this since 2019.</p>
+      <button class="btn" data-action="learn-more" style="background:var(--accent); border-color:var(--accent)">Read the guarantee →</button>
+    </div>
+  </section>
+
+  <!-- STORIES -->
+  <section class="section" id="stories">
+    <div class="section-head">
+      <div>
+        <h2>Care guides &amp; stories</h2>
+        <p class="sub" style="margin-top:6px">Practical advice, written by people who've actually killed plants and learned why.</p>
+      </div>
+    </div>
+    <div class="stories" id="storyGrid"></div>
+  </section>
+
+  <!-- NEWSLETTER -->
+  <section class="newsletter">
+    <h2>Get one plant tip a week.</h2>
+    <p>Watering schedules, light tips, and the occasional embarrassing greenhouse story.</p>
+    <div class="newsletter-form">
+      <div class="fake-input">your@email.com</div>
+      <button data-action="subscribe">Subscribe</button>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="foot-grid">
+      <div>
+        <div class="brand" style="color:var(--bg); margin-bottom: 14px"><span class="brand-mark" style="background: var(--leaf-soft); color: var(--leaf)">✿</span>Fern <em>&amp;</em> Forest</div>
+        <p class="about">A small online plant shop run from a converted warehouse. We grow what we can, source the rest from people we trust.</p>
+      </div>
+      <div>
+        <h4>Shop</h4>
+        <ul>
+          <li><a href="#" class="foot-link">Indoor plants</a></li>
+          <li><a href="#" class="foot-link">Outdoor plants</a></li>
+          <li><a href="#" class="foot-link">Pet-safe plants</a></li>
+          <li><a href="#" class="foot-link">Pots &amp; planters</a></li>
+          <li><a href="#" class="foot-link">Gift cards</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Help</h4>
+        <ul>
+          <li><a href="#" class="foot-link">Shipping &amp; returns</a></li>
+          <li><a href="#" class="foot-link">Plant care 101</a></li>
+          <li><a href="#" class="foot-link">Contact us</a></li>
+          <li><a href="#" class="foot-link">FAQs</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Studio</h4>
+        <ul>
+          <li><a href="#" class="foot-link">Our story</a></li>
+          <li><a href="#" class="foot-link">Sustainability</a></li>
+          <li><a href="#" class="foot-link">Wholesale</a></li>
+          <li><a href="#" class="foot-link">Press</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 Fern &amp; Forest. All rights reserved.</span>
+      <span>Made with care · Jodhpur, India</span>
+    </div>
+  </footer>
+
+  <!-- HAND TRACKING UI -->
+  <div id="pip" class="hidden">
+    <div class="label">CAM</div>
+    <video id="video" autoplay playsinline muted></video>
+    <canvas id="pipCanvas"></canvas>
+  </div>
+  <div id="hud"><span class="led"></span><span id="hudText">— hand tracking off</span></div>
+  <div id="scrollHint" class="up">↑ scrolling up</div>
+
+  <!-- CURSOR -->
+  <div id="cursor">
+    <svg viewBox="-28 -28 56 56">
+      <circle class="outer" cx="0" cy="0" r="20" />
+      <circle class="inner" cx="0" cy="0" r="3.5" />
+    </svg>
+  </div>
+
+  <!-- PRODUCT MODAL -->
+  <div class="modal" id="productModal">
+    <div class="modal-content">
+      <img id="pmImg" src="" alt="" />
+      <div class="body">
+        <div class="pet" id="pmPet"></div>
+        <h3 id="pmName"></h3>
+        <div class="latin" id="pmLatin"></div>
+        <div class="price-big" id="pmPrice"></div>
+        <p id="pmDesc"></p>
+        <ul class="specs">
+          <li><b>Light</b><span id="pmLight"></span></li>
+          <li><b>Water</b><span id="pmWater"></span></li>
+          <li><b>Pet safe</b><span id="pmPet2"></span></li>
+          <li><b>Pot size</b><span id="pmPot"></span></li>
+        </ul>
+        <div class="add-row">
+          <button class="btn" id="pmAdd">Add to cart</button>
+          <button class="btn ghost" id="pmClose2">Keep browsing</button>
+        </div>
+      </div>
+      <button class="modal-close" data-modal-close="productModal">×</button>
+    </div>
+  </div>
+
+  <!-- CART MODAL -->
+  <div class="modal" id="cartModal">
+    <div class="modal-content">
+      <div class="body">
+        <h3>Your cart</h3>
+        <ul id="cartList"></ul>
+        <div class="cart-empty" id="cartEmpty">Your cart is empty. Pinch a plant to add one.</div>
+        <div class="cart-total" id="cartTotalRow" style="display:none">
+          <span class="lbl">Subtotal</span>
+          <span class="val" id="cartTotal">₹ 0</span>
+        </div>
+        <button class="btn checkout" id="checkoutBtn" style="display:none">Checkout →</button>
+      </div>
+      <button class="modal-close" data-modal-close="cartModal">×</button>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast"><span class="check">✓</span><span id="toastText">Added to cart</span></div>
+
+  <!-- MEDIAPIPE -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+
+  <script>
+    // ── DATA ────────────────────────────────────────────
+    const PRODUCTS = [
+      { id:1, name:'Monstera Deliciosa', latin:'Monstera deliciosa',     price:1890, was:2200, tag:'Bestseller', light:'Bright indirect', water:'Weekly',     petsafe:'No',  pot:'15cm', desc:'The classic split-leaf monstera. Hardy, dramatic, and forgiving — a perfect first big plant. Comes pre-staked.' },
+      { id:2, name:'Snake Plant',         latin:'Sansevieria laurentii', price:790,             tag:'Easy',       light:'Any',             water:'Every 3 wks', petsafe:'No',  pot:'12cm', desc:'Almost impossible to kill. Tolerates low light, infrequent watering, and general neglect with grace.' },
+      { id:3, name:'Pothos Marble Queen', latin:'Epipremnum aureum',     price:550,             tag:'',           light:'Low to bright',   water:'Weekly',     petsafe:'No',  pot:'10cm', desc:'A trailing vine with creamy variegation. Will happily climb a moss pole or trail off a shelf.' },
+      { id:4, name:'Calathea Orbifolia',  latin:'Calathea orbifolia',    price:1240,            tag:'New',        light:'Medium indirect', water:'Twice weekly', petsafe:'Yes', pot:'14cm', desc:'Sterling-silver striped leaves the size of dinner plates. A little needy about humidity, but worth it.' },
+      { id:5, name:'Fiddle Leaf Fig',     latin:'Ficus lyrata',          price:2400, was:2800, tag:'',           light:'Bright indirect', water:'Weekly',     petsafe:'No',  pot:'17cm', desc:'The iconic statement plant. Big, glossy, violin-shaped leaves. Likes routine — same spot, same schedule.' },
+      { id:6, name:'Spider Plant',        latin:'Chlorophytum comosum',  price:420,             tag:'Pet-safe',   light:'Bright indirect', water:'Weekly',     petsafe:'Yes', pot:'10cm', desc:'Cheerful, fast-growing, and pet-safe. Sends out little baby spiders you can pot up as gifts.' },
+      { id:7, name:'ZZ Plant',            latin:'Zamioculcas zamiifolia', price:980,            tag:'',           light:'Low to bright',   water:'Every 3 wks', petsafe:'No',  pot:'13cm', desc:'Glossy paddle leaves and an iron constitution. Perfect for offices, hallways, and forgetful waterers.' },
+      { id:8, name:'Bird of Paradise',    latin:'Strelitzia nicolai',     price:3200,           tag:'Limited',    light:'Bright direct',   water:'Weekly',     petsafe:'No',  pot:'21cm', desc:'A small tropical tree with paddle leaves the size of an arm. Will fill a corner and call it home.' },
+    ];
+
+    const STORIES = [
+      { id:1, cat:'Watering', title:'How often should you actually water?', excerpt:'A short, opinionated guide. The honest answer involves your finger and an inch of soil.' },
+      { id:2, cat:'Light',    title:'What "bright indirect" actually means',excerpt:'It\'s the most-used phrase in plant care. Here\'s how to translate it for your specific apartment.' },
+      { id:3, cat:'Trouble',  title:'Yellow leaves: a small detective story', excerpt:'Yellow can mean over-water, under-water, age, light, or bad luck. We narrow it down.' },
+    ];
+
+    const CATEGORIES = ['All', 'Indoor', 'Easy care', 'Pet-safe', 'Statement', 'Trailing'];
+
+    // ── BUILD CATEGORY PILLS ───────────────────────────
+    const catStrip = document.getElementById('catStrip');
+    CATEGORIES.forEach((c, i) => {
+      const p = document.createElement('button');
+      p.className = 'pill' + (i === 0 ? ' active' : '');
+      p.textContent = c;
+      p.dataset.cat = c;
+      catStrip.appendChild(p);
+    });
+    catStrip.addEventListener('click', e => {
+      const p = e.target.closest('.pill');
+      if (!p) return;
+      catStrip.querySelectorAll('.pill').forEach(x => x.classList.remove('active'));
+      p.classList.add('active');
+      showToast('Showing ' + p.dataset.cat.toLowerCase());
+    });
+
+    // ── BUILD PRODUCT GRID ─────────────────────────────
+    const productGrid = document.getElementById('productGrid');
+    PRODUCTS.forEach(p => {
+      const c = document.createElement('div');
+      c.className = 'card';
+      c.dataset.id = p.id;
+      c.innerHTML = `
+        ${p.tag ? `<span class="tag">${p.tag}</span>` : ''}
+        <div class="img-wrap">
+          ${p.tag ? `<span class="tag">${p.tag}</span>` : ''}
+          <img src="https://picsum.photos/seed/plant${p.id}x/600/600" alt="${p.name}" loading="lazy" />
+        </div>
+        <div class="body">
+          <span class="pet">${p.petsafe === 'Yes' ? 'Pet-safe' : 'Not pet-safe'}</span>
+          <div class="name">${p.name}</div>
+          <div class="latin">${p.latin}</div>
+          <div class="row">
+            <div class="price">${p.was ? `<s>₹ ${p.was}</s>` : ''}₹ ${p.price.toLocaleString('en-IN')}</div>
+            <button class="add-btn" data-add="${p.id}">Add</button>
+          </div>
+        </div>`;
+      productGrid.appendChild(c);
+    });
+
+    // ── BUILD STORIES ──────────────────────────────────
+    const storyGrid = document.getElementById('storyGrid');
+    STORIES.forEach(s => {
+      const c = document.createElement('div');
+      c.className = 'story';
+      c.dataset.story = s.id;
+      c.innerHTML = `
+        <div class="img"><img src="https://picsum.photos/seed/story${s.id}/700/440" alt="${s.title}" loading="lazy" /></div>
+        <div class="body">
+          <div class="cat">${s.cat}</div>
+          <h3>${s.title}</h3>
+          <p>${s.excerpt}</p>
+          <div class="read">Read article →</div>
+        </div>`;
+      storyGrid.appendChild(c);
+    });
+
+    // ── CART STATE ─────────────────────────────────────
+    const cart = []; // [{ id, qty }]
+    function addToCart(id) {
+      const p = PRODUCTS.find(x => x.id == id);
+      if (!p) return;
+      const existing = cart.find(i => i.id == id);
+      if (existing) existing.qty++;
+      else cart.push({ id: p.id, qty: 1 });
+      renderCart();
+      showToast(`${p.name} added to cart`);
+    }
+    function removeFromCart(id) {
+      const i = cart.findIndex(x => x.id == id);
+      if (i >= 0) cart.splice(i, 1);
+      renderCart();
+    }
+    function cartCount() { return cart.reduce((a, i) => a + i.qty, 0); }
+    function cartSubtotal() { return cart.reduce((a, i) => a + i.qty * PRODUCTS.find(p => p.id == i.id).price, 0); }
+
+    function renderCart() {
+      const badge = document.getElementById('cartBadge');
+      const count = cartCount();
+      badge.textContent = count;
+      badge.classList.toggle('hidden', count === 0);
+
+      const list = document.getElementById('cartList');
+      const empty = document.getElementById('cartEmpty');
+      const totalRow = document.getElementById('cartTotalRow');
+      const checkout = document.getElementById('checkoutBtn');
+
+      list.innerHTML = '';
+      if (cart.length === 0) {
+        empty.style.display = 'block';
+        totalRow.style.display = 'none';
+        checkout.style.display = 'none';
+        return;
+      }
+      empty.style.display = 'none';
+      cart.forEach(item => {
+        const p = PRODUCTS.find(x => x.id == item.id);
+        const li = document.createElement('li');
+        li.className = 'cart-item';
+        li.innerHTML = `
+          <img src="https://picsum.photos/seed/plant${p.id}x/120/120" alt="${p.name}" />
+          <div>
+            <div class="ci-name">${p.name}</div>
+            <div class="ci-meta">Qty ${item.qty} · ₹ ${p.price.toLocaleString('en-IN')} each</div>
+          </div>
+          <div>
+            <div class="ci-price">₹ ${(p.price * item.qty).toLocaleString('en-IN')}</div>
+            <button class="add-btn" style="background:transparent;color:var(--muted);padding:4px 10px;font-size:11px;font-weight:500" data-remove="${p.id}">Remove</button>
+          </div>`;
+        list.appendChild(li);
+      });
+      totalRow.style.display = 'flex';
+      checkout.style.display = 'flex';
+      document.getElementById('cartTotal').textContent = `₹ ${cartSubtotal().toLocaleString('en-IN')}`;
+    }
+
+    // ── PRODUCT MODAL ──────────────────────────────────
+    function openProduct(id) {
+      const p = PRODUCTS.find(x => x.id == id);
+      if (!p) return;
+      document.getElementById('pmImg').src = `https://picsum.photos/seed/plant${p.id}x/700/900`;
+      document.getElementById('pmPet').textContent = p.petsafe === 'Yes' ? 'Pet-safe' : 'Not pet-safe';
+      document.getElementById('pmName').textContent = p.name;
+      document.getElementById('pmLatin').textContent = p.latin;
+      document.getElementById('pmPrice').textContent = `₹ ${p.price.toLocaleString('en-IN')}`;
+      document.getElementById('pmDesc').textContent = p.desc;
+      document.getElementById('pmLight').textContent = p.light;
+      document.getElementById('pmWater').textContent = p.water;
+      document.getElementById('pmPet2').textContent = p.petsafe;
+      document.getElementById('pmPot').textContent = p.pot;
+      document.getElementById('pmAdd').dataset.add = p.id;
+      openModal('productModal');
+    }
+
+    function openModal(id) { document.getElementById(id).classList.add('open'); }
+    function closeModal(id) {
+      if (id) document.getElementById(id).classList.remove('open');
+      else document.querySelectorAll('.modal.open').forEach(m => m.classList.remove('open'));
+    }
+
+    // ── EVENT WIRING ───────────────────────────────────
+    document.addEventListener('click', e => {
+      const addBtn = e.target.closest('[data-add]');
+      if (addBtn) { e.stopPropagation(); addToCart(addBtn.dataset.add); return; }
+
+      const removeBtn = e.target.closest('[data-remove]');
+      if (removeBtn) { e.stopPropagation(); removeFromCart(removeBtn.dataset.remove); return; }
+
+      const card = e.target.closest('.card');
+      if (card) { openProduct(card.dataset.id); return; }
+
+      const story = e.target.closest('.story');
+      if (story) { showToast('Article preview coming soon'); return; }
+
+      const close = e.target.closest('[data-modal-close]');
+      if (close) { closeModal(close.dataset.modalClose); return; }
+
+      const action = e.target.closest('[data-action]');
+      if (action) {
+        const a = action.dataset.action;
+        if (a === 'subscribe') showToast('Subscribed — first tip lands Sunday');
+        else if (a === 'shop-all') document.getElementById('bestsellers').scrollIntoView({behavior:'smooth'});
+        else if (a === 'quiz') showToast('Plant quiz launching soon');
+        else if (a === 'learn-more') showToast('Opening guarantee details');
+        else if (a === 'search') showToast('Search coming soon');
+        return;
+      }
+
+      if (e.target.id === 'cartIconBtn' || e.target.closest('#cartIconBtn')) { openModal('cartModal'); return; }
+
+      if (e.target.id === 'pmClose2') { closeModal('productModal'); return; }
+      if (e.target.id === 'checkoutBtn') { showToast('Redirecting to checkout…'); closeModal('cartModal'); return; }
+
+      // backdrop click closes modal
+      const modal = e.target.closest('.modal');
+      if (modal && e.target === modal) closeModal(modal.id);
+    });
+
+    // smooth scroll on top-nav anchors
+    document.querySelectorAll('.nav-anchor').forEach(a => {
+      a.addEventListener('click', e => {
+        e.preventDefault();
+        const id = a.getAttribute('href').slice(1);
+        const t = document.getElementById(id);
+        if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+
+    // ── TOAST ──────────────────────────────────────────
+    const toast = document.getElementById('toast');
+    let toastTimer = null;
+    function showToast(msg) {
+      document.getElementById('toastText').textContent = msg;
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 2400);
+    }
+
+    // ═══════════════════════════════════════════════════
+    // HAND TRACKING
+    // ═══════════════════════════════════════════════════
+
+    // One Euro Filter (Casiez, Roussel & Vogel, 2012):
+    // smooths noise heavily when the hand is still, but instantly
+    // becomes responsive when you move fast — so no fixed lag.
+    class OneEuroFilter {
+      constructor(minCutoff = 1.5, beta = 0.08, dCutoff = 1.0) {
+        this.minCutoff = minCutoff; this.beta = beta; this.dCutoff = dCutoff;
+        this.x = null; this.dx = 0; this.lastTime = null;
+      }
+      _alpha(cutoff, dt) {
+        const tau = 1 / (2 * Math.PI * cutoff);
+        return 1 / (1 + tau / dt);
+      }
+      filter(x, t) {
+        if (this.x === null) { this.x = x; this.lastTime = t; return x; }
+        const dt = Math.max((t - this.lastTime) / 1000, 1e-6);
+        const dx = (x - this.x) / dt;
+        const aD = this._alpha(this.dCutoff, dt);
+        const dxHat = aD * dx + (1 - aD) * this.dx;
+        const cutoff = this.minCutoff + this.beta * Math.abs(dxHat);
+        const a = this._alpha(cutoff, dt);
+        const xHat = a * x + (1 - a) * this.x;
+        this.x = xHat; this.dx = dxHat; this.lastTime = t;
+        return xHat;
+      }
+      reset() { this.x = null; this.dx = 0; this.lastTime = null; }
+    }
+    const filterX = new OneEuroFilter(1.5, 0.08, 1.0);
+    const filterY = new OneEuroFilter(1.5, 0.08, 1.0);
+
+    const cursor = document.getElementById('cursor');
+    const pip = document.getElementById('pip');
+    const pipCanvas = document.getElementById('pipCanvas');
+    const pctx = pipCanvas.getContext('2d');
+    const hud = document.getElementById('hud');
+    const hudText = document.getElementById('hudText');
+    const scrollHint = document.getElementById('scrollHint');
+
+    let targetX = window.innerWidth / 2;
+    let targetY = window.innerHeight / 2;
+    let smoothX = targetX, smoothY = targetY;
+    let isPinching = false;
+    let trackingActive = false;
+    let handVisible = false;
+
+    function elementUnderCursor() {
+      return document.elementFromPoint(smoothX, smoothY);
+    }
+
+    const HOVER_SELECTOR = '.card, .story, .pill, .add-btn, .btn, .icon-btn, .nav-anchor, .foot-link, .modal-close, [data-action], [data-modal-close], #pmAdd, #pmClose2, #checkoutBtn, .newsletter-form button, [data-add], [data-remove]';
+
+    function updateHover() {
+      const el = elementUnderCursor();
+      document.querySelectorAll('.hover').forEach(e => e.classList.remove('hover'));
+      cursor.classList.remove('over');
+      if (!el) return;
+      const t = el.closest(HOVER_SELECTOR);
+      if (t) {
+        t.classList.add('hover');
+        cursor.classList.add('over');
+      }
+    }
+
+    function pinchClick() {
+      const el = elementUnderCursor();
+      if (!el) return;
+
+      // First: anything in HOVER_SELECTOR is clickable, modal or not.
+      // (This includes #pmAdd, the modal-close ×, checkout button, etc.)
+      const t = el.closest(HOVER_SELECTOR);
+      if (t) { t.click(); return; }
+
+      // Otherwise, if the user pinched the modal backdrop directly
+      // (the dark area outside .modal-content), close the modal.
+      const m = el.closest('.modal.open');
+      if (m && el === m) closeModal(m.id);
+    }
+
+    function applyEdgeScroll() {
+      if (!handVisible) { scrollHint.classList.remove('show'); return; }
+      // pause edge-scroll when hovering an interactive element or when modal is open
+      if (cursor.classList.contains('over')) { scrollHint.classList.remove('show'); return; }
+      if (document.querySelector('.modal.open')) { scrollHint.classList.remove('show'); return; }
+
+      const h = window.innerHeight;
+      const topZone = h * 0.13;
+      const bottomZone = h * 0.87;
+
+      if (smoothY < topZone) {
+        const speed = (topZone - smoothY) / topZone * 16;
+        window.scrollBy(0, -speed);
+        scrollHint.className = 'up show';
+        scrollHint.textContent = '↑ scrolling up';
+      } else if (smoothY > bottomZone) {
+        const speed = (smoothY - bottomZone) / (h - bottomZone) * 16;
+        window.scrollBy(0, speed);
+        scrollHint.className = 'down show';
+        scrollHint.textContent = '↓ scrolling down';
+      } else {
+        scrollHint.classList.remove('show');
+      }
+    }
+
+    function setupPip() {
+      const r = pip.getBoundingClientRect();
+      pipCanvas.width = r.width;
+      pipCanvas.height = r.height;
+    }
+
+    async function startTracking() {
+      const video = document.getElementById('video');
+      setupPip();
+      pip.classList.remove('hidden');
+      cursor.classList.add('visible');
+      hud.classList.add('tracking');
+
+      // ── Pre-flight: secure context check ───────────────────
+      // Browsers block camera access on file:// and plain http://
+      // (except on localhost). Catch it early with a clear message.
+      if (!window.isSecureContext) {
+        hudText.textContent = 'https required';
+        alert(
+          "This page needs HTTPS to use the camera.\n\n" +
+          "You're currently on: " + location.protocol + "//" + (location.host || '(local file)') + "\n\n" +
+          "Browsers block camera access on file:// and plain http://. " +
+          "Drag this .html file onto https://app.netlify.com/drop to get a free https link, " +
+          "then open that link on your phone."
+        );
+        bailOut();
+        return;
+      }
+
+      // ── Camera API present? ────────────────────────────────
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        alert("Your browser doesn't expose the camera API. Try the latest Chrome or Safari.");
+        bailOut();
+        return;
+      }
+
+      hudText.textContent = 'starting camera…';
+
+      // ── Try progressively looser constraints ──────────────
+      const isMobile = window.innerWidth < 700 || /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      const targetW = isMobile ? 320 : 480;
+      const targetH = isMobile ? 240 : 360;
+
+      const constraintSets = [
+        { video: { facingMode: 'user', width: { ideal: targetW }, height: { ideal: targetH } } },
+        { video: { facingMode: 'user' } },
+        { video: true }
+      ];
+
+      let stream = null, lastErr = null;
+      for (const c of constraintSets) {
+        try { stream = await navigator.mediaDevices.getUserMedia(c); break; }
+        catch (err) { lastErr = err; }
+      }
+
+      if (!stream) {
+        hudText.textContent = 'camera blocked';
+        const reason = lastErr ? `${lastErr.name}: ${lastErr.message}` : 'unknown';
+        alert(
+          "Couldn't open the camera.\n\n" +
+          "Reason: " + reason + "\n\n" +
+          "Common fixes:\n" +
+          "• Tap the camera icon in the address bar and allow access\n" +
+          "• Close other apps that may be using the camera\n" +
+          "• Reload the page and try again"
+        );
+        bailOut();
+        return;
+      }
+
+      // ── Hook up the video element (iOS-friendly) ──────────
+      video.srcObject = stream;
+      video.setAttribute('playsinline', '');
+      video.muted = true;
+      await new Promise(r => {
+        if (video.readyState >= 2) return r();
+        video.onloadedmetadata = () => r();
+      });
+      try { await video.play(); } catch (_) { /* iOS quirk; usually plays anyway */ }
+
+      // ── Initialize MediaPipe Hands ────────────────────────
+      hudText.textContent = 'loading model…';
+      let hands;
+      try {
+        hands = new Hands({
+          locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+        });
+        hands.setOptions({
+          maxNumHands: 1,
+          modelComplexity: 0,
+          minDetectionConfidence: 0.5,
+          minTrackingConfidence: 0.5
+        });
+        hands.onResults(onResults);
+      } catch (err) {
+        alert("Couldn't load the hand-tracking model.\n\nReason: " + (err.message || err) +
+              "\n\nThis can happen on older browsers without WebAssembly + WebGL2 support.");
+        bailOut();
+        return;
+      }
+
+      hudText.textContent = 'searching for hand…';
+      trackingActive = true;
+
+      // ── Custom frame pump (skips Camera utility for reliability) ──
+      let inFlight = false;
+      async function feedFrames() {
+        if (!trackingActive) return;
+        if (!inFlight && video.readyState >= 2) {
+          inFlight = true;
+          try { await hands.send({ image: video }); }
+          catch (err) { console.warn('hands.send error:', err); }
+          inFlight = false;
+        }
+        requestAnimationFrame(feedFrames);
+      }
+      feedFrames();
+
+      requestAnimationFrame(loop);
+    }
+
+    function bailOut() {
+      trackingActive = false;
+      document.body.classList.remove('tracking');
+      cursor.style.display = 'none';
+      pip.style.display = 'none';
+      hud.style.display = 'none';
+      document.getElementById('intro').classList.remove('hide');
+    }
+
+    function onResults(results) {
+      pctx.save();
+      pctx.clearRect(0, 0, pipCanvas.width, pipCanvas.height);
+
+      if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+        handVisible = true;
+        hudText.textContent = 'tracking — pinch to click';
+        const landmarks = results.multiHandLandmarks[0];
+        if (window.drawConnectors && window.HAND_CONNECTIONS) {
+          drawConnectors(pctx, landmarks, HAND_CONNECTIONS, { color: '#e76f51', lineWidth: 1.5 });
+          drawLandmarks(pctx, landmarks, { color: '#ffffff', lineWidth: 0.5, radius: 1.5 });
+        }
+        const idx = landmarks[8], thumb = landmarks[4];
+        // Mirror x because video is flipped, then smooth via One Euro Filter
+        const now = performance.now();
+        const fx = filterX.filter(1 - idx.x, now);
+        const fy = filterY.filter(idx.y, now);
+        targetX = fx * window.innerWidth;
+        targetY = fy * window.innerHeight;
+        cursor.classList.add('visible');
+
+        const dx = idx.x - thumb.x, dy = idx.y - thumb.y, dz = (idx.z || 0) - (thumb.z || 0);
+        const d = Math.hypot(dx, dy, dz);
+        if (d < 0.055 && !isPinching) {
+          isPinching = true;
+          cursor.classList.add('pinch');
+          pinchClick();
+        } else if (d > 0.075 && isPinching) {
+          isPinching = false;
+          cursor.classList.remove('pinch');
+        }
+        if (!isPinching) updateHover();
+      } else {
+        handVisible = false;
+        hudText.textContent = 'no hand visible';
+        filterX.reset(); filterY.reset();
+      }
+      pctx.restore();
+    }
+
+    function loop() {
+      // Cursor catches up to the (already smoothed) target faster now
+      // — the One Euro Filter handles jitter, so the lerp can be snappier.
+      smoothX += (targetX - smoothX) * 0.55;
+      smoothY += (targetY - smoothY) * 0.55;
+      cursor.style.transform = `translate3d(${smoothX - 28}px, ${smoothY - 28}px, 0)`;
+      applyEdgeScroll();
+      if (trackingActive) requestAnimationFrame(loop);
+    }
+
+    // ── BOOT ───────────────────────────────────────────
+    document.getElementById('startBtn').addEventListener('click', () => {
+      document.getElementById('intro').classList.add('hide');
+      document.body.classList.add('tracking');
+      setTimeout(startTracking, 300);
+    });
+    document.getElementById('skipBtn').addEventListener('click', () => {
+      document.getElementById('intro').classList.add('hide');
+      cursor.style.display = 'none';
+      pip.style.display = 'none';
+      hud.style.display = 'none';
+    });
+
+    window.addEventListener('resize', setupPip);
+  </script>
+</body>
+</html>

@@ -1,0 +1,1503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>OCULAR — Eye-behavior instrumentation, made slowly.</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="A webcam-based cognitive load instrument. Per-frame eye features computed locally in the browser. Not a lie detector.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;0,6..96,700;1,6..96,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #f5eedc;   /* warm cream background */
+    --bg-2:      #ebe1c4;   /* deeper cream */
+    --card:      #faf5e6;   /* lightest cream */
+    --ink:       #2a3018;   /* deep olive — text + primary buttons */
+    --ink-soft:  #5e6244;   /* mid olive — secondary text */
+    --muted:     #9a9476;   /* warm sand — muted text */
+    --line:      #d4c9aa;   /* warm tan — hairlines */
+    --hi:        #7a8454;   /* medium olive — italic accent */
+    --hi-soft:   #ebe1c4;
+    --accent:    #4a5728;   /* saturated olive — CTAs, badges */
+    --sale:      #b04a2c;   /* warm rust — alerts, sale-equivalent */
+    --live:      #5e6244;   /* used for sparklines */
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { background: var(--bg); }
+  body {
+    color: var(--ink);
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    line-height: 1.5;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+  img { max-width: 100%; display: block; }
+  button { font-family: inherit; cursor: pointer; }
+  h1, h2, h3, h4 {
+    font-family: 'Bodoni Moda', serif;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    line-height: 1.05;
+  }
+  ::selection { background: var(--accent); color: var(--bg); }
+
+  /* ── ANNOUNCE BAR ───────────────────────────────────── */
+  .announce {
+    background: var(--accent);
+    color: var(--bg);
+    padding: 9px 16px;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .announce span { padding: 0 14px; }
+  .announce span + span::before { content: '·'; padding-right: 28px; color: rgba(245, 238, 220, 0.5); }
+
+  /* ── HEADER ─────────────────────────────────────────── */
+  header.site {
+    position: sticky; top: 0; z-index: 80;
+    background: rgba(245, 238, 220, 0.92);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--line);
+  }
+  .header-bar {
+    max-width: 1320px; margin: 0 auto;
+    padding: 18px 32px;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center; gap: 32px;
+  }
+  .brand {
+    display: flex; align-items: center; gap: 10px;
+    font-family: 'Bodoni Moda', serif;
+    font-size: 24px; color: var(--ink);
+    letter-spacing: 0.18em;
+    font-weight: 500;
+  }
+  .brand em { font-style: italic; font-weight: 400; color: var(--hi); }
+  nav.main-nav {
+    display: flex; gap: 30px; justify-content: center;
+  }
+  nav.main-nav a {
+    color: var(--ink-soft);
+    text-decoration: none;
+    font-size: 12px; font-weight: 500;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    padding: 8px 4px;
+    border-bottom: 1px solid transparent;
+    transition: all .2s;
+  }
+  nav.main-nav a:hover {
+    color: var(--ink);
+    border-bottom-color: var(--accent);
+  }
+  .header-actions {
+    display: flex; gap: 10px; justify-content: flex-end; align-items: center;
+  }
+  .icon-btn {
+    width: 40px; height: 40px;
+    border: 1px solid var(--line);
+    background: var(--card);
+    border-radius: 50%;
+    display: grid; place-items: center;
+    transition: all .2s;
+    color: var(--ink);
+  }
+  .icon-btn:hover { border-color: var(--ink); background: var(--hi-soft); }
+  .icon-btn svg { width: 17px; height: 17px; stroke: currentColor; fill: none; stroke-width: 1.6; }
+
+  /* ── HERO ───────────────────────────────────────────── */
+  .hero {
+    max-width: 1320px; margin: 32px auto 0;
+    padding: 0 32px;
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+    gap: 48px;
+    align-items: stretch;
+  }
+  .hero-text {
+    padding: 24px 0;
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .hero-text .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    color: var(--muted);
+    padding: 6px 0;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.25em; text-transform: uppercase;
+    margin-bottom: 24px;
+    align-self: flex-start;
+  }
+  .hero-text .eyebrow .dot {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.7); }
+  }
+  .hero-text h1 {
+    font-size: clamp(44px, 6.5vw, 96px);
+    margin-bottom: 24px;
+  }
+  .hero-text h1 em { font-style: italic; color: var(--hi); }
+  .hero-text p {
+    font-size: 16px;
+    color: var(--ink-soft);
+    margin-bottom: 28px;
+    max-width: 480px;
+  }
+  .hero-cta { display: flex; gap: 12px; flex-wrap: wrap; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 14px 28px;
+    border: 1px solid var(--ink);
+    background: var(--ink);
+    color: var(--bg);
+    border-radius: 0;
+    font-size: 12px; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    transition: all .2s;
+  }
+  .btn:hover { background: var(--accent); border-color: var(--accent); }
+  .btn:disabled { opacity: 0.5; cursor: wait; }
+  .btn.ghost {
+    background: transparent;
+    color: var(--ink);
+    border-color: var(--line);
+  }
+  .btn.ghost:hover { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+
+  /* Viewport — replaces the hero product photo */
+  .hero-img {
+    background: var(--bg-2);
+    overflow: hidden;
+    position: relative;
+    min-height: 480px;
+    border: 1px solid var(--line);
+  }
+  .hero-img video {
+    /* The real video element is hidden; we render to canvas. */
+    position: absolute; inset: 0;
+    width: 1px; height: 1px;
+    opacity: 0; pointer-events: none;
+  }
+  .hero-img canvas {
+    width: 100%; height: 100%;
+    position: absolute; inset: 0;
+    object-fit: cover;
+    transform: scaleX(-1);  /* mirror for natural feedback */
+  }
+  /* Pre-camera "plate" — abstract eye motif, replaced once webcam starts */
+  .hero-plate {
+    position: absolute; inset: 0;
+    display: grid; place-items: center;
+    background:
+      radial-gradient(circle at 50% 50%, rgba(74, 87, 40, 0.15), transparent 55%),
+      linear-gradient(135deg, var(--bg-2), var(--card));
+    transition: opacity .5s;
+  }
+  .hero-plate.gone { opacity: 0; pointer-events: none; }
+  .hero-plate svg {
+    width: 60%; max-width: 320px;
+    opacity: 0.45;
+    color: var(--ink-soft);
+  }
+  .hero-tag {
+    position: absolute;
+    bottom: 18px; left: 18px;
+    background: rgba(245, 238, 220, 0.92);
+    border: 1px solid var(--line);
+    backdrop-filter: blur(10px);
+    padding: 12px 16px;
+    z-index: 3;
+    transition: opacity .3s;
+  }
+  .hero-tag.hidden { opacity: 0; pointer-events: none; }
+  .hero-tag .name { font-weight: 600; font-size: 11px; color: var(--ink-soft); letter-spacing: 0.14em; text-transform: uppercase; }
+  .hero-tag .price { font-family: 'Bodoni Moda', serif; color: var(--ink); font-weight: 500; font-size: 22px; margin-top: 2px; display: block; font-variant-numeric: tabular-nums; }
+  .hero-tag .price em { font-style: italic; color: var(--hi); font-size: 14px; margin-left: 6px; }
+
+  /* Status pill on viewport */
+  .vp-pill {
+    position: absolute;
+    top: 18px; left: 18px;
+    z-index: 3;
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(42, 48, 24, 0.85);
+    color: var(--bg);
+    padding: 7px 14px;
+    border-radius: 100px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; font-weight: 500;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    backdrop-filter: blur(8px);
+    transition: background .3s;
+  }
+  .vp-pill .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #b8b29a;
+  }
+  .vp-pill[data-state="loading"] .dot { background: #d4a574; animation: pulse 1.2s ease-in-out infinite; }
+  .vp-pill[data-state="tracking"] .dot { background: #8fb774; box-shadow: 0 0 6px #8fb774; }
+  .vp-pill[data-state="error"] .dot { background: var(--sale); }
+
+  /* ── CATEGORY-EQUIVALENT TILES (= metric icons row) ───── */
+  .cat-tiles {
+    max-width: 1320px; margin: 64px auto 0;
+    padding: 0 32px;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 14px;
+  }
+  .cat-tile {
+    aspect-ratio: 1;
+    background: var(--card);
+    border: 1px solid var(--line);
+    overflow: hidden;
+    position: relative;
+    transition: transform .25s, border-color .25s;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 18px;
+    text-align: center;
+    gap: 14px;
+  }
+  .cat-tile:hover { border-color: var(--ink); transform: translateY(-3px); }
+  .cat-tile svg { width: 38px; height: 38px; stroke: var(--ink-soft); fill: none; stroke-width: 1.4; }
+  .cat-tile:hover svg { stroke: var(--ink); }
+  .cat-tile .label {
+    font-family: 'Bodoni Moda', serif;
+    font-size: 18px;
+    color: var(--ink);
+  }
+  .cat-tile .label em { font-style: italic; color: var(--hi); }
+  .cat-tile .sub {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  /* ── SECTION ────────────────────────────────────────── */
+  .section {
+    max-width: 1320px; margin: 88px auto 0;
+    padding: 0 32px;
+  }
+  .section-head {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    margin-bottom: 32px;
+    gap: 16px; flex-wrap: wrap;
+  }
+  .section-head h2 { font-size: clamp(34px, 4.2vw, 60px); }
+  .section-head h2 em { font-style: italic; color: var(--hi); }
+  .section-head .sub {
+    color: var(--ink-soft);
+    font-size: 15px;
+    max-width: 380px;
+    margin-top: 6px;
+  }
+
+  /* PILLS strip (filter-row analog) */
+  .cat-strip {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    margin-bottom: 32px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 24px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .pill {
+    padding: 9px 20px;
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--ink-soft);
+    font-size: 11px; font-weight: 500;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    transition: all .2s;
+  }
+  .pill:hover { border-color: var(--ink); color: var(--ink); }
+  .pill.active {
+    background: var(--ink); color: var(--bg); border-color: var(--ink);
+  }
+
+  /* METRIC GRID — analog of MONOLITH product grid */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  .metric-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    overflow: hidden;
+    transition: transform .25s, border-color .25s;
+    display: flex; flex-direction: column;
+    position: relative;
+  }
+  .metric-card:hover { transform: translateY(-3px); border-color: var(--hi); }
+  .metric-spark-wrap {
+    aspect-ratio: 16/7;
+    background: linear-gradient(180deg, var(--bg-2), var(--card));
+    position: relative;
+    overflow: hidden;
+  }
+  .metric-spark-wrap canvas {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+  }
+  .metric-tag {
+    position: absolute;
+    top: 12px; left: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; font-weight: 600;
+    color: var(--ink-soft);
+    background: rgba(250, 245, 230, 0.85);
+    backdrop-filter: blur(4px);
+    padding: 4px 9px;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    border: 1px solid var(--line);
+  }
+  .metric-tag.live { color: var(--accent); border-color: var(--accent); }
+  .metric-body {
+    padding: 18px 20px 20px;
+    display: flex; flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    border-top: 1px solid var(--line);
+  }
+  .metric-name { font-family: 'Bodoni Moda', serif; font-size: 22px; color: var(--ink); }
+  .metric-name em { font-style: italic; color: var(--hi); }
+  .metric-desc { font-size: 12px; color: var(--muted); margin-top: 2px; max-width: 280px; line-height: 1.55; }
+  .metric-row {
+    margin-top: auto;
+    padding-top: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .metric-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 28px; font-weight: 500;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+  .metric-value.split {
+    display: flex; gap: 14px; font-size: 22px;
+  }
+  .metric-value.split .l-tag,
+  .metric-value.split .r-tag {
+    font-size: 9px; color: var(--muted);
+    letter-spacing: 0.14em;
+    margin-right: 4px;
+    font-weight: 600;
+  }
+  .metric-unit {
+    font-size: 10px; color: var(--muted);
+    letter-spacing: 0.16em; text-transform: uppercase;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Gaze pad inside its own card */
+  .gaze-pad {
+    aspect-ratio: 16/7;
+    position: relative;
+    background: linear-gradient(180deg, var(--bg-2), var(--card));
+    overflow: hidden;
+  }
+  .gaze-pad-grid {
+    position: absolute; inset: 16px;
+    border: 1px dashed var(--line);
+  }
+  .gaze-pad-grid::before, .gaze-pad-grid::after {
+    content: ""; position: absolute; background: var(--line);
+  }
+  .gaze-pad-grid::before { left: 0; right: 0; top: 50%; height: 1px; }
+  .gaze-pad-grid::after  { top: 0; bottom: 0; left: 50%; width: 1px; }
+  .gaze-pad-dot {
+    position: absolute;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 4px rgba(74, 87, 40, 0.15);
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    transition: left .12s linear, top .12s linear;
+  }
+
+  /* ── METHODOLOGY BANNER (sale-banner analog) ───────── */
+  .meth-banner {
+    margin: 88px auto 0;
+    background: var(--ink);
+    color: var(--bg);
+    padding: 48px 32px;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 32px;
+    max-width: 1320px;
+  }
+  .meth-banner .lhs { display: flex; flex-direction: column; gap: 8px; }
+  .meth-banner .tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--sale); font-weight: 700;
+    letter-spacing: 0.3em; text-transform: uppercase;
+  }
+  .meth-banner h2 { font-size: clamp(28px, 3.6vw, 48px); color: var(--bg); }
+  .meth-banner h2 em { font-style: italic; color: var(--hi); }
+  .meth-banner p { color: var(--bg-2); font-size: 14px; max-width: 560px; opacity: 0.85; }
+  .meth-banner .btn { background: var(--bg); color: var(--ink); border-color: var(--bg); }
+  .meth-banner .btn:hover { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+
+  /* ── ETHICS / "PROMISE" ─────────────────────────────── */
+  .ethics {
+    margin-top: 88px;
+    background: var(--ink);
+    color: var(--bg);
+    padding: 80px 32px;
+    text-align: center;
+    background-image:
+      radial-gradient(circle at 20% 30%, rgba(245, 238, 220, 0.07), transparent 45%),
+      radial-gradient(circle at 80% 70%, rgba(122, 132, 84, 0.18), transparent 45%);
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .ethics .inner { max-width: 780px; margin: 0 auto; }
+  .ethics .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--bg-2); letter-spacing: 0.3em; text-transform: uppercase;
+    margin-bottom: 18px; opacity: 0.7;
+  }
+  .ethics h2 { font-size: clamp(36px, 5vw, 64px); margin-bottom: 20px; color: var(--bg); }
+  .ethics h2 em { font-style: italic; color: var(--hi); }
+  .ethics p { font-size: 16px; color: var(--bg-2); margin-bottom: 16px; line-height: 1.65; opacity: 0.85; }
+  .ethics .never {
+    margin-top: 32px;
+    display: flex; gap: 14px; flex-wrap: wrap;
+    justify-content: center;
+  }
+  .ethics .never span {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--bg-2);
+    border: 1px solid rgba(245, 238, 220, 0.18);
+    padding: 6px 14px;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    opacity: 0.78;
+  }
+
+  /* ── PHASES (newsletter analog) ─────────────────────── */
+  .phases {
+    margin: 88px auto 0;
+    max-width: 1320px;
+    padding: 56px 40px;
+    background: var(--card);
+    border: 1px solid var(--line);
+  }
+  .phases > .head {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  .phases h2 { font-size: clamp(26px, 3.2vw, 40px); margin-bottom: 12px; }
+  .phases h2 em { font-style: italic; color: var(--hi); }
+  .phases > .head p { color: var(--ink-soft); max-width: 480px; margin: 0 auto; font-size: 14px; }
+  .phase-list {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+  }
+  .phase {
+    border: 1px solid var(--line);
+    background: var(--bg);
+    padding: 22px 22px;
+    display: flex; flex-direction: column; gap: 10px;
+    position: relative;
+  }
+  .phase .num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 0.16em;
+  }
+  .phase .name { font-family: 'Bodoni Moda', serif; font-size: 22px; color: var(--ink); }
+  .phase .name em { font-style: italic; color: var(--hi); }
+  .phase .desc { font-size: 12px; color: var(--ink-soft); line-height: 1.55; }
+  .phase .status {
+    margin-top: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .phase .status::before {
+    content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--muted);
+  }
+  .phase[data-state="done"] { border-color: var(--accent); }
+  .phase[data-state="done"] .status { color: var(--accent); }
+  .phase[data-state="done"] .status::before { background: var(--accent); }
+  .phase[data-state="active"] { background: var(--bg-2); border-color: var(--ink); box-shadow: 0 4px 12px rgba(42, 48, 24, 0.08); }
+  .phase[data-state="active"] .status { color: var(--ink); }
+  .phase[data-state="active"] .status::before { background: var(--ink); animation: pulse 1.6s ease-in-out infinite; }
+
+  /* ── FOOTER ─────────────────────────────────────────── */
+  footer.site {
+    margin-top: 88px;
+    background: var(--ink);
+    color: var(--bg-2);
+    padding: 64px 32px 28px;
+    border-top: 1px solid var(--line);
+  }
+  .foot-grid {
+    max-width: 1320px; margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr 1fr;
+    gap: 48px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid rgba(245, 238, 220, 0.12);
+  }
+  .foot-grid h4 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    margin-bottom: 18px;
+    color: var(--bg);
+  }
+  .foot-grid ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .foot-grid a {
+    color: var(--bg-2);
+    text-decoration: none;
+    font-size: 13px;
+    opacity: 0.75;
+    transition: opacity .2s, color .2s;
+  }
+  .foot-grid a:hover { opacity: 1; color: var(--hi); }
+  .foot-grid .about {
+    color: var(--bg-2);
+    font-size: 13px;
+    margin-bottom: 14px;
+    line-height: 1.6;
+    opacity: 0.8;
+  }
+  .foot-grid .brand { color: var(--bg) !important; margin-bottom: 14px; }
+  .foot-bottom {
+    max-width: 1320px; margin: 24px auto 0;
+    display: flex;
+    justify-content: space-between;
+    color: var(--bg-2);
+    opacity: 0.55;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ── ERROR OVERLAY ──────────────────────────────────── */
+  .err {
+    position: absolute; inset: 0;
+    z-index: 4;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 14px;
+    text-align: center;
+    background: rgba(245, 238, 220, 0.96);
+    padding: 24px;
+  }
+  .err.hidden { display: none; }
+  .err h3 {
+    font-family: 'Bodoni Moda', serif;
+    font-size: 28px; color: var(--ink);
+    font-weight: 400;
+  }
+  .err p { color: var(--ink-soft); font-size: 13px; max-width: 320px; line-height: 1.55; font-family: 'JetBrains Mono', monospace; }
+
+  /* ── RESPONSIVE ─────────────────────────────────────── */
+  @media (max-width: 1100px) {
+    .grid { grid-template-columns: repeat(2, 1fr); }
+    .cat-tiles { grid-template-columns: repeat(3, 1fr); }
+    .phase-list { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 820px) {
+    .header-bar { grid-template-columns: 1fr auto; padding: 14px 18px; }
+    nav.main-nav { display: none; }
+    .hero { grid-template-columns: 1fr; gap: 32px; padding: 0 18px; }
+    .hero-img { min-height: 360px; }
+    .section { padding: 0 18px; }
+    .meth-banner { grid-template-columns: 1fr; padding: 36px 24px; }
+    .cat-tiles { padding: 0 18px; }
+    .phases { margin-left: 18px; margin-right: 18px; padding: 36px 24px; }
+    .phase-list { grid-template-columns: 1fr; }
+    .grid { grid-template-columns: 1fr; }
+    .foot-grid { grid-template-columns: 1fr 1fr; gap: 32px; padding: 0 0 32px; }
+    footer.site { padding: 48px 18px 24px; }
+    .foot-bottom { flex-direction: column; gap: 8px; align-items: flex-start; padding: 16px 18px 0; }
+  }
+  @media (max-width: 540px) {
+    .cat-tiles { grid-template-columns: repeat(2, 1fr); }
+    .announce span:nth-child(n+3) { display: none; }
+  }
+
+  /* Subtle staggered fade-in */
+  .hero > *, .cat-tiles, .section, .meth-banner, .ethics, .phases, footer.site {
+    animation: rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+  .hero > *:nth-child(2) { animation-delay: 0.1s; }
+  .cat-tiles { animation-delay: 0.15s; }
+  .section { animation-delay: 0.2s; }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<div class="announce">
+  <span>Phase 01 of 04 — Live Tracking</span>
+  <span>Not a Lie Detector</span>
+  <span>Processed Locally</span>
+  <span>Open Source</span>
+</div>
+
+<header class="site">
+  <div class="header-bar">
+    <div class="brand">OCULAR<em>.</em></div>
+    <nav class="main-nav">
+      <a href="#hero">Live</a>
+      <a href="#metrics">Readout</a>
+      <a href="#methodology">Methodology</a>
+      <a href="#ethics">Ethics</a>
+      <a href="#phases">Phases</a>
+    </nav>
+    <div class="header-actions">
+      <a class="icon-btn" href="#ethics" aria-label="Ethics">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>
+      </a>
+      <a class="icon-btn" href="https://github.com" target="_blank" rel="noopener" aria-label="Source code">
+        <svg viewBox="0 0 24 24"><path d="M9 19c-4.5 1.5-4.5-2-6-2.5M15 22v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7a5.44 5.44 0 0 0-1.5-3.75 5 5 0 0 0-.09-3.77S17.68 3.5 15 5.3a13.4 13.4 0 0 0-7 0C5.32 3.5 4.09 3.92 4.09 3.92a5 5 0 0 0-.09 3.77 5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 8 21.13V22"/></svg>
+      </a>
+    </div>
+  </div>
+</header>
+
+<!-- ── HERO ────────────────────────────────────── -->
+<section class="hero" id="hero">
+  <div class="hero-text">
+    <div class="eyebrow"><span class="dot"></span>Phase 01 · live readout</div>
+    <h1>Eye behaviour, <em>measured</em>. Not deception.</h1>
+    <p>OCULAR computes per-frame features of the eye — aperture, iris geometry, gaze direction — from a webcam in your browser. The signals correlate with cognitive load. They do not, on their own, identify lies.</p>
+    <div class="hero-cta">
+      <button class="btn" id="startBtn">Begin tracking →</button>
+      <a class="btn ghost" href="#methodology">Read methodology</a>
+    </div>
+  </div>
+
+  <div class="hero-img">
+    <!-- Pre-camera plate -->
+    <div class="hero-plate" id="heroPlate">
+      <svg viewBox="0 0 200 100" fill="none" stroke="currentColor" stroke-width="1">
+        <ellipse cx="100" cy="50" rx="78" ry="36"/>
+        <circle cx="100" cy="50" r="22"/>
+        <circle cx="100" cy="50" r="10" fill="currentColor" stroke="none" opacity="0.6"/>
+        <path d="M22 50 Q100 12 178 50" stroke-linecap="round"/>
+        <path d="M22 50 Q100 88 178 50" stroke-linecap="round"/>
+      </svg>
+    </div>
+
+    <video id="video" playsinline muted></video>
+    <canvas id="stage"></canvas>
+
+    <div class="vp-pill" id="vpPill" data-state="idle">
+      <span class="dot"></span>
+      <span id="vpStatus">awaiting permission</span>
+    </div>
+
+    <div class="hero-tag hidden" id="heroTag">
+      <span class="name">Live · iris diameter ratio</span>
+      <span class="price"><span id="tagValue">—</span><em id="tagDelta">—</em></span>
+    </div>
+
+    <div class="err hidden" id="errBox">
+      <h3 id="errTitle">Couldn't start the camera</h3>
+      <p id="errBody"></p>
+      <button class="btn ghost" onclick="location.reload()">Reload</button>
+    </div>
+  </div>
+</section>
+
+<!-- ── METRIC TILES (categories analog) ─────────── -->
+<section class="cat-tiles">
+  <div class="cat-tile">
+    <svg viewBox="0 0 48 48"><path d="M4 24 Q24 8 44 24 Q24 40 4 24Z"/><circle cx="24" cy="24" r="6"/></svg>
+    <div class="label"><em>Aperture</em></div>
+    <div class="sub">EAR · blink</div>
+  </div>
+  <div class="cat-tile">
+    <svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="14"/><circle cx="24" cy="24" r="6"/><circle cx="24" cy="24" r="2" fill="currentColor"/></svg>
+    <div class="label">Iris<em> ratio</em></div>
+    <div class="sub">geometry</div>
+  </div>
+  <div class="cat-tile">
+    <svg viewBox="0 0 48 48"><path d="M6 24h36"/><path d="M24 6v36"/><circle cx="32" cy="20" r="3" fill="currentColor"/></svg>
+    <div class="label"><em>Gaze</em> H/V</div>
+    <div class="sub">direction</div>
+  </div>
+  <div class="cat-tile">
+    <svg viewBox="0 0 48 48"><path d="M4 28 Q14 18 24 28 Q34 38 44 28"/><path d="M4 22 Q14 12 24 22 Q34 32 44 22" opacity="0.5"/></svg>
+    <div class="label">Blink<em> rate</em></div>
+    <div class="sub">events / min</div>
+  </div>
+  <div class="cat-tile">
+    <svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="18"/><path d="M16 22 Q24 30 32 22"/><circle cx="18" cy="20" r="1.5" fill="currentColor"/><circle cx="30" cy="20" r="1.5" fill="currentColor"/></svg>
+    <div class="label"><em>Face</em> mesh</div>
+    <div class="sub">478 points</div>
+  </div>
+</section>
+
+<!-- ── LIVE METRIC GRID ─────────────────────────── -->
+<section class="section" id="metrics">
+  <div class="section-head">
+    <div>
+      <h2>The <em>live</em> readout.</h2>
+      <p class="sub">Six per-frame features, recomputed every video frame from MediaPipe Face Landmarker.</p>
+    </div>
+    <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); letter-spacing: 0.14em; text-transform: uppercase;">
+      <span id="fpsReadout">— fps</span>
+    </div>
+  </div>
+
+  <div class="cat-strip">
+    <button class="pill active">All features</button>
+    <button class="pill">Aperture</button>
+    <button class="pill">Iris</button>
+    <button class="pill">Gaze</button>
+  </div>
+
+  <div class="grid">
+    <!-- EAR -->
+    <article class="metric-card">
+      <div class="metric-spark-wrap">
+        <span class="metric-tag live">● live</span>
+        <canvas id="sparkEar"></canvas>
+      </div>
+      <div class="metric-body">
+        <div class="metric-name"><em>Aperture</em> — EAR</div>
+        <div class="metric-desc">Eye Aspect Ratio. The standard blink/openness signal — vertical eye distance over horizontal.</div>
+        <div class="metric-row">
+          <span class="metric-value" id="valEar">—</span>
+          <span class="metric-unit">ratio</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- Iris/Eye -->
+    <article class="metric-card">
+      <div class="metric-spark-wrap">
+        <span class="metric-tag live">● live</span>
+        <canvas id="sparkIris"></canvas>
+      </div>
+      <div class="metric-body">
+        <div class="metric-name">Iris<em>/eye</em> ratio</div>
+        <div class="metric-desc">Iris diameter divided by eye width. A scale-invariant geometry proxy — not pupil dilation.</div>
+        <div class="metric-row">
+          <span class="metric-value split">
+            <span><span class="l-tag">L</span><span id="valIrisL">—</span></span>
+            <span><span class="r-tag">R</span><span id="valIrisR">—</span></span>
+          </span>
+          <span class="metric-unit">subj.</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- Gaze pad -->
+    <article class="metric-card">
+      <div class="gaze-pad">
+        <span class="metric-tag">x · y</span>
+        <div class="gaze-pad-grid"></div>
+        <div class="gaze-pad-dot" id="gazeDot"></div>
+      </div>
+      <div class="metric-body">
+        <div class="metric-name"><em>Gaze</em> direction</div>
+        <div class="metric-desc">Iris-center position normalised within the eye. Subject-relative — positive H is the subject's right.</div>
+        <div class="metric-row">
+          <span class="metric-value split">
+            <span><span class="l-tag">H</span><span id="valGazeH">—</span></span>
+            <span><span class="l-tag">V</span><span id="valGazeV">—</span></span>
+          </span>
+          <span class="metric-unit">[-1, +1]</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- Blinks -->
+    <article class="metric-card">
+      <div class="metric-spark-wrap" style="background: linear-gradient(180deg, var(--bg-2), var(--card));">
+        <span class="metric-tag">events</span>
+        <canvas id="sparkBlink"></canvas>
+      </div>
+      <div class="metric-body">
+        <div class="metric-name">Blink<em> count</em></div>
+        <div class="metric-desc">Detected blinks since session start. EAR drop below threshold for ≥2 frames, then recovery.</div>
+        <div class="metric-row">
+          <span class="metric-value" id="valBlinks">0</span>
+          <span class="metric-unit" id="valBlinkRate">— / min</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- Session -->
+    <article class="metric-card">
+      <div class="metric-spark-wrap" style="display: grid; place-items: center; background: linear-gradient(180deg, var(--bg-2), var(--card));">
+        <svg viewBox="0 0 48 48" style="width: 64px; opacity: 0.45; color: var(--ink-soft);" fill="none" stroke="currentColor" stroke-width="1.2">
+          <circle cx="24" cy="24" r="18"/>
+          <path d="M24 8 v16 l10 6"/>
+        </svg>
+      </div>
+      <div class="metric-body">
+        <div class="metric-name"><em>Session</em> elapsed</div>
+        <div class="metric-desc">Time since you began tracking. No data is stored — refreshing the page resets everything.</div>
+        <div class="metric-row">
+          <span class="metric-value" id="valElapsed">00:00</span>
+          <span class="metric-unit">mm:ss</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- Subject baseline (Phase 03 preview) -->
+    <article class="metric-card" style="background: var(--bg-2); border-style: dashed;">
+      <div class="metric-spark-wrap" style="background: transparent; display: grid; place-items: center;">
+        <span class="metric-tag" style="background: var(--ink); color: var(--bg); border-color: var(--ink);">phase 03</span>
+        <span style="font-family: 'Bodoni Moda', serif; font-size: 56px; font-style: italic; color: var(--hi); opacity: 0.5;">soon</span>
+      </div>
+      <div class="metric-body">
+        <div class="metric-name">Per-subject<em> baseline</em></div>
+        <div class="metric-desc">Calibrate to your neutral state, then compare. Required before any cognitive-load score is meaningful.</div>
+        <div class="metric-row">
+          <span class="metric-value" style="font-size: 18px; color: var(--muted);">in development</span>
+          <span class="metric-unit">queued</span>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ── METHODOLOGY (sale-banner analog) ────────── -->
+<section class="meth-banner" id="methodology">
+  <div class="lhs">
+    <div class="tag">— how this is being built —</div>
+    <h2>Trained with the <em>Concealed Information Test</em>.</h2>
+    <p>Not a naïve "truth vs lie" split. Subjects pick a card 1–5 in private; later they're asked "is it 1?", "is it 2?" in random order, answering "no" to each. Only the card that matches their concealed item produces a meaningful cognitive-load signal. Combined with per-subject baselines and subject-level cross-validation.</p>
+  </div>
+  <a class="btn" href="#phases">See the phases →</a>
+</section>
+
+<!-- ── ETHICS ──────────────────────────────────── -->
+<section class="ethics" id="ethics">
+  <div class="inner">
+    <div class="label">— ethics statement —</div>
+    <h2>This is <em>not</em> a lie detector.</h2>
+    <p>Eye-movement signals correlate with cognitive load — attention, effort, surprise — but no method using a consumer webcam reliably distinguishes deception from other sources of stress. Anyone presenting tools like this as truth-detection technology is overstating what the science supports.</p>
+    <p>Cognitive-load estimation has legitimate applications: driver drowsiness, UX research, education, accessibility. The same signals can be weaponised in interrogation, hiring, surveillance, and border control. OCULAR is framed deliberately to discourage that.</p>
+    <div class="never">
+      <span>not for interrogation</span>
+      <span>not for hiring</span>
+      <span>not for surveillance</span>
+      <span>not for border control</span>
+    </div>
+  </div>
+</section>
+
+<!-- ── PHASES ──────────────────────────────────── -->
+<section class="phases" id="phases">
+  <div class="head">
+    <h2>Four <em>phases</em> total.</h2>
+    <p>You're using Phase 01. The next three add data collection, model training, and a calibrated load score.</p>
+  </div>
+  <div class="phase-list">
+    <div class="phase" data-state="active">
+      <div class="num">— 01 —</div>
+      <div class="name"><em>Live</em> readout</div>
+      <div class="desc">MediaPipe Face Landmarker, per-frame feature extraction, sparklines. This page.</div>
+      <div class="status">in use</div>
+    </div>
+    <div class="phase">
+      <div class="num">— 02 —</div>
+      <div class="name">Data <em>collection</em></div>
+      <div class="desc">Concealed Information Test app. Per-subject CSV exports with ground-truth labels.</div>
+      <div class="status">queued</div>
+    </div>
+    <div class="phase">
+      <div class="num">— 03 —</div>
+      <div class="name"><em>Model</em> training</div>
+      <div class="desc">Windowed feature engineering, subject-level cross-validation, honest accuracy reporting.</div>
+      <div class="status">queued</div>
+    </div>
+    <div class="phase">
+      <div class="num">— 04 —</div>
+      <div class="name">Calibrated<em> score</em></div>
+      <div class="desc">Baseline calibration plus a real-time cognitive-load estimate, with full uncertainty bands.</div>
+      <div class="status">queued</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ──────────────────────────────────── -->
+<footer class="site">
+  <div class="foot-grid">
+    <div>
+      <div class="brand">OCULAR<em>.</em></div>
+      <p class="about">A small instrument for studying eye behaviour. Built carefully, run locally, framed honestly. The webcam never leaves your browser.</p>
+    </div>
+    <div>
+      <h4>Project</h4>
+      <ul>
+        <li><a href="#hero">Live demo</a></li>
+        <li><a href="#metrics">Readout</a></li>
+        <li><a href="#methodology">Methodology</a></li>
+        <li><a href="#phases">Phases</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Built with</h4>
+      <ul>
+        <li><a href="https://developers.google.com/mediapipe" target="_blank" rel="noopener">MediaPipe Tasks</a></li>
+        <li><a href="https://fonts.google.com/specimen/Bodoni+Moda" target="_blank" rel="noopener">Bodoni Moda</a></li>
+        <li><a href="https://fonts.google.com/specimen/Plus+Jakarta+Sans" target="_blank" rel="noopener">Plus Jakarta Sans</a></li>
+        <li><a href="https://fonts.google.com/specimen/JetBrains+Mono" target="_blank" rel="noopener">JetBrains Mono</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Reading</h4>
+      <ul>
+        <li><a href="#">Hess &amp; Polt, 1964</a></li>
+        <li><a href="#">Concealed Information Test</a></li>
+        <li><a href="#">EAR — Soukupová &amp; Čech</a></li>
+        <li><a href="#">MediaPipe Face Mesh</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="foot-bottom">
+    <span>© OCULAR studies — research demo, not a product</span>
+    <span>built locally · processed locally</span>
+  </div>
+</footer>
+
+<script type="module">
+// =======================================================================
+// MediaPipe Tasks Vision — face landmarker via WASM. Loaded from CDN.
+// =======================================================================
+import {
+  FaceLandmarker,
+  FilesetResolver,
+} from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/vision_bundle.mjs";
+
+const WASM_BASE  = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/wasm";
+const MODEL_URL  = "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task";
+
+// =======================================================================
+// Landmark indices (subject-relative — matching MediaPipe canonical sets).
+// 6-point EAR ordering: (outer, top1, top2, inner, bot1, bot2).
+// =======================================================================
+const LEFT_EYE_EAR     = [263, 387, 385, 362, 380, 373]; // subject's LEFT
+const LEFT_EYE_CORNERS = [263, 362];
+const LEFT_IRIS        = [473, 474, 475, 476, 477];
+const RIGHT_EYE_EAR    = [33, 160, 158, 133, 153, 144];  // subject's RIGHT
+const RIGHT_EYE_CORNERS= [33, 133];
+const RIGHT_IRIS       = [468, 469, 470, 471, 472];
+
+// =======================================================================
+// Feature math — direct port from the Python tracker.
+// =======================================================================
+function dist(ax, ay, bx, by) {
+  const dx = ax - bx, dy = ay - by;
+  return Math.sqrt(dx*dx + dy*dy);
+}
+
+function landmarksWrap(face, w, h) {
+  return {
+    width: w, height: h,
+    xy(idx) { return [face[idx].x * w, face[idx].y * h]; },
+  };
+}
+
+function eyeAspectRatio(lm, idx) {
+  const [ox, oy] = lm.xy(idx[0]), [t1x, t1y] = lm.xy(idx[1]);
+  const [t2x, t2y] = lm.xy(idx[2]), [ix, iy] = lm.xy(idx[3]);
+  const [b1x, b1y] = lm.xy(idx[4]), [b2x, b2y] = lm.xy(idx[5]);
+  const vert = dist(t1x, t1y, b2x, b2y) + dist(t2x, t2y, b1x, b1y);
+  const horz = 2 * dist(ox, oy, ix, iy);
+  return horz < 1e-6 ? 0 : vert / horz;
+}
+
+function irisRadius(lm, iris) {
+  const [cx, cy] = lm.xy(iris[0]);
+  let s = 0;
+  for (let i = 1; i < iris.length; i++) {
+    const [px, py] = lm.xy(iris[i]);
+    s += dist(cx, cy, px, py);
+  }
+  return s / (iris.length - 1);
+}
+
+function eyeWidth(lm, c) {
+  const [ax, ay] = lm.xy(c[0]), [bx, by] = lm.xy(c[1]);
+  return dist(ax, ay, bx, by);
+}
+
+function gazeH(lm, iris, corners, isSubjectLeft) {
+  const [ix] = lm.xy(iris[0]);
+  const [ox] = lm.xy(corners[0]);
+  const [innerX] = lm.xy(corners[1]);
+  const span = innerX - ox;
+  if (Math.abs(span) < 1e-6) return 0;
+  const centered = 2 * ((ix - ox) / span) - 1;
+  return isSubjectLeft ? centered : -centered;
+}
+
+function gazeV(lm, iris, ear) {
+  const [, iy] = lm.xy(iris[0]);
+  const [, t1y] = lm.xy(ear[1]), [, t2y] = lm.xy(ear[2]);
+  const [, b1y] = lm.xy(ear[4]), [, b2y] = lm.xy(ear[5]);
+  const top = (t1y + t2y) / 2, bot = (b1y + b2y) / 2;
+  const span = bot - top;
+  return Math.abs(span) < 1e-6 ? 0 : 2 * ((iy - top) / span) - 1;
+}
+
+function extract(lm) {
+  const earL = eyeAspectRatio(lm, LEFT_EYE_EAR);
+  const earR = eyeAspectRatio(lm, RIGHT_EYE_EAR);
+  const irL = irisRadius(lm, LEFT_IRIS), irR = irisRadius(lm, RIGHT_IRIS);
+  const wL = eyeWidth(lm, LEFT_EYE_CORNERS), wR = eyeWidth(lm, RIGHT_EYE_CORNERS);
+  const irisL = wL > 1e-6 ? (2 * irL) / wL : 0;
+  const irisR = wR > 1e-6 ? (2 * irR) / wR : 0;
+  const ghL = gazeH(lm, LEFT_IRIS,  LEFT_EYE_CORNERS,  true);
+  const ghR = gazeH(lm, RIGHT_IRIS, RIGHT_EYE_CORNERS, false);
+  const gvL = gazeV(lm, LEFT_IRIS,  LEFT_EYE_EAR);
+  const gvR = gazeV(lm, RIGHT_IRIS, RIGHT_EYE_EAR);
+  return {
+    earL, earR, earAvg: 0.5*(earL+earR),
+    irisL, irisR, irisAvg: 0.5*(irisL+irisR),
+    gh: 0.5*(ghL + ghR),
+    gv: 0.5*(gvL + gvR),
+  };
+}
+
+// =======================================================================
+// Canvas drawing — landmarks overlay + sparklines.
+// =======================================================================
+function drawOverlay(ctx, face, sx, sy) {
+  // Eye contour points (sage green over the warm cream tones)
+  ctx.fillStyle = "rgba(122, 132, 84, 0.95)";
+  for (const idx of [...LEFT_EYE_EAR, ...RIGHT_EYE_EAR]) {
+    const x = face[idx].x * sx, y = face[idx].y * sy;
+    ctx.beginPath(); ctx.arc(x, y, 2.2, 0, Math.PI*2); ctx.fill();
+  }
+  // Eye outlines (thin sage line)
+  ctx.strokeStyle = "rgba(122, 132, 84, 0.55)";
+  ctx.lineWidth = 1.2;
+  for (const eye of [LEFT_EYE_EAR, RIGHT_EYE_EAR]) {
+    ctx.beginPath();
+    for (let i = 0; i < eye.length; i++) {
+      const x = face[eye[i]].x * sx, y = face[eye[i]].y * sy;
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.closePath(); ctx.stroke();
+  }
+  // Iris perimeter (rust)
+  ctx.fillStyle = "rgba(176, 74, 44, 0.95)";
+  for (const iris of [LEFT_IRIS, RIGHT_IRIS]) {
+    for (let i = 1; i < iris.length; i++) {
+      const x = face[iris[i]].x * sx, y = face[iris[i]].y * sy;
+      ctx.beginPath(); ctx.arc(x, y, 2.5, 0, Math.PI*2); ctx.fill();
+    }
+  }
+  // Iris centers (dark olive ink)
+  ctx.fillStyle = "rgba(42, 48, 24, 1)";
+  for (const iris of [LEFT_IRIS, RIGHT_IRIS]) {
+    const x = face[iris[0]].x * sx, y = face[iris[0]].y * sy;
+    ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI*2); ctx.fill();
+  }
+}
+
+function drawSparkline(canvas, values, yMin, yMax, color, fill) {
+  const ctx = canvas.getContext("2d");
+  const dpr = window.devicePixelRatio || 1;
+  const cssW = canvas.clientWidth, cssH = canvas.clientHeight;
+  if (canvas.width !== cssW * dpr) {
+    canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+  }
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, cssW, cssH);
+  if (values.length < 2) return;
+
+  const n = values.length;
+  const stepX = cssW / (n - 1);
+
+  // Filled area
+  if (fill) {
+    ctx.fillStyle = fill;
+    ctx.beginPath();
+    ctx.moveTo(0, cssH);
+    for (let i = 0; i < n; i++) {
+      const v = Math.max(yMin, Math.min(yMax, values[i]));
+      const norm = (v - yMin) / (yMax - yMin);
+      ctx.lineTo(i * stepX, cssH - norm * cssH);
+    }
+    ctx.lineTo(cssW, cssH);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  // Line
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1.6; ctx.lineJoin = "round";
+  ctx.beginPath();
+  for (let i = 0; i < n; i++) {
+    const v = Math.max(yMin, Math.min(yMax, values[i]));
+    const norm = (v - yMin) / (yMax - yMin);
+    const y = cssH - norm * cssH;
+    if (i === 0) ctx.moveTo(i * stepX, y); else ctx.lineTo(i * stepX, y);
+  }
+  ctx.stroke();
+
+  // Latest dot
+  const last = Math.max(yMin, Math.min(yMax, values[n - 1]));
+  const ly = cssH - ((last - yMin) / (yMax - yMin)) * cssH;
+  ctx.fillStyle = color;
+  ctx.beginPath(); ctx.arc(cssW - 1, ly, 3, 0, Math.PI*2); ctx.fill();
+}
+
+// =======================================================================
+// Application state + DOM refs
+// =======================================================================
+const $ = (id) => document.getElementById(id);
+
+const video      = $("video");
+const stage      = $("stage");
+const stageCtx   = stage.getContext("2d");
+const heroPlate  = $("heroPlate");
+const heroTag    = $("heroTag");
+const tagValue   = $("tagValue");
+const tagDelta   = $("tagDelta");
+const startBtn   = $("startBtn");
+const errBox     = $("errBox");
+const errTitle   = $("errTitle");
+const errBody    = $("errBody");
+const vpPill     = $("vpPill");
+const vpStatus   = $("vpStatus");
+
+const valEar     = $("valEar");
+const valIrisL   = $("valIrisL");
+const valIrisR   = $("valIrisR");
+const valGazeH   = $("valGazeH");
+const valGazeV   = $("valGazeV");
+const valBlinks  = $("valBlinks");
+const valBlinkRate = $("valBlinkRate");
+const valElapsed = $("valElapsed");
+const fpsReadout = $("fpsReadout");
+const gazeDot    = $("gazeDot");
+
+const sparkEar   = $("sparkEar");
+const sparkIris  = $("sparkIris");
+const sparkBlink = $("sparkBlink");
+
+const STATE = {
+  landmarker: null,
+  raf: 0,
+  startedMs: 0,
+  lastFrameMs: 0,
+  fpsSamples: [],
+  earSeries:  [],
+  irisSeries: [],
+  blinkSeries: [],
+  blinkCount: 0,
+  closedFrames: 0,
+};
+const SPARK_MAX = 120;
+const EAR_BLINK_THRESHOLD = 0.18;
+const MIN_BLINK_FRAMES = 2;
+
+// =======================================================================
+// Utilities
+// =======================================================================
+function setStatus(state, label) {
+  vpPill.dataset.state = state;
+  vpStatus.textContent = label;
+}
+function showError(title, body) {
+  errBox.classList.remove("hidden");
+  errTitle.textContent = title;
+  errBody.textContent = body;
+  setStatus("error", "blocked");
+}
+function fmt(n, d=3) {
+  if (!Number.isFinite(n)) return "—";
+  return (n < 0 ? "-" : "") + Math.abs(n).toFixed(d);
+}
+function fmtSigned(n, d=2) {
+  if (!Number.isFinite(n)) return "—";
+  return (n >= 0 ? "+" : "−") + Math.abs(n).toFixed(d);
+}
+function pushBounded(arr, v) {
+  arr.push(v);
+  if (arr.length > SPARK_MAX) arr.shift();
+}
+function fmtElapsed(ms) {
+  const s = Math.max(0, Math.floor(ms / 1000));
+  return `${String(Math.floor(s / 60)).padStart(2,"0")}:${String(s % 60).padStart(2,"0")}`;
+}
+
+// =======================================================================
+// Boot — wire up the button
+// =======================================================================
+startBtn.addEventListener("click", () => {
+  begin().catch((err) => {
+    console.error(err);
+    showError("Could not start", err && err.message ? err.message : String(err));
+  });
+});
+
+async function begin() {
+  startBtn.disabled = true;
+  startBtn.textContent = "loading…";
+  setStatus("loading", "loading runtime");
+
+  // 0. Secure context — Chrome and Safari refuse camera access from file://
+  if (!window.isSecureContext) {
+    showError(
+      "HTTPS required",
+      "Modern browsers block camera access from file:// URLs. " +
+      "Serve this folder over a local server (e.g. `python -m http.server 8000`) " +
+      "or drag the file onto netlify.app/drop for a free HTTPS link."
+    );
+    return;
+  }
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    showError("Camera API missing", "Your browser doesn't expose getUserMedia. Try recent Chrome, Edge, or Firefox.");
+    return;
+  }
+
+  // 1. MediaPipe runtime
+  let fileset, landmarker;
+  try {
+    fileset = await FilesetResolver.forVisionTasks(WASM_BASE);
+  } catch (e) {
+    showError("Network blocked", "MediaPipe runtime couldn't load. Check your internet connection — the model is fetched from a CDN on first run.");
+    return;
+  }
+
+  setStatus("loading", "loading model");
+  try {
+    landmarker = await FaceLandmarker.createFromOptions(fileset, {
+      baseOptions: { modelAssetPath: MODEL_URL, delegate: "GPU" },
+      runningMode: "VIDEO",
+      numFaces: 1,
+      outputFaceBlendshapes: false,
+      outputFacialTransformationMatrixes: false,
+      minFaceDetectionConfidence: 0.5,
+      minFacePresenceConfidence: 0.5,
+      minTrackingConfidence: 0.5,
+    });
+  } catch (e) {
+    showError("Model load failed", e.message || String(e));
+    return;
+  }
+  STATE.landmarker = landmarker;
+
+  // 2. Camera
+  setStatus("loading", "requesting camera");
+  let stream;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" },
+      audio: false,
+    });
+  } catch (e) {
+    if (e && e.name === "NotAllowedError") {
+      showError("Camera blocked", "Allow camera access in your browser and reload the page.");
+    } else if (e && e.name === "NotFoundError") {
+      showError("No camera", "No camera was detected on this device.");
+    } else {
+      showError("Camera error", e.message || String(e));
+    }
+    return;
+  }
+  video.srcObject = stream;
+  await video.play();
+  if (!video.videoWidth) {
+    await new Promise(r => video.addEventListener("loadedmetadata", r, { once: true }));
+  }
+
+  // 3. Size canvas to match the viewport box
+  const sizeStage = () => {
+    const parent = stage.parentElement;
+    const r = parent.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    stage.width  = Math.round(r.width  * dpr);
+    stage.height = Math.round(r.height * dpr);
+    stage.style.width  = r.width + "px";
+    stage.style.height = r.height + "px";
+  };
+  sizeStage();
+  window.addEventListener("resize", sizeStage);
+
+  // 4. Begin loop
+  heroPlate.classList.add("gone");
+  startBtn.style.display = "none";
+  setStatus("tracking", "tracking");
+  STATE.startedMs = performance.now();
+  STATE.lastFrameMs = STATE.startedMs;
+  STATE.raf = requestAnimationFrame(loop);
+  console.info("%cOCULAR · Phase 01 — tracking begun.", "color:#4a5728; font-family:monospace;");
+}
+
+function loop(nowMs) {
+  STATE.raf = requestAnimationFrame(loop);
+
+  const dt = nowMs - STATE.lastFrameMs;
+  STATE.lastFrameMs = nowMs;
+  if (dt > 0) {
+    STATE.fpsSamples.push(1000 / dt);
+    if (STATE.fpsSamples.length > 30) STATE.fpsSamples.shift();
+  }
+  const avgFps = STATE.fpsSamples.reduce((a,b)=>a+b,0) / Math.max(STATE.fpsSamples.length, 1);
+
+  // Draw frame to canvas (cover-fit, matched aspect)
+  const cw = stage.width, ch = stage.height;
+  if (cw === 0 || ch === 0) return;
+  const vw = video.videoWidth, vh = video.videoHeight;
+  if (!vw) return;
+  const vAR = vw / vh, cAR = cw / ch;
+  let drawW, drawH, dx, dy;
+  if (vAR > cAR) { // wider — crop sides
+    drawH = ch;
+    drawW = ch * vAR;
+    dx = -(drawW - cw) / 2; dy = 0;
+  } else {
+    drawW = cw;
+    drawH = cw / vAR;
+    dx = 0; dy = -(drawH - ch) / 2;
+  }
+  // Slight cream tint composite — gives the warmth of MONOLITH photography
+  stageCtx.setTransform(1, 0, 0, 1, 0, 0);
+  stageCtx.clearRect(0, 0, cw, ch);
+  stageCtx.drawImage(video, dx, dy, drawW, drawH);
+  stageCtx.fillStyle = "rgba(245, 238, 220, 0.10)";
+  stageCtx.fillRect(0, 0, cw, ch);
+
+  // Run landmarker
+  let result = null;
+  const elapsed = Math.round(nowMs - STATE.startedMs);
+  try {
+    result = STATE.landmarker.detectForVideo(video, elapsed);
+  } catch (e) { /* swallow per-frame errors */ }
+
+  if (result && result.faceLandmarks && result.faceLandmarks.length > 0) {
+    const face = result.faceLandmarks[0];
+    // Landmarks are in [0,1] of the source video. Map to canvas pixels.
+    const sx = drawW, sy = drawH;
+    // The video was drawn at (dx, dy) with size (drawW, drawH). Translate accordingly.
+    stageCtx.save();
+    stageCtx.translate(dx, dy);
+    drawOverlay(stageCtx, face, sx, sy);
+    stageCtx.restore();
+
+    const lm = landmarksWrap(face, vw, vh);
+    const f = extract(lm);
+
+    // Blink detection
+    if (f.earAvg < EAR_BLINK_THRESHOLD) {
+      STATE.closedFrames += 1;
+    } else {
+      if (STATE.closedFrames >= MIN_BLINK_FRAMES) STATE.blinkCount += 1;
+      STATE.closedFrames = 0;
+    }
+    pushBounded(STATE.earSeries,  f.earAvg);
+    pushBounded(STATE.irisSeries, f.irisAvg);
+    pushBounded(STATE.blinkSeries, STATE.blinkCount);
+
+    // Update DOM
+    valEar.textContent     = fmt(f.earAvg, 3);
+    valIrisL.textContent   = fmt(f.irisL, 3);
+    valIrisR.textContent   = fmt(f.irisR, 3);
+    valGazeH.textContent   = fmtSigned(f.gh, 2);
+    valGazeV.textContent   = fmtSigned(f.gv, 2);
+    valBlinks.textContent  = String(STATE.blinkCount);
+    valElapsed.textContent = fmtElapsed(elapsed);
+    fpsReadout.textContent = avgFps.toFixed(1) + " fps";
+
+    // Blink rate (per minute)
+    const minutes = elapsed / 60000;
+    const rate = minutes > 0.05 ? STATE.blinkCount / minutes : 0;
+    valBlinkRate.textContent = `${rate.toFixed(1)} / min`;
+
+    // Hero tag
+    heroTag.classList.remove("hidden");
+    tagValue.textContent = fmt(f.irisAvg, 3);
+    tagDelta.textContent = `EAR ${fmt(f.earAvg, 2)}`;
+
+    // Gaze pad dot
+    const x = Math.max(0, Math.min(100, 50 + f.gh * 50));
+    const y = Math.max(0, Math.min(100, 50 + f.gv * 50));
+    gazeDot.style.left = x + "%";
+    gazeDot.style.top  = y + "%";
+
+    setStatus("tracking", STATE.closedFrames > 0 ? "blink" : "tracking");
+  } else {
+    heroTag.classList.add("hidden");
+    setStatus("loading", "no face");
+  }
+
+  // Sparklines
+  drawSparkline(sparkEar,   STATE.earSeries,   0.10, 0.45,
+                "rgba(74, 87, 40, 0.95)",  "rgba(74, 87, 40, 0.18)");
+  drawSparkline(sparkIris,  STATE.irisSeries,  0.20, 0.55,
+                "rgba(176, 74, 44, 0.95)", "rgba(176, 74, 44, 0.14)");
+  drawSparkline(sparkBlink, STATE.blinkSeries,
+                0,
+                Math.max(5, STATE.blinkCount + 2),
+                "rgba(94, 98, 68, 0.95)",  "rgba(94, 98, 68, 0.16)");
+}
+
+// Sparkline placeholders before tracking begins
+function paintIdle() {
+  for (const c of [sparkEar, sparkIris, sparkBlink]) {
+    const ctx = c.getContext("2d");
+    const dpr = window.devicePixelRatio || 1;
+    const w = c.clientWidth, h = c.clientHeight;
+    if (!w || !h) continue;
+    c.width = w * dpr; c.height = h * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+    ctx.strokeStyle = "rgba(212, 201, 170, 0.6)";
+    ctx.setLineDash([3, 4]);
+    ctx.beginPath();
+    ctx.moveTo(0, h * 0.5); ctx.lineTo(w, h * 0.5);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = "rgba(154, 148, 118, 0.7)";
+    ctx.font = "10px 'JetBrains Mono', monospace";
+    ctx.fillText("awaiting input", 12, h * 0.5 - 6);
+  }
+}
+window.addEventListener("load", () => { setTimeout(paintIdle, 50); });
+window.addEventListener("resize", () => { if (!STATE.landmarker) paintIdle(); });
+
+// Console banner
+console.info(
+  "%cOCULAR · Phase 01\n%cSubject-relative landmark naming. Iris/eye ratio is NOT pupil dilation.",
+  "color:#4a5728; font-weight:700; font-family:'Bodoni Moda', serif; font-size:14px;",
+  "color:#5e6244; font-family:monospace;"
+);
+</script>
+</body>
+</html>

@@ -1,0 +1,1494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#08060f" />
+<title>Obliq AI · Music Church Lighting Controller</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Cormorant+Garamond:wght@500;600&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   OBLIQ AI · MUSIC + CHURCH LIGHTING
+   Single-file. Minimal UI. Beat-reactive lighting. Lightweight.
+   ============================================================ */
+:root{
+  --b:        0.65;             /* brightness 0..1 (gesture-driven)   */
+  --beat:     0;                /* audio bass level 0..1 (per-frame)  */
+  --vol:      0.7;              /* master volume 0..1                 */
+  --primary:  #ff3ea5;
+  --secondary:#9d3bff;
+  --beam:     255, 120, 200;    /* rgb triplet for inside rgba()      */
+  --bias-l:   1;
+  --bias-r:   1;
+
+  --bg: #07060f;
+  --ink: #e8e6f0;
+  --ink-dim: #8b88a3;
+  --line: rgba(255,255,255,0.08);
+}
+*{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body{
+  margin:0; padding:0; height:100%; background:#000;
+  color:var(--ink); font-family:'Inter', system-ui, sans-serif; overflow:hidden;
+}
+.app{
+  display:flex; flex-direction:column; height:100vh; height:100svh; background:var(--bg);
+}
+
+/* ---------- HEADER ---------- */
+.head{
+  flex:0 0 auto; padding: 10px 18px;
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  border-bottom:1px solid var(--line);
+  background: linear-gradient(180deg, rgba(255,255,255,0.025), transparent);
+}
+.brand{ display:flex; align-items:center; gap:10px; min-width:0; }
+.brand-mark{
+  width:24px; height:24px; border-radius:6px;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  display:grid; place-items:center; color:#fff; font-weight:700;
+  font-family:'Cormorant Garamond',serif; font-size:15px; line-height:1;
+  box-shadow: 0 0 12px rgba(var(--beam), calc(0.4 + 0.6 * var(--beat)));
+  transition: box-shadow .12s ease;
+}
+.brand-text{ display:flex; flex-direction:column; line-height:1.1; min-width:0; }
+.brand-title{
+  font-family:'Cormorant Garamond', serif; font-weight:600;
+  font-size:16px; letter-spacing:0.01em; color:var(--ink);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.brand-title b{ color: var(--primary); font-weight:600; }
+.brand-sub{
+  font-size:10px; color:var(--ink-dim); letter-spacing:0.18em;
+  text-transform:uppercase; margin-top:1px;
+}
+.head-meta{ display:flex; align-items:center; gap:14px; font-size:11px; color:var(--ink-dim); }
+.head-meta b{ color:var(--ink); font-weight:500; }
+@media (max-width:560px){ .head-meta .hide-sm{ display:none; } }
+
+/* ---------- CAMERA (40%) ---------- */
+.cam{ flex: 4 1 0; min-height:0; position:relative; background:#000; overflow:hidden; }
+.cam video, .cam canvas{
+  position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+  transform: scaleX(-1);
+}
+.cam canvas{ pointer-events:none; }
+.cam-placeholder{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  flex-direction:column; gap:10px; color:var(--ink-dim); text-align:center; padding:20px;
+  background: radial-gradient(ellipse at center, #14101e, #050308);
+}
+.cam-placeholder svg{ width:34px; height:34px; opacity:0.55; }
+.cam-placeholder p{ margin:0; font-size:13px; max-width:380px; }
+.cam-placeholder p b{ color:var(--ink); }
+
+.cam-hud{
+  position:absolute; top:10px; left:12px; right:12px;
+  display:flex; align-items:flex-start; justify-content:space-between;
+  pointer-events:none; gap:10px;
+}
+.hud-pill{
+  display:inline-flex; align-items:center; gap:7px;
+  padding: 5px 11px; border-radius: 99px;
+  background: rgba(8,5,16,0.55);
+  border:1px solid rgba(255,255,255,0.08);
+  font-size:11px; color:var(--ink); letter-spacing:0.02em;
+}
+.hud-pill .d{ width:6px; height:6px; border-radius:50%; background:#ff5577; }
+.hud-pill.on .d{ background:#37e0a1; box-shadow:0 0 6px #37e0a1; }
+.hud-pill b{ color:var(--primary); font-weight:600; }
+.hud-bot{
+  position:absolute; left:12px; bottom:10px; pointer-events:none;
+}
+
+/* ---------- CHURCH SCENE (60%) ---------- */
+.scene{ flex: 6 1 0; min-height:0; position:relative; overflow:hidden; background:#000; }
+.scene-svg{ position:absolute; inset:0; width:100%; height:100%; display:block; }
+
+/* Pillar wash overlays.
+   Each wash brightens with both --b (gesture) and --beat (audio bass). */
+.wash{
+  position:absolute; pointer-events:none;
+  mix-blend-mode: screen; will-change: opacity;
+  transition: opacity .25s ease;
+}
+.wash.left{
+  background: linear-gradient(90deg,
+    rgba(var(--beam), calc((0.7 + 0.5 * var(--beat)) * var(--b) * var(--bias-l, 1))) 0%,
+    rgba(var(--beam), calc((0.22 + 0.2 * var(--beat)) * var(--b) * var(--bias-l, 1))) 35%,
+    rgba(var(--beam), 0) 75%);
+}
+.wash.right{
+  background: linear-gradient(-90deg,
+    rgba(var(--beam), calc((0.7 + 0.5 * var(--beat)) * var(--b) * var(--bias-r, 1))) 0%,
+    rgba(var(--beam), calc((0.22 + 0.2 * var(--beat)) * var(--b) * var(--bias-r, 1))) 35%,
+    rgba(var(--beam), 0) 75%);
+}
+
+/* Vertical LED strip on pillar inner edge */
+.led{
+  position:absolute; pointer-events:none;
+  background: linear-gradient(180deg,
+    rgba(var(--beam), 0) 0%,
+    rgba(var(--beam), calc((0.85 + 0.15 * var(--beat)) * var(--b))) 18%,
+    rgba(var(--beam), calc((1.0  + 0.0  * var(--beat)) * var(--b))) 50%,
+    rgba(var(--beam), calc((0.85 + 0.15 * var(--beat)) * var(--b))) 82%,
+    rgba(var(--beam), 0) 100%);
+  box-shadow: 0 0 6px rgba(var(--beam), calc(0.55 * var(--b)));
+}
+.led.left  { opacity: var(--bias-l, 1); }
+.led.right { opacity: var(--bias-r, 1); }
+
+/* Floor reflection */
+.floor-glow{
+  position:absolute; left:0; right:0; bottom:0; height: 18%;
+  background: linear-gradient(180deg,
+    rgba(var(--beam), 0) 0%,
+    rgba(var(--beam), calc((0.16 + 0.2 * var(--beat)) * var(--b))) 60%,
+    rgba(var(--beam), calc((0.32 + 0.25 * var(--beat)) * var(--b))) 100%);
+  mix-blend-mode: screen; pointer-events:none;
+}
+
+/* Warm altar glow — does not change with palette */
+.altar-glow{
+  position:absolute; left:50%; top: 36%;
+  width: 14%; height: 28%; transform: translate(-50%, 0);
+  background: radial-gradient(ellipse at center,
+    rgba(255, 215, 170, calc((0.45 + 0.25 * var(--beat)) * var(--b))) 0%,
+    rgba(255, 180, 120, calc(0.18 * var(--b))) 40%,
+    rgba(0,0,0,0) 70%);
+  mix-blend-mode: screen; pointer-events:none;
+}
+
+/* Soft haze sheet (single, very subtle) */
+.haze{
+  position:absolute; inset:0; pointer-events:none; mix-blend-mode: screen;
+  background: radial-gradient(ellipse at 50% 70%,
+    rgba(var(--beam), calc(0.08 * var(--b))) 0%,
+    rgba(var(--beam), 0) 50%);
+}
+
+/* ---- LIGHT MODES (two-fingers cycles these) ---- */
+/* mode-normal  (default): static wash, scales with beat naturally */
+
+/* mode-moving: rotating delay across pillar pairs */
+.scene.mode-moving .wash{ animation: wavePillar 2.2s ease-in-out infinite; }
+.scene.mode-moving .wash.idx0{ animation-delay: 0s;   }
+.scene.mode-moving .wash.idx1{ animation-delay: .18s; }
+.scene.mode-moving .wash.idx2{ animation-delay: .36s; }
+.scene.mode-moving .wash.idx3{ animation-delay: .54s; }
+.scene.mode-moving .wash.idx4{ animation-delay: .72s; }
+@keyframes wavePillar{
+  0%, 100% { filter: brightness(0.45); }
+  50%      { filter: brightness(1.6);  }
+}
+
+/* mode-pulse: snap-pulse driven by --beat (no CSS keyframe needed; the --beat var already drives wash opacity, but we add a quick darken between beats) */
+.scene.mode-pulse .wash{ filter: brightness(calc(0.5 + 1.0 * var(--beat))); }
+.scene.mode-pulse .led{  filter: brightness(calc(0.6 + 1.0 * var(--beat))); }
+
+/* mode-wave: smooth ping-pong across pillars */
+.scene.mode-wave .wash{
+  animation: wavePan 5s ease-in-out infinite;
+}
+.scene.mode-wave .wash.idx0{ animation-delay: 0s;   }
+.scene.mode-wave .wash.idx1{ animation-delay: .4s; }
+.scene.mode-wave .wash.idx2{ animation-delay: .8s; }
+.scene.mode-wave .wash.idx3{ animation-delay: 1.2s; }
+.scene.mode-wave .wash.idx4{ animation-delay: 1.6s; }
+@keyframes wavePan{
+  0%, 100% { filter: brightness(0.6); }
+  50%      { filter: brightness(1.4); }
+}
+
+/* Grand mode pulses everything */
+.scene.grand .wash, .scene.grand .led, .scene.grand .floor-glow{
+  animation: grandPulse 1s ease-in-out infinite;
+}
+@keyframes grandPulse{
+  0%, 100% { filter: brightness(0.9); }
+  50%      { filter: brightness(1.55); }
+}
+
+/* Visualizer canvas (waveform + EQ bars), sits inside the scene */
+.viz{
+  position:absolute; left:0; right:0; bottom:0; height: 64px;
+  pointer-events:none; opacity:0.7;
+}
+
+/* Watermark */
+.watermark{
+  position:absolute; left:50%; bottom:8px; transform:translateX(-50%);
+  font-size: 10px; letter-spacing:0.28em; text-transform:uppercase;
+  color: rgba(255,255,255,0.4); pointer-events:none;
+  mix-blend-mode: difference; z-index:3;
+}
+.watermark b{ color: rgba(255,255,255,0.7); font-weight:500; }
+
+/* ---------- BOTTOM CONTROL BAR ---------- */
+.bar{
+  flex:0 0 auto; padding: 9px 12px;
+  display:flex; align-items:center; gap:7px; flex-wrap:wrap;
+  border-top:1px solid var(--line);
+  background: linear-gradient(0deg, rgba(255,255,255,0.025), transparent);
+}
+.btn{
+  appearance:none; border:1px solid var(--line); cursor:pointer;
+  background: rgba(255,255,255,0.035); color: var(--ink);
+  font: 500 12px 'Inter', sans-serif; letter-spacing:0.02em;
+  padding: 7px 13px; border-radius: 99px;
+  display:inline-flex; align-items:center; gap:6px;
+  transition: background .2s ease, border-color .2s ease, transform .15s ease;
+  white-space:nowrap;
+}
+.btn:hover{ background: rgba(255,255,255,0.07); }
+.btn:active{ transform: translateY(1px); }
+.btn.primary{
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  border-color: transparent; color: #fff; font-weight:600;
+  box-shadow: 0 4px 14px rgba(var(--beam), 0.35);
+}
+.btn[disabled]{ opacity:0.4; cursor:not-allowed; }
+.btn svg{ width:13px; height:13px; }
+.btn.on{ background: rgba(var(--beam), 0.22); border-color: rgba(var(--beam), 0.45); color:#fff; }
+
+.bar .group{
+  display:flex; align-items:center; gap:6px;
+  padding: 0 6px 0 4px;
+  border-left: 1px solid var(--line);
+}
+.bar .group:first-of-type{ border-left:none; padding-left:0; }
+
+.bar .spacer{ flex:1; }
+.vol-slider{
+  appearance:none; width:74px; height:4px; border-radius:99px;
+  background: linear-gradient(90deg, rgba(var(--beam), 0.7) 0%, rgba(var(--beam), 0.7) calc(var(--vol) * 100%), rgba(255,255,255,0.1) calc(var(--vol) * 100%));
+  outline:none; cursor:pointer;
+}
+.vol-slider::-webkit-slider-thumb{
+  appearance:none; width:12px; height:12px; border-radius:50%;
+  background:#fff; box-shadow: 0 0 6px rgba(var(--beam), 0.8);
+  cursor:pointer;
+}
+.vol-slider::-moz-range-thumb{
+  width:12px; height:12px; border-radius:50%; background:#fff; border:none;
+  cursor:pointer; box-shadow: 0 0 6px rgba(var(--beam), 0.8);
+}
+
+.bar .status{ font-size:11px; color:var(--ink-dim); letter-spacing:0.04em; }
+.bar .status b{ color:var(--ink); }
+
+@media (max-width: 700px){
+  .bar .group{ border-left:none; padding:0; }
+  .bar .status{ width:100%; text-align:center; padding-top:4px; }
+  .btn{ padding: 6px 10px; font-size: 11px; }
+}
+
+/* ---------- DEMO BAR (hidden by default) ---------- */
+.demo-bar{
+  position: fixed; left:50%; bottom: 70px; transform: translate(-50%, 20px);
+  display:flex; gap:6px; flex-wrap:wrap; justify-content:center;
+  padding: 10px; max-width: 95vw;
+  background: rgba(10,8,20,0.94);
+  border:1px solid var(--line); border-radius: 14px;
+  opacity:0; pointer-events:none; transition: all .25s ease; z-index: 50;
+}
+.demo-bar.show{ opacity:1; pointer-events:auto; transform: translate(-50%, 0); }
+.demo-btn{
+  appearance:none; border:1px solid var(--line); cursor:pointer;
+  background: rgba(255,255,255,0.03); color: var(--ink);
+  padding: 7px 11px; border-radius: 8px;
+  font: 500 11px 'Inter',sans-serif;
+  display:inline-flex; align-items:center; gap:5px;
+}
+.demo-btn:hover{ background: rgba(var(--beam), 0.18); border-color: rgba(var(--beam),0.45); }
+.demo-btn span{ font-size:14px; }
+
+/* ---------- GUIDE MODAL ---------- */
+.modal-bg{
+  position:fixed; inset:0; background: rgba(0,0,0,0.6);
+  display:flex; align-items:center; justify-content:center; padding:20px;
+  opacity:0; pointer-events:none; transition: opacity .25s ease; z-index: 100;
+}
+.modal-bg.show{ opacity:1; pointer-events:auto; }
+.modal{
+  background: linear-gradient(180deg, #14101e, #0a0813);
+  border:1px solid var(--line); border-radius: 16px;
+  width: min(460px, 100%); max-height: 90vh; overflow:auto; padding: 22px;
+}
+.modal h3{
+  margin: 0 0 4px; font-family:'Cormorant Garamond', serif;
+  font-weight:600; font-size: 22px; letter-spacing:0.01em;
+}
+.modal h3 b{ color: var(--primary); }
+.modal p{ margin: 0 0 16px; font-size:12px; color:var(--ink-dim); letter-spacing:0.04em; }
+.guide-list{ display:flex; flex-direction:column; gap:4px; }
+.guide-row{
+  display:grid; grid-template-columns: 32px 1fr;
+  align-items:center; gap:12px; padding:9px 8px; border-radius:8px;
+}
+.guide-row:nth-child(odd){ background: rgba(255,255,255,0.025); }
+.guide-row .e{ font-size:18px; text-align:center; }
+.guide-row .t{ font-size:13px; }
+.guide-row .t small{ display:block; color:var(--ink-dim); font-size:11px; margin-top:2px; }
+.modal-close{
+  margin-top: 18px; width:100%;
+  background: rgba(255,255,255,0.04); border:1px solid var(--line);
+  color:var(--ink); padding:10px; border-radius:10px; cursor:pointer;
+  font: 500 12px 'Inter',sans-serif;
+}
+.modal-close:hover{ background: rgba(255,255,255,0.08); }
+
+/* ---------- TOAST ---------- */
+.toast{
+  position:fixed; bottom:90px; left:50%; transform: translate(-50%, 20px);
+  background: rgba(20,12,16,0.95); border:1px solid rgba(255,80,80,0.35);
+  padding: 10px 16px; border-radius:10px; font-size:12px; color:#ffdada;
+  z-index: 200; opacity:0; pointer-events:none; transition: all .25s ease;
+  max-width: 90vw; text-align:center;
+}
+.toast.show{ opacity:1; transform: translate(-50%, 0); pointer-events:auto; }
+
+/* ---------- PERFORMANCE MODE — disable heavy effects ---------- */
+body.perf .wash{ mix-blend-mode: normal; transition:none; }
+body.perf .led{ box-shadow:none; }
+body.perf .scene.mode-moving .wash,
+body.perf .scene.mode-wave .wash,
+body.perf .scene.grand .wash,
+body.perf .scene.grand .led,
+body.perf .scene.grand .floor-glow{ animation: none; }
+body.perf .haze{ display:none; }
+
+/* Fullscreen compactness */
+:fullscreen .head{ padding: 6px 14px; }
+:fullscreen .bar{ padding: 6px 10px; }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- HEADER -->
+  <header class="head">
+    <div class="brand">
+      <div class="brand-mark" id="brandMark">◬</div>
+      <div class="brand-text">
+        <div class="brand-title"><b>Obliq AI</b> · Music Church Lighting</div>
+        <div class="brand-sub">Powered by Digital Hammerr</div>
+      </div>
+    </div>
+    <div class="head-meta">
+      <span class="hide-sm" id="metaFps">— FPS</span>
+      <span><b id="metaState">System Ready</b></span>
+    </div>
+  </header>
+
+  <!-- CAMERA -->
+  <section class="cam" id="cam">
+    <video id="video" autoplay muted playsinline></video>
+    <canvas id="overlay"></canvas>
+
+    <div class="cam-placeholder" id="camPh">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+        <path d="M2.5 12C5 7 8 5 12 5s7 2 9.5 7c-2.5 5-5.5 7-9.5 7s-7-2-9.5-7Z"/>
+        <circle cx="12" cy="12" r="3.5"/>
+      </svg>
+      <p>Click <b>Start Camera</b> to track hands. Click <b>Demo Beat</b> for built-in music — or upload your own.</p>
+    </div>
+
+    <div class="cam-hud">
+      <span class="hud-pill" id="pillCam"><i class="d"></i> Camera Offline</span>
+      <span class="hud-pill" id="pillGest">Gesture: <b id="gestureName" style="margin-left:4px">—</b></span>
+    </div>
+    <div class="hud-bot">
+      <span class="hud-pill" id="pillMusic"><i class="d"></i> No Music</span>
+    </div>
+  </section>
+
+  <!-- CHURCH SCENE -->
+  <section class="scene" id="scene">
+    <!--
+      Perspective math (viewBox 1600×900):
+        depth t∈[0..1]:  floor_y=900-360t  ceil_y=60+290t
+                         width=110-80t     inner_L=130+590t
+    -->
+    <svg class="scene-svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"  stop-color="#0a0a18"/>
+          <stop offset="60%" stop-color="#06050d"/>
+          <stop offset="100%" stop-color="#020205"/>
+        </linearGradient>
+        <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stop-color="#0a0915"/>
+          <stop offset="50%"  stop-color="#0c0a18"/>
+          <stop offset="100%" stop-color="#1a1226"/>
+        </linearGradient>
+        <linearGradient id="pillar" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%"   stop-color="#0b0a14"/>
+          <stop offset="30%"  stop-color="#1c1828"/>
+          <stop offset="55%"  stop-color="#272135"/>
+          <stop offset="80%"  stop-color="#1c1828"/>
+          <stop offset="100%" stop-color="#0b0a14"/>
+        </linearGradient>
+        <linearGradient id="backwall" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"  stop-color="#15101f"/>
+          <stop offset="100%" stop-color="#080610"/>
+        </linearGradient>
+        <radialGradient id="ceilVault" cx="50%" cy="0%" r="80%">
+          <stop offset="0%"  stop-color="#1c1828"/>
+          <stop offset="100%" stop-color="#040308"/>
+        </radialGradient>
+      </defs>
+
+      <rect width="1600" height="900" fill="url(#bg)"/>
+      <ellipse cx="800" cy="0" rx="1300" ry="600" fill="url(#ceilVault)" opacity="0.85"/>
+
+      <!-- Aisle floor -->
+      <path d="M 130 900 L 1470 900 L 880 540 L 720 540 Z" fill="url(#floor)"/>
+
+      <!-- Perspective tile seams -->
+      <g stroke="rgba(255,255,255,0.05)" stroke-width="1" fill="none">
+        <line x1="130"  y1="900" x2="720" y2="540"/>
+        <line x1="1470" y1="900" x2="880" y2="540"/>
+        <line x1="300"  y1="900" x2="760" y2="540"/>
+        <line x1="1300" y1="900" x2="840" y2="540"/>
+        <line x1="500"  y1="900" x2="790" y2="540"/>
+        <line x1="1100" y1="900" x2="810" y2="540"/>
+        <line x1="800"  y1="900" x2="800" y2="540"/>
+        <line x1="100"  y1="720" x2="1500" y2="720"/>
+        <line x1="260"  y1="630" x2="1340" y2="630"/>
+        <line x1="380"  y1="580" x2="1220" y2="580"/>
+      </g>
+
+      <!-- Back wall + altar arched window -->
+      <rect x="720" y="350" width="160" height="190" fill="url(#backwall)"/>
+      <path d="M 760 540 L 760 400 Q 800 358 840 400 L 840 540 Z" fill="#1a1426"/>
+      <path d="M 768 530 L 768 405 Q 800 372 832 405 L 832 530 Z" fill="rgba(255,200,140,0.22)"/>
+      <!-- Mullions -->
+      <line x1="800" y1="375" x2="800" y2="530" stroke="rgba(255,180,120,0.35)" stroke-width="1.5"/>
+      <line x1="775" y1="455" x2="825" y2="455" stroke="rgba(255,180,120,0.25)" stroke-width="1"/>
+      <!-- Tiny cross silhouette above window -->
+      <line x1="800" y1="370" x2="800" y2="385" stroke="rgba(255,200,140,0.5)" stroke-width="2"/>
+      <line x1="794" y1="375" x2="806" y2="375" stroke="rgba(255,200,140,0.5)" stroke-width="2"/>
+
+      <!-- LEFT pillars (back -> front) -->
+      <rect x="690" y="350" width="30"  height="190" fill="url(#pillar)"/>
+      <rect x="690" y="345" width="30"  height="8"  fill="#2a2238"/>
+
+      <rect x="522" y="278" width="50"  height="352" fill="url(#pillar)"/>
+      <rect x="520" y="270" width="54"  height="10" fill="#2a2238"/>
+
+      <rect x="355" y="205" width="70"  height="515" fill="url(#pillar)"/>
+      <rect x="352" y="195" width="76"  height="12" fill="#2a2238"/>
+      <path d="M 355 205 Q 390 175 425 205" stroke="rgba(255,255,255,0.06)" fill="none"/>
+
+      <rect x="187" y="132" width="90"  height="678" fill="url(#pillar)"/>
+      <rect x="183" y="120" width="98"  height="14" fill="#2a2238"/>
+      <path d="M 187 132 Q 232 95 277 132" stroke="rgba(255,255,255,0.08)" fill="none"/>
+
+      <rect x="20"  y="60"  width="110" height="840" fill="url(#pillar)"/>
+      <rect x="14"  y="46"  width="122" height="16" fill="#2a2238"/>
+      <path d="M 20 60 Q 75 18 130 60" stroke="rgba(255,255,255,0.1)" fill="none"/>
+
+      <!-- RIGHT pillars (mirrored) -->
+      <rect x="880"  y="350" width="30"  height="190" fill="url(#pillar)"/>
+      <rect x="880"  y="345" width="30"  height="8"  fill="#2a2238"/>
+
+      <rect x="1028" y="278" width="50"  height="352" fill="url(#pillar)"/>
+      <rect x="1026" y="270" width="54"  height="10" fill="#2a2238"/>
+
+      <rect x="1175" y="205" width="70"  height="515" fill="url(#pillar)"/>
+      <rect x="1172" y="195" width="76"  height="12" fill="#2a2238"/>
+      <path d="M 1175 205 Q 1210 175 1245 205" stroke="rgba(255,255,255,0.06)" fill="none"/>
+
+      <rect x="1323" y="132" width="90"  height="678" fill="url(#pillar)"/>
+      <rect x="1319" y="120" width="98"  height="14" fill="#2a2238"/>
+      <path d="M 1323 132 Q 1368 95 1413 132" stroke="rgba(255,255,255,0.08)" fill="none"/>
+
+      <rect x="1470" y="60"  width="110" height="840" fill="url(#pillar)"/>
+      <rect x="1464" y="46"  width="122" height="16" fill="#2a2238"/>
+      <path d="M 1470 60 Q 1525 18 1580 60" stroke="rgba(255,255,255,0.1)" fill="none"/>
+
+      <!-- Ceiling rib arches -->
+      <g stroke="rgba(255,255,255,0.06)" stroke-width="1.5" fill="none">
+        <path d="M 130 60 Q 800 -30 1470 60"/>
+        <path d="M 277 132 Q 800 35 1323 132"/>
+        <path d="M 425 205 Q 800 110 1175 205"/>
+        <path d="M 572 278 Q 800 200 1028 278"/>
+        <path d="M 720 350 Q 800 300 880 350"/>
+      </g>
+
+      <!-- Stage step -->
+      <rect x="700" y="540" width="200" height="10" fill="#15111e" stroke="rgba(255,255,255,0.05)"/>
+    </svg>
+
+    <!-- Wash overlays (HTML divs over SVG, in % so they scale) -->
+    <div class="wash left idx0" style="left:8.13%;  top:7%;  width:18%; height:86%"></div>
+    <div class="wash left idx1" style="left:17.3%;  top:14%; width:15%; height:75%"></div>
+    <div class="wash left idx2" style="left:26.6%;  top:22%; width:11%; height:60%"></div>
+    <div class="wash left idx3" style="left:35.75%; top:30%; width:8%;  height:43%"></div>
+    <div class="wash left idx4" style="left:45%;    top:38%; width:5%;  height:25%"></div>
+
+    <div class="wash right idx4" style="left:50%;    top:38%; width:5%;  height:25%"></div>
+    <div class="wash right idx3" style="left:56.25%; top:30%; width:8%;  height:43%"></div>
+    <div class="wash right idx2" style="left:62.44%; top:22%; width:11%; height:60%"></div>
+    <div class="wash right idx1" style="left:67.69%; top:14%; width:15%; height:75%"></div>
+    <div class="wash right idx0" style="left:73.88%; top:7%;  width:18%; height:86%"></div>
+
+    <!-- LED strips -->
+    <div class="led left"  style="left:8.05%;  top:7%;  width:0.25%; height:86%"></div>
+    <div class="led left"  style="left:17.25%; top:14%; width:0.22%; height:75%"></div>
+    <div class="led left"  style="left:26.55%; top:22%; width:0.2%;  height:60%"></div>
+    <div class="led left"  style="left:35.7%;  top:30%; width:0.18%; height:43%"></div>
+    <div class="led left"  style="left:44.95%; top:38%; width:0.15%; height:25%"></div>
+
+    <div class="led right" style="left:54.95%; top:38%; width:0.15%; height:25%"></div>
+    <div class="led right" style="left:64.2%;  top:30%; width:0.18%; height:43%"></div>
+    <div class="led right" style="left:73.4%;  top:22%; width:0.2%;  height:60%"></div>
+    <div class="led right" style="left:82.65%; top:14%; width:0.22%; height:75%"></div>
+    <div class="led right" style="left:91.85%; top:7%;  width:0.25%; height:86%"></div>
+
+    <div class="haze"></div>
+    <div class="altar-glow"></div>
+    <div class="floor-glow"></div>
+
+    <!-- Audio visualizer (waveform + EQ bars) -->
+    <canvas class="viz" id="viz"></canvas>
+
+    <div class="watermark">obliq ai &nbsp;✕&nbsp; <b>digital hammerr</b></div>
+  </section>
+
+  <!-- CONTROL BAR -->
+  <div class="bar">
+    <div class="group">
+      <button class="btn primary" id="btnStart">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3.5"/><path d="M2.5 12C5 7 8 5 12 5s7 2 9.5 7c-2.5 5-5.5 7-9.5 7s-7-2-9.5-7Z"/></svg>
+        Start Camera
+      </button>
+      <button class="btn" id="btnStop" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="5" width="14" height="14" rx="2"/></svg>
+        Stop
+      </button>
+    </div>
+
+    <div class="group">
+      <button class="btn" id="btnUpload">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 16V4M6 10l6-6 6 6M4 20h16"/></svg>
+        Upload
+      </button>
+      <input type="file" id="fileInput" accept="audio/*" hidden>
+      <button class="btn" id="btnDemoBeat">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="16" r="2.5"/><path d="M8.5 18V6l11-2v12"/></svg>
+        Demo Beat
+      </button>
+      <button class="btn" id="btnPlay">
+        <svg id="iconPlay" viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8V4z"/></svg>
+        <span id="playLabel">Play</span>
+      </button>
+      <input type="range" min="0" max="100" value="70" class="vol-slider" id="vol" title="Volume"/>
+    </div>
+
+    <div class="group">
+      <button class="btn" id="btnDemo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 3l14 9-14 9V3z"/></svg>
+        Demo Mode
+      </button>
+      <button class="btn" id="btnGuide">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 4.4 1.6c-.7.8-1.9 1-1.9 2.4M12 17v.01"/></svg>
+        Guide
+      </button>
+      <button class="btn" id="btnPerf">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M13 2L4.5 13.5H12L11 22l8.5-11.5H12L13 2z"/></svg>
+        Perf
+      </button>
+      <button class="btn" id="btnFull">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+        Full
+      </button>
+    </div>
+
+    <div class="spacer"></div>
+    <div class="status">
+      Light <b id="modeName">Normal</b> · Beat <b id="beatName">—</b> · Color <b id="palName">Pink/Purple</b>
+    </div>
+  </div>
+
+</div>
+
+<!-- DEMO BAR -->
+<div class="demo-bar" id="demoBar">
+  <button class="demo-btn" data-g="open"><span>🖐️</span>Open Palm</button>
+  <button class="demo-btn" data-g="fist"><span>✊</span>Fist</button>
+  <button class="demo-btn" data-g="up"><span>⬆️</span>Up</button>
+  <button class="demo-btn" data-g="down"><span>⬇️</span>Down</button>
+  <button class="demo-btn" data-g="left"><span>⬅️</span>Left</button>
+  <button class="demo-btn" data-g="right"><span>➡️</span>Right</button>
+  <button class="demo-btn" data-g="pinch"><span>🤏</span>Pinch (tap)</button>
+  <button class="demo-btn" data-g="pinchhold"><span>🎨</span>Pinch (hold)</button>
+  <button class="demo-btn" data-g="two"><span>✌️</span>Two Fingers</button>
+  <button class="demo-btn" data-g="three"><span>🤟</span>Three Fingers</button>
+  <button class="demo-btn" data-g="both"><span>🙌</span>Both Hands</button>
+</div>
+
+<!-- GUIDE MODAL -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h3>Gesture <b>Guide</b></h3>
+    <p>Hand gestures control both music and lighting</p>
+    <div class="guide-list">
+      <div class="guide-row"><div class="e">🖐️</div><div class="t">Open Palm <small>Play music · lights bright · full show</small></div></div>
+      <div class="guide-row"><div class="e">✊</div><div class="t">Closed Fist <small>Mute music · blackout church</small></div></div>
+      <div class="guide-row"><div class="e">⬆️</div><div class="t">Hand Up <small>Volume + brightness up</small></div></div>
+      <div class="guide-row"><div class="e">⬇️</div><div class="t">Hand Down <small>Volume + brightness down</small></div></div>
+      <div class="guide-row"><div class="e">⬅️</div><div class="t">Hand Left <small>Focus lights on left pillars</small></div></div>
+      <div class="guide-row"><div class="e">➡️</div><div class="t">Hand Right <small>Focus lights on right pillars</small></div></div>
+      <div class="guide-row"><div class="e">🤏</div><div class="t">Pinch <small>Tap = play/pause · hold &gt;1s = change color</small></div></div>
+      <div class="guide-row"><div class="e">✌️</div><div class="t">Two Fingers <small>Cycle light mode (Normal · Moving · Pulse · Wave)</small></div></div>
+      <div class="guide-row"><div class="e">🤟</div><div class="t">Three Fingers <small>Cycle music style (Ambient · Club · Cinematic · Worship)</small></div></div>
+      <div class="guide-row"><div class="e">🙌</div><div class="t">Both Hands <small>Grand show · max volume · all beams</small></div></div>
+    </div>
+    <button class="modal-close" id="modalClose">Close</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Hidden audio element for uploaded files -->
+<audio id="audio" preload="auto" crossorigin="anonymous"></audio>
+
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+
+<script>
+/* ============================================================
+   OBLIQ AI · MUSIC CHURCH LIGHTING — logic
+   ============================================================ */
+(() => {
+'use strict';
+const $ = id => document.getElementById(id);
+
+/* ============================================================
+   PALETTES
+   ============================================================ */
+const PALETTES = [
+  { name:'Pink / Purple',  primary:'#ff3ea5', secondary:'#9d3bff', beam:'255,120,200' },
+  { name:'Blue / Cyan',    primary:'#39c8ff', secondary:'#0066ff', beam:'140,220,255' },
+  { name:'Gold / Amber',   primary:'#ffb74d', secondary:'#ff8800', beam:'255,200,140' },
+  { name:'White / Ice',    primary:'#f0f4ff', secondary:'#c8d8f5', beam:'235,240,255' },
+  { name:'Red / Magenta',  primary:'#ff2a5c', secondary:'#ff00aa', beam:'255,100,140' }
+];
+let paletteIdx = 0;
+function applyPalette(p){
+  const r = document.documentElement.style;
+  r.setProperty('--primary',   p.primary);
+  r.setProperty('--secondary', p.secondary);
+  r.setProperty('--beam',      p.beam);
+  $('palName').textContent = p.name;
+}
+
+/* ============================================================
+   LIGHT MODES (two-fingers cycles)
+   ============================================================ */
+const LIGHT_MODES = ['normal','moving','pulse','wave'];
+const LIGHT_LABEL = { normal:'Normal', moving:'Moving', pulse:'Pulse', wave:'Wave' };
+let lightModeIdx = 0;
+function applyLightMode(){
+  const sc = $('scene');
+  sc.classList.remove('mode-normal','mode-moving','mode-pulse','mode-wave');
+  sc.classList.add('mode-' + LIGHT_MODES[lightModeIdx]);
+  $('modeName').textContent = LIGHT_LABEL[ LIGHT_MODES[lightModeIdx] ];
+}
+
+/* ============================================================
+   MUSIC MODES (three-fingers cycles)
+   ============================================================ */
+const MUSIC_MODES = ['ambient','club','cinematic','worship'];
+const MUSIC_LABEL = { ambient:'Slow Ambient', club:'Club Pulse', cinematic:'Cinematic', worship:'Worship' };
+let musicModeIdx = 1; // default Club Pulse — feels alive for demo
+function getMusicMode(){ return MUSIC_MODES[musicModeIdx]; }
+function updateMusicLabel(){ $('beatName').textContent = MUSIC_LABEL[getMusicMode()]; }
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const state = {
+  b:        0.65,       // brightness
+  bias:     0,          // -1..1
+  beat:     0,          // bass level smoothed
+  vol:      0.7,
+  muted:    false,
+  playing:  false,
+  source:   null,       // 'demo' | 'file' | null
+  grand:    false
+};
+
+function setBrightness(v){
+  state.b = Math.max(0.08, Math.min(1, v));
+  document.documentElement.style.setProperty('--b', state.b.toFixed(3));
+}
+function setBias(side){
+  state.bias = Math.max(-1, Math.min(1, side));
+  const l = state.bias <= 0 ? 1 : (1 - 0.85 * state.bias);
+  const r = state.bias >= 0 ? 1 : (1 + 0.85 * state.bias);
+  document.documentElement.style.setProperty('--bias-l', l.toFixed(3));
+  document.documentElement.style.setProperty('--bias-r', r.toFixed(3));
+}
+function setVolume(v){
+  state.vol = Math.max(0, Math.min(1, v));
+  document.documentElement.style.setProperty('--vol', state.vol.toFixed(3));
+  $('vol').value = Math.round(state.vol * 100);
+  if(masterGain){
+    masterGain.gain.value = state.muted ? 0 : state.vol;
+  }
+  const a = $('audio');
+  a.volume = state.vol;
+  a.muted = state.muted;
+}
+function setMuted(m){
+  state.muted = !!m;
+  setVolume(state.vol);
+  updatePlayUI();
+}
+function setGrand(on){
+  state.grand = !!on;
+  $('scene').classList.toggle('grand', state.grand);
+}
+
+/* ============================================================
+   AUDIO ENGINE  (Web Audio API)
+   ============================================================ */
+let audioCtx = null;
+let masterGain = null;
+let analyser = null;
+let freqData = null;
+let mediaSource = null;     // <audio> -> source node
+let demoActive = false;
+let demoTimer = null;
+let nextNoteT = 0;
+
+function initAudio(){
+  if(audioCtx) return;
+  const AC = window.AudioContext || window.webkitAudioContext;
+  audioCtx = new AC();
+  masterGain = audioCtx.createGain();
+  masterGain.gain.value = state.vol;
+  analyser = audioCtx.createAnalyser();
+  analyser.fftSize = 512;
+  analyser.smoothingTimeConstant = 0.75;
+  freqData = new Uint8Array(analyser.frequencyBinCount);
+  masterGain.connect(analyser);
+  analyser.connect(audioCtx.destination);
+}
+
+async function resumeAudio(){
+  initAudio();
+  if(audioCtx.state === 'suspended') await audioCtx.resume();
+}
+
+/* ---------- DEMO BEAT GENERATOR ---------- */
+/* Schedules tones ahead-of-time using AudioContext.currentTime, so the
+   timing stays sample-accurate and CPU-light. */
+function kick(t, vel = 1){
+  const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+  o.frequency.setValueAtTime(140, t);
+  o.frequency.exponentialRampToValueAtTime(40, t + 0.13);
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(0.7 * vel, t + 0.005);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
+  o.connect(g); g.connect(masterGain);
+  o.start(t); o.stop(t + 0.2);
+}
+function hihat(t, vel = 1){
+  const len = 0.04;
+  const buf = audioCtx.createBuffer(1, len * audioCtx.sampleRate, audioCtx.sampleRate);
+  const d = buf.getChannelData(0);
+  for(let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1);
+  const src = audioCtx.createBufferSource(); src.buffer = buf;
+  const f = audioCtx.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = 8000;
+  const g = audioCtx.createGain();
+  g.gain.setValueAtTime(0.18 * vel, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + 0.035);
+  src.connect(f); f.connect(g); g.connect(masterGain);
+  src.start(t); src.stop(t + len);
+}
+function bass(t, freq = 55, dur = 0.4, vel = 1){
+  const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+  o.type = 'sawtooth'; o.frequency.value = freq;
+  const f = audioCtx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 350;
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(0.25 * vel, t + 0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(f); f.connect(g); g.connect(masterGain);
+  o.start(t); o.stop(t + dur + 0.05);
+}
+function pad(t, freqs, dur = 4, vel = 0.5){
+  freqs.forEach(fr => {
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = 'sine'; o.frequency.value = fr;
+    o.connect(g); g.connect(masterGain);
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.05 * vel, t + dur * 0.3);
+    g.gain.linearRampToValueAtTime(0, t + dur);
+    o.start(t); o.stop(t + dur + 0.05);
+  });
+}
+function rumble(t, dur = 2){
+  const len = dur;
+  const buf = audioCtx.createBuffer(1, len * audioCtx.sampleRate, audioCtx.sampleRate);
+  const d = buf.getChannelData(0);
+  for(let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);
+  const src = audioCtx.createBufferSource(); src.buffer = buf;
+  const f = audioCtx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 150;
+  const g = audioCtx.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.linearRampToValueAtTime(0.25, t + dur * 0.4);
+  g.gain.linearRampToValueAtTime(0.0001, t + dur);
+  src.connect(f); f.connect(g); g.connect(masterGain);
+  src.start(t); src.stop(t + dur);
+}
+function bell(t, freq, vel = 0.3){
+  const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+  o.type = 'triangle'; o.frequency.value = freq;
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(0.18 * vel, t + 0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 1.4);
+  o.connect(g); g.connect(masterGain);
+  o.start(t); o.stop(t + 1.5);
+}
+
+/* Mode-aware scheduling, called repeatedly via demoTimer */
+function demoTick(){
+  if(!demoActive) return;
+  const ahead = audioCtx.currentTime + 0.25;
+  const mode = getMusicMode();
+  const bpm = { ambient:60, club:124, cinematic:90, worship:68 }[mode];
+  const beatDur = 60 / bpm;
+
+  while(nextNoteT < ahead){
+    const beatIdx = Math.round(nextNoteT / beatDur);
+    const t = nextNoteT;
+
+    if(mode === 'club'){
+      kick(t);
+      if(beatIdx % 2 === 1) hihat(t, 0.8);
+      hihat(t + beatDur * 0.5, 0.5);
+      if(beatIdx % 8 === 0) bass(t, 55, beatDur * 1.5, 0.9);
+    }
+    else if(mode === 'ambient'){
+      if(beatIdx % 4 === 0) pad(t, [165, 220, 261.63], 8, 0.7);
+      if(beatIdx % 2 === 0) bass(t, 55, beatDur, 0.5);
+      if(Math.random() < 0.2) bell(t, [440, 587, 659][Math.floor(Math.random()*3)], 0.25);
+    }
+    else if(mode === 'cinematic'){
+      if(beatIdx % 8 === 0) rumble(t, 3);
+      if(beatIdx % 16 === 0) pad(t, [110, 164.81, 220], 7, 1);
+      if(beatIdx % 4 === 0) kick(t, 0.6);
+      if(beatIdx % 4 === 2){ bell(t, 880, 0.5); }
+    }
+    else if(mode === 'worship'){
+      if(beatIdx % 8 === 0) pad(t, [196, 246.94, 293.66, 392], 9, 0.65);
+      if(beatIdx % 4 === 0) bell(t, 440, 0.35);
+      if(beatIdx % 4 === 2) bell(t, 587.33, 0.30);
+    }
+    nextNoteT += beatDur;
+  }
+}
+
+async function startDemoBeat(){
+  await resumeAudio();
+  if(demoActive){
+    // toggle off
+    stopDemoBeat();
+    return;
+  }
+  // If a file is playing, pause it; demo takes over
+  const a = $('audio');
+  if(!a.paused){ a.pause(); }
+  demoActive = true;
+  state.source = 'demo';
+  state.playing = true;
+  nextNoteT = audioCtx.currentTime + 0.05;
+  demoTimer = setInterval(demoTick, 80);
+  $('btnDemoBeat').classList.add('on');
+  $('pillMusic').classList.add('on');
+  $('pillMusic').innerHTML = '<i class="d"></i> Music: <b>' + MUSIC_LABEL[getMusicMode()] + '</b>';
+  updatePlayUI();
+}
+function stopDemoBeat(){
+  demoActive = false;
+  if(demoTimer){ clearInterval(demoTimer); demoTimer = null; }
+  $('btnDemoBeat').classList.remove('on');
+  if(state.source === 'demo'){
+    state.playing = false;
+    state.source = null;
+    $('pillMusic').classList.remove('on');
+    $('pillMusic').innerHTML = '<i class="d"></i> No Music';
+  }
+  updatePlayUI();
+}
+
+/* ---------- FILE UPLOAD (uses <audio> + MediaElementSource) ---------- */
+async function loadFile(file){
+  if(!file) return;
+  await resumeAudio();
+  // Stop demo if running
+  if(demoActive) stopDemoBeat();
+  const a = $('audio');
+  a.src = URL.createObjectURL(file);
+  if(!mediaSource){
+    mediaSource = audioCtx.createMediaElementSource(a);
+    mediaSource.connect(masterGain);
+  }
+  try{
+    await a.play();
+    state.source = 'file';
+    state.playing = true;
+    $('pillMusic').classList.add('on');
+    $('pillMusic').innerHTML = '<i class="d"></i> Music: <b>' + (file.name.length > 22 ? file.name.slice(0,20)+'…' : file.name) + '</b>';
+    updatePlayUI();
+  }catch(e){
+    showToast('Could not start audio. Try clicking Play.');
+  }
+}
+
+/* ---------- PLAY / PAUSE / MUTE ---------- */
+async function togglePlay(){
+  await resumeAudio();
+  // If neither demo nor file source, start demo by default
+  if(!state.source){
+    await startDemoBeat();
+    return;
+  }
+  if(state.source === 'demo'){
+    // pause demo = stop schedulers
+    if(demoActive){ stopDemoBeat(); }
+    else { await startDemoBeat(); }
+    return;
+  }
+  // file source
+  const a = $('audio');
+  if(a.paused){ try{ await a.play(); state.playing = true; }catch(e){} }
+  else        { a.pause();           state.playing = false; }
+  updatePlayUI();
+}
+function updatePlayUI(){
+  const playing = (state.source === 'demo' && demoActive) ||
+                  (state.source === 'file' && !$('audio').paused);
+  state.playing = playing;
+  $('playLabel').textContent = playing ? 'Pause' : 'Play';
+  $('iconPlay').innerHTML = playing
+    ? '<rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/>'
+    : '<path d="M6 4l14 8-14 8V4z"/>';
+}
+
+/* ============================================================
+   BEAT DETECTION + VISUALIZER (single rAF loop)
+   ============================================================ */
+const viz = $('viz');
+const vctx = viz.getContext('2d');
+function sizeViz(){
+  const r = viz.getBoundingClientRect();
+  viz.width  = Math.max(1, r.width  | 0);
+  viz.height = Math.max(1, r.height | 0);
+}
+window.addEventListener('resize', sizeViz);
+
+let rafViz = null;
+function vizLoop(){
+  rafViz = requestAnimationFrame(vizLoop);
+
+  if(analyser){
+    analyser.getByteFrequencyData(freqData);
+    // average bass band (≈0-200 Hz): first ~4 bins for 22kHz sample-rate / 512 fft
+    let bassSum = 0;
+    const bassBins = 6;
+    for(let i = 0; i < bassBins; i++) bassSum += freqData[i];
+    const bassAvg = bassSum / bassBins / 255;
+
+    // smooth beat upward fast, decay slow
+    if(bassAvg > state.beat) state.beat = bassAvg;
+    else state.beat = state.beat * 0.86 + bassAvg * 0.14;
+    document.documentElement.style.setProperty('--beat', state.beat.toFixed(3));
+
+    // draw visualizer (skipped in perf mode for max savings)
+    if(!document.body.classList.contains('perf')){
+      drawVisualizer();
+    } else {
+      vctx.clearRect(0, 0, viz.width, viz.height);
+    }
+  } else {
+    document.documentElement.style.setProperty('--beat', '0');
+  }
+}
+function startVizLoop(){ if(!rafViz) vizLoop(); }
+
+function drawVisualizer(){
+  const W = viz.width, H = viz.height;
+  vctx.clearRect(0, 0, W, H);
+  if(!analyser || !state.playing) return;
+
+  // pull primary color
+  const cs = getComputedStyle(document.documentElement);
+  const beam = cs.getPropertyValue('--beam').trim() || '255,255,255';
+
+  // ---- waveform line (subtle, full width, lower half) ----
+  vctx.strokeStyle = `rgba(${beam}, 0.55)`;
+  vctx.lineWidth = 1.2;
+  vctx.beginPath();
+  // use frequency data (already fetched) as a stand-in for a smooth shape
+  const cy = H * 0.7;
+  for(let x = 0; x < W; x++){
+    const idx = Math.floor((x / W) * (freqData.length * 0.6));
+    const v = freqData[idx] / 255;
+    const y = cy - v * H * 0.55;
+    if(x === 0) vctx.moveTo(x, y); else vctx.lineTo(x, y);
+  }
+  vctx.stroke();
+
+  // ---- EQ bars in bottom-right corner ----
+  const BARS = 14;
+  const barW = 3, gap = 3;
+  const totalW = BARS * (barW + gap) - gap;
+  const x0 = W - totalW - 14;
+  const y0 = H - 6;
+  vctx.fillStyle = `rgba(${beam}, 0.7)`;
+  for(let i = 0; i < BARS; i++){
+    const binIdx = Math.floor((i / BARS) * freqData.length * 0.7) + 2;
+    const v = freqData[binIdx] / 255;
+    const h = Math.max(2, v * (H - 14));
+    vctx.fillRect(x0 + i * (barW + gap), y0 - h, barW, h);
+  }
+}
+
+/* ============================================================
+   WEBCAM + MEDIAPIPE
+   ============================================================ */
+const video   = $('video');
+const overlay = $('overlay');
+const octx    = overlay.getContext('2d');
+
+// Downscaled processing canvas (cheap for MediaPipe)
+const procCanvas = document.createElement('canvas');
+procCanvas.width = 320; procCanvas.height = 240;
+const pctx = procCanvas.getContext('2d');
+
+let hands = null;
+let stream = null;
+let running = false;
+let rafId = null;
+
+function resizeOverlay(){
+  const r = $('cam').getBoundingClientRect();
+  overlay.width  = r.width  | 0;
+  overlay.height = r.height | 0;
+}
+window.addEventListener('resize', () => { resizeOverlay(); sizeViz(); });
+
+async function startCamera(){
+  if(running) return;
+  if(typeof Hands === 'undefined'){
+    showToast('Hand-tracking library failed to load. Demo Mode has buttons for every gesture.');
+    return;
+  }
+  try{
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { width:{ ideal:640 }, height:{ ideal:480 }, facingMode:'user' },
+      audio: false
+    });
+  } catch(e){
+    showToast('Camera permission denied. Demo Mode still works for presentation.');
+    return;
+  }
+  video.srcObject = stream;
+  await video.play().catch(()=>{});
+  $('camPh').style.display = 'none';
+  $('pillCam').classList.add('on');
+  $('pillCam').innerHTML = '<i class="d"></i> Camera Live';
+  resizeOverlay();
+
+  if(!hands){
+    hands = new Hands({ locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}` });
+    hands.setOptions({
+      maxNumHands: 2,
+      modelComplexity: 0,
+      minDetectionConfidence: 0.6,
+      minTrackingConfidence: 0.5
+    });
+    hands.onResults(onResults);
+  }
+
+  running = true;
+  $('btnStart').disabled = true;
+  $('btnStop').disabled  = false;
+
+  let lastSent = 0;
+  const minDt = 1000 / 22;       // throttle to ~22 fps
+  const loop = async (now) => {
+    if(!running) return;
+    if(video.readyState >= 2 && (now - lastSent) >= minDt){
+      pctx.drawImage(video, 0, 0, procCanvas.width, procCanvas.height);
+      try{ await hands.send({ image: procCanvas }); } catch(e){}
+      lastSent = now;
+    }
+    rafId = requestAnimationFrame(loop);
+  };
+  rafId = requestAnimationFrame(loop);
+  startFps();
+}
+
+function stopCamera(){
+  running = false;
+  if(rafId) cancelAnimationFrame(rafId);
+  if(stream){ stream.getTracks().forEach(t => t.stop()); stream = null; }
+  video.srcObject = null;
+  octx.clearRect(0, 0, overlay.width, overlay.height);
+  $('camPh').style.display = 'flex';
+  $('pillCam').classList.remove('on');
+  $('pillCam').innerHTML = '<i class="d"></i> Camera Offline';
+  setGestureName(null);
+  $('btnStart').disabled = false;
+  $('btnStop').disabled  = true;
+  $('metaFps').textContent = '— FPS';
+}
+
+/* ---------- LANDMARK RENDERING ---------- */
+const CONNECTIONS = [
+  [0,1],[1,2],[2,3],[3,4],
+  [0,5],[5,6],[6,7],[7,8],
+  [0,9],[9,10],[10,11],[11,12],
+  [0,13],[13,14],[14,15],[15,16],
+  [0,17],[17,18],[18,19],[19,20],
+  [5,9],[9,13],[13,17],[5,17]
+];
+function drawHand(lm, W, H, color){
+  octx.lineWidth = 2.5;
+  octx.strokeStyle = color;
+  octx.beginPath();
+  for(const [a,b] of CONNECTIONS){
+    octx.moveTo(lm[a].x*W, lm[a].y*H);
+    octx.lineTo(lm[b].x*W, lm[b].y*H);
+  }
+  octx.stroke();
+  for(let i = 0; i < lm.length; i++){
+    const p = lm[i];
+    const tip = (i===4||i===8||i===12||i===16||i===20);
+    octx.beginPath();
+    octx.arc(p.x*W, p.y*H, tip ? 4.5 : 2.8, 0, Math.PI*2);
+    octx.fillStyle = tip ? color : '#ffffff';
+    octx.fill();
+  }
+}
+
+/* ============================================================
+   GESTURE CLASSIFIER + DUAL PINCH LOGIC
+   ============================================================ */
+const dist = (a,b) => Math.hypot(a.x - b.x, a.y - b.y);
+function fingerStates(lm){
+  return {
+    index:  lm[8].y  < lm[6].y  - 0.02 ? 1 : 0,
+    middle: lm[12].y < lm[10].y - 0.02 ? 1 : 0,
+    ring:   lm[16].y < lm[14].y - 0.02 ? 1 : 0,
+    pinky:  lm[20].y < lm[18].y - 0.02 ? 1 : 0,
+    thumb:  dist(lm[4], lm[5]) > 0.10  ? 1 : 0
+  };
+}
+function classifyShape(lm, twoHands){
+  if(twoHands) return 'both';
+  const f = fingerStates(lm);
+  const pinch = dist(lm[4], lm[8]);
+  const total = f.thumb + f.index + f.middle + f.ring + f.pinky;
+  if(pinch < 0.06 && (f.middle + f.ring + f.pinky) <= 1) return 'pinch';
+  if(total >= 4)  return 'open';
+  if(total === 0) return 'fist';
+  if(f.index && f.middle && f.ring && !f.pinky) return 'three';
+  if(f.index && f.middle && !f.ring && !f.pinky) return 'two';
+  return 'open';
+}
+
+const LABEL = {
+  open:'Open Palm', fist:'Closed Fist', up:'Hand Up', down:'Hand Down',
+  left:'Hand Left', right:'Hand Right', pinch:'Pinch',
+  two:'Two Fingers', three:'Three Fingers', both:'Both Hands'
+};
+function setGestureName(name){
+  $('gestureName').textContent = name || '—';
+}
+
+/* dual pinch state */
+let pinchHeld = false;
+let pinchStartT = 0;
+let pinchConsumed = false;
+
+/* gesture-cycle debounces */
+let twoLastCycle = 0;
+let threeLastCycle = 0;
+let bothLatchedT = 0;
+let lastSeenGesture = null;
+let lastShapeT = 0;
+
+function onResults(res){
+  const W = overlay.width, H = overlay.height;
+  octx.clearRect(0, 0, W, H);
+
+  const hasHands = res.multiHandLandmarks && res.multiHandLandmarks.length > 0;
+  if(!hasHands){
+    // hand released — if pinch was held without color-cycle consumed, play/pause
+    if(pinchHeld && !pinchConsumed) togglePlay();
+    pinchHeld = false; pinchConsumed = false;
+    setGestureName(null);
+    setGrand(false);
+    return;
+  }
+
+  const twoHands = res.multiHandLandmarks.length >= 2;
+  const primary  = res.multiHandLandmarks[0];
+
+  const pal = PALETTES[paletteIdx];
+  drawHand(primary, W, H, pal.primary);
+  if(twoHands) drawHand(res.multiHandLandmarks[1], W, H, pal.primary);
+
+  const wrist = primary[0];
+  const palmX = 1 - wrist.x;   // mirrored
+  const palmY = wrist.y;
+
+  // continuous side bias
+  setBias(Math.max(-1, Math.min(1, (palmX - 0.5) * 2.5)));
+
+  let shape = classifyShape(primary, twoHands);
+
+  /* ---- PINCH: dual behavior ---- */
+  const isPinch = (shape === 'pinch');
+  if(isPinch){
+    if(!pinchHeld){
+      pinchHeld = true;
+      pinchStartT = performance.now();
+      pinchConsumed = false;
+    } else if(!pinchConsumed && performance.now() - pinchStartT > 1000){
+      // long hold → cycle palette
+      paletteIdx = (paletteIdx + 1) % PALETTES.length;
+      applyPalette(PALETTES[paletteIdx]);
+      pinchConsumed = true;
+    }
+    setGestureName(pinchConsumed ? 'Pinch · Color' : 'Pinch · Hold');
+  } else if(pinchHeld){
+    // released
+    if(!pinchConsumed) togglePlay();
+    pinchHeld = false; pinchConsumed = false;
+  }
+
+  if(isPinch) return; // pinch handled separately — don't fall through
+
+  /* ---- Positional override when shape is neutral "open" ---- */
+  let g = shape;
+  if(g === 'open'){
+    if(palmY < 0.30)      g = 'up';
+    else if(palmY > 0.72) g = 'down';
+    else if(palmX < 0.25) g = 'left';
+    else if(palmX > 0.75) g = 'right';
+  }
+
+  /* ---- two-fingers / three-fingers cycle with debounce ---- */
+  const now = performance.now();
+  if(g === 'two' && now - twoLastCycle > 1500){
+    lightModeIdx = (lightModeIdx + 1) % LIGHT_MODES.length;
+    applyLightMode();
+    twoLastCycle = now;
+  }
+  if(g === 'three' && now - threeLastCycle > 1500){
+    musicModeIdx = (musicModeIdx + 1) % MUSIC_MODES.length;
+    updateMusicLabel();
+    if(demoActive){ /* live update reflected in next demoTick */
+      $('pillMusic').innerHTML = '<i class="d"></i> Music: <b>' + MUSIC_LABEL[getMusicMode()] + '</b>';
+    }
+    threeLastCycle = now;
+  }
+
+  /* ---- Apply lighting + music actions for the gesture ---- */
+  applyGesture(g);
+  setGestureName(LABEL[g] || '—');
+}
+
+/* ============================================================
+   APPLY GESTURE → LIGHT + MUSIC
+   ============================================================ */
+async function applyGesture(g){
+  switch(g){
+    case 'open':
+      setGrand(false);
+      setBrightness( lerp(state.b, 0.95, 0.18) );
+      if(state.muted) setMuted(false);
+      if(!state.playing) await togglePlay();
+      break;
+    case 'fist':
+      setGrand(false);
+      setBrightness( lerp(state.b, 0.15, 0.18) );
+      if(!state.muted) setMuted(true);
+      break;
+    case 'up':
+      setGrand(false);
+      setBrightness( lerp(state.b, 1.0, 0.15) );
+      setVolume( lerp(state.vol, 1.0, 0.10) );
+      if(state.muted) setMuted(false);
+      break;
+    case 'down':
+      setGrand(false);
+      setBrightness( lerp(state.b, 0.22, 0.15) );
+      setVolume( lerp(state.vol, 0.1, 0.10) );
+      break;
+    case 'left':
+    case 'right':
+      setGrand(false);
+      // bias already applied continuously
+      break;
+    case 'two':
+    case 'three':
+      setGrand(false);
+      // cycling handled above
+      break;
+    case 'both':
+      setGrand(true);
+      setBrightness( lerp(state.b, 1.0, 0.20) );
+      setVolume( lerp(state.vol, 1.0, 0.15) );
+      if(state.muted) setMuted(false);
+      if(!state.playing) await togglePlay();
+      break;
+  }
+}
+const lerp = (a, b, t) => a + (b - a) * t;
+
+/* ============================================================
+   DEMO MODE
+   ============================================================ */
+async function simulate(g){
+  if(g === 'left')       setBias(-0.85);
+  else if(g === 'right') setBias( 0.85);
+  else if(g === 'open' || g === 'fist' || g === 'up' || g === 'down') setBias(0);
+
+  if(g === 'pinch'){ await togglePlay(); setGestureName('Pinch · Play/Pause'); return; }
+  if(g === 'pinchhold'){
+    paletteIdx = (paletteIdx + 1) % PALETTES.length;
+    applyPalette(PALETTES[paletteIdx]);
+    setGestureName('Pinch · Color');
+    return;
+  }
+  if(g === 'two'){
+    lightModeIdx = (lightModeIdx + 1) % LIGHT_MODES.length;
+    applyLightMode();
+    setGestureName('Two · ' + LIGHT_LABEL[LIGHT_MODES[lightModeIdx]]);
+    return;
+  }
+  if(g === 'three'){
+    musicModeIdx = (musicModeIdx + 1) % MUSIC_MODES.length;
+    updateMusicLabel();
+    if(demoActive){
+      $('pillMusic').innerHTML = '<i class="d"></i> Music: <b>' + MUSIC_LABEL[getMusicMode()] + '</b>';
+    }
+    setGestureName('Three · ' + MUSIC_LABEL[getMusicMode()]);
+    return;
+  }
+  await applyGesture(g);
+  setGestureName(LABEL[g] || '—');
+}
+
+/* ============================================================
+   FPS
+   ============================================================ */
+let fpsFrames = 0, fpsT = performance.now();
+function startFps(){
+  function loop(){
+    if(!running) return;
+    const now = performance.now();
+    fpsFrames++;
+    if(now - fpsT >= 1000){
+      $('metaFps').textContent = Math.round(fpsFrames * 1000 / (now - fpsT)) + ' FPS';
+      fpsFrames = 0; fpsT = now;
+    }
+    requestAnimationFrame(loop);
+  }
+  loop();
+}
+
+/* ============================================================
+   UTIL
+   ============================================================ */
+let toastTimer;
+function showToast(msg){
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=> t.classList.remove('show'), 5500);
+}
+async function toggleFullscreen(){
+  try{
+    if(!document.fullscreenElement) await document.documentElement.requestFullscreen();
+    else await document.exitFullscreen();
+  } catch(e){ showToast('Fullscreen not supported here.'); }
+}
+
+/* ============================================================
+   INIT + WIRING
+   ============================================================ */
+function init(){
+  applyPalette(PALETTES[0]);
+  applyLightMode();
+  updateMusicLabel();
+  setBrightness(0.65);
+  setBias(0);
+  setVolume(0.7);
+  resizeOverlay();
+  sizeViz();
+  startVizLoop();   // visualizer / beat loop runs always (cheap when no audio)
+
+  $('btnStart').addEventListener('click', startCamera);
+  $('btnStop' ).addEventListener('click', stopCamera);
+  $('btnFull' ).addEventListener('click', toggleFullscreen);
+
+  $('btnUpload').addEventListener('click', () => $('fileInput').click());
+  $('fileInput').addEventListener('change', e => loadFile(e.target.files[0]));
+  $('btnDemoBeat').addEventListener('click', startDemoBeat);
+  $('btnPlay').addEventListener('click', togglePlay);
+
+  $('vol').addEventListener('input', e => setVolume(parseInt(e.target.value, 10) / 100));
+
+  $('btnDemo' ).addEventListener('click', () => $('demoBar').classList.toggle('show'));
+  $('btnGuide').addEventListener('click', () => $('modalBg').classList.add('show'));
+  $('modalClose').addEventListener('click', () => $('modalBg').classList.remove('show'));
+  $('modalBg').addEventListener('click', e => {
+    if(e.target === $('modalBg')) $('modalBg').classList.remove('show');
+  });
+
+  $('btnPerf').addEventListener('click', () => {
+    document.body.classList.toggle('perf');
+    $('btnPerf').classList.toggle('on', document.body.classList.contains('perf'));
+  });
+
+  document.querySelectorAll('.demo-btn').forEach(b => {
+    b.addEventListener('click', () => simulate(b.dataset.g));
+  });
+
+  // Sync UI when uploaded audio ends/pauses externally
+  const a = $('audio');
+  a.addEventListener('ended',  () => { state.playing = false; updatePlayUI(); });
+  a.addEventListener('pause',  () => { if(state.source==='file') updatePlayUI(); });
+  a.addEventListener('play',   () => { if(state.source==='file') updatePlayUI(); });
+
+  window.addEventListener('keydown', e => {
+    if(e.target.tagName === 'INPUT') return;
+    const m = { '1':'open','2':'fist','3':'up','4':'down','5':'left',
+                '6':'right','7':'pinch','8':'two','9':'three','0':'both' };
+    if(m[e.key]) simulate(m[e.key]);
+    if(e.key === 'f' || e.key === 'F') toggleFullscreen();
+    if(e.key === ' '){ e.preventDefault(); togglePlay(); }
+    if(e.key === 'Escape') $('modalBg').classList.remove('show');
+  });
+}
+
+if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+else init();
+})();
+</script>
+</body>
+</html>

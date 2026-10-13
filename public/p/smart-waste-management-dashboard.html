@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Waste Management Dashboard</title>
+
+<style>
+:root{
+--green:#16834a;
+--green-dark:#0f5f37;
+--green-soft:#eaf8ef;
+--bg:#f4fbf6;
+--text:#17211b;
+--muted:#64736a;
+--border:#dcebe2;
+--danger:#e55353;
+--warning:#ffb020;
+--shadow:0 18px 45px rgba(15,95,55,.10);
+--radius:24px;
+}
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+background:linear-gradient(180deg,#ffffff 0%,#f4fbf6 100%);
+color:var(--text);
+}
+
+.container{
+width:min(1180px,92%);
+margin:auto;
+}
+
+header{
+position:sticky;
+top:0;
+background:white;
+border-bottom:1px solid var(--border);
+z-index:1000;
+backdrop-filter:blur(10px);
+}
+
+.nav{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:18px 0;
+}
+
+.logo{
+font-size:24px;
+font-weight:bold;
+color:var(--green);
+}
+
+.nav-links{
+display:flex;
+gap:20px;
+}
+
+.nav-links a{
+text-decoration:none;
+color:var(--muted);
+font-weight:bold;
+}
+
+.btn{
+background:var(--green);
+color:white;
+padding:14px 24px;
+border:none;
+border-radius:999px;
+cursor:pointer;
+font-weight:bold;
+transition:0.3s;
+}
+
+.btn:hover{
+background:var(--green-dark);
+transform:translateY(-2px);
+}
+
+.hero{
+padding:70px 0;
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:40px;
+align-items:center;
+}
+
+.hero h1{
+font-size:60px;
+line-height:1.1;
+margin-bottom:20px;
+}
+
+.hero p{
+font-size:18px;
+line-height:1.8;
+color:var(--muted);
+margin-bottom:25px;
+}
+
+.hero-card{
+background:white;
+padding:30px;
+border-radius:34px;
+box-shadow:var(--shadow);
+border:1px solid var(--border);
+position:relative;
+overflow:hidden;
+}
+
+.dashboard-circle{
+width:220px;
+height:220px;
+background:linear-gradient(135deg,#1c9a58,#b6ebc9);
+border-radius:50%;
+display:flex;
+justify-content:center;
+align-items:center;
+font-size:90px;
+margin:auto;
+box-shadow:0 20px 50px rgba(0,0,0,0.1);
+}
+
+.mini-box{
+position:absolute;
+background:white;
+padding:12px 18px;
+border-radius:16px;
+box-shadow:0 10px 25px rgba(0,0,0,0.08);
+font-weight:bold;
+}
+
+.box1{top:30px;left:20px;}
+.box2{bottom:30px;right:20px;}
+.box3{bottom:50px;left:20px;}
+
+section{
+padding:50px 0;
+}
+
+.section-title{
+font-size:38px;
+margin-bottom:12px;
+}
+
+.section-sub{
+color:var(--muted);
+margin-bottom:30px;
+line-height:1.7;
+}
+
+.cards{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+gap:20px;
+}
+
+.card{
+background:white;
+padding:25px;
+border-radius:var(--radius);
+box-shadow:0 12px 28px rgba(0,0,0,.04);
+border:1px solid var(--border);
+transition:0.3s;
+}
+
+.card:hover{
+transform:translateY(-5px);
+}
+
+.card .icon{
+font-size:40px;
+margin-bottom:15px;
+}
+
+.card h3{
+margin-bottom:10px;
+color:var(--green-dark);
+}
+
+.dashboard{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:25px;
+}
+
+.form-card,.result-card{
+background:white;
+padding:25px;
+border-radius:var(--radius);
+border:1px solid var(--border);
+box-shadow:0 12px 28px rgba(0,0,0,.04);
+}
+
+.field-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:15px;
+}
+
+input,select,textarea{
+width:100%;
+padding:14px;
+border-radius:14px;
+border:1px solid var(--border);
+margin-top:8px;
+margin-bottom:16px;
+}
+
+.result-top{
+background:linear-gradient(135deg,var(--green),#29aa66);
+padding:24px;
+border-radius:20px;
+color:white;
+margin-bottom:20px;
+}
+
+.big-number{
+font-size:45px;
+font-weight:bold;
+}
+
+.metric-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:15px;
+}
+
+.metric{
+background:var(--green-soft);
+padding:18px;
+border-radius:18px;
+}
+
+.metric b{
+font-size:24px;
+color:var(--green-dark);
+}
+
+.progress{
+height:12px;
+background:#e8eee9;
+border-radius:999px;
+overflow:hidden;
+margin-top:15px;
+}
+
+.progress-fill{
+height:100%;
+width:0%;
+background:var(--green);
+transition:0.5s;
+}
+
+.suggestions{
+margin-top:20px;
+background:#fff;
+border:1px solid var(--border);
+padding:18px;
+border-radius:20px;
+}
+
+footer{
+padding:35px 0;
+text-align:center;
+color:var(--muted);
+}
+
+@media(max-width:900px){
+.hero,.dashboard{
+grid-template-columns:1fr;
+}
+
+.field-grid,.metric-grid{
+grid-template-columns:1fr;
+}
+
+.hero h1{
+font-size:40px;
+}
+
+.nav-links{
+display:none;
+}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<div class="container nav">
+<div class="logo">♻ Smart Waste</div>
+
+<div class="nav-links">
+<a href="#features">Features</a>
+<a href="#dashboard">Dashboard</a>
+<a href="#contact">Contact</a>
+</div>
+</div>
+</header>
+
+<section class="hero container">
+<div>
+<div style="background:var(--green-soft);display:inline-block;padding:10px 15px;border-radius:999px;font-weight:bold;color:var(--green-dark);margin-bottom:15px;">
+🌱 Smart City Initiative
+</div>
+
+<h1>Smart Waste Management Dashboard</h1>
+
+<p>
+Monitor garbage collection, complaints, smart bins, waste segregation, and city cleanliness using an interactive municipal management system.
+</p>
+
+<button class="btn" onclick="document.getElementById('dashboard').scrollIntoView({behavior:'smooth'})">
+Start Monitoring →
+</button>
+</div>
+
+<div class="hero-card">
+<div class="mini-box box1">🚛 125 Trucks</div>
+<div class="mini-box box2">📊 Live Analytics</div>
+<div class="mini-box box3">♻ Smart Bins</div>
+
+<div class="dashboard-circle">🗑</div>
+</div>
+</section>
+
+<section class="container" id="features">
+<h2 class="section-title">Platform Features</h2>
+<p class="section-sub">Modern tools for municipal waste management and smart city operations.</p>
+
+<div class="cards">
+<div class="card">
+<div class="icon">🚛</div>
+<h3>Vehicle Tracking</h3>
+<p>Track garbage collection trucks and monitor routes in real-time.</p>
+</div>
+
+<div class="card">
+<div class="icon">🗑</div>
+<h3>Smart Bin Monitoring</h3>
+<p>Check overflow levels and waste segregation for smart bins.</p>
+</div>
+
+<div class="card">
+<div class="icon">📢</div>
+<h3>Complaint Portal</h3>
+<p>Citizens can report garbage and cleanliness issues instantly.</p>
+</div>
+
+<div class="card">
+<div class="icon">📊</div>
+<h3>Analytics Dashboard</h3>
+<p>Analyze city cleanliness and waste collection statistics.</p>
+</div>
+</div>
+</section>
+
+<section class="container" id="dashboard">
+<div class="dashboard">
+
+<div class="form-card">
+<h2 style="margin-bottom:20px;">Daily Waste Entry</h2>
+
+<div class="field-grid">
+<div>
+<label>City Zone</label>
+<select id="zone">
+<option>Zone 1</option>
+<option>Zone 2</option>
+<option>Zone 3</option>
+<option>Zone 4</option>
+</select>
+</div>
+
+<div>
+<label>Vehicle Active</label>
+<input type="number" id="vehicles" value="10">
+</div>
+
+<div>
+<label>Waste Collected (kg)</label>
+<input type="number" id="waste" value="0">
+</div>
+
+<div>
+<label>Complaints Received</label>
+<input type="number" id="complaints" value="0">
+</div>
+
+<div>
+<label>Smart Bins Active</label>
+<input type="number" id="bins" value="0">
+</div>
+
+<div>
+<label>Segregation Rate (%)</label>
+<input type="number" id="segregation" value="0">
+</div>
+</div>
+
+<button class="btn" onclick="calculateStats()">Generate Dashboard</button>
+</div>
+
+<div class="result-card">
+<h2 style="margin-bottom:20px;">Waste Management Analytics</h2>
+
+<div class="result-top">
+<div>Total Waste Collected</div>
+<div class="big-number"><span id="wasteOut">0</span> kg</div>
+
+<div class="progress">
+<div class="progress-fill" id="progressFill"></div>
+</div>
+</div>
+
+<div class="metric-grid">
+<div class="metric">
+<b id="vehicleOut">0</b>
+<div>Vehicles Active</div>
+</div>
+
+<div class="metric">
+<b id="complaintOut">0</b>
+<div>Complaints</div>
+</div>
+
+<div class="metric">
+<b id="binOut">0</b>
+<div>Smart Bins</div>
+</div>
+
+<div class="metric">
+<b id="segregationOut">0%</b>
+<div>Segregation Rate</div>
+</div>
+</div>
+
+<div class="suggestions">
+<h3 style="margin-bottom:12px;">Smart Suggestions</h3>
+<ul id="suggestionsList">
+<li>Enter data to generate recommendations.</li>
+</ul>
+</div>
+</div>
+
+</div>
+</section>
+
+<footer id="contact">
+<div class="container">
+Smart Waste Management System • Municipal Corporation Dashboard • 2026
+</div>
+</footer>
+
+<script>
+function calculateStats(){
+
+const waste = Number(document.getElementById('waste').value);
+const vehicles = Number(document.getElementById('vehicles').value);
+const complaints = Number(document.getElementById('complaints').value);
+const bins = Number(document.getElementById('bins').value);
+const segregation = Number(document.getElementById('segregation').value);
+
+document.getElementById('wasteOut').innerText = waste;
+document.getElementById('vehicleOut').innerText = vehicles;
+document.getElementById('complaintOut').innerText = complaints;
+document.getElementById('binOut').innerText = bins;
+document.getElementById('segregationOut').innerText = segregation + "%";
+
+document.getElementById('progressFill').style.width = Math.min((waste/10000)*100,100) + "%";
+
+const list = [];
+
+if(waste > 7000){
+list.push("Increase waste processing capacity in high-load zones.");
+}
+
+if(complaints > 50){
+list.push("Deploy additional cleaning teams to complaint areas.");
+}
+
+if(segregation < 50){
+list.push("Run awareness campaigns for dry/wet waste segregation.");
+}
+
+if(bins < 20){
+list.push("Install more smart bins in public areas.");
+}
+
+if(list.length === 0){
+list.push("Waste management system is performing efficiently.");
+}
+
+document.getElementById('suggestionsList').innerHTML =
+list.map(item => `<li>${item}</li>`).join('');
+}
+</script>
+
+</body>
+</html>

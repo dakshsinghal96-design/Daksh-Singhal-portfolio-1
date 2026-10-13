@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Obliq AI Face Scan — User Manual</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg-1: #0a0f1f;
+    --bg-2: #121a36;
+    --bg-3: #1b2150;
+    --accent: #2de2c3;
+    --accent-2: #6c8cff;
+    --accent-3: #b06cff;
+    --text: #e8eefc;
+    --muted: #9aa6c4;
+    --card-border: rgba(255,255,255,0.16);
+  }
+  html, body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--text); line-height: 1.55; font-size: 11pt;
+    background:
+      radial-gradient(900px 500px at 0% -10%, rgba(108,140,255,0.22), transparent 55%),
+      radial-gradient(800px 480px at 100% 10%, rgba(176,108,255,0.20), transparent 55%),
+      radial-gradient(700px 500px at 50% 110%, rgba(45,226,195,0.18), transparent 55%),
+      linear-gradient(180deg, var(--bg-1), var(--bg-2) 60%, var(--bg-3));
+  }
+
+  @page { size: A4; margin: 14mm 14mm 16mm 14mm; }
+
+  .page-break { page-break-before: always; }
+
+  /* Cover */
+  .cover {
+    min-height: 90vh;
+    display: flex; flex-direction: column; justify-content: space-between;
+    padding: 30mm 16mm;
+    page-break-after: always;
+  }
+  .cover-top { display: flex; align-items: center; gap: 16px; }
+  .cover .logo { width: 64px; height: 64px; flex-shrink: 0; }
+  .cover .brand-line {
+    color: var(--accent); font-size: 11pt; letter-spacing: 2.5px;
+    text-transform: uppercase; font-weight: 700;
+  }
+  .cover-mid h1 {
+    font-size: 38pt; font-weight: 800; letter-spacing: -1px; line-height: 1.05;
+    background: linear-gradient(135deg, #fff 0%, #cfe1ff 50%, var(--accent) 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    margin-bottom: 14px;
+  }
+  .cover-mid h2 {
+    font-size: 14pt; font-weight: 600; color: var(--muted); letter-spacing: 0.4px;
+    margin-bottom: 28px;
+  }
+  .cover-mid p.tag {
+    color: var(--text); font-size: 12pt; max-width: 480px; line-height: 1.7;
+  }
+  .cover-bottom {
+    display: flex; justify-content: space-between; align-items: end;
+    color: var(--muted); font-size: 9.5pt; letter-spacing: 0.4px;
+  }
+  .cover-bottom .url {
+    color: var(--accent); font-weight: 700; letter-spacing: 0.6px;
+  }
+
+  /* Content pages */
+  .content { padding: 0 4mm; }
+  h2.section {
+    font-size: 18pt; font-weight: 800; letter-spacing: -0.3px;
+    margin-top: 30px; margin-bottom: 12px;
+    color: #fff;
+    border-bottom: 1px solid rgba(45,226,195,0.4);
+    padding-bottom: 8px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  h2.section .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: #06121a; font-size: 11pt; font-weight: 800;
+  }
+  h3 {
+    font-size: 13pt; font-weight: 700; color: #fff;
+    margin-top: 18px; margin-bottom: 8px;
+  }
+  h4 {
+    font-size: 11pt; font-weight: 700; color: var(--accent);
+    text-transform: uppercase; letter-spacing: 0.8px;
+    margin-top: 14px; margin-bottom: 6px;
+  }
+  p { margin-bottom: 10px; color: var(--text); }
+  p.lead { font-size: 12pt; color: #d8e3ff; line-height: 1.7; }
+  strong { color: #fff; font-weight: 700; }
+  em { color: #cfe1ff; font-style: italic; }
+  ul, ol { margin: 6px 0 12px 22px; }
+  li { margin-bottom: 4px; color: var(--text); }
+  a { color: var(--accent); text-decoration: none; }
+
+  /* Cards */
+  .card {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin: 10px 0;
+  }
+  .card.callout {
+    background: linear-gradient(135deg, rgba(45,226,195,0.08), rgba(108,140,255,0.08));
+    border-color: rgba(45,226,195,0.4);
+    color: #cfe1ff;
+  }
+  .card.callout .icon {
+    color: var(--accent); font-weight: 700;
+  }
+  .card.disclaimer {
+    background: rgba(255,123,138,0.10);
+    border-color: rgba(255,123,138,0.35);
+    color: #ffd2d8;
+  }
+
+  /* Tables */
+  table {
+    width: 100%; border-collapse: collapse;
+    margin: 10px 0;
+    font-size: 10pt;
+  }
+  th, td {
+    text-align: left; padding: 8px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.10);
+  }
+  th {
+    color: var(--accent); font-size: 9pt;
+    text-transform: uppercase; letter-spacing: 1px;
+    border-bottom: 1.5px solid rgba(45,226,195,0.4);
+  }
+  td { color: var(--text); }
+  td strong { color: #fff; }
+  td code {
+    background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px;
+    font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 9.5pt;
+    color: var(--accent);
+  }
+
+  /* Step block */
+  .step {
+    margin: 16px 0;
+    page-break-inside: avoid;
+  }
+  .step-head {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 8px;
+  }
+  .step-num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2), var(--accent-3));
+    color: #06121a; font-weight: 800; font-size: 13pt;
+    flex-shrink: 0;
+  }
+  .step-title {
+    font-size: 13pt; font-weight: 700; color: #fff;
+  }
+  .step-body {
+    margin-left: 48px;
+  }
+
+  /* Action chip */
+  .action {
+    display: inline-block; padding: 3px 10px; border-radius: 999px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: #06121a; font-size: 9pt; font-weight: 700;
+    letter-spacing: 0.4px; margin-right: 6px;
+  }
+
+  /* Footer */
+  .doc-footer {
+    margin-top: 40px; padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,0.10);
+    color: var(--muted); font-size: 9pt; text-align: center;
+    letter-spacing: 0.6px;
+  }
+
+  /* Tighter print rules */
+  @media print {
+    h2.section { page-break-after: avoid; }
+    .step { page-break-inside: avoid; }
+    .card { page-break-inside: avoid; }
+    table { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ==================== COVER ==================== -->
+<section class="cover">
+  <div class="cover-top">
+    <svg class="logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%"   stop-color="#2de2c3"/>
+          <stop offset="50%"  stop-color="#6c8cff"/>
+          <stop offset="100%" stop-color="#b06cff"/>
+        </linearGradient>
+      </defs>
+      <rect x="2" y="2" width="96" height="96" rx="22" fill="url(#logoGrad)"/>
+      <rect x="14" y="14" width="72" height="72" rx="16" fill="#0a0f1f"/>
+      <rect x="22" y="22" width="56" height="56" rx="11" fill="none" stroke="url(#logoGrad)" stroke-width="3.5"/>
+      <circle cx="50" cy="50" r="11" fill="url(#logoGrad)"/>
+      <circle cx="50" cy="50" r="4.5" fill="#0a0f1f"/>
+    </svg>
+    <div>
+      <div class="brand-line">Obliq AI Education Foundation</div>
+      <div style="color:var(--muted); font-size:11pt; margin-top:4px;">User Manual &amp; Product Overview</div>
+    </div>
+  </div>
+
+  <div class="cover-mid">
+    <h1>Obliq AI<br/>Face Scan</h1>
+    <h2>AI-powered camera-based wellness &amp; appearance demo</h2>
+    <p class="tag">A 30-second educational scanner that simulates a wellness analysis using the user's front-facing camera, generates a structured wellness report, and produces a branded PDF — all from a browser, with no data ever leaving the device.</p>
+  </div>
+
+  <div class="cover-bottom">
+    <div>
+      <div style="color:var(--accent); font-weight:700; font-size:10pt; letter-spacing:1.2px;">LIVE DEMO</div>
+      <div class="url" style="font-size:13pt; margin-top:4px;">obliq-ai-face-scan.vercel.app</div>
+    </div>
+    <div style="text-align:right;">
+      <div>VERSION 1.0</div>
+      <div style="margin-top:2px;">© Obliq AI Education Foundation</div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== CONTENT ==================== -->
+<div class="content">
+
+  <h2 class="section"><span class="num">1</span>Product Overview</h2>
+  <p class="lead">
+    <strong>Obliq AI Face Scan</strong> is an AI-powered camera-based wellness and appearance scanner, designed as an educational and demonstration tool by the <strong>Obliq AI Education Foundation</strong>.
+  </p>
+  <p>In just <strong>30 seconds</strong>, the system simulates a wellness analysis using the user's front-facing camera and presents a structured report covering:</p>
+  <ul>
+    <li><strong>Wellness signals</strong> — Stress level, heart rate, breathing rate, blood pressure estimate, energy level, relaxation score, overall wellness score, and scan quality</li>
+    <li><strong>Visual appearance highlights</strong> — Eye &amp; eyebrow health, face structure, and skin appearance (each with a one-line summary plus optional detailed breakdown)</li>
+    <li><strong>A downloadable PDF report</strong> branded with the Obliq AI Education Foundation logo and the user's personal details</li>
+  </ul>
+  <p>The product is <strong>fully browser-based</strong>, requires <strong>no app installation</strong>, and is optimised for <strong>both mobile phones and desktops</strong>.</p>
+
+  <h2 class="section"><span class="num">2</span>Live Demo</h2>
+  <div class="card callout">
+    <div class="icon">Open in any modern browser →</div>
+    <div style="font-size:14pt; font-weight:800; color:#fff; margin-top:6px; letter-spacing:0.4px;">https://obliq-ai-face-scan.vercel.app</div>
+  </div>
+  <p>The site works on iPhone Safari, Android Chrome, desktop Chrome / Edge / Firefox / Safari. A working camera and an internet connection are required.</p>
+
+  <h2 class="section"><span class="num">3</span>User Journey — Step by Step</h2>
+  <p>The full experience takes about <strong>90 seconds</strong> from landing to downloaded report.</p>
+
+  <div class="step">
+    <div class="step-head">
+      <div class="step-num">1</div>
+      <div class="step-title">Landing Page</div>
+    </div>
+    <div class="step-body">
+      <p>When the site opens, the user sees the <strong>Obliq AI Face Scan</strong> brand header, a hero description, three feature cards, a privacy note, and a medical disclaimer. The primary call-to-action is a single <strong>Start Scan</strong> button, gated by a consent checkbox: <em>"I consent to local camera-based demo analysis."</em></p>
+      <p><span class="action">User action</span> Tick the consent box, then tap <strong>Start Scan</strong>.</p>
+      <div class="card callout">
+        <div class="icon">Friendly nudge</div>
+        <p style="margin:0;">If the user taps <strong>Start Scan</strong> without ticking consent, the consent box highlights with a red shake animation.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-head">
+      <div class="step-num">2</div>
+      <div class="step-title">Pre-Scan Form</div>
+    </div>
+    <div class="step-body">
+      <p>A clean, mobile-friendly form asks for the user's basic details. <strong>All three fields are required</strong>, with inline validation:</p>
+      <table>
+        <tr><th>Field</th><th>Validation</th></tr>
+        <tr><td><strong>Full Name</strong></td><td>Minimum 2 characters, max 60</td></tr>
+        <tr><td><strong>Phone Number</strong></td><td>7–15 digits (any standard format with <code>+</code>, spaces, <code>-</code>)</td></tr>
+        <tr><td><strong>Age</strong></td><td>Number between 13 and 120</td></tr>
+      </table>
+      <p><span class="action">User action</span> Fill in Name, Phone Number, Age. Tap <strong>Continue to Scan</strong>.</p>
+      <div class="card callout">
+        <div class="icon">Privacy</div>
+        <p style="margin:0;">Personal details are stored only in the user's browser memory and are added to the downloadable PDF report. Nothing is sent to a server.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-head">
+      <div class="step-num">3</div>
+      <div class="step-title">Confirmation Modal</div>
+    </div>
+    <div class="step-body">
+      <p>A confirmation pop-up appears asking <strong>"Are you sure you want to start the scan?"</strong> with a short note that the camera will turn on and a 30-second wellness scan will begin. Two buttons: <strong>Yes, start scan</strong> (primary) and <strong>Not yet</strong> (secondary).</p>
+      <p><span class="action">User action</span> Tap <strong>Yes, start scan</strong>.</p>
+      <div class="card callout">
+        <div class="icon">Mobile UX</div>
+        <p style="margin:0;">On mobile, the modal slides up from the bottom of the screen as a native-feeling action sheet.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-head">
+      <div class="step-num">4</div>
+      <div class="step-title">Face Scan (30 seconds)</div>
+    </div>
+    <div class="step-body">
+      <p>The camera permission dialog appears (browser-controlled). Once granted, the user sees:</p>
+      <ul>
+        <li>Their live camera feed in a dark video card</li>
+        <li>Cyan <strong>corner brackets</strong> framing the face</li>
+        <li>A <strong>dashed pulsing ring</strong> indicating active scanning</li>
+        <li>A <strong>horizontal scan-line</strong> sweeping up and down across the face</li>
+        <li>A <strong>"Live Camera"</strong> chip and a blinking red <strong>"Scanning"</strong> chip in the top-left</li>
+      </ul>
+      <p>The right-hand panel (or below, on phones) shows the <strong>Wellness Scan</strong> dashboard:</p>
+      <ul>
+        <li>A <strong>circular SVG countdown timer</strong> (30 → 0 seconds)</li>
+        <li>A linear <strong>progress bar</strong> filling 0 % → 100 %</li>
+        <li>A <strong>status line</strong> updating in real time</li>
+        <li>A <strong>6-stage activity list</strong>: <em>Detecting face position → Checking lighting quality → Analyzing visual signals → Estimating wellness indicators → Reviewing appearance features → Preparing scan report</em></li>
+        <li>A <strong>Cancel Scan</strong> button to abort if needed</li>
+      </ul>
+      <p>The scan <strong>starts automatically</strong> once the camera is ready — no extra tap required.</p>
+      <div class="card disclaimer">
+        <strong>Note:</strong> All scan results are AI-simulated. The product does not perform real biometric measurement.
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-head">
+      <div class="step-num">5</div>
+      <div class="step-title">Results Dashboard</div>
+    </div>
+    <div class="step-body">
+      <h4>Wellness Snapshot — 8 metrics</h4>
+      <table>
+        <tr><th>Metric</th><th>Format</th><th>Example</th></tr>
+        <tr><td>Heart Rate</td><td>bpm</td><td><code>78 bpm</code></td></tr>
+        <tr><td>Breathing Rate</td><td>breaths / min</td><td><code>16 /min</code></td></tr>
+        <tr><td><strong>Stress Level</strong></td><td><strong>percentage</strong></td><td><code>42 %</code></td></tr>
+        <tr><td>Blood Pressure (est.)</td><td>systolic / diastolic</td><td><code>118/74 mmHg</code></td></tr>
+        <tr><td>Wellness Score</td><td>/ 100</td><td><code>87 / 100</code></td></tr>
+        <tr><td>Energy Level</td><td>label</td><td><code>Medium</code></td></tr>
+        <tr><td>Relaxation Score</td><td>/ 100</td><td><code>78 / 100</code></td></tr>
+        <tr><td>Scan Quality Score</td><td>/ 100</td><td><code>92 / 100</code></td></tr>
+      </table>
+      <p>Each card shows a coloured status pill (Green / Amber / Red) summarising the reading.</p>
+
+      <h4>Wellness Tips</h4>
+      <p>A short list of personalised, evidence-aligned tips based on the user's results — e.g. <em>"Practice slow, deep breathing for 2 minutes"</em> or <em>"Stay hydrated — sip water throughout the day."</em></p>
+
+      <h4>Visual Wellness &amp; Appearance Report</h4>
+      <p>Three "key-point" cards, each with a one-line summary and a tap-to-expand detail panel:</p>
+      <ol>
+        <li><strong>Eye &amp; Eyebrow Health</strong> — eye shape, openness, symmetry, eyebrow shape &amp; balance</li>
+        <li><strong>Face Structure</strong> — face shape, balance, jawline, cheekbones, nose, lips, forehead</li>
+        <li><strong>Skin Appearance</strong> — tone, texture, hydration, redness, fine-line visibility, pigmentation</li>
+      </ol>
+      <p>Each card includes a rating pill: <strong>Good</strong>, <strong>Fair</strong>, or <strong>Needs Attention</strong>.</p>
+
+      <h4>Personalized Scan Tips</h4>
+      <p>Practical guidance for taking better scans next time (lighting, framing, posture, etc.).</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-head">
+      <div class="step-num">6</div>
+      <div class="step-title">Download PDF Report</div>
+    </div>
+    <div class="step-body">
+      <p>At the bottom of the results screen are four action buttons:</p>
+      <table>
+        <tr><th>Button</th><th>Action</th></tr>
+        <tr><td><strong>Scan Again</strong></td><td>Re-confirm and re-run a new 30-second scan</td></tr>
+        <tr><td><strong>Download Report</strong></td><td>Generate and download a PDF report</td></tr>
+        <tr><td><strong>Back to Home</strong></td><td>Return to the landing page</td></tr>
+        <tr><td><strong>Stop Camera</strong></td><td>Release the camera and return home</td></tr>
+      </table>
+
+      <h4>What the PDF contains</h4>
+      <ul>
+        <li><strong>Branded header</strong> — "OBLIQ AI EDUCATION FOUNDATION" tagline + "Face Scan Report" title + timestamp</li>
+        <li><strong>Inline SVG logo</strong> in mint / periwinkle / violet brand gradient</li>
+        <li><strong>Scan recipient card</strong> — Name, Phone Number, Age</li>
+        <li><strong>Wellness summary grid</strong> — all 8 wellness metrics including Stress %</li>
+        <li><strong>Disclaimer</strong> stating the report is issued by Obliq AI Education Foundation as a demonstration only</li>
+        <li><strong>Footer</strong> — © Obliq AI Education Foundation · timestamp</li>
+      </ul>
+      <p><strong>Filename format:</strong> <code>Obliq-FaceScan-{Name}-{Timestamp}.pdf</code></p>
+
+      <h4>How the download works</h4>
+      <ul>
+        <li><strong>Desktop / Android:</strong> the PDF downloads directly to the user's Downloads folder.</li>
+        <li><strong>iPhone (Safari):</strong> a new tab opens with a "Generating PDF…" spinner. Once ready, the PDF appears inline. The user taps Safari's <strong>share button</strong> (square with up-arrow) and chooses <strong>Save to Files</strong> to keep a copy.</li>
+      </ul>
+      <p>A live mint toast shows progress at every step, so the user always knows what's happening.</p>
+    </div>
+  </div>
+
+  <h2 class="section"><span class="num">4</span>Key Features at a Glance</h2>
+  <ul>
+    <li><strong>Zero installation</strong> — runs in any modern browser</li>
+    <li><strong>Mobile-first</strong> — every screen is responsive and touch-optimised</li>
+    <li><strong>Accessible</strong> — ARIA live regions, focus management, screen-reader announcements, <em>prefers-reduced-motion</em> support</li>
+    <li><strong>Privacy-first</strong> — no photos, videos, or biometric data are stored or transmitted</li>
+    <li><strong>Branded report</strong> — official PDF with Obliq AI Education Foundation logo, colours, and disclaimer</li>
+    <li><strong>Educational disclaimer</strong> — every relevant surface clearly marks the demo as educational, not medical</li>
+    <li><strong>Cinematic aesthetic</strong> — dark holographic theme with mint / periwinkle / violet gradients, frosted glass panels, animated background orbs</li>
+  </ul>
+
+  <h2 class="section"><span class="num">5</span>Privacy &amp; Data</h2>
+  <ul>
+    <li>The camera feed is processed <strong>entirely on the user's device</strong>.</li>
+    <li><strong>No images, video frames, or biometric measurements</strong> ever leave the browser.</li>
+    <li>The user's Name, Phone Number, and Age are stored <strong>only in browser memory</strong> for the current session — they are written into the downloadable PDF and never sent to a server.</li>
+    <li>Closing the browser tab clears all session data.</li>
+    <li>The site is served exclusively over <strong>HTTPS</strong> with strict security headers (CSP-style frame, content-type, referrer, and permissions policies enforced by Vercel).</li>
+  </ul>
+
+  <h2 class="section"><span class="num">6</span>Technical Snapshot</h2>
+  <table>
+    <tr><th>Layer</th><th>Implementation</th></tr>
+    <tr><td>Frontend</td><td>Single-file vanilla HTML5 / CSS3 / JavaScript (ES6+)</td></tr>
+    <tr><td>Camera</td><td><code>navigator.mediaDevices.getUserMedia()</code> (WebRTC)</td></tr>
+    <tr><td>PDF generation</td><td>html2pdf.js (jsPDF + html2canvas), lazy-loaded from CDN</td></tr>
+    <tr><td>Hosting</td><td>Vercel (global CDN, automatic HTTPS, edge caching)</td></tr>
+    <tr><td>Build process</td><td>None — zero dependencies, zero build, single <code>index.html</code></td></tr>
+    <tr><td>Browser support</td><td>Chrome, Edge, Firefox, Safari (desktop + iOS + Android)</td></tr>
+    <tr><td>Accessibility</td><td>WCAG-aligned focus management, live regions, reduced-motion</td></tr>
+  </table>
+
+  <h2 class="section"><span class="num">7</span>Important Disclaimer</h2>
+  <div class="card disclaimer">
+    <p style="margin-bottom:8px;"><strong>Obliq AI Face Scan is an educational demonstration only.</strong></p>
+    <p style="margin-bottom:8px;">It does <strong>not</strong> measure real medical vitals and must <strong>not</strong> be used for diagnosis, treatment, monitoring, or any medical, legal, hiring, insurance, or official decisions. All wellness and appearance values are AI-simulated for demo and educational purposes and may be inaccurate.</p>
+    <p style="margin-bottom:0;">For any real health concerns, users should always consult a qualified healthcare professional.</p>
+  </div>
+
+  <h2 class="section"><span class="num">8</span>About Obliq AI Education Foundation</h2>
+  <p>The Obliq AI Education Foundation builds approachable, browser-based AI demonstrations to make modern technology tangible for students, educators, and the general public.</p>
+  <p>This face-scan tool is one of several public demos showcasing how AI-style interfaces can be designed with privacy, mobile usability, and clear ethical disclaimers as defaults.</p>
+
+  <div class="doc-footer">
+    © Obliq AI Education Foundation · User Manual · Version 1.0
+  </div>
+</div>
+
+</body>
+</html>

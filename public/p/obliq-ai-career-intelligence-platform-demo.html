@@ -1,0 +1,2022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Obliq AI - Career Intelligence Platform Demo</title>
+<style>
+:root {
+  --primary: #6246c7;
+  --primary-dark: #463094;
+  --primary-soft: #eeeafe;
+  --teal: #0f9f8f;
+  --teal-soft: #e4f7f4;
+  --amber: #d58900;
+  --amber-soft: #fff5dd;
+  --rose: #bf476f;
+  --rose-soft: #ffedf3;
+  --ink: #17151f;
+  --muted: #64606f;
+  --line: #ded9ea;
+  --background: #f7f6fb;
+  --surface: #ffffff;
+  --surface-alt: #fbfafd;
+  --shadow-sm: 0 1px 3px rgba(22, 17, 37, .08);
+  --shadow: 0 12px 30px rgba(35, 28, 61, .12);
+  --r: 8px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: Arial, Helvetica, sans-serif;
+  background:
+    linear-gradient(180deg, rgba(98, 70, 199, .08), transparent 280px),
+    var(--background);
+  color: var(--ink);
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  border: 0;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 66px;
+  padding: 12px 22px;
+  background: rgba(255, 255, 255, .92);
+  border-bottom: 1px solid rgba(222, 217, 234, .86);
+  backdrop-filter: blur(14px);
+}
+
+.brand-lockup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 190px;
+}
+
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  color: #fff;
+  background: var(--primary);
+  border-radius: var(--r);
+  box-shadow: inset 0 -10px 20px rgba(0, 0, 0, .14);
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.12;
+}
+
+.brand-name {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.brand-meta {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.nav-btn,
+.icon-btn,
+.btn {
+  min-height: 40px;
+  border-radius: var(--r);
+  cursor: pointer;
+  transition: transform .18s ease, box-shadow .18s ease, background .18s ease, color .18s ease;
+}
+
+.nav-btn {
+  padding: 0 12px;
+  color: var(--muted);
+  background: transparent;
+  font-weight: 700;
+}
+
+.nav-btn:hover,
+.nav-btn.active {
+  color: var(--primary-dark);
+  background: var(--primary-soft);
+}
+
+.icon-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 42px;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.icon-btn:hover,
+.btn:hover,
+.nav-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 120px;
+  padding: 0 16px;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  font-weight: 800;
+}
+
+.btn-primary {
+  color: #fff;
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.btn-primary:hover {
+  background: var(--primary-dark);
+}
+
+.btn-quiet {
+  color: var(--primary-dark);
+  background: var(--primary-soft);
+  border-color: transparent;
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: .5;
+  transform: none;
+  box-shadow: none;
+}
+
+.app {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 28px 0 46px;
+}
+
+.screen {
+  display: none;
+}
+
+.screen.active {
+  display: block;
+  animation: fadeIn .22s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.screen-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 22px;
+  margin: 8px 0 22px;
+}
+
+.kicker {
+  margin-bottom: 7px;
+  color: var(--primary-dark);
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+h1 {
+  max-width: 780px;
+  font-size: 36px;
+  line-height: 1.12;
+}
+
+h2 {
+  font-size: 24px;
+  line-height: 1.2;
+}
+
+h3 {
+  font-size: 17px;
+  line-height: 1.25;
+}
+
+.lead {
+  max-width: 720px;
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.workspace-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(280px, .62fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  box-shadow: var(--shadow-sm);
+}
+
+.panel-pad {
+  padding: 20px;
+}
+
+.role-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.role-card {
+  min-height: 164px;
+  padding: 16px;
+  text-align: left;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  cursor: pointer;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+}
+
+.role-card:hover,
+.role-card.selected {
+  transform: translateY(-2px);
+  border-color: rgba(98, 70, 199, .48);
+  box-shadow: var(--shadow);
+}
+
+.role-card.selected {
+  background: linear-gradient(180deg, #fff, var(--primary-soft));
+}
+
+.role-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  margin-bottom: 14px;
+  color: var(--role-color);
+  background: var(--role-bg);
+  border-radius: var(--r);
+}
+
+.role-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.role-title span {
+  font-weight: 800;
+}
+
+.check-dot {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  color: #fff;
+  background: var(--primary);
+  border-radius: 999px;
+  opacity: 0;
+  transform: scale(.82);
+  transition: opacity .18s ease, transform .18s ease;
+}
+
+.role-card.selected .check-dot {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.role-copy {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.insight-stack {
+  display: grid;
+  gap: 12px;
+}
+
+.stat-row {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  background: var(--surface-alt);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+}
+
+.stat-value {
+  font-size: 21px;
+  font-weight: 900;
+}
+
+.stat-label {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.map-visual {
+  overflow: hidden;
+  min-height: 300px;
+}
+
+.map-visual svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.panel-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.assessment-layout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 18px;
+}
+
+.profile-panel {
+  position: sticky;
+  top: 86px;
+}
+
+.progress-wrap {
+  display: grid;
+  gap: 10px;
+  margin: 18px 0 22px;
+}
+
+.progress-meta {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.progress-track {
+  overflow: hidden;
+  height: 10px;
+  background: #ece8f4;
+  border-radius: 999px;
+}
+
+.progress-fill {
+  width: 0;
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), var(--teal));
+  border-radius: inherit;
+  transition: width .24s ease;
+}
+
+.profile-list {
+  display: grid;
+  gap: 10px;
+}
+
+.profile-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.profile-line:last-child {
+  border-bottom: 0;
+}
+
+.profile-line span:first-child {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.profile-line strong {
+  font-size: 14px;
+}
+
+.question-panel {
+  min-height: 520px;
+}
+
+.question-number {
+  color: var(--teal);
+  font-size: 13px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.question-title {
+  margin-top: 8px;
+  font-size: 28px;
+  line-height: 1.2;
+}
+
+.question-copy {
+  margin-top: 9px;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.option-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.option-card {
+  min-height: 116px;
+  padding: 15px;
+  text-align: left;
+  color: var(--ink);
+  background: var(--surface-alt);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  cursor: pointer;
+  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease, background .18s ease;
+}
+
+.option-card:hover,
+.option-card.selected {
+  transform: translateY(-1px);
+  border-color: rgba(15, 159, 143, .6);
+  box-shadow: var(--shadow-sm);
+}
+
+.option-card.selected {
+  background: var(--teal-soft);
+}
+
+.option-tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  margin-bottom: 10px;
+  padding: 0 8px;
+  color: var(--primary-dark);
+  background: var(--primary-soft);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.option-label {
+  display: block;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.option-copy {
+  margin-top: 7px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.question-actions,
+.result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.results-grid {
+  display: grid;
+  grid-template-columns: minmax(0, .84fr) minmax(0, 1.16fr);
+  gap: 18px;
+}
+
+.match-score {
+  display: grid;
+  gap: 18px;
+}
+
+.score-circle {
+  display: grid;
+  place-items: center;
+  width: 178px;
+  height: 178px;
+  margin: 6px auto 8px;
+  color: var(--primary-dark);
+  background:
+    radial-gradient(circle at center, #fff 0 54%, transparent 55%),
+    conic-gradient(var(--teal) var(--score-deg), #ece8f4 0);
+  border-radius: 999px;
+}
+
+.score-circle strong {
+  font-size: 42px;
+  line-height: 1;
+}
+
+.score-circle span {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.skill-bars {
+  display: grid;
+  gap: 11px;
+}
+
+.bar-row {
+  display: grid;
+  gap: 6px;
+}
+
+.bar-top {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.bar-track {
+  overflow: hidden;
+  height: 9px;
+  background: #ece8f4;
+  border-radius: 999px;
+}
+
+.bar-fill {
+  height: 100%;
+  background: var(--bar-color);
+  border-radius: inherit;
+}
+
+.match-list {
+  display: grid;
+  gap: 12px;
+}
+
+.match-card {
+  display: grid;
+  grid-template-columns: 70px 1fr;
+  gap: 14px;
+  padding: 15px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+}
+
+.match-rank {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  color: var(--rank-color);
+  background: var(--rank-bg);
+  border-radius: var(--r);
+  font-weight: 900;
+}
+
+.match-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.match-title-row strong {
+  font-size: 17px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 25px;
+  padding: 0 9px;
+  color: var(--primary-dark);
+  background: var(--primary-soft);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.match-card p {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.next-steps {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.step-item {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 10px;
+  align-items: start;
+}
+
+.step-num {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  color: #fff;
+  background: var(--primary);
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.step-item strong {
+  display: block;
+  margin-bottom: 2px;
+}
+
+.step-item span {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+  gap: 18px;
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.metric {
+  padding: 15px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+}
+
+.metric strong {
+  display: block;
+  font-size: 27px;
+  line-height: 1;
+}
+
+.metric span {
+  display: block;
+  margin-top: 7px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.cohort-list {
+  display: grid;
+  gap: 10px;
+}
+
+.cohort-item {
+  display: grid;
+  grid-template-columns: minmax(128px, .48fr) 1fr 46px;
+  gap: 12px;
+  align-items: center;
+}
+
+.cohort-name {
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.cohort-track {
+  overflow: hidden;
+  height: 10px;
+  background: #ece8f4;
+  border-radius: 999px;
+}
+
+.cohort-fill {
+  height: 100%;
+  background: var(--cohort-color);
+  border-radius: inherit;
+}
+
+.cohort-value {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+  text-align: right;
+}
+
+.timeline {
+  display: grid;
+  gap: 13px;
+}
+
+.timeline-item {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 12px;
+}
+
+.timeline-dot {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  color: var(--primary-dark);
+  background: var(--primary-soft);
+  border-radius: 999px;
+  font-weight: 900;
+}
+
+.timeline-copy strong {
+  display: block;
+  margin-bottom: 3px;
+}
+
+.timeline-copy span {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.toast {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 30;
+  max-width: min(360px, calc(100% - 36px));
+  padding: 13px 15px;
+  color: #fff;
+  background: #1f1a2d;
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+  opacity: 0;
+  transform: translateY(12px);
+  pointer-events: none;
+  transition: opacity .18s ease, transform .18s ease;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 920px) {
+  .topbar {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .brand-lockup {
+    min-width: 0;
+  }
+
+  .nav {
+    order: 3;
+    width: 100%;
+    overflow-x: auto;
+    margin-left: 0;
+    padding-bottom: 2px;
+  }
+
+  .workspace-grid,
+  .assessment-layout,
+  .results-grid,
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-panel {
+    position: static;
+  }
+
+  .role-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .app {
+    width: min(100% - 20px, 1180px);
+    padding-top: 18px;
+  }
+
+  .topbar {
+    padding: 10px;
+  }
+
+  .screen-head {
+    display: block;
+  }
+
+  h1 {
+    font-size: 28px;
+  }
+
+  h2 {
+    font-size: 21px;
+  }
+
+  .role-grid,
+  .option-grid,
+  .metric-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .panel-pad {
+    padding: 16px;
+  }
+
+  .question-title {
+    font-size: 23px;
+  }
+
+  .match-card {
+    grid-template-columns: 1fr;
+  }
+
+  .cohort-item {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .cohort-value {
+    text-align: left;
+  }
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand-lockup" aria-label="Obliq AI">
+    <div class="brand-mark" aria-hidden="true">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M7 17.2 17.2 7M8.5 6.5h9v9" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M5.2 12.2a7 7 0 1 0 6.9-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity=".74"/>
+      </svg>
+    </div>
+    <div class="brand-text">
+      <span class="brand-name">Obliq AI</span>
+      <span class="brand-meta">Career Intelligence Demo</span>
+    </div>
+  </div>
+
+  <nav class="nav" aria-label="Demo navigation">
+    <button class="nav-btn active" data-go="roles">Roles</button>
+    <button class="nav-btn" data-go="assessment">Assessment</button>
+    <button class="nav-btn" data-go="results">Results</button>
+    <button class="nav-btn" data-go="dashboards">Dashboards</button>
+  </nav>
+
+  <button class="icon-btn" id="resetBtn" title="Reset demo" aria-label="Reset demo">
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M4 4v6h6M20 20v-6h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M5.5 9.5A7.5 7.5 0 0 1 18 6.4L20 8.5M18.5 14.5A7.5 7.5 0 0 1 6 17.6L4 15.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
+  <button class="icon-btn" id="fullscreenBtn" title="Fullscreen" aria-label="Toggle fullscreen">
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M8 3H3v5M21 8V3h-5M16 21h5v-5M3 16v5h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
+</header>
+
+<main class="app">
+  <section class="screen active" id="screen-roles" aria-labelledby="rolesTitle">
+    <div class="screen-head">
+      <div>
+        <div class="kicker">Workspace launcher</div>
+        <h1 id="rolesTitle">Start from the person using Obliq AI.</h1>
+        <p class="lead">Choose a role to open a focused demo flow with assessment, recommendations, cohort insights, and next-step planning.</p>
+      </div>
+      <button class="btn btn-primary" id="continueRoleBtn">
+        Continue
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="workspace-grid">
+      <div class="role-grid" id="roleGrid"></div>
+
+      <aside class="panel panel-pad">
+        <div class="panel-title">
+          <h2>Live demo signals</h2>
+        </div>
+        <div class="insight-stack">
+          <div class="stat-row">
+            <div class="role-icon" style="--role-color:#6246c7;--role-bg:#eeeafe" aria-hidden="true">
+              <svg width="23" height="23" viewBox="0 0 24 24" fill="none">
+                <path d="M12 3 3 8l9 5 9-5-9-5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                <path d="M7 11v4.5c0 1.7 2.2 3 5 3s5-1.3 5-3V11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div>
+              <div class="stat-value">5</div>
+              <div class="stat-label">role views connected to one student intelligence layer</div>
+            </div>
+          </div>
+          <div class="stat-row">
+            <div class="role-icon" style="--role-color:#0f9f8f;--role-bg:#e4f7f4" aria-hidden="true">
+              <svg width="23" height="23" viewBox="0 0 24 24" fill="none">
+                <path d="M4 19V5M4 19h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="m8 15 3-4 3 2 5-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div>
+              <div class="stat-value">6</div>
+              <div class="stat-label">career dimensions scored during the student assessment</div>
+            </div>
+          </div>
+          <div class="stat-row">
+            <div class="role-icon" style="--role-color:#d58900;--role-bg:#fff5dd" aria-hidden="true">
+              <svg width="23" height="23" viewBox="0 0 24 24" fill="none">
+                <path d="M12 3v18M5 8h14M6.5 8 4 14h5L6.5 8ZM17.5 8 15 14h5l-2.5-6Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div>
+              <div class="stat-value">3</div>
+              <div class="stat-label">career matches generated with skills, roadmap, and confidence</div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="screen" id="screen-assessment" aria-labelledby="assessmentTitle">
+    <div class="screen-head">
+      <div>
+        <div class="kicker">Student assessment</div>
+        <h1 id="assessmentTitle">Career counseling questions that lead to practical pathways.</h1>
+        <p class="lead">The demo asks 10 counseling questions about subjects, strengths, values, work style, concerns, family discussion, and exploration needs, then maps answers to career-fit patterns.</p>
+      </div>
+    </div>
+
+    <div class="assessment-layout">
+      <aside class="panel panel-pad profile-panel">
+        <div class="panel-title">
+          <h2>Learner profile</h2>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-meta">
+            <span id="progressLabel">Question 1 of 5</span>
+            <span id="progressPercent">20%</span>
+          </div>
+          <div class="progress-track" aria-hidden="true">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+        </div>
+        <div class="profile-list">
+          <div class="profile-line">
+            <span>Role</span>
+            <strong id="profileRole">Student</strong>
+          </div>
+          <div class="profile-line">
+            <span>Primary signal</span>
+            <strong id="profileSignal">Pending</strong>
+          </div>
+          <div class="profile-line">
+            <span>Answered</span>
+            <strong id="answeredCount">0</strong>
+          </div>
+          <div class="profile-line">
+            <span>Confidence</span>
+            <strong id="confidenceLabel">Building</strong>
+          </div>
+        </div>
+      </aside>
+
+      <div class="panel panel-pad question-panel">
+        <div class="question-number" id="questionNumber">Question 1</div>
+        <h2 class="question-title" id="questionTitle"></h2>
+        <p class="question-copy" id="questionCopy"></p>
+        <div class="option-grid" id="optionGrid"></div>
+        <div class="question-actions">
+          <button class="btn" id="backQuestionBtn">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M19 12H5M11 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Back
+          </button>
+          <button class="btn btn-primary" id="nextQuestionBtn" disabled>
+            <span id="nextQuestionLabel">Next</span>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen-results" aria-labelledby="resultsTitle">
+    <div class="screen-head">
+      <div>
+        <div class="kicker">Recommendation engine</div>
+        <h1 id="resultsTitle">Career matches with a practical next step.</h1>
+        <p class="lead">Results update from the assessment choices and can be shared into student, parent, and counselor views.</p>
+      </div>
+      <button class="btn btn-quiet" id="demoAnswersBtn">Load sample profile</button>
+    </div>
+
+    <div class="results-grid">
+      <aside class="panel panel-pad match-score">
+        <div class="panel-title">
+          <h2 id="topMatchTitle">Top match</h2>
+          <span class="pill" id="topMatchPill">Ready</span>
+        </div>
+        <div class="score-circle" id="scoreCircle" style="--score-deg:0deg">
+          <div>
+            <strong id="scoreValue">0</strong>
+            <span>fit score</span>
+          </div>
+        </div>
+        <div class="skill-bars" id="skillBars"></div>
+      </aside>
+
+      <div class="panel panel-pad">
+        <div class="panel-title">
+          <h2>Recommended paths</h2>
+        </div>
+        <div class="match-list" id="matchList"></div>
+        <div class="result-actions">
+          <button class="btn" id="retakeBtn">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M4 4v6h6M20 20v-6h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M5.5 9.5A7.5 7.5 0 0 1 18 6.4L20 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Retake
+          </button>
+          <button class="btn btn-primary" id="openDashboardBtn">Open dashboard</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen-dashboards" aria-labelledby="dashboardTitle">
+    <div class="screen-head">
+      <div>
+        <div class="kicker">Role dashboard</div>
+        <h1 id="dashboardTitle">One platform, separate decisions.</h1>
+        <p class="lead" id="dashboardLead">Student career recommendations become structured actions for families, counselors, and schools.</p>
+      </div>
+      <button class="btn btn-primary" id="switchRoleBtn">Switch role</button>
+    </div>
+
+    <div class="dashboard-grid">
+      <div class="panel panel-pad">
+        <div class="panel-title">
+          <h2 id="dashboardRoleTitle">Student workspace</h2>
+          <span class="pill" id="dashboardRolePill">Student</span>
+        </div>
+        <div class="metric-grid" id="metricGrid"></div>
+      </div>
+
+      <div class="panel panel-pad">
+        <div class="panel-title">
+          <h2 id="dashboardActionTitle">Next actions</h2>
+        </div>
+        <div id="dashboardBody"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const DIMENSIONS = ["analytical", "creative", "technical", "social", "enterprising", "research"];
+
+const ROLES = [
+  {
+    id: "Student",
+    color: "#6246c7",
+    bg: "#eeeafe",
+    copy: "Take an interest assessment, compare careers, and turn matches into a weekly roadmap.",
+    icon: "student"
+  },
+  {
+    id: "Parent",
+    color: "#0f9f8f",
+    bg: "#e4f7f4",
+    copy: "See a clear summary of strengths, discussion prompts, and support actions.",
+    icon: "family"
+  },
+  {
+    id: "Counsellor",
+    color: "#d58900",
+    bg: "#fff5dd",
+    copy: "Review student clusters, risk flags, and recommended session plans.",
+    icon: "counsellor"
+  },
+  {
+    id: "Admin",
+    color: "#bf476f",
+    bg: "#ffedf3",
+    copy: "Track adoption, engagement, and program outcomes across batches.",
+    icon: "admin"
+  },
+  {
+    id: "School",
+    color: "#2274a5",
+    bg: "#e9f4fb",
+    copy: "Understand cohort readiness and align activities with student pathways.",
+    icon: "school"
+  }
+];
+
+const QUESTION_COUNT = 10;
+
+const QUESTION_BANK = [
+  {
+    title: "Which project would you choose first?",
+    copy: "Pick the option that feels most energizing, even if you have not tried it before.",
+    options: [
+      { tag: "Build", label: "Prototype an app that solves a campus problem", copy: "Sketch screens, test a flow, and improve it with feedback.", scores: { technical: 3, creative: 2, enterprising: 1 } },
+      { tag: "Analyze", label: "Find patterns in marks, habits, or sports data", copy: "Use evidence to explain what is changing and why.", scores: { analytical: 3, research: 2, technical: 1 } },
+      { tag: "Guide", label: "Help classmates make a difficult decision", copy: "Listen, ask questions, and turn confusion into choices.", scores: { social: 3, analytical: 1, creative: 1 } },
+      { tag: "Create", label: "Design a campaign for a cause you care about", copy: "Shape a story, visuals, and a plan to influence people.", scores: { creative: 3, enterprising: 2, social: 1 } }
+    ]
+  },
+  {
+    title: "What kind of problem keeps your attention?",
+    copy: "This helps Obliq AI separate curiosity from short-term interest.",
+    options: [
+      { tag: "Systems", label: "A messy process that can be made simpler", copy: "You like mapping steps and improving how things work.", scores: { analytical: 2, technical: 2, enterprising: 1 } },
+      { tag: "People", label: "A person who needs the right support", copy: "You notice motivations, emotions, and communication gaps.", scores: { social: 3, research: 1, creative: 1 } },
+      { tag: "Discovery", label: "A question nobody has fully answered", copy: "You enjoy experiments, reading, and testing assumptions.", scores: { research: 3, analytical: 2 } },
+      { tag: "Expression", label: "A message that needs a memorable form", copy: "You think through visuals, words, narrative, and tone.", scores: { creative: 3, social: 1, enterprising: 1 } }
+    ]
+  },
+  {
+    title: "When a team gets stuck, what do you naturally do?",
+    copy: "Your collaboration style is a strong clue for career environments.",
+    options: [
+      { tag: "Structure", label: "Break the work into smaller decisions", copy: "You reduce ambiguity and create a workable plan.", scores: { analytical: 2, enterprising: 2, technical: 1 } },
+      { tag: "Test", label: "Try a quick experiment and learn from it", copy: "You prefer momentum, prototypes, and measurable feedback.", scores: { technical: 2, research: 2, creative: 1 } },
+      { tag: "Connect", label: "Get everyone heard before deciding", copy: "You build trust and improve the quality of the group choice.", scores: { social: 3, enterprising: 1 } },
+      { tag: "Reframe", label: "Suggest a different way to look at the task", copy: "You change the angle so the team can move again.", scores: { creative: 3, analytical: 1, social: 1 } }
+    ]
+  },
+  {
+    title: "Which learning format would you pick for a month?",
+    copy: "Obliq AI uses learning preference to recommend next actions that feel doable.",
+    options: [
+      { tag: "Lab", label: "Hands-on builds with tools and tutorials", copy: "You want to make something visible each week.", scores: { technical: 3, creative: 1 } },
+      { tag: "Research", label: "Reading papers, cases, and expert interviews", copy: "You want depth before deciding what to build.", scores: { research: 3, analytical: 2 } },
+      { tag: "Fieldwork", label: "Talking to people and observing behavior", copy: "You want real stories and real constraints.", scores: { social: 2, research: 2, creative: 1 } },
+      { tag: "Challenge", label: "A competition with a pitch at the end", copy: "You want stakes, feedback, and a goal date.", scores: { enterprising: 3, creative: 1, analytical: 1 } }
+    ]
+  },
+  {
+    title: "What outcome would make you proud?",
+    copy: "The final signal connects interest with values and motivation.",
+    options: [
+      { tag: "Impact", label: "A solution many students actually use", copy: "You want your work to become useful in everyday life.", scores: { technical: 2, social: 2, enterprising: 1 } },
+      { tag: "Insight", label: "A clear answer from complex evidence", copy: "You want to make the hidden pattern understandable.", scores: { analytical: 3, research: 2 } },
+      { tag: "Change", label: "A group of people choosing a better path", copy: "You want to influence decisions and create alignment.", scores: { social: 2, enterprising: 2, creative: 1 } },
+      { tag: "Originality", label: "A distinctive idea that feels new", copy: "You want to make work that has your point of view in it.", scores: { creative: 3, research: 1 } }
+    ]
+  },
+  {
+    title: "Which school club activity would you enjoy most?",
+    copy: "Think about the role you would happily take without needing to be pushed.",
+    options: [
+      { tag: "Code", label: "Build the club website or registration tool", copy: "You like making systems that others can use right away.", scores: { technical: 3, analytical: 1, creative: 1 } },
+      { tag: "Lead", label: "Plan the event schedule and coordinate teams", copy: "You like bringing people, deadlines, and decisions together.", scores: { enterprising: 3, social: 1, analytical: 1 } },
+      { tag: "Study", label: "Research the theme and prepare briefing notes", copy: "You like depth, evidence, and thoughtful preparation.", scores: { research: 3, analytical: 2 } },
+      { tag: "Design", label: "Create posters, reels, and stage visuals", copy: "You like shaping how an idea feels and looks.", scores: { creative: 3, social: 1 } }
+    ]
+  },
+  {
+    title: "What feedback would you most want from a mentor?",
+    copy: "The kind of feedback you seek often reveals the work you value.",
+    options: [
+      { tag: "Logic", label: "Is my reasoning strong enough?", copy: "You want the argument to hold up under pressure.", scores: { analytical: 3, research: 1 } },
+      { tag: "Usability", label: "Would someone actually use this?", copy: "You want your solution to work in real life.", scores: { technical: 2, social: 2, enterprising: 1 } },
+      { tag: "Story", label: "Is the message memorable?", copy: "You want the idea to land clearly and distinctively.", scores: { creative: 3, social: 1 } },
+      { tag: "Growth", label: "Can this become a bigger opportunity?", copy: "You want to turn a good start into a larger outcome.", scores: { enterprising: 3, analytical: 1, creative: 1 } }
+    ]
+  },
+  {
+    title: "Which workspace sounds best for you?",
+    copy: "Imagine a normal day, not just a special event.",
+    options: [
+      { tag: "Studio", label: "A design room with sketches and prototypes", copy: "You want to make ideas visible and testable.", scores: { creative: 3, technical: 1, social: 1 } },
+      { tag: "Lab", label: "A quiet lab where experiments are tracked", copy: "You want precision, patience, and discovery.", scores: { research: 3, analytical: 2 } },
+      { tag: "Ops", label: "A fast room where people solve live problems", copy: "You want decisions, ownership, and action.", scores: { enterprising: 3, social: 1, analytical: 1 } },
+      { tag: "Data", label: "A screen full of models, charts, and tests", copy: "You want to understand systems through evidence.", scores: { technical: 2, analytical: 3 } }
+    ]
+  },
+  {
+    title: "Which achievement would you save in a portfolio?",
+    copy: "Portfolio choices show what you want others to recognize in you.",
+    options: [
+      { tag: "Model", label: "A prediction model with a clear explanation", copy: "You want accuracy and interpretation to work together.", scores: { technical: 3, analytical: 2, research: 1 } },
+      { tag: "Campaign", label: "A campaign that changed student participation", copy: "You want creative communication to move people.", scores: { creative: 2, social: 2, enterprising: 1 } },
+      { tag: "Report", label: "A research report with surprising findings", copy: "You want careful evidence to reveal something new.", scores: { research: 3, analytical: 2 } },
+      { tag: "Venture", label: "A small initiative that attracted real users", copy: "You want to launch, learn, and grow an idea.", scores: { enterprising: 3, technical: 1, social: 1 } }
+    ]
+  },
+  {
+    title: "How do you prefer to make a difficult choice?",
+    copy: "Decision style helps match you with healthier career environments.",
+    options: [
+      { tag: "Compare", label: "Make a table of tradeoffs and evidence", copy: "You trust structured thinking and clear criteria.", scores: { analytical: 3, research: 1 } },
+      { tag: "Discuss", label: "Talk to people affected by the choice", copy: "You want context from real experiences.", scores: { social: 3, research: 1 } },
+      { tag: "Prototype", label: "Try a small version before committing", copy: "You want direct feedback from action.", scores: { technical: 2, creative: 1, enterprising: 1 } },
+      { tag: "Pitch", label: "Explain the choice and see who believes in it", copy: "You want clarity, confidence, and alignment.", scores: { enterprising: 3, social: 1, creative: 1 } }
+    ]
+  },
+  {
+    title: "Which subject mix feels most natural?",
+    copy: "Obliq AI uses combinations, not single subjects, to infer direction.",
+    options: [
+      { tag: "Math + Tech", label: "Math, coding, and problem solving", copy: "You enjoy rules, systems, and logical progress.", scores: { analytical: 2, technical: 3 } },
+      { tag: "Bio + Society", label: "Biology, psychology, and human behavior", copy: "You enjoy people, evidence, and wellbeing.", scores: { social: 2, research: 2, analytical: 1 } },
+      { tag: "Art + Media", label: "Design, writing, and digital media", copy: "You enjoy expression, audience, and form.", scores: { creative: 3, social: 1, technical: 1 } },
+      { tag: "Business + Impact", label: "Economics, leadership, and change", copy: "You enjoy strategy, value, and outcomes.", scores: { enterprising: 3, analytical: 1, social: 1 } }
+    ]
+  },
+  {
+    title: "What would you rather improve in your school?",
+    copy: "This connects your interest with the type of impact you notice first.",
+    options: [
+      { tag: "Tools", label: "A digital system students use every week", copy: "You notice friction and want to build better tools.", scores: { technical: 3, analytical: 1, social: 1 } },
+      { tag: "Support", label: "A better way for students to ask for help", copy: "You notice emotional and communication gaps.", scores: { social: 3, creative: 1, research: 1 } },
+      { tag: "Policy", label: "A fairer process for rules and resources", copy: "You notice systems, incentives, and consequences.", scores: { research: 2, analytical: 2, enterprising: 1 } },
+      { tag: "Culture", label: "A stronger identity for events and clubs", copy: "You notice belonging, story, and participation.", scores: { creative: 2, enterprising: 2, social: 1 } }
+    ]
+  },
+  {
+    title: "Which task would you volunteer for during a hackathon?",
+    copy: "The first task you claim says a lot about your contribution style.",
+    options: [
+      { tag: "Backend", label: "Set up the logic and data flow", copy: "You like making the engine work properly.", scores: { technical: 3, analytical: 2 } },
+      { tag: "Research", label: "Validate the problem with users", copy: "You like proving the team is solving the right thing.", scores: { research: 2, social: 2, analytical: 1 } },
+      { tag: "Pitch", label: "Frame the story for judges", copy: "You like turning work into a compelling case.", scores: { enterprising: 2, creative: 2, social: 1 } },
+      { tag: "Interface", label: "Design the screens and interactions", copy: "You like making ideas understandable and usable.", scores: { creative: 3, technical: 1, social: 1 } }
+    ]
+  },
+  {
+    title: "When you read about a new technology, what do you wonder first?",
+    copy: "This separates technical curiosity from product, research, and social curiosity.",
+    options: [
+      { tag: "Mechanism", label: "How does it work under the hood?", copy: "You want to understand the parts and logic.", scores: { technical: 3, analytical: 2 } },
+      { tag: "Impact", label: "Who benefits, and who might be left out?", copy: "You think about people, access, and consequences.", scores: { social: 2, research: 2 } },
+      { tag: "Opportunity", label: "What new product or service could use it?", copy: "You see possibility, markets, and action.", scores: { enterprising: 3, creative: 1, technical: 1 } },
+      { tag: "Evidence", label: "What proof says it works?", copy: "You want data, studies, and clear claims.", scores: { research: 3, analytical: 2 } }
+    ]
+  }
+];
+
+const CAREER_COUNSELING_QUESTION_BANK = [
+  {
+    title: "Which school subjects feel most natural to you?",
+    copy: "Career counseling starts by noticing subjects where effort feels meaningful, not only where marks are high.",
+    options: [
+      { tag: "STEM", label: "Math, computer science, and logical problem solving", copy: "You enjoy patterns, systems, and step-by-step reasoning.", scores: { analytical: 3, technical: 3 } },
+      { tag: "People", label: "Psychology, biology, and social sciences", copy: "You enjoy understanding people, behavior, and wellbeing.", scores: { social: 3, research: 2 } },
+      { tag: "Creative", label: "Design, languages, media, and communication", copy: "You enjoy expression, storytelling, and visual thinking.", scores: { creative: 3, social: 1 } },
+      { tag: "Business", label: "Economics, commerce, leadership, and current affairs", copy: "You enjoy strategy, decisions, markets, and impact.", scores: { enterprising: 3, analytical: 2 } }
+    ]
+  },
+  {
+    title: "What type of career conversation would help you most right now?",
+    copy: "This helps the counselor understand whether the student needs clarity, exposure, planning, or confidence.",
+    options: [
+      { tag: "Clarity", label: "I need help choosing between different career options", copy: "You want a structured comparison and decision framework.", scores: { analytical: 3, research: 1 } },
+      { tag: "Exposure", label: "I need to discover careers I do not know about yet", copy: "You want examples, role models, and real-world pathways.", scores: { research: 3, creative: 1 } },
+      { tag: "Confidence", label: "I know my interest but need confidence to pursue it", copy: "You want encouragement, validation, and next steps.", scores: { social: 2, enterprising: 2 } },
+      { tag: "Plan", label: "I need a step-by-step academic and skill roadmap", copy: "You want subjects, courses, projects, and timelines.", scores: { technical: 2, analytical: 2, enterprising: 1 } }
+    ]
+  },
+  {
+    title: "Which strength do teachers or friends notice in you most often?",
+    copy: "External feedback can reveal strengths the student may undervalue.",
+    options: [
+      { tag: "Explain", label: "I can explain difficult ideas clearly", copy: "People come to you when they need something simplified.", scores: { social: 3, analytical: 2 } },
+      { tag: "Solve", label: "I can solve technical or logical problems", copy: "People trust you with systems, numbers, and debugging.", scores: { technical: 3, analytical: 2 } },
+      { tag: "Create", label: "I can make work look or sound engaging", copy: "People notice your design sense, writing, or presentation.", scores: { creative: 3, social: 1 } },
+      { tag: "Lead", label: "I can organize people and get work completed", copy: "People rely on you for planning, ownership, and follow-through.", scores: { enterprising: 3, social: 1 } }
+    ]
+  },
+  {
+    title: "What matters most when you imagine a future job?",
+    copy: "Career values help avoid choices that look good on paper but feel wrong in daily life.",
+    options: [
+      { tag: "Impact", label: "Helping people or improving society", copy: "You want work to create visible positive change.", scores: { social: 3, research: 1, enterprising: 1 } },
+      { tag: "Mastery", label: "Becoming deeply skilled in a specialized field", copy: "You want expertise, depth, and serious learning.", scores: { research: 3, technical: 2 } },
+      { tag: "Innovation", label: "Building new products, ideas, or solutions", copy: "You want originality, experimentation, and creation.", scores: { creative: 2, technical: 2, enterprising: 1 } },
+      { tag: "Growth", label: "Leadership, independence, and financial growth", copy: "You want ownership, opportunity, and clear progress.", scores: { enterprising: 3, analytical: 1 } }
+    ]
+  },
+  {
+    title: "Which career exploration activity would you choose first?",
+    copy: "A good counseling plan should match how the student learns about careers best.",
+    options: [
+      { tag: "Shadow", label: "Spend a day observing a professional at work", copy: "You want to see the reality of a career environment.", scores: { social: 2, research: 2 } },
+      { tag: "Project", label: "Try a small project from that career field", copy: "You want hands-on evidence before deciding.", scores: { technical: 2, creative: 1, analytical: 1 } },
+      { tag: "Interview", label: "Ask professionals about their journey and choices", copy: "You want stories, advice, and personal context.", scores: { social: 3, research: 1 } },
+      { tag: "Compare", label: "Study salary, courses, exams, and future demand", copy: "You want clear facts before narrowing options.", scores: { analytical: 3, research: 2 } }
+    ]
+  },
+  {
+    title: "Which work environment would suit you best?",
+    copy: "Counselors use environment fit to recommend careers that match everyday energy patterns.",
+    options: [
+      { tag: "Independent", label: "Quiet focus time with complex problems", copy: "You prefer deep work, analysis, and concentration.", scores: { analytical: 3, research: 2 } },
+      { tag: "Collaborative", label: "A people-facing role with conversations and guidance", copy: "You prefer listening, explaining, and supporting others.", scores: { social: 3, enterprising: 1 } },
+      { tag: "Creative", label: "A studio-like space for ideas, design, and content", copy: "You prefer imagination, iteration, and visible output.", scores: { creative: 3, social: 1 } },
+      { tag: "Dynamic", label: "A fast-moving role with decisions and responsibility", copy: "You prefer goals, ownership, and visible progress.", scores: { enterprising: 3, technical: 1 } }
+    ]
+  },
+  {
+    title: "When choosing a stream or major, what would worry you most?",
+    copy: "This identifies counseling barriers such as uncertainty, pressure, confidence, or lack of information.",
+    options: [
+      { tag: "Unclear", label: "I am not sure what careers each stream can lead to", copy: "You need clearer maps from subjects to pathways.", scores: { research: 3, analytical: 1 } },
+      { tag: "Pressure", label: "My family or friends may expect a different choice", copy: "You need communication support and shared understanding.", scores: { social: 3, enterprising: 1 } },
+      { tag: "Ability", label: "I am worried I may not be good enough for it", copy: "You need realistic skill planning and confidence building.", scores: { analytical: 2, technical: 1, social: 1 } },
+      { tag: "Future", label: "I am unsure if the field will have good opportunities", copy: "You need evidence about demand, growth, and flexibility.", scores: { analytical: 3, research: 2 } }
+    ]
+  },
+  {
+    title: "Which role in a group assignment feels most comfortable?",
+    copy: "Group behavior often reveals natural career strengths.",
+    options: [
+      { tag: "Researcher", label: "Gather facts and make sure the content is accurate", copy: "You protect quality with evidence and depth.", scores: { research: 3, analytical: 2 } },
+      { tag: "Builder", label: "Make the model, slides, spreadsheet, or prototype", copy: "You enjoy turning ideas into working outputs.", scores: { technical: 3, creative: 1 } },
+      { tag: "Presenter", label: "Explain the idea and handle questions", copy: "You enjoy communication, confidence, and audience connection.", scores: { social: 3, enterprising: 1 } },
+      { tag: "Coordinator", label: "Divide tasks and keep everyone on track", copy: "You enjoy planning, responsibility, and execution.", scores: { enterprising: 3, analytical: 1 } }
+    ]
+  },
+  {
+    title: "What kind of problem would you like your career to solve?",
+    copy: "This connects interest with purpose, a key part of career counseling.",
+    options: [
+      { tag: "Health", label: "Improving health, wellbeing, or human support", copy: "You care about people, care systems, and quality of life.", scores: { social: 3, research: 2 } },
+      { tag: "Technology", label: "Making technology smarter, safer, or easier to use", copy: "You care about tools, systems, and practical innovation.", scores: { technical: 3, analytical: 2 } },
+      { tag: "Business", label: "Creating services, ventures, or better organizations", copy: "You care about value, growth, and leadership.", scores: { enterprising: 3, analytical: 1 } },
+      { tag: "Culture", label: "Shaping communication, media, design, or public ideas", copy: "You care about meaning, creativity, and influence.", scores: { creative: 3, social: 1 } }
+    ]
+  },
+  {
+    title: "How do you prefer to learn about a career path?",
+    copy: "The answer helps the platform recommend counseling resources in the right format.",
+    options: [
+      { tag: "Data", label: "Show me rankings, salaries, skills, and demand", copy: "You trust structured information and measurable comparisons.", scores: { analytical: 3, research: 2 } },
+      { tag: "Stories", label: "Show me real student and professional journeys", copy: "You learn through examples, context, and lived experience.", scores: { social: 3, creative: 1 } },
+      { tag: "Practice", label: "Give me a project so I can try the work", copy: "You learn by doing and reflecting on the experience.", scores: { technical: 3, creative: 1 } },
+      { tag: "Mentor", label: "Let me discuss my situation with an expert", copy: "You value guidance, feedback, and personal fit.", scores: { social: 2, enterprising: 2 } }
+    ]
+  },
+  {
+    title: "Which next step would feel most useful after this assessment?",
+    copy: "This makes the result actionable instead of only descriptive.",
+    options: [
+      { tag: "Shortlist", label: "Create a shortlist of 3 suitable careers", copy: "You want options narrowed into a manageable set.", scores: { analytical: 3, research: 1 } },
+      { tag: "Roadmap", label: "Get a subject, course, and skill roadmap", copy: "You want practical steps for the next few years.", scores: { technical: 2, analytical: 2 } },
+      { tag: "Session", label: "Book a counseling session with discussion points", copy: "You want a guided conversation before deciding.", scores: { social: 3, research: 1 } },
+      { tag: "Portfolio", label: "Start projects that prove my interest", copy: "You want evidence of ability and motivation.", scores: { creative: 2, enterprising: 2, technical: 1 } }
+    ]
+  },
+  {
+    title: "What would make a career recommendation feel trustworthy?",
+    copy: "Trust signals matter in counseling because students and families need confidence in the guidance.",
+    options: [
+      { tag: "Evidence", label: "It explains the reasoning behind each match", copy: "You want transparent criteria and fit logic.", scores: { analytical: 3, research: 1 } },
+      { tag: "Personal", label: "It reflects my strengths, interests, and constraints", copy: "You want the recommendation to feel specific to you.", scores: { social: 2, creative: 1, research: 1 } },
+      { tag: "Practical", label: "It gives courses, skills, exams, and timelines", copy: "You want guidance you can act on immediately.", scores: { technical: 2, analytical: 2, enterprising: 1 } },
+      { tag: "Flexible", label: "It shows multiple routes and backup options", copy: "You want confidence without being locked into one path.", scores: { enterprising: 2, research: 2, creative: 1 } }
+    ]
+  },
+  {
+    title: "How do you usually react when someone suggests a career option?",
+    copy: "A counselor listens for whether the student needs evidence, reassurance, exposure, or permission to explore.",
+    options: [
+      { tag: "Research", label: "I immediately look up what the career actually involves", copy: "You want facts, tasks, and real examples before judging it.", scores: { research: 3, analytical: 2 } },
+      { tag: "Discuss", label: "I want to talk it through with someone I trust", copy: "You process choices through conversation and reflection.", scores: { social: 3, research: 1 } },
+      { tag: "Try", label: "I want to test it through a small activity first", copy: "You trust experience more than description.", scores: { technical: 2, creative: 1, analytical: 1 } },
+      { tag: "Compare", label: "I compare it with other options and long-term outcomes", copy: "You need tradeoffs, flexibility, and future clarity.", scores: { analytical: 3, enterprising: 1 } }
+    ]
+  },
+  {
+    title: "Which academic choice feels most important to get right?",
+    copy: "This helps the counseling flow focus on the decision that matters most to the student.",
+    options: [
+      { tag: "Stream", label: "Choosing the right stream or subject combination", copy: "You need a clear bridge from school subjects to career families.", scores: { analytical: 2, research: 2 } },
+      { tag: "Course", label: "Choosing the right degree or certification", copy: "You need pathway details, eligibility, and course comparisons.", scores: { research: 3, analytical: 1 } },
+      { tag: "Skills", label: "Knowing which skills to build outside school", copy: "You want a practical portfolio and skill roadmap.", scores: { technical: 2, creative: 1, enterprising: 1 } },
+      { tag: "Backup", label: "Keeping backup options open without losing focus", copy: "You want flexible planning and risk management.", scores: { enterprising: 2, analytical: 2 } }
+    ]
+  },
+  {
+    title: "What kind of career role sounds most satisfying day to day?",
+    copy: "Daily role preference often matters more than the title of a career.",
+    options: [
+      { tag: "Specialist", label: "Solving expert problems with deep knowledge", copy: "You like mastery, depth, and precise thinking.", scores: { research: 3, technical: 2 } },
+      { tag: "Advisor", label: "Guiding people through choices or challenges", copy: "You like listening, explaining, and supporting decisions.", scores: { social: 3, analytical: 1 } },
+      { tag: "Maker", label: "Creating products, visuals, systems, or content", copy: "You like producing visible work from ideas.", scores: { creative: 3, technical: 1 } },
+      { tag: "Organizer", label: "Managing goals, people, resources, and outcomes", copy: "You like ownership, coordination, and progress.", scores: { enterprising: 3, social: 1 } }
+    ]
+  },
+  {
+    title: "Which counseling report section would you read first?",
+    copy: "This reveals what the student considers most useful in guidance.",
+    options: [
+      { tag: "Matches", label: "My top career matches and why they fit", copy: "You want personalized interpretation and confidence.", scores: { analytical: 2, research: 1, social: 1 } },
+      { tag: "Subjects", label: "Recommended subjects, streams, and courses", copy: "You want academic planning tied to career options.", scores: { research: 3, analytical: 1 } },
+      { tag: "Skills", label: "Skills and projects to build my profile", copy: "You want action steps that prove interest and ability.", scores: { technical: 2, creative: 2 } },
+      { tag: "Conversation", label: "Questions to discuss with parents or a counselor", copy: "You want support making the choice with others.", scores: { social: 3, enterprising: 1 } }
+    ]
+  },
+  {
+    title: "What would you want your parent or guardian to understand?",
+    copy: "Career counseling often succeeds when the family understands the student's reasoning.",
+    options: [
+      { tag: "Interest", label: "Why a particular field genuinely interests me", copy: "You want your motivation to be heard clearly.", scores: { creative: 1, social: 3 } },
+      { tag: "Evidence", label: "The data and future scope behind my option", copy: "You want facts to support the discussion.", scores: { analytical: 3, research: 2 } },
+      { tag: "Plan", label: "The exact steps I will take to prepare", copy: "You want to show responsibility and structure.", scores: { enterprising: 2, technical: 2 } },
+      { tag: "Fit", label: "How my strengths match the career path", copy: "You want the decision to feel personal and realistic.", scores: { social: 2, analytical: 2 } }
+    ]
+  },
+  {
+    title: "Which sign would tell you a career path is worth exploring deeper?",
+    copy: "This helps the app recommend the next experiment after the assessment.",
+    options: [
+      { tag: "Curiosity", label: "I keep wanting to learn more about the field", copy: "You notice sustained curiosity and questions.", scores: { research: 3, creative: 1 } },
+      { tag: "Flow", label: "I lose track of time while doing related work", copy: "You notice energy during practice and projects.", scores: { technical: 2, creative: 2 } },
+      { tag: "People", label: "The role lets me help or influence people", copy: "You notice connection, communication, and service.", scores: { social: 3, enterprising: 1 } },
+      { tag: "Progress", label: "I can see a realistic path to grow in it", copy: "You notice milestones, opportunity, and momentum.", scores: { enterprising: 3, analytical: 1 } }
+    ]
+  }
+];
+
+let QUESTIONS = createQuestionSet();
+
+function shuffled(items) {
+  const copy = items.slice();
+  for (let i = copy.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+function cloneQuestion(question) {
+  return {
+    ...question,
+    options: shuffled(question.options).map(option => ({
+      ...option,
+      scores: { ...option.scores }
+    }))
+  };
+}
+
+function createQuestionSet() {
+  return shuffled(CAREER_COUNSELING_QUESTION_BANK).slice(0, QUESTION_COUNT).map(cloneQuestion);
+}
+
+function refreshAssessment() {
+  QUESTIONS = createQuestionSet();
+  state.questionIndex = 0;
+  state.answers = Array(QUESTIONS.length).fill(null);
+}
+
+const CAREERS = [
+  {
+    title: "AI Product Designer",
+    summary: "Designs AI-powered tools by blending user research, product thinking, and prototyping.",
+    weights: { creative: 3, technical: 2, social: 2, analytical: 1, enterprising: 2, research: 1 },
+    skills: ["UX research", "Prototyping", "AI literacy"],
+    next: ["Interview three students about a career decision", "Sketch a chatbot flow for one problem", "Build a clickable prototype in one week"],
+    color: "#6246c7",
+    bg: "#eeeafe"
+  },
+  {
+    title: "Data Scientist",
+    summary: "Turns data into predictions, explanations, and decisions for business or research teams.",
+    weights: { analytical: 3, technical: 3, research: 2, creative: 1, social: 1, enterprising: 1 },
+    skills: ["Statistics", "Python", "Data storytelling"],
+    next: ["Analyze a public dataset", "Write a one-page insight report", "Practice charts that explain cause and trend"],
+    color: "#0f9f8f",
+    bg: "#e4f7f4"
+  },
+  {
+    title: "UX Researcher",
+    summary: "Studies how people behave, then helps teams make products easier and more meaningful.",
+    weights: { social: 3, research: 3, analytical: 2, creative: 2, technical: 1, enterprising: 1 },
+    skills: ["Interviewing", "Synthesis", "Behavior mapping"],
+    next: ["Run five short interviews", "Cluster findings into themes", "Present one product recommendation"],
+    color: "#d58900",
+    bg: "#fff5dd"
+  },
+  {
+    title: "Sustainability Analyst",
+    summary: "Uses data, policy, and systems thinking to reduce waste and improve long-term outcomes.",
+    weights: { research: 3, analytical: 3, enterprising: 2, social: 1, technical: 1, creative: 1 },
+    skills: ["Systems mapping", "Policy analysis", "Measurement"],
+    next: ["Map one school resource flow", "Measure waste or energy for a week", "Propose a low-cost improvement"],
+    color: "#2274a5",
+    bg: "#e9f4fb"
+  },
+  {
+    title: "Career Counsellor",
+    summary: "Helps students understand themselves, explore choices, and make confident decisions.",
+    weights: { social: 3, research: 2, analytical: 1, creative: 1, enterprising: 2, technical: 0 },
+    skills: ["Coaching", "Assessment", "Decision frameworks"],
+    next: ["Shadow a counselor session", "Create a question bank", "Practice a guidance conversation"],
+    color: "#bf476f",
+    bg: "#ffedf3"
+  }
+];
+
+const DASHBOARD_COPY = {
+  Student: {
+    title: "Student workspace",
+    lead: "A learner sees fit, readiness, and a practical plan they can actually start.",
+    metrics: [
+      ["92%", "top pathway confidence"],
+      ["3", "shortlisted careers"],
+      ["5 weeks", "starter roadmap"],
+      ["12", "skills to explore"]
+    ],
+    actionTitle: "Personal roadmap"
+  },
+  Parent: {
+    title: "Parent view",
+    lead: "Families get a plain-English explanation of the student profile and how to support it.",
+    metrics: [
+      ["High", "clarity of interest"],
+      ["2", "conversation themes"],
+      ["4", "support actions"],
+      ["1", "counselor follow-up"]
+    ],
+    actionTitle: "Family conversation guide"
+  },
+  Counsellor: {
+    title: "Counsellor console",
+    lead: "Counsellors see cohort needs, recommended interventions, and students needing follow-up.",
+    metrics: [
+      ["38", "students assessed"],
+      ["7", "needs follow-up"],
+      ["4", "dominant clusters"],
+      ["86%", "session readiness"]
+    ],
+    actionTitle: "Cohort focus"
+  },
+  Admin: {
+    title: "Admin command center",
+    lead: "Admins track adoption, completion, counselor load, and reporting outcomes.",
+    metrics: [
+      ["74%", "assessment completion"],
+      ["11", "active schools"],
+      ["128", "reports generated"],
+      ["9.1", "student NPS"]
+    ],
+    actionTitle: "Program health"
+  },
+  School: {
+    title: "School dashboard",
+    lead: "Schools understand grade-level readiness and align activities with emerging interests.",
+    metrics: [
+      ["5", "career clusters"],
+      ["61%", "STEM-adjacent interest"],
+      ["24", "project suggestions"],
+      ["3", "parent workshops"]
+    ],
+    actionTitle: "School action plan"
+  }
+};
+
+const state = {
+  role: "Student",
+  screen: "roles",
+  questionIndex: 0,
+  answers: Array(QUESTIONS.length).fill(null)
+};
+
+const roleGrid = document.getElementById("roleGrid");
+const optionGrid = document.getElementById("optionGrid");
+const toast = document.getElementById("toast");
+
+function iconSvg(type) {
+  const icons = {
+    student: '<path d="M12 3 3 8l9 5 9-5-9-5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M7 11v4.5c0 1.7 2.2 3 5 3s5-1.3 5-3V11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+    family: '<path d="M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM17 10a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" stroke="currentColor" stroke-width="2"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0M14.5 18.5c.7-2 2.2-3.3 4.1-3.3 1.1 0 2.1.4 2.9 1.2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+    counsellor: '<path d="M6 20v-2a4 4 0 0 1 4-4h1M15 12a4 4 0 1 0-6.6-3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M14 18.5 16.5 21l4.5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
+    admin: '<path d="M4 6h16M4 12h16M4 18h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M8 6v12M16 6v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+    school: '<path d="M4 20V9l8-5 8 5v11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 20v-7h6v7M7 10h.01M17 10h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'
+  };
+  return '<svg width="23" height="23" viewBox="0 0 24 24" fill="none" aria-hidden="true">' + icons[type] + '</svg>';
+}
+
+function showToast(message) {
+  toast.textContent = message;
+  toast.classList.add("show");
+  clearTimeout(showToast.timer);
+  showToast.timer = setTimeout(() => toast.classList.remove("show"), 2200);
+}
+
+function go(screen) {
+  state.screen = screen;
+  document.querySelectorAll(".screen").forEach(section => {
+    section.classList.toggle("active", section.id === "screen-" + screen);
+  });
+  document.querySelectorAll(".nav-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.go === screen);
+  });
+
+  if (screen === "assessment") renderQuestion();
+  if (screen === "results") renderResults();
+  if (screen === "dashboards") renderDashboard();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function renderRoles() {
+  roleGrid.innerHTML = ROLES.map(role => `
+    <button class="role-card ${state.role === role.id ? "selected" : ""}" data-role="${role.id}" style="--role-color:${role.color};--role-bg:${role.bg}">
+      <span class="role-icon">${iconSvg(role.icon)}</span>
+      <span class="role-title">
+        <span>${role.id}</span>
+        <span class="check-dot" aria-hidden="true">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+            <path d="m5 12 4 4L19 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      </span>
+      <span class="role-copy">${role.copy}</span>
+    </button>
+  `).join("");
+
+  roleGrid.querySelectorAll(".role-card").forEach(card => {
+    card.addEventListener("click", () => {
+      state.role = card.dataset.role;
+      renderRoles();
+      showToast(state.role + " workspace selected");
+    });
+  });
+}
+
+function currentQuestion() {
+  return QUESTIONS[state.questionIndex];
+}
+
+function renderQuestion() {
+  const q = currentQuestion();
+  const answered = state.answers.filter(answer => answer !== null).length;
+  const progress = Math.round(((state.questionIndex + 1) / QUESTIONS.length) * 100);
+  const selected = state.answers[state.questionIndex];
+
+  document.getElementById("profileRole").textContent = state.role || "Student";
+  document.getElementById("questionNumber").textContent = "Question " + (state.questionIndex + 1);
+  document.getElementById("questionTitle").textContent = q.title;
+  document.getElementById("questionCopy").textContent = q.copy;
+  document.getElementById("progressLabel").textContent = "Question " + (state.questionIndex + 1) + " of " + QUESTIONS.length;
+  document.getElementById("progressPercent").textContent = progress + "%";
+  document.getElementById("progressFill").style.width = progress + "%";
+  document.getElementById("answeredCount").textContent = answered + " / " + QUESTIONS.length;
+  document.getElementById("confidenceLabel").textContent = answered >= 8 ? "Strong" : answered >= 4 ? "Emerging" : "Building";
+  document.getElementById("profileSignal").textContent = getTopDimensionLabel() || "Pending";
+
+  optionGrid.innerHTML = q.options.map((option, index) => `
+    <button class="option-card ${selected === index ? "selected" : ""}" data-option="${index}">
+      <span class="option-tag">${option.tag}</span>
+      <span class="option-label">${option.label}</span>
+      <span class="option-copy">${option.copy}</span>
+    </button>
+  `).join("");
+
+  optionGrid.querySelectorAll(".option-card").forEach(card => {
+    card.addEventListener("click", () => {
+      state.answers[state.questionIndex] = Number(card.dataset.option);
+      renderQuestion();
+    });
+  });
+
+  const nextBtn = document.getElementById("nextQuestionBtn");
+  const backBtn = document.getElementById("backQuestionBtn");
+  nextBtn.disabled = selected === null;
+  document.getElementById("nextQuestionLabel").textContent = state.questionIndex === QUESTIONS.length - 1 ? "View matches" : "Next";
+  backBtn.disabled = state.questionIndex === 0;
+}
+
+function getScores() {
+  const scores = Object.fromEntries(DIMENSIONS.map(key => [key, 0]));
+
+  state.answers.forEach((answerIndex, questionIndex) => {
+    if (answerIndex === null) return;
+    const option = QUESTIONS[questionIndex].options[answerIndex];
+    Object.entries(option.scores).forEach(([key, value]) => {
+      scores[key] += value;
+    });
+  });
+
+  return scores;
+}
+
+function getTopDimensionLabel() {
+  const scores = getScores();
+  const top = Object.entries(scores).sort((a, b) => b[1] - a[1])[0];
+  if (!top || top[1] === 0) return "";
+  return top[0].charAt(0).toUpperCase() + top[0].slice(1);
+}
+
+function careerMatches() {
+  const scores = getScores();
+  const hasAnswers = state.answers.some(answer => answer !== null);
+  const workingScores = hasAnswers ? scores : { analytical: 17, creative: 16, technical: 18, social: 13, enterprising: 13, research: 11 };
+  const maxDimensionScore = Math.max(QUESTIONS.length * 3, 1);
+
+  return CAREERS.map(career => {
+    let dot = 0;
+    let max = 0;
+    DIMENSIONS.forEach(key => {
+      dot += (workingScores[key] || 0) * (career.weights[key] || 0);
+      max += maxDimensionScore * (career.weights[key] || 0);
+    });
+    const fit = Math.max(62, Math.min(98, Math.round((dot / max) * 100 + 48)));
+    return { ...career, fit };
+  }).sort((a, b) => b.fit - a.fit);
+}
+
+function renderSkillBars(matches) {
+  const scores = getScores();
+  const hasAnswers = state.answers.some(answer => answer !== null);
+  const workingScores = hasAnswers ? scores : { analytical: 17, creative: 16, technical: 18, social: 13, enterprising: 13, research: 11 };
+  const maxDimensionScore = Math.max(QUESTIONS.length * 3, 1);
+  const colors = {
+    analytical: "#6246c7",
+    creative: "#bf476f",
+    technical: "#0f9f8f",
+    social: "#d58900",
+    enterprising: "#2274a5",
+    research: "#5b6f2a"
+  };
+
+  document.getElementById("skillBars").innerHTML = DIMENSIONS.map(key => {
+    const value = Math.min(100, Math.round(((workingScores[key] || 0) / maxDimensionScore) * 100));
+    return `
+      <div class="bar-row">
+        <div class="bar-top"><span>${key.charAt(0).toUpperCase() + key.slice(1)}</span><span>${value}%</span></div>
+        <div class="bar-track"><div class="bar-fill" style="width:${value}%;--bar-color:${colors[key]}"></div></div>
+      </div>
+    `;
+  }).join("");
+
+  const top = matches[0];
+  document.getElementById("topMatchTitle").textContent = top.title;
+  document.getElementById("topMatchPill").textContent = top.skills[0];
+  document.getElementById("scoreValue").textContent = top.fit;
+  document.getElementById("scoreCircle").style.setProperty("--score-deg", Math.round((top.fit / 100) * 360) + "deg");
+}
+
+function renderResults() {
+  const matches = careerMatches();
+  renderSkillBars(matches);
+
+  document.getElementById("matchList").innerHTML = matches.slice(0, 3).map((match, index) => `
+    <article class="match-card">
+      <div class="match-rank" style="--rank-color:${match.color};--rank-bg:${match.bg}">#${index + 1}</div>
+      <div>
+        <div class="match-title-row">
+          <strong>${match.title}</strong>
+          <span class="pill">${match.fit}% fit</span>
+        </div>
+        <p>${match.summary}</p>
+        <div class="next-steps">
+          ${match.next.map((step, stepIndex) => `
+            <div class="step-item">
+              <span class="step-num">${stepIndex + 1}</span>
+              <span><strong>${match.skills[stepIndex]}</strong><span>${step}</span></span>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+    </article>
+  `).join("");
+}
+
+function renderDashboard() {
+  const role = DASHBOARD_COPY[state.role] ? state.role : "Student";
+  const copy = DASHBOARD_COPY[role];
+  const matches = careerMatches();
+  const topCareer = matches[0];
+
+  document.getElementById("dashboardTitle").textContent = copy.title;
+  document.getElementById("dashboardLead").textContent = copy.lead;
+  document.getElementById("dashboardRoleTitle").textContent = copy.title;
+  document.getElementById("dashboardRolePill").textContent = role;
+  document.getElementById("dashboardActionTitle").textContent = copy.actionTitle;
+
+  document.getElementById("metricGrid").innerHTML = copy.metrics.map(item => `
+    <div class="metric">
+      <strong>${item[0]}</strong>
+      <span>${item[1]}</span>
+    </div>
+  `).join("");
+
+  if (role === "Student" || role === "Parent") {
+    document.getElementById("dashboardBody").innerHTML = `
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-dot">1</div>
+          <div class="timeline-copy"><strong>${topCareer.title}</strong><span>Use the top match as the first exploration theme, not a final decision.</span></div>
+        </div>
+        ${topCareer.next.map((step, index) => `
+          <div class="timeline-item">
+            <div class="timeline-dot">${index + 2}</div>
+            <div class="timeline-copy"><strong>${topCareer.skills[index]}</strong><span>${step}</span></div>
+          </div>
+        `).join("")}
+      </div>
+    `;
+    return;
+  }
+
+  const cohort = [
+    ["AI and data", 76, "#6246c7"],
+    ["Design and media", 58, "#bf476f"],
+    ["Life sciences", 49, "#0f9f8f"],
+    ["Entrepreneurship", 43, "#d58900"],
+    ["Public impact", 37, "#2274a5"]
+  ];
+
+  document.getElementById("dashboardBody").innerHTML = `
+    <div class="cohort-list">
+      ${cohort.map(row => `
+        <div class="cohort-item">
+          <div class="cohort-name">${row[0]}</div>
+          <div class="cohort-track"><div class="cohort-fill" style="width:${row[1]}%;--cohort-color:${row[2]}"></div></div>
+          <div class="cohort-value">${row[1]}%</div>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+function loadSampleProfile() {
+  refreshAssessment();
+  state.answers = QUESTIONS.map((question, index) => index === 2 ? 1 : 0);
+  state.questionIndex = QUESTIONS.length - 1;
+  showToast("Sample student profile loaded");
+  renderResults();
+}
+
+function resetDemo() {
+  state.role = "Student";
+  refreshAssessment();
+  renderRoles();
+  go("roles");
+  showToast("Demo reset");
+}
+
+document.querySelectorAll(".nav-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    if (btn.dataset.go === "assessment") {
+      refreshAssessment();
+      showToast("New questions generated");
+    }
+    go(btn.dataset.go);
+  });
+});
+
+document.getElementById("continueRoleBtn").addEventListener("click", () => {
+  if (state.role === "Student") {
+    refreshAssessment();
+    showToast("Fresh assessment questions generated");
+    go("assessment");
+  } else {
+    go("dashboards");
+  }
+});
+
+document.getElementById("nextQuestionBtn").addEventListener("click", () => {
+  if (state.answers[state.questionIndex] === null) return;
+  if (state.questionIndex === QUESTIONS.length - 1) {
+    go("results");
+    return;
+  }
+  state.questionIndex += 1;
+  renderQuestion();
+});
+
+document.getElementById("backQuestionBtn").addEventListener("click", () => {
+  if (state.questionIndex === 0) return;
+  state.questionIndex -= 1;
+  renderQuestion();
+});
+
+document.getElementById("retakeBtn").addEventListener("click", () => {
+  refreshAssessment();
+  showToast("New question set generated");
+  go("assessment");
+});
+
+document.getElementById("openDashboardBtn").addEventListener("click", () => go("dashboards"));
+document.getElementById("switchRoleBtn").addEventListener("click", () => go("roles"));
+document.getElementById("demoAnswersBtn").addEventListener("click", loadSampleProfile);
+document.getElementById("resetBtn").addEventListener("click", resetDemo);
+document.getElementById("fullscreenBtn").addEventListener("click", () => {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen?.();
+  } else {
+    document.exitFullscreen?.();
+  }
+});
+
+renderRoles();
+renderQuestion();
+renderResults();
+renderDashboard();
+</script>
+</body>
+</html>

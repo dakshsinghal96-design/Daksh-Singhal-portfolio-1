@@ -1,0 +1,2203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Obliq AI — Career Intelligence Platform (Prototype)</title>
+<style>
+/* ============ OBLIQ AI · MODERN DESIGN SYSTEM ============ */
+:root{
+  /* ink / brand (kept as --navy* so inline styles still resolve) */
+  --navy:#232653;--navy-2:#34376f;--navy-3:#6C5CE7;
+  --ink:#14152e;
+  /* accent / CTA (kept as --gold* so inline styles still resolve) */
+  --gold:#FF6B4A;--gold-soft:#ff9173;--gold-bg:#fff0eb;
+  /* surfaces */
+  --bg:#eef0f9;--surface:#ffffff;--surface-2:#f6f7fc;
+  --border:#e9eaf5;--border-2:#dcdef0;
+  /* text */
+  --text:#1c1e3a;--text-muted:#5d6080;--text-soft:#9a9db8;
+  /* status */
+  --success:#13b981;--danger:#f0506b;--info:#6C5CE7;
+  /* gradient stops */
+  --grad-1:#6C5CE7;--grad-2:#8B7BFF;--grad-3:#22C7E8;--grad-coral:#FF6B4A;
+  /* shadows + radius */
+  --shadow-sm:0 2px 8px rgba(40,42,90,.06);
+  --shadow:0 10px 30px -8px rgba(40,42,90,.16);
+  --shadow-lg:0 28px 60px -16px rgba(58,52,140,.32);
+  --glow:0 8px 28px -6px rgba(108,92,231,.5);
+  --glow-coral:0 10px 30px -6px rgba(255,107,74,.55);
+  --r:14px;--r-lg:22px;--r-xl:30px;
+  --grad-brand:linear-gradient(135deg,var(--grad-1),var(--grad-3));
+  --grad-cta:linear-gradient(135deg,#FF7D4D,#FF5C7A);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,Roboto,sans-serif;
+  background:var(--bg);color:var(--text);font-size:14.5px;line-height:1.6;
+  -webkit-font-smoothing:antialiased;letter-spacing:.005em;position:relative;overflow-x:hidden;
+}
+/* animated atmospheric background */
+body::before{
+  content:"";position:fixed;inset:-40%;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(38% 38% at 20% 22%,rgba(108,92,231,.30),transparent 70%),
+    radial-gradient(34% 34% at 82% 18%,rgba(34,199,232,.26),transparent 70%),
+    radial-gradient(40% 40% at 72% 88%,rgba(255,107,74,.22),transparent 70%),
+    radial-gradient(30% 30% at 12% 86%,rgba(139,123,255,.22),transparent 70%);
+  filter:blur(20px);animation:bgDrift 34s ease-in-out infinite alternate;
+}
+@keyframes bgDrift{
+  0%{transform:rotate(0deg) scale(1)}
+  50%{transform:rotate(8deg) scale(1.12)}
+  100%{transform:rotate(-6deg) scale(1.05)}
+}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font-family:inherit;font-size:14px}
+a{color:var(--navy-3);text-decoration:none;cursor:pointer;font-weight:600;transition:color .15s}
+a:hover{color:var(--gold)}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:#c9cbe4;border-radius:99px;border:3px solid transparent;background-clip:padding-box}
+::-webkit-scrollbar-thumb:hover{background:#b3b5d6;background-clip:padding-box;border:3px solid transparent}
+
+.app{min-height:100vh;display:flex;flex-direction:column;position:relative;z-index:1}
+
+.proto-banner{
+  background:linear-gradient(90deg,var(--grad-1),var(--grad-3),var(--grad-coral),var(--grad-1));
+  background-size:300% 100%;animation:bannerSlide 12s linear infinite;
+  color:#fff;text-align:center;font-size:10px;font-weight:800;letter-spacing:.22em;
+  padding:6px 8px;text-transform:uppercase;
+}
+@keyframes bannerSlide{to{background-position:300% 0}}
+
+.topbar{
+  position:sticky;top:0;z-index:50;
+  background:rgba(255,255,255,.78);backdrop-filter:blur(18px) saturate(180%);
+  -webkit-backdrop-filter:blur(18px) saturate(180%);
+  border-bottom:1px solid rgba(220,222,240,.8);
+  padding:12px 22px;display:flex;align-items:center;gap:14px;
+}
+.topbar .brand{display:flex;align-items:center;gap:11px;font-weight:800;letter-spacing:.14em;font-size:13px;color:var(--ink)}
+.brand-mark{
+  width:36px;height:36px;background:var(--grad-brand);color:#fff;
+  display:flex;align-items:center;justify-content:center;border-radius:12px;
+  font-weight:800;font-size:18px;box-shadow:var(--glow);
+  animation:floatY 4.5s ease-in-out infinite;
+}
+@keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.topbar .sub{color:var(--text-soft);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:700}
+.topbar .spacer{flex:1}
+.topbar .role-chip{
+  background:var(--grad-brand);color:#fff;padding:6px 13px;border-radius:99px;
+  font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;box-shadow:var(--glow);
+}
+.topbar button.tb-btn{
+  color:var(--text-muted);padding:8px 13px;border-radius:10px;font-size:12px;font-weight:600;
+  transition:all .2s cubic-bezier(.34,1.4,.5,1);
+}
+.topbar button.tb-btn:hover{background:var(--surface-2);color:var(--navy-3);transform:translateY(-2px)}
+
+.main{flex:1;width:100%;max-width:none;margin:0;padding:26px 32px;position:relative}
+@media(max-width:640px){.main{padding:14px}}
+
+.screen{display:none}
+.screen.active{display:block;animation:screenIn .5s cubic-bezier(.22,1,.36,1)}
+@keyframes screenIn{from{opacity:0;transform:translateY(22px) scale(.99)}to{opacity:1;transform:none}}
+
+.card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);
+  padding:26px;box-shadow:var(--shadow-sm);position:relative;
+}
+.card-tight{padding:17px;border-radius:16px}
+.card-pad-lg{padding:38px}
+.section-num{
+  font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;font-weight:800;margin-bottom:9px;
+  background:var(--grad-brand);-webkit-background-clip:text;background-clip:text;color:transparent;
+}
+h1.title{
+  font-size:31px;line-height:1.16;color:var(--ink);margin-bottom:7px;
+  font-weight:800;letter-spacing:-.025em;
+}
+h1.title::after{
+  content:"";display:block;width:54px;height:5px;border-radius:99px;
+  background:var(--grad-cta);margin-top:13px;margin-bottom:16px;
+}
+h2{font-size:18.5px;color:var(--ink);margin:18px 0 10px;font-weight:700;letter-spacing:-.015em}
+h3{font-size:14.5px;color:var(--navy);margin:10px 0 6px;font-weight:700}
+.lead{color:var(--text-muted);font-size:14.5px;line-height:1.62;margin-bottom:16px;max-width:840px}
+p{margin-bottom:10px}
+.muted{color:var(--text-muted)}
+.small{font-size:12px}
+.tiny{font-size:11px}
+.gold{color:var(--gold)}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:12px 22px;border-radius:13px;font-size:13px;font-weight:700;letter-spacing:.01em;
+  transition:transform .2s cubic-bezier(.34,1.45,.5,1),box-shadow .2s,filter .2s;
+  border:1px solid transparent;line-height:1.2;position:relative;overflow:hidden;
+}
+.btn::after{
+  content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent 30%,rgba(255,255,255,.4),transparent 70%);
+  transform:translateX(-120%);transition:transform .55s ease;
+}
+.btn:hover::after{transform:translateX(120%)}
+.btn:hover{transform:translateY(-3px) scale(1.025)}
+.btn:active{transform:translateY(0) scale(.96)}
+.btn-primary{background:var(--grad-brand);color:#fff;box-shadow:0 6px 18px -6px rgba(108,92,231,.55)}
+.btn-primary:hover{box-shadow:var(--glow)}
+.btn-gold{background:var(--grad-cta);color:#fff;box-shadow:0 6px 18px -6px rgba(255,107,74,.55)}
+.btn-gold:hover{box-shadow:var(--glow-coral)}
+.btn-ghost{background:var(--surface);color:var(--navy-3);border:1px solid var(--border-2)}
+.btn-ghost:hover{background:var(--surface-2);border-color:var(--navy-3);box-shadow:var(--shadow-sm)}
+.btn-danger{background:#fff;color:var(--danger);border:1px solid #f5c6cf}
+.btn-danger:hover{background:#fef1f3}
+.btn-sm{padding:9px 15px;font-size:12px;border-radius:11px}
+.btn-block{display:flex;width:100%}
+.btn-row{display:flex;gap:11px;flex-wrap:wrap;margin-top:18px}
+
+.field{margin-bottom:14px}
+.field label{display:block;font-size:11.5px;color:var(--text-muted);margin-bottom:6px;font-weight:700;letter-spacing:.02em}
+.field input,.field select,.field textarea{
+  width:100%;padding:12px 14px;border:1.5px solid var(--border-2);border-radius:12px;
+  background:var(--surface-2);color:var(--text);transition:border-color .18s,box-shadow .18s,background .18s;
+}
+.field input:focus,.field select:focus,.field textarea:focus{
+  outline:none;border-color:var(--navy-3);background:#fff;box-shadow:0 0 0 4px rgba(108,92,231,.13);
+}
+
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+@media(max-width:520px){.field-row{grid-template-columns:1fr}}
+
+.grid{display:grid;gap:15px}
+.grid-2{grid-template-columns:repeat(2,1fr)}
+.grid-3{grid-template-columns:repeat(3,1fr)}
+.grid-4{grid-template-columns:repeat(4,1fr)}
+@media(max-width:900px){.grid-3,.grid-4{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.grid-2,.grid-3,.grid-4{grid-template-columns:1fr}}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+.pop-in{animation:popIn .5s cubic-bezier(.34,1.4,.5,1) both}
+@keyframes popIn{from{opacity:0;transform:scale(.8) translateY(8px)}to{opacity:1;transform:none}}
+.fade-up{animation:fadeUp .5s cubic-bezier(.22,1,.36,1) both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+.splash{min-height:80vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:46px 22px}
+.splash.card{background:rgba(255,255,255,.7);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.6);box-shadow:var(--shadow-lg)}
+.splash-logo{
+  width:92px;height:92px;background:var(--grad-brand);color:#fff;border-radius:26px;
+  display:flex;align-items:center;justify-content:center;font-size:44px;font-weight:800;
+  margin-bottom:26px;box-shadow:var(--glow);animation:floatY 4.5s ease-in-out infinite;
+}
+.splash h1{
+  font-size:42px;letter-spacing:-.03em;margin-bottom:10px;font-weight:800;
+  background:linear-gradient(120deg,var(--grad-1),var(--grad-coral));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.splash .tag{color:var(--navy-3);letter-spacing:.36em;font-size:11px;font-weight:800;margin-bottom:22px;text-transform:uppercase}
+.compass{
+  width:132px;height:132px;border-radius:50%;position:relative;margin:26px 0;
+  display:flex;align-items:center;justify-content:center;
+  background:conic-gradient(from 0deg,var(--grad-1),var(--grad-3),var(--grad-coral),var(--grad-1));
+  box-shadow:var(--glow);animation:floatY 5s ease-in-out infinite;
+}
+.compass::after{content:"";position:absolute;inset:6px;border-radius:50%;background:#fff}
+.compass::before{
+  content:"";position:absolute;width:7px;height:56px;border-radius:99px;z-index:1;
+  background:linear-gradient(to bottom,var(--gold) 50%,var(--navy-3) 50%);
+  top:14px;left:50%;transform:translateX(-50%);transform-origin:bottom;
+  animation:spin 7s linear infinite;
+}
+@keyframes spin{from{transform:translateX(-50%) rotate(0)}to{transform:translateX(-50%) rotate(360deg)}}
+
+.role-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:15px;margin-top:20px}
+.role-card{
+  background:var(--surface);border:1.5px solid var(--border);border-radius:18px;padding:24px 18px;
+  text-align:center;cursor:pointer;
+  transition:transform .25s cubic-bezier(.34,1.4,.5,1),box-shadow .25s,border-color .25s;
+}
+.role-card:hover{border-color:var(--navy-3);transform:translateY(-7px);box-shadow:var(--shadow-lg)}
+.role-card .icon{
+  width:52px;height:52px;background:var(--grad-brand);color:#fff;border-radius:15px;
+  display:flex;align-items:center;justify-content:center;font-size:18px;margin:0 auto 13px;font-weight:800;
+  box-shadow:0 6px 16px -6px rgba(108,92,231,.5);
+}
+.role-card.selected{border-color:var(--navy-3);background:linear-gradient(180deg,#fff,#f4f2ff);box-shadow:0 0 0 4px rgba(108,92,231,.16),var(--shadow)}
+.role-card .role-name{font-weight:700;color:var(--ink);font-size:14.5px}
+.role-card .role-desc{color:var(--text-muted);font-size:11.5px;margin-top:4px}
+
+.progress{height:10px;background:var(--border);border-radius:99px;overflow:hidden;margin:9px 0}
+.progress-bar{
+  height:100%;background:var(--grad-cta);background-size:200% 100%;border-radius:99px;
+  transition:width .7s cubic-bezier(.3,.9,.3,1);position:relative;animation:flow 3s linear infinite;
+}
+@keyframes flow{to{background-position:200% 0}}
+.progress-bar::after{
+  content:"";position:absolute;right:0;top:50%;transform:translateY(-50%);
+  width:14px;height:14px;border-radius:50%;background:#fff;border:3px solid var(--gold);
+  box-shadow:0 0 0 0 rgba(255,107,74,.6);animation:headPulse 1.7s infinite;
+}
+@keyframes headPulse{0%{box-shadow:0 0 0 0 rgba(255,107,74,.6)}70%{box-shadow:0 0 0 12px rgba(255,107,74,0)}100%{box-shadow:0 0 0 0 rgba(255,107,74,0)}}
+.steps{display:flex;align-items:center;gap:5px;margin:10px 0;flex-wrap:wrap}
+.step{font-size:10px;padding:4px 11px;border-radius:99px;background:var(--surface-2);color:var(--text-soft);font-weight:700;border:1px solid var(--border)}
+.step.active{background:var(--grad-brand);color:#fff;border-color:transparent;box-shadow:var(--glow)}
+.step.done{background:var(--gold-bg);color:var(--gold);border-color:transparent}
+
+.chip{
+  display:inline-block;padding:7px 14px;border-radius:99px;background:var(--surface-2);
+  color:var(--text);font-size:12px;border:1.5px solid var(--border);cursor:pointer;
+  transition:all .2s cubic-bezier(.34,1.4,.5,1);margin:3px;font-weight:600;
+}
+.chip:hover{border-color:var(--navy-3);transform:translateY(-2px);color:var(--navy-3)}
+.chip.active,.chip.gold{background:var(--grad-cta);color:#fff;border-color:transparent;font-weight:700;box-shadow:0 5px 14px -5px rgba(255,107,74,.6)}
+.badge{display:inline-block;padding:4px 11px;font-size:9.5px;border-radius:99px;font-weight:800;letter-spacing:.05em;text-transform:uppercase}
+.badge-gold{background:var(--gold-bg);color:var(--gold)}
+.badge-navy{background:#eeecff;color:var(--navy-3)}
+.badge-green{background:#dcf6ec;color:#0c9b6c}
+.badge-red{background:#fde6ea;color:#d63a55}
+.badge-blue{background:#e3f7fb;color:#1494ad}
+
+.interest-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(126px,1fr));gap:12px;margin:14px 0}
+.interest-card{
+  background:var(--surface);border:2px solid var(--border);border-radius:16px;padding:18px 10px;
+  text-align:center;cursor:pointer;user-select:none;
+  transition:transform .2s cubic-bezier(.34,1.45,.5,1),box-shadow .2s,border-color .2s,background .2s;
+}
+.interest-card:hover{border-color:var(--navy-3);transform:translateY(-6px) scale(1.03);box-shadow:var(--shadow)}
+.interest-card.selected{background:var(--grad-brand);color:#fff;border-color:transparent;box-shadow:var(--glow)}
+.interest-card .ic-icon{
+  font-size:16px;margin-bottom:7px;display:inline-flex;width:38px;height:38px;border-radius:11px;
+  align-items:center;justify-content:center;background:rgba(108,92,231,.12);color:var(--navy-3);font-weight:800;
+}
+.interest-card.selected .ic-icon{background:rgba(255,255,255,.22);color:#fff}
+.interest-card .ic-label{font-size:12px;font-weight:700;display:block}
+
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px;margin:12px 0;border-radius:14px;overflow:hidden;box-shadow:var(--shadow-sm)}
+table th{background:var(--grad-brand);color:#fff;text-align:left;padding:11px 12px;font-weight:700;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase}
+table td{padding:11px 12px;border-bottom:1px solid var(--border);background:#fff}
+table tbody tr:nth-child(even) td{background:var(--surface-2)}
+table tbody tr:last-child td{border-bottom:none}
+
+.stat{
+  background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;
+  transition:transform .22s cubic-bezier(.34,1.4,.5,1),box-shadow .22s;position:relative;overflow:hidden;
+}
+.stat::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:var(--grad-cta)}
+.stat:hover{transform:translateY(-5px);box-shadow:var(--shadow)}
+.stat .label{font-size:10px;letter-spacing:.14em;color:var(--text-soft);text-transform:uppercase;font-weight:800}
+.stat .value{font-size:28px;color:var(--ink);margin-top:7px;line-height:1.1;font-weight:800;letter-spacing:-.02em}
+.stat .delta{font-size:11px;color:var(--success);margin-top:5px;font-weight:700}
+
+.career-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:18px;
+  display:flex;flex-direction:column;gap:8px;position:relative;overflow:hidden;
+  transition:transform .22s cubic-bezier(.34,1.4,.5,1),box-shadow .22s;
+}
+.career-card::before{content:"";position:absolute;top:0;left:0;width:5px;height:100%;background:var(--grad-cta)}
+.career-card:hover{transform:translateY(-6px);box-shadow:var(--shadow-lg)}
+.career-card h3{margin:0;color:var(--ink);font-size:15px}
+.fit-bar{height:9px;background:var(--border);border-radius:99px;overflow:hidden}
+.fit-bar-inner{height:100%;background:var(--grad-cta);border-radius:99px;width:0;transition:width 1.1s cubic-bezier(.3,.9,.3,1)}
+
+.tabs{display:flex;gap:6px;margin-bottom:16px;overflow-x:auto;padding:5px;background:var(--surface-2);border-radius:14px}
+.tab{
+  padding:9px 16px;font-size:12.5px;color:var(--text-muted);border-radius:10px;cursor:pointer;
+  font-weight:600;white-space:nowrap;transition:all .2s cubic-bezier(.34,1.4,.5,1);
+}
+.tab:hover{color:var(--navy-3)}
+.tab.active{background:#fff;color:var(--navy-3);font-weight:700;box-shadow:var(--shadow-sm)}
+
+.dash{display:grid;grid-template-columns:262px 1fr;gap:22px}
+@media(max-width:820px){.dash{grid-template-columns:1fr}.dash .side{order:2}}
+.side{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px;height:fit-content;position:sticky;top:96px;box-shadow:var(--shadow-sm)}
+@media(max-width:820px){.side{position:static}}
+.side-link{
+  display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:12px;
+  color:var(--text-muted);cursor:pointer;font-size:13px;font-weight:600;
+  transition:all .2s cubic-bezier(.34,1.4,.5,1);
+}
+.side-link:hover{background:var(--surface-2);color:var(--navy-3);transform:translateX(4px)}
+.side-link.active{background:var(--grad-brand);color:#fff;box-shadow:var(--glow)}
+.side-link .icon{
+  width:24px;height:24px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:800;background:rgba(108,92,231,.12);color:var(--navy-3);
+}
+.side-link.active .icon{background:rgba(255,255,255,.22);color:#fff}
+
+.q-wrap{max-width:none;margin:0}
+.q-header{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--text-muted);margin-bottom:11px;font-weight:700}
+.q-text{font-size:23px;color:var(--ink);font-weight:800;margin:18px 0 22px;line-height:1.4;letter-spacing:-.02em}
+.option{
+  display:block;padding:16px 18px;border:2px solid var(--border-2);border-radius:14px;
+  background:var(--surface-2);margin-bottom:10px;cursor:pointer;font-size:15px;
+  transition:transform .18s cubic-bezier(.34,1.4,.5,1),border-color .18s,background .18s,box-shadow .18s;
+}
+.option:hover{border-color:var(--navy-3);background:#fff;transform:translateX(6px);box-shadow:var(--shadow-sm)}
+.option.selected{border-color:var(--navy-3);background:linear-gradient(180deg,#fff,#f4f2ff);font-weight:600;box-shadow:0 0 0 3px rgba(108,92,231,.14)}
+.rating-scale{display:flex;gap:7px;justify-content:space-between;margin:14px 0;flex-wrap:wrap}
+.rating-btn{
+  flex:1;min-width:44px;height:52px;border:2px solid var(--border-2);border-radius:13px;cursor:pointer;
+  background:var(--surface-2);font-weight:800;font-size:16px;color:var(--navy-3);
+  transition:transform .18s cubic-bezier(.34,1.5,.5,1),background .18s,border-color .18s;
+}
+.rating-btn:hover{border-color:var(--navy-3);transform:translateY(-3px) scale(1.05)}
+.rating-btn.selected{background:var(--grad-brand);color:#fff;border-color:transparent;box-shadow:var(--glow)}
+
+.callout{background:var(--gold-bg);border-left:4px solid var(--gold);padding:14px 16px;border-radius:0 12px 12px 0;margin:12px 0;font-size:13px;color:#b54d31}
+.callout-navy{background:#eeecff;border-left:4px solid var(--navy-3);padding:14px 16px;border-radius:0 12px 12px 0;margin:12px 0;font-size:13px;color:var(--navy)}
+.callout-warn{background:#fde6ea;border-left:4px solid var(--danger);padding:14px 16px;border-radius:0 12px 12px 0;margin:12px 0;font-size:13px;color:#b8334b}
+.disclaimer-pill{display:inline-flex;align-items:center;gap:6px;background:var(--gold-bg);color:var(--gold);padding:8px 15px;border-radius:99px;font-size:11.5px;border:1.5px solid var(--gold-soft);font-weight:700}
+
+.cookie-banner{
+  position:fixed;bottom:18px;left:14px;right:14px;max-width:600px;margin:0 auto;
+  background:rgba(28,30,58,.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  color:#fff;padding:16px 20px;border-radius:18px;box-shadow:var(--shadow-lg);
+  z-index:200;display:flex;gap:14px;align-items:center;font-size:12.5px;
+  animation:fadeUp .55s cubic-bezier(.22,1,.36,1) both;
+}
+.cookie-banner .ck-text{flex:1}
+@media(max-width:520px){.cookie-banner{flex-direction:column;align-items:stretch;text-align:center}}
+
+.chat-wrap{max-width:none;margin:0;display:flex;flex-direction:column;height:62vh;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-sm)}
+.chat-msgs{flex:1;overflow-y:auto;padding:18px;background:var(--surface-2)}
+.msg{margin-bottom:11px;display:flex;gap:8px;animation:fadeUp .4s cubic-bezier(.22,1,.36,1) both}
+.msg .bubble{max-width:78%;padding:12px 16px;border-radius:18px;font-size:13.5px;line-height:1.5}
+.msg.bot .bubble{background:#fff;border:1px solid var(--border);border-bottom-left-radius:5px;box-shadow:var(--shadow-sm)}
+.msg.user{justify-content:flex-end}
+.msg.user .bubble{background:var(--grad-brand);color:#fff;border-bottom-right-radius:5px;box-shadow:var(--glow)}
+.chat-input{display:flex;gap:9px;padding:13px;border-top:1px solid var(--border);background:#fff}
+.chat-input input{flex:1}
+.quick-prompts{display:flex;gap:7px;flex-wrap:wrap;padding:13px;background:#fff;border-top:1px solid var(--border)}
+.quick-prompts .chip{animation:popIn .45s cubic-bezier(.34,1.4,.5,1) both}
+
+.voice-screen{text-align:center;padding:42px 22px}
+.voice-orb{
+  width:148px;height:148px;border-radius:50%;
+  background:conic-gradient(from 30deg,var(--grad-1),var(--grad-3),var(--grad-coral),var(--grad-1));
+  margin:32px auto;display:flex;align-items:center;justify-content:center;color:#fff;
+  font-size:30px;font-weight:800;box-shadow:0 0 0 0 rgba(108,92,231,.5);
+  animation:pulse 2.6s infinite,floatY 5s ease-in-out infinite;
+}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(108,92,231,.5)}70%{box-shadow:0 0 0 32px rgba(108,92,231,0)}100%{box-shadow:0 0 0 0 rgba(108,92,231,0)}}
+
+.timeline{position:relative;padding-left:26px;margin:15px 0}
+.timeline::before{content:"";position:absolute;left:9px;top:4px;bottom:4px;width:3px;border-radius:99px;background:var(--grad-cta)}
+.timeline-item{
+  position:relative;margin-bottom:14px;background:var(--surface);padding:14px 16px;
+  border-radius:14px;border:1px solid var(--border);box-shadow:var(--shadow-sm);
+  animation:fadeUp .45s cubic-bezier(.22,1,.36,1) both;transition:transform .2s,box-shadow .2s;
+}
+.timeline-item:hover{transform:translateX(4px);box-shadow:var(--shadow)}
+.timeline-item::before{
+  content:"";position:absolute;left:-24px;top:16px;width:15px;height:15px;
+  background:var(--grad-cta);border-radius:50%;border:3px solid #fff;
+  box-shadow:0 0 0 3px rgba(255,107,74,.25);
+}
+
+.bar-chart{display:flex;flex-direction:column;gap:10px;margin:12px 0}
+.bar-row{display:flex;align-items:center;gap:11px}
+.bar-label{width:152px;font-size:12px;color:var(--text-muted);font-weight:600;text-align:right;flex-shrink:0}
+.bar-track{flex:1;height:22px;background:var(--border);border-radius:8px;overflow:hidden}
+.bar-fill{height:100%;background:var(--grad-brand);border-radius:8px;width:0;transition:width 1.1s cubic-bezier(.3,.9,.3,1)}
+.bar-val{width:44px;font-size:12px;font-weight:800;color:var(--navy-3)}
+.scorecard{background:var(--grad-brand);color:#fff;border-radius:var(--r-lg);padding:24px;display:flex;align-items:center;gap:20px;box-shadow:var(--glow)}
+.score-ring{width:90px;height:90px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:800;font-size:24px;color:#fff}
+.radar-wrap{display:flex;justify-content:center;margin:12px 0}
+.radar-poly{transition:all 1.1s cubic-bezier(.3,.9,.3,1)}
+.report-section{page-break-inside:avoid;margin-top:18px;border-top:1px solid var(--border);padding-top:14px;animation:fadeUp .45s cubic-bezier(.22,1,.36,1) both}
+.report-section:first-child{border-top:none}
+
+@media print{
+  body::before{display:none!important}
+  body *{visibility:hidden!important}
+  body.printing-report #screen-report,
+  body.printing-report #screen-report *{visibility:visible!important}
+  body.printing-report #screen-report{position:absolute;left:0;top:0;width:100%;display:block!important}
+  .topbar,.proto-banner,.cookie-banner,.no-print,.btn,.tabs,.side{display:none!important}
+  .main{max-width:none;padding:0}
+  .card{box-shadow:none;border-color:#bbb}
+  .scorecard,.bar-fill,.fit-bar-inner,.progress-bar,table th{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+
+.footer{padding:26px;text-align:center;font-size:11px;color:var(--text-soft);border-top:1px solid var(--border);margin-top:36px}
+.footer a{color:var(--navy-3);margin:0 6px}
+</style>
+</head>
+<body>
+<div class="app">
+
+<div class="proto-banner">Prototype / Demo Version — Not Production Ready</div>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-mark">O</div>
+    <div>
+      <div>OBLIQ AI</div>
+      <div class="sub">Career Intelligence Platform</div>
+    </div>
+  </div>
+  <div class="spacer"></div>
+  <span class="role-chip" id="roleChip" style="display:none"></span>
+  <button class="tb-btn no-print" onclick="toggleFullscreen()" id="fsBtn">Fullscreen</button>
+  <button class="tb-btn" onclick="go('splash')">Home</button>
+  <button class="tb-btn" onclick="go('privacy')">Privacy</button>
+  <button class="tb-btn no-print" onclick="resetDemo()">Reset</button>
+</div>
+
+<div class="main">
+
+<div id="screen-splash" class="screen active">
+  <div class="splash card card-pad-lg">
+    <div class="splash-logo">O</div>
+    <div class="tag">OBLIQ AI</div>
+    <h1>Career Intelligence Platform</h1>
+    <p class="lead" style="margin-top:8px">AI-assisted career guidance for students. Discover your interests, strengths, and the right future direction — without the pressure of an exam.</p>
+    <div class="compass"></div>
+    <div class="btn-row" style="justify-content:center">
+      <button class="btn btn-gold" onclick="go('welcome')">Begin Journey</button>
+    </div>
+    <div class="disclaimer-pill" style="margin-top:18px">This is AI-assisted career guidance, not a final decision or guarantee.</div>
+  </div>
+</div>
+
+<div id="screen-welcome" class="screen">
+  <div class="card card-pad-lg">
+    <div class="section-num">Welcome</div>
+    <h1 class="title">Let's understand your strengths, interests, and future possibilities</h1>
+    <p class="lead">Obliq AI provides clarity through an adaptive, AI-driven career assessment. Get matched with careers, streams, courses, and colleges that fit who you actually are — not just your marks.</p>
+    <div class="grid grid-3" style="margin-top:14px">
+      <div class="stat"><div class="label">Careers</div><div class="value">1000+</div><div class="delta">India + Abroad</div></div>
+      <div class="stat"><div class="label">Test Modes</div><div class="value">4</div><div class="delta">Quick to Deep</div></div>
+      <div class="stat"><div class="label">Report</div><div class="value">50+ pg</div><div class="delta">Visual + structured</div></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="go('role')">Get Started</button>
+      <button class="btn btn-ghost" onclick="go('privacy')">Privacy &amp; Terms</button>
+    </div>
+    <p class="tiny muted" style="margin-top:14px">Privacy note: We use your responses to generate guidance. You can export or delete your data anytime.</p>
+  </div>
+</div>
+
+<div id="screen-role" class="screen">
+  <div class="card">
+    <div class="section-num">Step 1 of 8</div>
+    <h1 class="title">Choose Your Role</h1>
+    <p class="lead">Select how you'll use the platform. Each role has a dedicated experience and dashboard.</p>
+    <div class="role-grid" id="roleGrid"></div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="go('welcome')">Back</button>
+      <button class="btn btn-primary" onclick="proceedFromRole()">Continue</button>
+    </div>
+  </div>
+</div>
+
+<div id="screen-login" class="screen">
+  <div class="card" style="max-width:460px;margin:30px auto">
+    <div class="section-num">Step 2 of 8</div>
+    <h1 class="title">Login / Register</h1>
+    <p class="muted small">Mock authentication for prototype demo only.</p>
+    <div class="tabs" style="margin-top:14px">
+      <div class="tab active" onclick="switchTab(this,'tab-login')">Login</div>
+      <div class="tab" onclick="switchTab(this,'tab-register')">Register</div>
+    </div>
+    <div id="tab-login">
+      <div class="field"><label>Email or Phone</label><input type="text" id="loginEmail" placeholder="you@example.com" value="demo@obliq.ai"></div>
+      <div class="field"><label>Password</label><input type="password" value="demo1234"></div>
+      <div class="row" style="justify-content:space-between"><label class="tiny"><input type="checkbox" checked> Remember me</label><a class="tiny">Forgot password?</a></div>
+      <button class="btn btn-primary btn-block" style="margin-top:14px" onclick="doLogin()">Login</button>
+    </div>
+    <div id="tab-register" style="display:none">
+      <div class="field"><label>Full Name</label><input type="text" placeholder="Your full name"></div>
+      <div class="field"><label>Email</label><input type="email" placeholder="you@example.com"></div>
+      <div class="field"><label>Phone (for OTP)</label><input type="tel" placeholder="+91 XXXXX XXXXX"></div>
+      <div class="field"><label>Password</label><input type="password" placeholder="Minimum 8 characters"></div>
+      <button class="btn btn-primary btn-block" style="margin-top:8px" onclick="doLogin()">Create Account</button>
+    </div>
+    <div class="callout-navy" style="margin-top:14px"><strong>Security:</strong> Designed with password hashing, MFA-ready structure, and session timeout concepts. <em>Mock — production-grade authentication required before launch.</em></div>
+  </div>
+</div>
+
+<div id="screen-language" class="screen">
+  <div class="card">
+    <div class="section-num">Step 3 of 8</div>
+    <h1 class="title">Which language feels comfortable for you?</h1>
+    <p class="lead">The app adapts its tone based on your preference. You can change this anytime.</p>
+    <div class="grid grid-3" style="margin-top:10px">
+      <div class="role-card" onclick="selectLang(this,'en')"><div class="icon">A</div><div class="role-name">English</div><div class="role-desc">Standard English tone</div></div>
+      <div class="role-card" onclick="selectLang(this,'hi-en')"><div class="icon">अ</div><div class="role-name">Hinglish</div><div class="role-desc">English + Hindi mix</div></div>
+      <div class="role-card" onclick="selectLang(this,'auto')"><div class="icon">AI</div><div class="role-name">Let AI Adjust</div><div class="role-desc">Adapts to your answers</div></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="go('login')">Back</button>
+      <button class="btn btn-primary" onclick="go('consent')">Continue</button>
+    </div>
+  </div>
+</div>
+
+<div id="screen-consent" class="screen">
+  <div class="card">
+    <div class="section-num">Step 4 of 8</div>
+    <h1 class="title">Basic Consent</h1>
+    <p class="lead">Before we begin, please confirm you understand how we'll use your data.</p>
+    <div class="callout-navy">
+      <strong>What we collect:</strong> Profile basics, assessment answers, optional portfolio uploads.<br>
+      <strong>What we do:</strong> Generate AI-driven career guidance, store consent records, allow you to export or delete anytime.<br>
+      <strong>What we don't do:</strong> Sell your data, share with advertisers, or claim certified medical/legal advice.
+    </div>
+    <div class="field" style="margin-top:14px"><label><input type="checkbox" id="c1"> I agree to take the assessment and understand my data will be processed for guidance.</label></div>
+    <div class="field"><label><input type="checkbox" id="c2"> I understand this is AI-assisted guidance, not a final decision or guarantee.</label></div>
+    <div class="field"><label><input type="checkbox" id="c3"> I have read the <a onclick="go('terms')">Terms of Use</a> and <a onclick="go('privacy')">Privacy Policy</a>.</label></div>
+    <div class="field"><label><input type="checkbox" id="c4"> (Optional) Send me product updates and career tips.</label></div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="go('language')">Back</button>
+      <button class="btn btn-primary" onclick="grantConsent()">Agree &amp; Continue</button>
+    </div>
+    <p class="tiny muted" style="margin-top:10px">Consent Policy Version v1.0. Your consent is timestamped and version-stamped. View history in <a onclick="go('consentHistory')">Consent History</a>.</p>
+  </div>
+</div>
+
+<div id="screen-comfort" class="screen">
+  <div class="card">
+    <div class="section-num">Step 5 of 8</div>
+    <h1 class="title">Before we begin</h1>
+    <p class="lead">This is not an exam. There are no right or wrong answers. Just be honest — that's how we help you best.</p>
+    <h2>A few easy questions to start</h2>
+    <div class="field">
+      <label>What kind of guidance feels best to you?</label>
+      <select><option>Just a quick overview</option><option>A detailed deep dive</option><option>I want to discover slowly</option></select>
+    </div>
+    <div class="field">
+      <label>Do you already have a career dream?</label>
+      <select><option>Yes, I'm clear</option><option>I have a few ideas</option><option>I'm completely confused</option></select>
+    </div>
+    <div class="field">
+      <label>What makes learning enjoyable for you?</label>
+      <select><option>Hands-on projects</option><option>Reading and writing</option><option>Solving problems</option><option>Creative work</option><option>Helping people</option></select>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="go('consent')">Back</button>
+      <button class="btn btn-primary" onclick="go('profile')">Start My Journey</button>
+    </div>
+  </div>
+</div>
+
+<div id="screen-profile" class="screen">
+  <div class="card">
+    <div class="section-num">Step 6 of 8</div>
+    <h1 class="title">Tell us about you</h1>
+    <p class="lead">Quick basics so we can personalize your career map. All fields can be edited later.</p>
+    <h2>Basic Details</h2>
+    <div class="field-row">
+      <div class="field"><label>Full Name</label><input id="pf_name" placeholder="e.g. Ananya Sharma"></div>
+      <div class="field"><label>Age</label><input type="number" id="pf_age" placeholder="16" min="10" max="35"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Class / Year</label><select id="pf_class"><option>Class 8</option><option>Class 9</option><option selected>Class 10</option><option>Class 11</option><option>Class 12</option><option>Undergraduate</option><option>Postgraduate</option></select></div>
+      <div class="field"><label>City</label><input id="pf_city" placeholder="e.g. Jaipur"></div>
+    </div>
+    <h2>Academic Details</h2>
+    <div class="field-row">
+      <div class="field"><label>Board</label><select id="pf_board"><option>CBSE</option><option>ICSE</option><option>State Board</option><option>IB</option><option>IGCSE</option></select></div>
+      <div class="field"><label>Current Stream</label><select id="pf_stream"><option>Not decided</option><option>Science PCM</option><option>Science PCB</option><option>PCMB</option><option>Commerce</option><option>Humanities</option></select></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Subjects (comma-separated, optional)</label><input id="pf_subjects" placeholder="Math, Physics, Computer Science"></div>
+      <div class="field"><label>Marks Range (optional)</label><select id="pf_marks"><option>Below 60%</option><option>60-75%</option><option selected>75-85%</option><option>85-95%</option><option>Above 95%</option></select></div>
+    </div>
+    <h2>Goals &amp; Preferences</h2>
+    <div class="field"><label>Dream career (if any)</label><input id="pf_dream" placeholder="e.g. Doctor, Designer, Entrepreneur"></div>
+    <div class="field-row">
+      <div class="field"><label>Confusion level</label><select id="pf_confusion"><option>Very clear</option><option selected>Somewhat clear</option><option>Confused</option><option>Completely unsure</option></select></div>
+      <div class="field"><label>India / Abroad preference</label><select id="pf_loc"><option selected>India</option><option>Abroad</option><option>Both</option><option>Undecided</option></select></div>
+    </div>
+    <div class="field"><label>Budget range (annual, INR)</label><select id="pf_budget"><option>Below 1 lakh</option><option selected>1-5 lakh</option><option>5-15 lakh</option><option>15-30 lakh</option><option>Above 30 lakh</option></select></div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="go('comfort')">Back</button>
+      <button class="btn btn-primary" onclick="saveProfile()">Save &amp; Continue</button>
+    </div>
+  </div>
+</div>
+
+<div id="screen-parentInvite" class="screen">
+  <div class="card">
+    <div class="section-num">Step 7 of 8</div>
+    <h1 class="title">Invite a parent or guardian</h1>
+    <p class="lead">Parents can optionally add budget preferences, support style, and view your final report. You can skip this and add them later.</p>
+    <div class="field"><label>Parent / Guardian Email (optional)</label><input placeholder="parent@example.com"></div>
+    <div class="field"><label>Relationship</label><select><option>Mother</option><option>Father</option><option>Guardian</option><option>Other family member</option></select></div>
+    <div class="callout">A consent email will be sent. The parent only sees what you choose to share. <em>Mock — no real email is sent.</em></div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="go('profile')">Back</button>
+      <button class="btn btn-ghost" onclick="go('interest')">Skip for now</button>
+      <button class="btn btn-primary" onclick="go('interest')">Invite &amp; Continue</button>
+    </div>
+  </div>
+</div>
+
+<div id="screen-interest" class="screen">
+  <div class="card">
+    <div class="section-num">Step 8 of 8</div>
+    <h1 class="title">Pick what feels interesting</h1>
+    <p class="lead">Select any cards that genuinely interest you. Pick three or more.</p>
+    <div class="interest-grid" id="interestGrid"></div>
+    <p class="tiny muted" style="margin-top:8px">Selected: <span id="interestCount">0</span></p>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="go('parentInvite')">Back</button>
+      <button class="btn btn-primary" onclick="goModeRec()">Continue</button>
+    </div>
+  </div>
+</div>
+
+<div id="screen-mode" class="screen">
+  <div class="card">
+    <div class="section-num">Assessment Setup</div>
+    <h1 class="title">Recommended Assessment Mode</h1>
+    <p class="lead">Based on your profile and interests, we suggest <strong style="color:var(--gold)">Standard Mode</strong>.</p>
+    <div class="grid grid-2" id="modeGrid">
+      <div class="role-card" onclick="selectMode(this,'quick')"><div class="icon">Q</div><div class="role-name">Quick Mode</div><div class="role-desc">~10 min · Snapshot</div></div>
+      <div class="role-card selected" onclick="selectMode(this,'standard')"><div class="icon">S</div><div class="role-name">Standard Mode</div><div class="role-desc">~25 min · Recommended</div></div>
+      <div class="role-card" onclick="selectMode(this,'deep')"><div class="icon">D</div><div class="role-name">Deep Mode</div><div class="role-desc">~45 min · Full clarity</div></div>
+      <div class="role-card" onclick="selectMode(this,'multi')"><div class="icon">M</div><div class="role-name">Multi-Day Mode</div><div class="role-desc">Spread over 3-5 days</div></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="go('interest')">Back</button>
+      <button class="btn btn-primary" onclick="go('assessHome')">Continue to Assessment</button>
+    </div>
+  </div>
+</div>
+
+<div id="screen-assessHome" class="screen">
+  <div class="card">
+    <div class="section-num">Assessment Battery</div>
+    <h1 class="title">Your assessment modules</h1>
+    <p class="lead">Ten modules cover all the angles. Questions are shuffled within each module every attempt and the AI adapts as you go.</p>
+    <div class="grid grid-2" id="moduleGrid"></div>
+    <div class="callout-warn" id="minorConsentBox" style="display:none">
+      <strong>Parent / guardian consent required.</strong> You indicated you are under 18. A parent or guardian must confirm consent before the assessment can begin.
+      <div class="field" style="margin-top:10px"><label><input type="checkbox" id="minorConsentChk" onchange="updateMinorGate()"> Parent / guardian consent has been confirmed.</label></div>
+      <p class="tiny" style="margin:0">Prototype note: no real verification is performed. Production requires verifiable parental consent under DPDP/COPPA-style rules.</p>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="go('mode')">Back</button>
+      <button class="btn btn-gold" id="beginAssessBtn" onclick="startAssessment()">Begin Assessment</button>
+    </div>
+  </div>
+</div>
+
+<div id="screen-question" class="screen">
+  <div class="q-wrap">
+    <div class="card">
+      <div class="q-header">
+        <span id="qModule">Interest Inventory</span>
+        <span id="qCounter">Question 1 of 20</span>
+      </div>
+      <div class="progress"><div class="progress-bar" id="qProgress" style="width:5%"></div></div>
+      <div class="q-text" id="qText">Loading…</div>
+      <div id="qOptions"></div>
+      <div class="row" style="justify-content:space-between;margin-top:14px">
+        <button class="btn btn-ghost btn-sm" onclick="skipQuestion()">Skip</button>
+        <button class="btn btn-primary btn-sm" id="qNextBtn" onclick="nextQuestion()" disabled>Next</button>
+      </div>
+      <p class="tiny muted" style="margin-top:10px;text-align:center">Answer honestly. This helps your report.</p>
+    </div>
+  </div>
+</div>
+
+<div id="screen-adaptive" class="screen">
+  <div class="card">
+    <div class="section-num">Adaptive Follow-Up</div>
+    <h1 class="title">Let's understand this better</h1>
+    <p id="adaptiveReason" class="lead">Since you showed interest in this area, let's go a bit deeper.</p>
+    <div class="q-text" id="adaptiveText"></div>
+    <div id="adaptiveOptions"></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="adaptNextBtn" onclick="continueAdaptive()" disabled>Continue</button>
+    </div>
+  </div>
+</div>
+
+<div id="screen-validation" class="screen">
+  <div class="card">
+    <div class="section-num">Validation Check</div>
+    <h1 class="title">A quick clarification</h1>
+    <p id="validationReason" class="lead"></p>
+    <div class="q-text" id="validationText"></div>
+    <div id="validationOptions"></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="validationNextBtn" onclick="continueValidation()" disabled>Continue</button>
+    </div>
+    <p class="tiny muted" style="margin-top:10px">This helps resolve a contradiction between your stated dream and your assessment signals. Your answer is recorded in your report.</p>
+  </div>
+</div>
+
+<div id="screen-portfolio" class="screen">
+  <div class="card">
+    <div class="section-num">Portfolio (Optional)</div>
+    <h1 class="title">Show us what you have created</h1>
+    <p class="lead">Upload projects, certificates, or describe something you've made. Skip if you'd rather not.</p>
+    <div class="card" style="border:2px dashed var(--border-2);text-align:center;padding:30px">
+      <div style="font-size:13px;font-weight:700;color:var(--navy-3);letter-spacing:.1em;margin-bottom:8px">UPLOAD</div>
+      <p><strong>Drop files here or click to browse</strong></p>
+      <p class="small muted">Images · PDFs · Certificates · Project links (mock upload)</p>
+      <button class="btn btn-ghost btn-sm" style="margin-top:10px" onclick="alert('Mock upload — no real file stored.')">Browse Files</button>
+    </div>
+    <div class="field" style="margin-top:14px"><label>Describe your work</label><textarea id="pf_portfolioDesc" rows="3" placeholder="What did you make? What did you enjoy about it?"></textarea></div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="go('parentInput')">Skip</button>
+      <button class="btn btn-primary" onclick="savePortfolio()">Save &amp; Continue</button>
+    </div>
+  </div>
+</div>
+
+<div id="screen-parentInput" class="screen">
+  <div class="card">
+    <div class="section-num">Parent Section (Optional)</div>
+    <h1 class="title">Parent Guidance Section</h1>
+    <p class="lead">This section is optional but helps create a practical roadmap.</p>
+    <div class="field"><label>Parent / Guardian Name</label><input id="pi_name" placeholder="e.g. Sunita Sharma"></div>
+    <div class="field-row">
+      <div class="field"><label>Budget Range (annual, INR)</label><select id="pi_budget"><option>Below 1 lakh</option><option selected>1-5 lakh</option><option>5-15 lakh</option><option>15-30 lakh</option><option>Above 30 lakh</option></select></div>
+      <div class="field"><label>Preferred City</label><input id="pi_city" placeholder="e.g. Same city, any metro"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>College Type Preference</label><select id="pi_collegeType"><option>Government</option><option>Private</option><option selected>Either</option><option>International</option></select></div>
+      <div class="field"><label>Abroad Comfort</label><select id="pi_abroad"><option>Yes, fully comfortable</option><option selected>Maybe, depends on cost</option><option>Prefer India</option></select></div>
+    </div>
+    <div class="field"><label>Parenting Support Style</label><select id="pi_style"><option>Give them freedom to choose</option><option selected>Discuss together and decide</option><option>Strong guidance with structure</option><option>Hands-off, trust their judgement</option></select></div>
+    <div class="field"><label>Parent Concerns (optional)</label><textarea id="pi_concerns" rows="3" placeholder="e.g. Job stability, cost, distance from home, entrance exam pressure"></textarea></div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="go('processing')">Skip</button>
+      <button class="btn btn-primary" onclick="saveParentInput()">Save &amp; Continue</button>
+    </div>
+    <p class="tiny muted" style="margin-top:10px">Saved locally to this device. Used in the report preview and parent dashboard.</p>
+  </div>
+</div>
+
+<div id="screen-processing" class="screen">
+  <div class="card" style="text-align:center;padding:50px 20px">
+    <div class="splash-logo" style="margin:0 auto 20px">O</div>
+    <h1 class="title" style="text-align:center">Building your career map</h1>
+    <p class="lead" style="margin:0 auto">We're matching your interests, strengths, skills, and future options.</p>
+    <div class="steps" style="justify-content:center;margin:24px 0">
+      <span class="step done">Interest</span>
+      <span class="step done">Aptitude</span>
+      <span class="step active">Personality</span>
+      <span class="step">Careers</span>
+      <span class="step">Colleges</span>
+      <span class="step">Report</span>
+    </div>
+    <div class="progress" style="max-width:300px;margin:14px auto"><div class="progress-bar" id="procBar" style="width:0%"></div></div>
+    <p class="small muted" id="procText">Analyzing your responses…</p>
+  </div>
+</div>
+
+<div id="screen-result" class="screen">
+  <div class="card">
+    <div class="section-num">Your Results</div>
+    <h1 class="title">Career Confidence Map</h1>
+    <p class="lead">Here are your top three future directions and ten best career matches.</p>
+    <div class="grid grid-3" style="margin:14px 0">
+      <div class="stat"><div class="label">Confidence Score</div><div class="value" id="resScore">0%</div><div class="delta">Match strength</div></div>
+      <div class="stat"><div class="label">Top Cluster</div><div class="value" id="resCluster" style="font-size:18px">—</div><div class="delta">Primary direction</div></div>
+      <div class="stat"><div class="label">Careers Matched</div><div class="value">10</div><div class="delta">Ranked by fit</div></div>
+    </div>
+    <h2>Top 3 Future Directions</h2>
+    <div class="grid grid-3" id="topDirections"></div>
+    <h2 style="margin-top:18px">Top 10 Career Paths</h2>
+    <div class="grid grid-2" id="careerCards"></div>
+    <div class="btn-row">
+      <button class="btn btn-gold" onclick="go('report')">View Full Report</button>
+      <button class="btn btn-ghost" onclick="printReport()">Download / Print Report</button>
+      <button class="btn btn-ghost" onclick="go('chat')">Talk to AI Mentor</button>
+      <button class="btn btn-ghost" onclick="requestCounsellorReview()">Request Counsellor Review</button>
+      <button class="btn btn-ghost" onclick="go('roadmap')">View 90-Day Plan</button>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <button class="btn btn-ghost btn-sm" onclick="go('careerCompare')">Compare Careers</button>
+      <button class="btn btn-ghost btn-sm" onclick="go('stream')">View Stream Path</button>
+    </div>
+    <div class="callout" style="margin-top:14px">This is AI-assisted career guidance, not a final decision or guarantee.</div>
+  </div>
+</div>
+
+<div id="screen-stream" class="screen">
+  <div class="card">
+    <div class="section-num">Stream Recommendation</div>
+    <h1 class="title">Your best stream paths</h1>
+    <p class="lead" id="streamLead">Based on your profile and assessment, here are the streams that fit you best.</p>
+    <div class="grid grid-2" id="streamGrid"></div>
+    <h2 style="margin-top:14px">All Stream Options</h2>
+    <div class="row" id="streamChips"></div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="go('result')">Back</button>
+      <button class="btn btn-primary" onclick="go('course')">Course Recommendations</button>
+    </div>
+  </div>
+</div>
+
+<div id="screen-careerCompare" class="screen">
+  <div class="card">
+    <div class="section-num">Career Comparison</div>
+    <h1 class="title">Compare side by side</h1>
+    <p class="lead">Filter and compare your top career matches. Filters are mock controls for this prototype.</p>
+    <div class="grid grid-3" style="margin-bottom:8px">
+      <div class="field" style="margin:0"><label>Location</label><select id="cmpLoc" onchange="renderCompare()"><option value="all">India &amp; Abroad</option><option value="india">India focus</option><option value="abroad">Abroad focus</option></select></div>
+      <div class="field" style="margin:0"><label>Budget</label><select id="cmpBudget" onchange="renderCompare()"><option value="all">Any budget</option><option value="low">Lower cost</option><option value="high">Premium</option></select></div>
+      <div class="field" style="margin:0"><label>Risk Level</label><select id="cmpRisk" onchange="renderCompare()"><option value="all">Any risk</option><option value="Low">Low risk</option><option value="Medium">Medium risk</option><option value="High">High risk</option></select></div>
+    </div>
+    <div class="grid grid-3" style="margin-bottom:10px">
+      <div class="field" style="margin:0"><label>Future Scope</label><select id="cmpScope" onchange="renderCompare()"><option value="all">Any scope</option><option value="Very High">Very High</option><option value="High">High</option><option value="Medium">Medium</option></select></div>
+      <div class="field" style="margin:0"><label>Study Duration</label><select id="cmpDuration" onchange="renderCompare()"><option value="all">Any duration</option><option value="short">Up to 3 years</option><option value="long">4+ years</option></select></div>
+      <div class="field" style="margin:0"><label>Salary Range</label><select id="cmpSalary" onchange="renderCompare()"><option value="all">Any salary</option><option value="mid">Mid range</option><option value="high">High range</option></select></div>
+    </div>
+    <div style="overflow-x:auto"><table id="compareTable"></table></div>
+    <p class="tiny muted" id="compareNote"></p>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="go('result')">Back</button>
+      <button class="btn btn-primary" onclick="go('stream')">View Stream Path</button>
+    </div>
+  </div>
+</div>
+
+<div id="screen-course" class="screen">
+  <div class="card">
+    <div class="section-num">Course Recommendations</div>
+    <h1 class="title">Courses that match your direction</h1>
+    <p class="lead">Undergraduate, postgraduate, diploma, certification, and online options.</p>
+    <div class="tabs">
+      <div class="tab active" onclick="filterCourses(this,'all')">All</div>
+      <div class="tab" onclick="filterCourses(this,'ug')">Undergraduate</div>
+      <div class="tab" onclick="filterCourses(this,'pg')">Postgraduate</div>
+      <div class="tab" onclick="filterCourses(this,'diploma')">Diploma</div>
+      <div class="tab" onclick="filterCourses(this,'cert')">Certification</div>
+      <div class="tab" onclick="filterCourses(this,'online')">Online</div>
+    </div>
+    <div class="grid grid-3" id="courseGrid"></div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="go('stream')">Back</button>
+      <button class="btn btn-primary" onclick="go('college')">College Options</button>
+    </div>
+  </div>
+</div>
+
+<div id="screen-college" class="screen">
+  <div class="card">
+    <div class="section-num">College Recommendations</div>
+    <h1 class="title">Colleges aligned with your path</h1>
+    <p class="lead">Filter by region and requirements. Filters are mock controls for this prototype.</p>
+    <div class="tabs">
+      <div class="tab active" onclick="filterColleges(this,'India')">India</div>
+      <div class="tab" onclick="filterColleges(this,'Abroad')">Abroad</div>
+      <div class="tab" onclick="filterColleges(this,'Online')">Online</div>
+      <div class="tab" onclick="filterColleges(this,'Certification')">Certification</div>
+    </div>
+    <div class="grid grid-3" style="margin-bottom:8px">
+      <div class="field" style="margin:0"><label>Country</label><select id="clgCountry" onchange="renderColleges()"><option value="all">Any country</option><option>India</option><option>USA</option><option>UK</option><option>Singapore</option></select></div>
+      <div class="field" style="margin:0"><label>City</label><select id="clgCity" onchange="renderColleges()"><option value="all">Any city</option><option>Delhi</option><option>Bangalore</option><option>Ahmedabad</option><option>California</option><option>Oxford</option><option>Singapore</option><option>Online</option></select></div>
+      <div class="field" style="margin:0"><label>Budget Range</label><select id="clgBudget" onchange="renderColleges()"><option value="all">Any budget</option><option value="low">Lower cost</option><option value="high">Premium</option></select></div>
+    </div>
+    <div class="grid grid-3" style="margin-bottom:10px">
+      <div class="field" style="margin:0"><label>Entrance Exam</label><select id="clgExam" onchange="renderColleges()"><option value="all">Any exam</option><option>JEE</option><option>NEET</option><option>CLAT</option><option>SAT</option><option>Portfolio / DAT</option></select></div>
+      <div class="field" style="margin:0"><label>Scholarship</label><select id="clgSchol" onchange="renderColleges()"><option value="all">Any</option><option value="yes">Scholarship available</option></select></div>
+      <div class="field" style="margin:0"><label>Eligibility</label><select id="clgElig" onchange="renderColleges()"><option value="all">Any eligibility</option><option value="any">Open to any stream</option><option value="specific">Stream-specific</option></select></div>
+    </div>
+    <div class="grid grid-2" id="collegeGrid"></div>
+    <p class="tiny muted" id="collegeNote"></p>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="go('course')">Back</button>
+      <button class="btn btn-primary" onclick="go('budget')">Budget Planner</button>
+    </div>
+  </div>
+</div>
+
+<div id="screen-budget" class="screen">
+  <div class="card">
+    <div class="section-num">Budget &amp; ROI</div>
+    <h1 class="title">Plan the financial picture</h1>
+    <p class="lead">Estimate total cost across tuition, hostel, coaching, and travel.</p>
+    <div class="grid grid-2">
+      <div>
+        <h3>Annual Costs (INR)</h3>
+        <div class="field"><label>Tuition</label><input type="number" id="bd_tuition" value="200000" oninput="calcBudget()"></div>
+        <div class="field"><label>Hostel</label><input type="number" id="bd_hostel" value="100000" oninput="calcBudget()"></div>
+        <div class="field"><label>Coaching</label><input type="number" id="bd_coaching" value="50000" oninput="calcBudget()"></div>
+        <div class="field"><label>Travel</label><input type="number" id="bd_travel" value="20000" oninput="calcBudget()"></div>
+        <div class="field"><label>Abroad / extras</label><input type="number" id="bd_abroad" value="0" oninput="calcBudget()"></div>
+      </div>
+      <div>
+        <h3>Estimate Summary</h3>
+        <div class="stat" style="margin-bottom:10px"><div class="label">Total Annual Cost</div><div class="value" id="bd_total">₹3,70,000</div></div>
+        <div class="stat" style="margin-bottom:10px"><div class="label">4-Year Total (UG)</div><div class="value" id="bd_4yr">₹14,80,000</div></div>
+        <div class="stat" style="margin-bottom:10px"><div class="label">Expected Starting Salary</div><div class="value" id="bd_salary">₹6,00,000</div></div>
+        <div class="stat"><div class="label">Estimated ROI (3-5 yrs)</div><div class="value gold" id="bd_roi">Strong</div></div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="go('college')">Back</button>
+      <button class="btn btn-primary" onclick="go('report')">View Full Report</button>
+    </div>
+  </div>
+</div>
+
+<div id="screen-report" class="screen">
+  <div class="card" id="reportContent">
+    <div class="row" style="justify-content:space-between;align-items:flex-start">
+      <div>
+        <div class="section-num">Full Report Preview</div>
+        <h1 class="title">Career Intelligence Report</h1>
+        <p class="muted small">Generated for <strong id="rpName">Demo Student</strong> · Mode: <strong id="rpMode">Standard</strong> · Date: <strong id="rpDate"></strong></p>
+        <p class="tiny muted">Report Version v1.0 · Consent Policy v1.0</p>
+      </div>
+      <div class="no-print">
+        <button class="btn btn-gold btn-sm" onclick="printReport()">Download / Print Report</button>
+      </div>
+    </div>
+    <div id="reportBody"></div>
+    <div class="callout" style="margin-top:16px">This is AI-assisted career guidance, not a final decision or guarantee. A human review option is available — request a counsellor review for expert validation.</div>
+    <div class="btn-row no-print">
+      <button class="btn btn-ghost" onclick="go('budget')">Back</button>
+      <button class="btn btn-primary" onclick="go('roadmap')">View 90-Day Plan</button>
+      <button class="btn btn-ghost" onclick="go('dashboard')">Go to Dashboard</button>
+    </div>
+  </div>
+</div>
+
+<div id="screen-roadmap" class="screen">
+  <div class="card">
+    <div class="section-num">90-Day Growth Plan</div>
+    <h1 class="title">Your next 90 days, structured</h1>
+    <p class="lead">Concrete tasks across skills, books, projects, habits, communication, and portfolio.</p>
+    <div class="tabs">
+      <div class="tab active" onclick="switchRoadmap(this,'r1')">Days 1-30</div>
+      <div class="tab" onclick="switchRoadmap(this,'r2')">Days 31-60</div>
+      <div class="tab" onclick="switchRoadmap(this,'r3')">Days 61-90</div>
+    </div>
+    <div id="r1" class="rmap"></div>
+    <div id="r2" class="rmap" style="display:none"></div>
+    <div id="r3" class="rmap" style="display:none"></div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="go('report')">Back to Report</button>
+      <button class="btn btn-primary" onclick="go('dashboard')">Open Dashboard</button>
+    </div>
+  </div>
+</div>
+
+<div id="screen-chat" class="screen">
+  <div class="card">
+    <div class="section-num">AI Career Mentor</div>
+    <h1 class="title">Ask me anything</h1>
+    <p class="lead">Text or voice mentor for ongoing career questions.</p>
+    <div class="chat-wrap">
+      <div class="chat-msgs" id="chatMsgs"></div>
+      <div class="quick-prompts" id="quickPrompts">
+        <span class="chip" onclick="sendQuick('Explain my report')">Explain my report</span>
+        <span class="chip" onclick="sendQuick('Compare careers')">Compare careers</span>
+        <span class="chip" onclick="sendQuick('Suggest books')">Suggest books</span>
+        <span class="chip" onclick="sendQuick('Help me choose stream')">Help me choose stream</span>
+        <span class="chip" onclick="sendQuick('What should I do this week?')">This week's plan</span>
+      </div>
+      <div class="chat-input">
+        <input id="chatInput" placeholder="Type your question…" onkeypress="if(event.key==='Enter')sendChat()">
+        <button class="btn btn-primary btn-sm" onclick="sendChat()">Send</button>
+        <button class="btn btn-ghost btn-sm" onclick="go('voice')">Voice</button>
+      </div>
+    </div>
+    <p class="tiny muted" style="margin-top:10px">AI-assisted guidance. Mentor responses are simulated for this prototype.</p>
+    <div class="btn-row"><button class="btn btn-ghost" onclick="go('dashboard')">Dashboard</button></div>
+  </div>
+</div>
+
+<div id="screen-voice" class="screen">
+  <div class="card voice-screen">
+    <div class="section-num">Voice Assistant</div>
+    <h1 class="title" style="text-align:center">Tap and ask</h1>
+    <p class="lead" style="margin:0 auto">Tap and speak — your AI mentor will respond. Hinglish supported.</p>
+    <div class="voice-orb">AI</div>
+    <p class="muted" id="voiceStatus">Tap to start</p>
+    <div style="margin-top:18px">
+      <button class="btn btn-gold" onclick="mockVoice()">Tap to Speak</button>
+    </div>
+    <p class="tiny muted" style="margin-top:18px">Voice mock — no actual speech recognition in this prototype.</p>
+    <div class="btn-row" style="justify-content:center"><button class="btn btn-ghost" onclick="go('chat')">Back to Chat</button></div>
+  </div>
+</div>
+
+<div id="screen-counsellorReview" class="screen">
+  <div class="card">
+    <div class="section-num">Counsellor Review</div>
+    <h1 class="title">Review Student Report</h1>
+    <p class="lead">Add human expert remarks to the AI-generated report.</p>
+    <div class="grid grid-2">
+      <div>
+        <h3>Student: <span id="crName">Demo Student</span></h3>
+        <p class="small">Class 10 · CBSE · Confidence <span id="crConf">82</span>%</p>
+        <h3>AI Top 3</h3>
+        <div id="crTop3" class="row"></div>
+        <h3>AI Confidence Notes</h3>
+        <ul class="small" style="padding-left:20px">
+          <li>Alignment between stated interest and aptitude scores assessed.</li>
+          <li>Contradiction check completed during assessment.</li>
+          <li>Personality fit highest for research and analysis type roles.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Add Your Notes</h3>
+        <div class="field"><label>Counsellor remarks</label><textarea rows="5" id="crNotes" placeholder="Your professional observations…"></textarea></div>
+        <div class="field"><label>Next steps suggestion</label><textarea rows="3" placeholder="Recommended next actions…"></textarea></div>
+        <div class="field"><label>Status</label><select id="crStatus"><option>Pending Review</option><option>Reviewed - Approved</option><option>Needs Follow-up</option></select></div>
+        <button class="btn btn-primary" onclick="saveCounsellorReview()">Submit Review</button>
+      </div>
+    </div>
+    <div class="btn-row"><button class="btn btn-ghost" onclick="go('counsellorDash')">Back</button></div>
+  </div>
+</div>
+
+<div id="screen-payment" class="screen">
+  <div class="card">
+    <div class="section-num">Pricing Plans</div>
+    <h1 class="title">Choose your plan</h1>
+    <p class="lead">Free for basics. Paid for the full 50+ page report and AI mentor access.</p>
+    <div class="grid grid-3" id="planGrid"></div>
+    <div class="callout-navy" style="margin-top:14px"><strong>Payment security:</strong> Designed for processing via certified third-party gateways. No card data stored on Obliq. <em>Mock — no real billing.</em></div>
+    <div class="btn-row"><button class="btn btn-ghost" onclick="go('dashboard')">Back</button></div>
+  </div>
+</div>
+
+<div id="screen-admin" class="screen">
+  <div class="dash">
+    <div class="side">
+      <div class="tiny muted" style="padding:6px 10px;text-transform:uppercase;letter-spacing:.12em;font-weight:700">Admin Console</div>
+      <div class="side-link active" onclick="adminTab(this,'a-users')"><span class="icon">U</span>Users</div>
+      <div class="side-link" onclick="adminTab(this,'a-questions')"><span class="icon">Q</span>Question Bank</div>
+      <div class="side-link" onclick="adminTab(this,'a-careers')"><span class="icon">C</span>Career Database</div>
+      <div class="side-link" onclick="adminTab(this,'a-courses')"><span class="icon">Co</span>Course Database</div>
+      <div class="side-link" onclick="adminTab(this,'a-colleges')"><span class="icon">Cl</span>College Database</div>
+      <div class="side-link" onclick="adminTab(this,'a-reports')"><span class="icon">R</span>Report Builder</div>
+      <div class="side-link" onclick="adminTab(this,'a-ai')"><span class="icon">AI</span>AI Settings</div>
+      <div class="side-link" onclick="adminTab(this,'a-pricing')"><span class="icon">P</span>Pricing</div>
+      <div class="side-link" onclick="adminTab(this,'a-coupons')"><span class="icon">Cp</span>Coupons</div>
+      <div class="side-link" onclick="adminTab(this,'a-schools')"><span class="icon">S</span>Schools</div>
+      <div class="side-link" onclick="adminTab(this,'a-counsellors')"><span class="icon">Cn</span>Counsellors</div>
+      <div class="side-link" onclick="adminTab(this,'a-analytics')"><span class="icon">An</span>Analytics</div>
+      <div class="side-link" onclick="adminTab(this,'a-feedback')"><span class="icon">FL</span>Self-Learning Loop</div>
+      <div class="side-link" onclick="adminTab(this,'a-audit')"><span class="icon">Au</span>Audit Logs</div>
+    </div>
+    <div>
+      <div class="card">
+        <h1 class="title">Admin Dashboard</h1>
+        <p class="muted small">Central control surface for the entire Obliq AI platform.</p>
+        <div class="grid grid-4" style="margin:14px 0">
+          <div class="stat"><div class="label">Total Users</div><div class="value">12,847</div><div class="delta">+342 this week</div></div>
+          <div class="stat"><div class="label">Assessments</div><div class="value">8,219</div><div class="delta">68% completion</div></div>
+          <div class="stat"><div class="label">Reports</div><div class="value">7,103</div><div class="delta">86% download</div></div>
+          <div class="stat"><div class="label">MRR (mock)</div><div class="value">₹4.2L</div><div class="delta">+18% MoM</div></div>
+        </div>
+        <div id="adminContent"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="screen-school" class="screen">
+  <div class="dash">
+    <div class="side">
+      <div class="tiny muted" style="padding:6px 10px;text-transform:uppercase;letter-spacing:.12em;font-weight:700">School Console</div>
+      <div class="side-link active" onclick="schoolTab(this,'s-profile')"><span class="icon">I</span>Institution</div>
+      <div class="side-link" onclick="schoolTab(this,'s-bulk')"><span class="icon">B</span>Bulk Upload</div>
+      <div class="side-link" onclick="schoolTab(this,'s-class')"><span class="icon">CA</span>Class Analytics</div>
+      <div class="side-link" onclick="schoolTab(this,'s-stream')"><span class="icon">SD</span>Stream Distribution</div>
+      <div class="side-link" onclick="schoolTab(this,'s-heat')"><span class="icon">H</span>Career Heatmap</div>
+      <div class="side-link" onclick="schoolTab(this,'s-reports')"><span class="icon">R</span>Reports</div>
+      <div class="side-link" onclick="schoolTab(this,'s-couns')"><span class="icon">Cn</span>Counsellors</div>
+      <div class="side-link" onclick="schoolTab(this,'s-parents')"><span class="icon">PM</span>Parent Meeting</div>
+      <div class="side-link" onclick="schoolTab(this,'s-sub')"><span class="icon">Sb</span>Subscription</div>
+    </div>
+    <div>
+      <div class="card">
+        <h1 class="title">School / College Dashboard</h1>
+        <p class="muted small">Institution-level career analytics and bulk operations.</p>
+        <div class="grid grid-4" style="margin:14px 0">
+          <div class="stat"><div class="label">Students</div><div class="value">486</div><div class="delta">Active</div></div>
+          <div class="stat"><div class="label">Classes</div><div class="value">14</div><div class="delta">Grade 8-12</div></div>
+          <div class="stat"><div class="label">Reports</div><div class="value">312</div><div class="delta">64% completion</div></div>
+          <div class="stat"><div class="label">Plan</div><div class="value" style="font-size:18px">School Pro</div><div class="delta">Renews Dec 2026</div></div>
+        </div>
+        <div id="schoolContent"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="screen-dashboard" class="screen">
+  <div class="dash">
+    <div class="side">
+      <div class="tiny muted" style="padding:6px 10px;text-transform:uppercase;letter-spacing:.12em;font-weight:700">My Account</div>
+      <div class="side-link active" onclick="go('dashboard')"><span class="icon">H</span>Overview</div>
+      <div class="side-link" onclick="go('result')"><span class="icon">CM</span>Career Matches</div>
+      <div class="side-link" onclick="go('stream')"><span class="icon">SC</span>Stream / Course</div>
+      <div class="side-link" onclick="go('college')"><span class="icon">Cl</span>Colleges</div>
+      <div class="side-link" onclick="go('roadmap')"><span class="icon">90</span>90-Day Plan</div>
+      <div class="side-link" onclick="go('chat')"><span class="icon">AI</span>AI Mentor</div>
+      <div class="side-link" onclick="go('portfolio')"><span class="icon">Pf</span>Portfolio</div>
+      <div class="side-link" onclick="go('report')"><span class="icon">R</span>Reports</div>
+      <div class="side-link" onclick="go('payment')"><span class="icon">Up</span>Upgrade</div>
+      <div class="side-link" onclick="go('privacy')"><span class="icon">Pr</span>Privacy</div>
+    </div>
+    <div>
+      <div class="card">
+        <h1 class="title">Welcome back, <span id="dashName">Student</span></h1>
+        <p class="muted small">Career Status: <span class="badge badge-gold" id="dashStatus">Not Started</span></p>
+        <div class="grid grid-3" style="margin:14px 0">
+          <div class="stat"><div class="label">Confidence</div><div class="value" id="dashConf">—</div><div class="delta" id="dashConfDelta">Awaiting assessment</div></div>
+          <div class="stat"><div class="label">Top Career</div><div class="value" id="dashTop" style="font-size:16px">—</div><div class="delta">Primary fit</div></div>
+          <div class="stat"><div class="label">Plan Progress</div><div class="value" id="dashPlan">0%</div><div class="delta">90-day roadmap</div></div>
+        </div>
+        <div id="dashCta"></div>
+        <div class="grid grid-2" style="margin-top:14px">
+          <div class="card card-tight">
+            <h3>My Top Career Matches</h3>
+            <div id="dashTopCareers"><p class="small muted">Complete the assessment to see your matches.</p></div>
+            <button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="go('result')">View all</button>
+          </div>
+          <div class="card card-tight">
+            <h3>My Stream / Course Path</h3>
+            <p class="small" id="dashStreamText">Complete the assessment to see your stream path.</p>
+            <button class="btn btn-ghost btn-sm" onclick="go('stream')">View details</button>
+          </div>
+          <div class="card card-tight">
+            <h3>This Week's Plan</h3>
+            <ul class="small" style="padding-left:18px;color:var(--text-muted)">
+              <li>Read: Atomic Habits, Chapters 1-3</li>
+              <li>Watch two career interview videos</li>
+              <li>Start a small mini-project</li>
+              <li>Reflect: write one page about what excites you</li>
+            </ul>
+            <button class="btn btn-ghost btn-sm" onclick="go('roadmap')">Open plan</button>
+          </div>
+          <div class="card card-tight">
+            <h3>AI Mentor</h3>
+            <p class="small muted">Ask anything about your report, careers, or next steps.</p>
+            <button class="btn btn-gold btn-sm" onclick="go('chat')">Start chat</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="screen-parentDash" class="screen">
+  <div class="dash">
+    <div class="side">
+      <div class="tiny muted" style="padding:6px 10px;text-transform:uppercase;letter-spacing:.12em;font-weight:700">Parent View</div>
+      <div class="side-link active"><span class="icon">CS</span>Child Summary</div>
+      <div class="side-link" onclick="go('parentInput')"><span class="icon">In</span>Add Input</div>
+      <div class="side-link" onclick="go('budget')"><span class="icon">Bd</span>Budget Planner</div>
+      <div class="side-link" onclick="go('report')"><span class="icon">R</span>Report Access</div>
+      <div class="side-link" onclick="alert('Counsellor booking — mock flow.')"><span class="icon">Cn</span>Book Counsellor</div>
+    </div>
+    <div>
+      <div class="card">
+        <h1 class="title">Parent Dashboard</h1>
+        <p class="muted small">A simple, honest view of your child's career direction.</p>
+        <div class="card card-tight" style="margin-top:12px;background:var(--gold-bg);border-color:var(--gold-soft)">
+          <h3>Child Summary</h3>
+          <p><strong id="pdName">Demo Student</strong> · Confidence <strong id="pdConf">—</strong></p>
+          <p class="small">Top direction: <strong id="pdTop">Awaiting assessment</strong></p>
+          <p class="small">Suggested stream: <strong id="pdStream">—</strong></p>
+        </div>
+        <div class="grid grid-2" style="margin-top:12px">
+          <div class="card card-tight">
+            <h3>Your Submitted Input</h3>
+            <div id="pdParentInput"><p class="small muted">No parent input submitted yet.</p></div>
+            <button class="btn btn-ghost btn-sm" style="margin-top:6px" onclick="go('parentInput')">Edit input</button>
+          </div>
+          <div class="card card-tight">
+            <h3>How to Support Your Child</h3>
+            <ul class="small" style="padding-left:18px;color:var(--text-muted)">
+              <li>Ask open-ended questions, not yes/no</li>
+              <li>Avoid comparing with siblings or peers</li>
+              <li>Discuss the 90-day plan once a week</li>
+              <li>Celebrate progress, not just outcomes</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="screen-counsellorDash" class="screen">
+  <div class="dash">
+    <div class="side">
+      <div class="tiny muted" style="padding:6px 10px;text-transform:uppercase;letter-spacing:.12em;font-weight:700">Counsellor Console</div>
+      <div class="side-link active">Assigned Students</div>
+      <div class="side-link" onclick="go('counsellorReview')">Report Reviews</div>
+      <div class="side-link">Sessions</div>
+      <div class="side-link">Parent Meetings</div>
+      <div class="side-link">Approvals</div>
+    </div>
+    <div>
+      <div class="card">
+        <h1 class="title">Counsellor Dashboard</h1>
+        <div class="grid grid-4" style="margin:14px 0">
+          <div class="stat"><div class="label">Assigned</div><div class="value">38</div></div>
+          <div class="stat"><div class="label">Pending Review</div><div class="value" id="cdPending">12</div></div>
+          <div class="stat"><div class="label">Sessions</div><div class="value">7</div><div class="delta">This week</div></div>
+          <div class="stat"><div class="label">Approval Rate</div><div class="value">94%</div></div>
+        </div>
+        <h3>Recent Students</h3>
+        <table>
+          <thead><tr><th>Student</th><th>Class</th><th>AI Confidence</th><th>Review Status</th><th>Action</th></tr></thead>
+          <tbody id="cdStudentRows"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="screen-privacy" class="screen">
+  <div class="card">
+    <div class="section-num">Compliance · Section A</div>
+    <h1 class="title">Privacy Center</h1>
+    <p class="lead">Visibility and control over your data. Designed with DPDP / GDPR / SOC 2 readiness concepts. Requires legal, security, and expert review before production launch.</p>
+    <div class="grid grid-2">
+      <div class="card card-tight">
+        <h3>What we collect</h3>
+        <ul class="small" style="padding-left:18px;color:var(--text-muted)">
+          <li>Profile basics (name, age, class, city)</li>
+          <li>Assessment responses</li>
+          <li>Optional portfolio uploads</li>
+          <li>Consent and audit metadata</li>
+        </ul>
+      </div>
+      <div class="card card-tight">
+        <h3>What we do with it</h3>
+        <ul class="small" style="padding-left:18px;color:var(--text-muted)">
+          <li>Generate your career guidance</li>
+          <li>Improve our models (with consent)</li>
+          <li>Maintain audit and consent logs</li>
+          <li>Never sell to third parties</li>
+        </ul>
+      </div>
+    </div>
+    <div class="callout-navy"><strong>Data Retention Note:</strong> In a production deployment, assessment data would be retained while the account is active, with incomplete assessments auto-deleted after 90 days. Consent and audit records would be retained for up to 7 years for legal and audit purposes. This prototype stores data only in your browser's local storage.</div>
+    <h2 style="margin-top:8px">Your Rights</h2>
+    <div class="grid grid-3">
+      <div class="card card-tight"><h3>Export My Data</h3><p class="small muted">Get a JSON export of everything we hold.</p><button class="btn btn-gold btn-sm" onclick="exportData()">Request Export</button></div>
+      <div class="card card-tight"><h3>Delete My Data</h3><p class="small muted">Permanently delete account (30-day cooling period).</p><button class="btn btn-danger btn-sm" onclick="deleteData()">Request Deletion</button></div>
+      <div class="card card-tight"><h3>Correct My Data</h3><p class="small muted">Edit incorrect information anytime.</p><button class="btn btn-ghost btn-sm" onclick="go('profile')">Edit Profile</button></div>
+    </div>
+    <h2 style="margin-top:8px">Quick Links</h2>
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-sm" onclick="go('terms')">Terms of Use</button>
+      <button class="btn btn-ghost btn-sm" onclick="go('consentHistory')">Consent History</button>
+      <button class="btn btn-ghost btn-sm" onclick="go('auditLog')">Audit Log</button>
+      <button class="btn btn-ghost btn-sm" onclick="go('compliance')">Compliance Checklist</button>
+      <button class="btn btn-ghost btn-sm" onclick="go('splash')">Home</button>
+    </div>
+    <div class="callout-warn" style="margin-top:16px"><strong>Disclaimer:</strong> Compliance-ready prototype requiring legal, security, and expert review before production launch.</div>
+  </div>
+</div>
+
+<div id="screen-terms" class="screen">
+  <div class="card">
+    <div class="section-num">Legal</div>
+    <h1 class="title">Terms of Use</h1>
+    <p class="muted small">Last updated: Demo · Version 1.0</p>
+    <h2>1. Acceptance</h2>
+    <p>By accessing Obliq AI, you agree to these Terms. If you do not agree, please do not use the service.</p>
+    <h2>2. Service Description</h2>
+    <p>Obliq AI provides AI-assisted career guidance. <strong>All output is guidance, not a final decision or guarantee.</strong> Always discuss major choices with a human counsellor, mentor, or qualified expert.</p>
+    <h2>3. Eligibility &amp; Parental Consent</h2>
+    <p>Users under 18 must have parent or guardian consent. The platform includes a parent / guardian consent confirmation step before assessment.</p>
+    <h2>4. Data &amp; Privacy</h2>
+    <p>Your use of Obliq AI is also governed by our <a onclick="go('privacy')">Privacy Policy</a>. The platform is designed with DPDP / GDPR readiness concepts and industry-standard security practices, and requires expert review before production launch.</p>
+    <h2>5. Acceptable Use</h2>
+    <p>You agree not to misuse the platform, submit false information, attempt to bypass security, or use the service for unlawful purposes.</p>
+    <h2>6. Intellectual Property</h2>
+    <p>All content, reports, models, and branding are property of Obliq AI. You retain rights to your personal data and uploaded portfolio content.</p>
+    <h2>7. Limitation of Liability</h2>
+    <p>Obliq AI is not liable for decisions made based on AI guidance. Educational and career outcomes depend on many human factors outside our system.</p>
+    <h2>8. Changes</h2>
+    <p>We may update these terms with reasonable notice. Continued use after changes implies acceptance.</p>
+    <div class="callout-warn">Compliance-ready prototype requiring legal, security, and expert review before production launch.</div>
+    <div class="btn-row"><button class="btn btn-ghost" onclick="go('privacy')">Privacy Center</button></div>
+  </div>
+</div>
+
+<div id="screen-consentHistory" class="screen">
+  <div class="card">
+    <div class="section-num">Privacy</div>
+    <h1 class="title">Consent History</h1>
+    <p class="lead">Every consent you've granted, with timestamp and version. Current Consent Policy Version: v1.0.</p>
+    <table>
+      <thead><tr><th>Type</th><th>Granted</th><th>Version</th><th>Date</th><th>IP (mock)</th></tr></thead>
+      <tbody id="consentTable"></tbody>
+    </table>
+    <div class="btn-row"><button class="btn btn-ghost" onclick="go('privacy')">Privacy Center</button></div>
+  </div>
+</div>
+
+<div id="screen-export" class="screen">
+  <div class="card">
+    <div class="section-num">Data Request</div>
+    <h1 class="title" id="exportTitle">Data Request</h1>
+    <p class="lead" id="exportDesc"></p>
+    <div class="callout-navy" id="exportPreview"></div>
+    <div class="btn-row"><button class="btn btn-ghost" onclick="go('privacy')">Privacy Center</button></div>
+  </div>
+</div>
+
+<div id="screen-auditLog" class="screen">
+  <div class="card">
+    <div class="section-num">Compliance</div>
+    <h1 class="title">Audit Log (Mock)</h1>
+    <p class="lead">Every important event in the system is recorded. This is a mock log stored in local storage.</p>
+    <table>
+      <thead><tr><th>Event</th><th>User</th><th>Timestamp</th><th>IP</th></tr></thead>
+      <tbody id="auditTable"></tbody>
+    </table>
+    <div class="btn-row"><button class="btn btn-ghost" onclick="go('privacy')">Privacy Center</button></div>
+  </div>
+</div>
+
+<div id="screen-compliance" class="screen">
+  <div class="card">
+    <div class="section-num">Compliance · Section A9</div>
+    <h1 class="title">Compliance &amp; Security Checklist</h1>
+    <p class="lead">Eighteen items to clear before any public or enterprise launch. This prototype demonstrates structure only — production requires expert review.</p>
+    <div class="grid grid-2" id="checklist"></div>
+    <h2 style="margin-top:16px">Three-Layer Architecture</h2>
+    <div class="grid grid-3">
+      <div class="card card-tight"><h3>Product Layer</h3><p class="small muted">Onboarding, consent, privacy center, account deletion, dashboards.</p></div>
+      <div class="card card-tight"><h3>Security Layer</h3><p class="small muted">HTTPS, password hashing, MFA-ready, RBAC, rate limiting, audit logs.</p></div>
+      <div class="card card-tight"><h3>Compliance Layer</h3><p class="small muted">Privacy policy, consent tracking, retention, breach response plan.</p></div>
+    </div>
+    <h2 style="margin-top:16px">AI Transparency</h2>
+    <div class="callout"><strong>AI Disclosure:</strong> Obliq uses adaptive AI for assessment, scoring, and recommendations. All output is guidance, not a guarantee. A human review option (counsellor review) is available for validation. This is AI-assisted career guidance, not a final decision or guarantee.</div>
+    <h2 style="margin-top:16px">Readiness References</h2>
+    <p class="small muted">Designed with the following frameworks' readiness concepts in mind. The platform is not certified against, and does not claim to follow, any of these. Legal, security, and expert review is required before production launch.</p>
+    <div class="grid grid-2">
+      <div class="card card-tight"><h3>India — DPDP</h3><p class="small muted">Notice, consent, data principal rights, safeguards, breach process concepts.</p></div>
+      <div class="card card-tight"><h3>EU — GDPR</h3><p class="small muted">Legal basis, transparency, rights, breach notification concepts.</p></div>
+      <div class="card card-tight"><h3>US — HIPAA</h3><p class="small muted">Administrative, physical, technical safeguard concepts for health data.</p></div>
+      <div class="card card-tight"><h3>SOC 2</h3><p class="small muted">Security, availability, confidentiality, privacy criteria concepts.</p></div>
+    </div>
+    <div class="callout-warn" style="margin-top:16px"><strong>Important:</strong> Compliance-ready prototype requiring legal, security, and expert review before production launch.</div>
+    <div class="btn-row"><button class="btn btn-ghost" onclick="go('privacy')">Privacy Center</button></div>
+  </div>
+</div>
+
+<div class="footer">
+  Obliq AI · Career Intelligence Platform · Prototype Demo<br>
+  <a onclick="go('privacy')">Privacy</a> · <a onclick="go('terms')">Terms</a> · <a onclick="go('compliance')">Compliance</a> · <a onclick="go('auditLog')">Audit Log</a>
+  <div style="margin-top:6px" class="tiny">Compliance-ready prototype requiring legal, security, and expert review before production launch.</div>
+</div>
+
+</div>
+
+<div id="cookieBanner" class="cookie-banner" style="display:none">
+  <div class="ck-text">We use minimal cookies for session and preferences. No tracking, no ads.</div>
+  <button class="btn btn-gold btn-sm" onclick="acceptCookies()">Accept</button>
+  <button class="btn btn-ghost btn-sm" onclick="acceptCookies()" style="color:#fff;border-color:rgba(255,255,255,.2)">Essentials only</button>
+</div>
+
+</div>
+<script>
+var STATE={role:null,language:null,profile:{},parentInput:{},portfolioDesc:'',interests:[],mode:'standard',answers:[],adaptiveCluster:null,adaptiveAnswer:null,adaptiveDone:false,validationAnswer:null,scores:{},results:null,consent:[],auditLog:[],assessmentStatus:'not_started',counsellorReviewStatus:'Not Requested',planStarted:false};
+try{var _s=localStorage.getItem('obliqDemo');if(_s)Object.assign(STATE,JSON.parse(_s));}catch(e){}
+function persist(){try{localStorage.setItem('obliqDemo',JSON.stringify(STATE))}catch(e){}}
+function audit(event,meta){meta=meta||{};STATE.auditLog.unshift({event:event,meta:meta,user:STATE.profile.name||'Anonymous',time:new Date().toISOString(),ip:'192.168.x.x'});if(STATE.auditLog.length>60)STATE.auditLog.pop();persist();}
+
+function toggleFullscreen(){
+  var el=document.documentElement;
+  if(!document.fullscreenElement){
+    if(el.requestFullscreen)el.requestFullscreen();
+    else if(el.webkitRequestFullscreen)el.webkitRequestFullscreen();
+    document.getElementById('fsBtn').textContent='Exit Fullscreen';
+  } else {
+    if(document.exitFullscreen)document.exitFullscreen();
+    else if(document.webkitExitFullscreen)document.webkitExitFullscreen();
+    document.getElementById('fsBtn').textContent='Fullscreen';
+  }
+}
+document.addEventListener('fullscreenchange',function(){
+  document.getElementById('fsBtn').textContent=document.fullscreenElement?'Exit Fullscreen':'Fullscreen';
+});
+
+function go(screen){
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+  var el=document.getElementById('screen-'+screen);
+  if(el){el.classList.add('active');window.scrollTo({top:0,behavior:'smooth'});audit('NAVIGATE',{to:screen});}
+  updateRoleChip();
+  if(screen==='processing')setTimeout(runProcessing,300);
+  if(screen==='result'&&STATE.results)renderResult();
+  if(screen==='dashboard')renderDashboard();
+  if(screen==='parentDash')renderParentDash();
+  if(screen==='counsellorDash')renderCounsellorDash();
+  if(screen==='counsellorReview')renderCounsellorReview();
+  if(screen==='admin')renderAdmin();
+  if(screen==='school')renderSchool();
+  if(screen==='consentHistory')renderConsentHistory();
+  if(screen==='auditLog')renderAuditLog();
+  if(screen==='compliance')renderChecklist();
+  if(screen==='roadmap')renderRoadmap();
+  if(screen==='budget')calcBudget();
+  if(screen==='assessHome')updateMinorGate();
+  if(screen==='careerCompare')renderCompare();
+  if(screen==='college')renderColleges();
+  if(screen==='report')renderReport();
+  if(screen==='chat')renderChat();
+}
+function updateRoleChip(){var chip=document.getElementById('roleChip');if(STATE.role){chip.style.display='inline-block';chip.textContent=STATE.role}else chip.style.display='none';}
+function resetDemo(){if(confirm('Reset all demo data and start over?')){localStorage.removeItem('obliqDemo');location.reload();}}
+
+function switchTab(el,id){
+  el.parentElement.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+  el.classList.add('active');
+  ['tab-login','tab-register'].forEach(function(t){var e=document.getElementById(t);if(e)e.style.display='none';});
+  var target=document.getElementById(id);if(target)target.style.display='block';
+}
+
+function strHash(s){var h=0;for(var i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h|=0;}return Math.abs(h);}
+function seededShuffle(arr,seed){
+  var a=arr.slice();var s=seed||1;
+  for(var i=a.length-1;i>0;i--){
+    s=(s*9301+49297)%233280;
+    var j=Math.floor(s/233280*(i+1));
+    var tmp=a[i];a[i]=a[j];a[j]=tmp;
+  }
+  return a;
+}
+function animateCounter(el,target,suffix,dur){
+  if(!el)return;suffix=suffix||'';dur=dur||900;
+  var start=0,t0=null;
+  function step(ts){
+    if(!t0)t0=ts;
+    var p=Math.min((ts-t0)/dur,1);
+    el.textContent=Math.round(start+(target-start)*(1-Math.pow(1-p,3)))+suffix;
+    if(p<1)requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+var ROLES=[{id:'Student',icon:'St',desc:'Take assessment'},{id:'Parent',icon:'Pa',desc:'Guide your child'},{id:'Counsellor',icon:'Co',desc:'Review reports'},{id:'Admin',icon:'Ad',desc:'Manage platform'},{id:'School',icon:'Sc',desc:'Institution analytics'}];
+function renderRoles(){
+  document.getElementById('roleGrid').innerHTML=ROLES.map(function(r,i){return '<div class="role-card pop-in '+(STATE.role===r.id?'selected':'')+'" style="animation-delay:'+(i*70)+'ms" onclick="pickRole(\''+r.id+'\')"><div class="icon">'+r.icon+'</div><div class="role-name">'+r.id+'</div><div class="role-desc">'+r.desc+'</div></div>';}).join('');
+}
+function pickRole(r){STATE.role=r;persist();renderRoles();updateRoleChip();audit('ROLE_SELECTED',{role:r});}
+function proceedFromRole(){if(!STATE.role){alert('Please pick a role to continue.');return}go('login');}
+
+function doLogin(){
+  audit('LOGIN_SUCCESS');
+  if(STATE.role==='Parent')go('parentDash');
+  else if(STATE.role==='Counsellor')go('counsellorDash');
+  else if(STATE.role==='Admin')go('admin');
+  else if(STATE.role==='School')go('school');
+  else go('language');
+}
+function selectLang(el,code){
+  document.querySelectorAll('#screen-language .role-card').forEach(function(c){c.classList.remove('selected');});
+  el.classList.add('selected');STATE.language=code;persist();
+}
+function grantConsent(){
+  if(!document.getElementById('c1').checked||!document.getElementById('c2').checked||!document.getElementById('c3').checked){alert('Please accept the required consents to continue.');return}
+  var now=new Date().toISOString();
+  STATE.consent=[
+    {type:'TERMS',granted:true,version:'v1.0',time:now,ip:'192.168.x.x'},
+    {type:'PRIVACY_POLICY',granted:true,version:'v1.0',time:now,ip:'192.168.x.x'},
+    {type:'ASSESSMENT',granted:true,version:'v1.0',time:now,ip:'192.168.x.x'},
+    {type:'AI_PROFILING',granted:true,version:'v1.0',time:now,ip:'192.168.x.x'},
+    {type:'MARKETING',granted:document.getElementById('c4').checked,version:'v1.0',time:now,ip:'192.168.x.x'}
+  ];
+  audit('CONSENT_GRANTED',{version:'v1.0'});persist();go('comfort');
+}
+function saveProfile(){
+  var age=parseInt(document.getElementById('pf_age').value)||16;
+  STATE.profile={name:document.getElementById('pf_name').value||'Demo Student',age:age,'class':document.getElementById('pf_class').value,city:document.getElementById('pf_city').value||'Jaipur',board:document.getElementById('pf_board').value,stream:document.getElementById('pf_stream').value,subjects:document.getElementById('pf_subjects').value,marks:document.getElementById('pf_marks').value,dream:document.getElementById('pf_dream').value,confusion:document.getElementById('pf_confusion').value,location:document.getElementById('pf_loc').value,budget:document.getElementById('pf_budget').value};
+  persist();audit('PROFILE_SAVED',{age:age});go('parentInvite');
+}
+
+var INTERESTS=[{id:'science',label:'Science',icon:'Sc'},{id:'business',label:'Business',icon:'Bu'},{id:'design',label:'Design',icon:'De'},{id:'sports',label:'Sports',icon:'Sp'},{id:'medicine',label:'Medicine',icon:'Me'},{id:'law',label:'Law',icon:'La'},{id:'ai',label:'AI / Tech',icon:'AI'},{id:'aviation',label:'Aviation',icon:'Av'},{id:'media',label:'Media',icon:'Md'},{id:'writing',label:'Writing',icon:'Wr'},{id:'psychology',label:'Psychology',icon:'Ps'},{id:'entrepreneurship',label:'Entrepreneurship',icon:'En'}];
+function renderInterests(){
+  document.getElementById('interestGrid').innerHTML=INTERESTS.map(function(i,idx){return '<div class="interest-card pop-in '+(STATE.interests.indexOf(i.id)>=0?'selected':'')+'" style="animation-delay:'+(idx*45)+'ms" onclick="toggleInterest(\''+i.id+'\',this)"><span class="ic-icon">'+i.icon+'</span><span class="ic-label">'+i.label+'</span></div>';}).join('');
+  document.getElementById('interestCount').textContent=STATE.interests.length;
+}
+function toggleInterest(id,el){
+  var idx=STATE.interests.indexOf(id);
+  if(idx>=0)STATE.interests.splice(idx,1);else STATE.interests.push(id);
+  el.classList.toggle('selected');
+  document.getElementById('interestCount').textContent=STATE.interests.length;persist();
+}
+var INTEREST_CLUSTER={science:'health',medicine:'health',psychology:'health',business:'business',entrepreneurship:'business',design:'creative',media:'creative',writing:'creative',ai:'tech',sports:'physical',aviation:'physical',law:'humanities'};
+function goModeRec(){
+  if(STATE.interests.length<3){alert('Pick at least 3 interests to continue.');return}
+  var counts={};
+  STATE.interests.forEach(function(i){var c=INTEREST_CLUSTER[i];counts[c]=(counts[c]||0)+1;});
+  STATE.adaptiveCluster=Object.keys(counts).sort(function(a,b){return counts[b]-counts[a]||a.localeCompare(b);})[0]||'broad';
+  persist();go('mode');
+}
+function selectMode(el,mode){
+  document.querySelectorAll('#modeGrid .role-card').forEach(function(c){c.classList.remove('selected');});
+  el.classList.add('selected');STATE.mode=mode;persist();
+}
+var MODULES=[{name:'Interest Inventory',desc:'What you like and why'},{name:'Aptitude Test',desc:'Natural abilities'},{name:'Personality Test',desc:'Working style'},{name:'EQ Test',desc:'Emotional awareness'},{name:'SJT Test',desc:'Real-world judgment'},{name:'Skills Test',desc:'Current readiness'},{name:'Values Test',desc:'Motivation map'},{name:'Lifestyle Mapping',desc:'Future fit'},{name:'Hobby Mapping',desc:'Hidden talent'},{name:'Portfolio Analysis',desc:'Real work proof'}];
+function renderModules(){
+  document.getElementById('moduleGrid').innerHTML=MODULES.map(function(m,i){return '<div class="card card-tight pop-in" style="animation-delay:'+(i*45)+'ms"><div class="row" style="justify-content:space-between"><h3>'+m.name+'</h3><span class="badge '+(i<3?'badge-gold':'badge-navy')+'">'+(i<3?'In this demo':'Phase 2')+'</span></div><p class="small muted">'+m.desc+'</p></div>';}).join('');
+}
+function isMinor(){return STATE.profile.age&&STATE.profile.age<18;}
+function updateMinorGate(){
+  var box=document.getElementById('minorConsentBox');var btn=document.getElementById('beginAssessBtn');
+  if(isMinor()){
+    box.style.display='block';
+    var ok=document.getElementById('minorConsentChk').checked;
+    btn.disabled=!ok;btn.style.opacity=ok?'1':'.55';btn.style.cursor=ok?'pointer':'not-allowed';
+  } else {box.style.display='none';btn.disabled=false;btn.style.opacity='1';btn.style.cursor='pointer';}
+}
+
+var QUESTION_BANK=[
+  {module:'Interest Inventory',type:'mcq',q:'Which subject feels most enjoyable to you?',options:[{label:'Biology / Life Sciences',tag:'health'},{label:'Math / Physics',tag:'tech'},{label:'Business / Economics',tag:'business'},{label:'Languages / Arts',tag:'creative'}]},
+  {module:'Interest Inventory',type:'rating',q:'How much do you enjoy solving puzzles or logical problems?',scale:5},
+  {module:'Interest Inventory',type:'mcq',q:'Which activity sounds most fun for a weekend?',options:[{label:'Build something with code or hardware',tag:'tech'},{label:'Sketch, design, or shoot a video',tag:'creative'},{label:'Read a book and write notes',tag:'humanities'},{label:'Help someone in your community',tag:'health'}]},
+  {module:'Interest Inventory',type:'mcq',q:'Which career role sounds most appealing?',options:[{label:'Doctor / researcher',tag:'health'},{label:'Designer / creator',tag:'creative'},{label:'Engineer / data scientist',tag:'tech'},{label:'Entrepreneur / business leader',tag:'business'}]},
+  {module:'Interest Inventory',type:'short',q:'In one line: what would you do if money were not a concern?'},
+  {module:'Aptitude Test',type:'mcq',q:'If 3x + 5 = 20, what is x?',options:[{label:'3',tag:'wrong'},{label:'5',tag:'right'},{label:'7',tag:'wrong'},{label:'15',tag:'wrong'}]},
+  {module:'Aptitude Test',type:'mcq',q:'A train travels 60 km in 1 hour. How far in 2.5 hours at the same speed?',options:[{label:'120 km',tag:'wrong'},{label:'150 km',tag:'right'},{label:'180 km',tag:'wrong'},{label:'90 km',tag:'wrong'}]},
+  {module:'Aptitude Test',type:'mcq',q:'Pick the odd one out:',options:[{label:'Triangle',tag:'wrong'},{label:'Square',tag:'wrong'},{label:'Circle',tag:'right'},{label:'Pentagon',tag:'wrong'}]},
+  {module:'Aptitude Test',type:'rating',q:'How quickly can you usually understand a new concept?',scale:5},
+  {module:'Aptitude Test',type:'mcq',q:'When given a problem, what is your first instinct?',options:[{label:'Break it into steps',tag:'analytical'},{label:'Visualize the whole picture',tag:'visual'},{label:'Ask others for ideas',tag:'collaborative'},{label:'Just start trying things',tag:'experiential'}]},
+  {module:'Personality Test',type:'rating',q:'I enjoy meeting new people regularly.',scale:5},
+  {module:'Personality Test',type:'rating',q:'I prefer structured routines over spontaneity.',scale:5},
+  {module:'Personality Test',type:'mcq',q:'In group work, you usually:',options:[{label:'Take the lead',tag:'leader'},{label:'Generate ideas',tag:'creative'},{label:'Organize the plan',tag:'planner'},{label:'Support and execute',tag:'supporter'}]},
+  {module:'Personality Test',type:'rank',q:'Rank these in order of importance to you:',items:['Stability','Adventure','Recognition','Helping others']},
+  {module:'EQ Test',type:'scenario',q:'Your friend feels down after a low test score. What do you do first?',options:[{label:'Listen patiently before saying anything',tag:'empathy_high'},{label:'Immediately suggest study tips',tag:'practical'},{label:'Tell them not to worry',tag:'avoid'},{label:'Share that you also had a bad score',tag:'relate'}]},
+  {module:'EQ Test',type:'rating',q:'I can usually tell how someone is feeling without them saying it.',scale:5},
+  {module:'SJT Test',type:'scenario',q:'You discover a teammate is taking credit for your idea. You:',options:[{label:'Confront them privately',tag:'assertive'},{label:'Inform the teacher / manager',tag:'authority'},{label:'Let it go this time',tag:'avoid'},{label:'Document and discuss with them later',tag:'measured'}]},
+  {module:'Skills Test',type:'mcq',q:'Which skill have you actively practiced for 3+ months?',options:[{label:'A musical instrument or art form',tag:'creative'},{label:'A sport or fitness routine',tag:'physical'},{label:'Coding / building digital things',tag:'tech'},{label:'Writing / public speaking',tag:'humanities'}]},
+  {module:'Values Test',type:'rank',q:'Rank what matters most for your future career:',items:['Money','Impact','Freedom','Recognition','Security']},
+  {module:'Lifestyle Mapping',type:'mcq',q:'In 10 years, what does your daily life look like?',options:[{label:'In a creative studio or makerspace',tag:'creative'},{label:'In a corporate or research office',tag:'corporate'},{label:'Outdoors / travelling often',tag:'physical'},{label:'Running my own business',tag:'business'}]}
+];
+var QUESTIONS=[];
+function buildShuffledQuestions(seed){
+  var byModule={},moduleOrder=[];
+  QUESTION_BANK.forEach(function(q){if(!byModule[q.module]){byModule[q.module]=[];moduleOrder.push(q.module);}byModule[q.module].push(q);});
+  moduleOrder=seededShuffle(moduleOrder,seed);
+  var out=[];
+  moduleOrder.forEach(function(m,mi){seededShuffle(byModule[m],seed+mi*97+13).forEach(function(q){out.push(q);});});
+  return out;
+}
+
+var CURRENT_Q=0;
+function startAssessment(){
+  if(isMinor()&&!document.getElementById('minorConsentChk').checked){alert('Parent / guardian consent must be confirmed before the assessment can begin.');return;}
+  QUESTIONS=buildShuffledQuestions(Date.now()%233280);
+  CURRENT_Q=0;STATE.answers=[];STATE.assessmentStatus='in_progress';STATE.adaptiveAnswer=null;STATE.adaptiveDone=false;STATE.validationAnswer=null;persist();
+  audit('ASSESSMENT_STARTED',{minor:isMinor(),shuffled:true});
+  showQuestion();go('question');
+}
+function showQuestion(){
+  if(CURRENT_Q>=QUESTIONS.length){finishAssessment();return}
+  var q=QUESTIONS[CURRENT_Q];
+  document.getElementById('qModule').textContent=q.module;
+  document.getElementById('qCounter').textContent='Question '+(CURRENT_Q+1)+' of '+QUESTIONS.length;
+  document.getElementById('qProgress').style.width=(CURRENT_Q/QUESTIONS.length*100)+'%';
+  document.getElementById('qText').textContent=q.q;
+  document.getElementById('qNextBtn').disabled=true;
+  var opts=document.getElementById('qOptions');
+  if(q.type==='mcq'||q.type==='scenario'){
+    opts.innerHTML=q.options.map(function(o,i){return '<div class="option fade-up" style="animation-delay:'+(i*55)+'ms" onclick="selectOpt(this,'+i+')">'+o.label+'</div>';}).join('');
+  } else if(q.type==='rating'){
+    opts.innerHTML='<div class="rating-scale">'+[1,2,3,4,5].map(function(n){return '<button class="rating-btn" onclick="selectRating(this,'+n+')">'+n+'</button>';}).join('')+'</div><div class="row" style="justify-content:space-between"><span class="tiny muted">Strongly disagree</span><span class="tiny muted">Strongly agree</span></div>';
+  } else if(q.type==='rank'){
+    opts.innerHTML='<p class="small muted">Tap in order from most to least important.</p>'+q.items.map(function(it,i){return '<div class="option fade-up" style="animation-delay:'+(i*55)+'ms" data-item="'+it+'" onclick="selectRank(this)">'+it+'</div>';}).join('')+'<p class="small" id="rankOrder" style="margin-top:8px"></p>';
+    opts.dataset.rank='';
+  } else if(q.type==='short'){
+    opts.innerHTML='<textarea rows="3" id="shortAns" placeholder="Type a short answer..." oninput="if(this.value.length>3)document.getElementById(\'qNextBtn\').disabled=false"></textarea>';
+  }
+}
+function selectOpt(el,i){el.parentElement.querySelectorAll('.option').forEach(function(o){o.classList.remove('selected');});el.classList.add('selected');el.dataset.idx=i;document.getElementById('qNextBtn').disabled=false;}
+function selectRating(el,n){el.parentElement.querySelectorAll('.rating-btn').forEach(function(b){b.classList.remove('selected');});el.classList.add('selected');el.dataset.val=n;document.getElementById('qNextBtn').disabled=false;}
+function selectRank(el){
+  var opts=el.parentElement;
+  var order=opts.dataset.rank?opts.dataset.rank.split('|'):[];
+  if(el.classList.contains('selected'))return;
+  el.classList.add('selected');el.style.background='var(--gold-bg)';el.style.borderColor='var(--gold)';
+  order.push(el.dataset.item);
+  var num=document.createElement('span');num.textContent=' #'+order.length;num.style.color='var(--gold)';num.style.fontWeight='700';el.appendChild(num);
+  opts.dataset.rank=order.join('|');
+  document.getElementById('rankOrder').textContent='Order: '+order.join(' \u2192 ');
+  if(order.length===opts.querySelectorAll('.option').length)document.getElementById('qNextBtn').disabled=false;
+}
+function nextQuestion(){
+  var q=QUESTIONS[CURRENT_Q];
+  var answer={module:q.module,q:q.q};
+  if(q.type==='mcq'||q.type==='scenario'){
+    var sel=document.querySelector('#qOptions .option.selected');
+    if(sel){answer.choice=q.options[sel.dataset.idx].label;answer.tag=q.options[sel.dataset.idx].tag}
+  } else if(q.type==='rating'){
+    var rb=document.querySelector('#qOptions .rating-btn.selected');
+    answer.value=parseInt(rb?rb.dataset.val:3);
+  } else if(q.type==='rank'){
+    answer.order=document.getElementById('qOptions').dataset.rank.split('|');
+  } else if(q.type==='short'){
+    answer.text=document.getElementById('shortAns').value;
+  }
+  STATE.answers.push(answer);persist();
+  if(!STATE.adaptiveDone&&answer.tag&&['health','tech','business','creative','humanities'].indexOf(answer.tag)>=0){
+    STATE.adaptiveCluster=answer.tag;STATE.adaptiveDone=true;persist();showAdaptive(answer.tag);return;
+  }
+  CURRENT_Q++;showQuestion();
+}
+function skipQuestion(){STATE.answers.push({module:QUESTIONS[CURRENT_Q].module,q:QUESTIONS[CURRENT_Q].q,skipped:true});CURRENT_Q++;showQuestion();}
+
+function showAdaptive(cluster){
+  var reason='',text='',options=[];
+  if(cluster==='health'){reason='Since you showed interest in biology and helping people, let\'s explore which path fits you better.';text='Which area within healthcare interests you most?';options=['Medicine (MBBS, surgery)','Biotechnology and research','Psychology and mental health','Pharmacy and life sciences','Healthcare management'];}
+  else if(cluster==='tech'){reason='You are drawn to logic and technology - let\'s narrow it down.';text='Which technology direction sounds most like you?';options=['Software development and coding','Data science and AI','Robotics and hardware','Product and UX','Cybersecurity'];}
+  else if(cluster==='business'){reason='You lean toward business and decision-making - let\'s go deeper.';text='Which business area would you most like to lead in?';options=['Finance and investing','Marketing and brand','Entrepreneurship and startups','Operations and strategy','Consulting'];}
+  else if(cluster==='creative'){reason='Creative thinking is your strength - let\'s find your medium.';text='Which creative direction interests you most?';options=['Visual design / UI-UX','Film and media production','Writing and content','Architecture and interior','Fashion and product design'];}
+  else if(cluster==='humanities'){reason='You are drawn to people, society, and ideas - let\'s go deeper.';text='Which humanities direction interests you most?';options=['Law and legal practice','Civil services and public policy','Social science and research','Education and teaching','Journalism and communication'];}
+  else{reason='You do not have a single strong direction yet - that is completely fine. Let\'s explore broadly.';text='Which type of work environment sounds most appealing?';options=['Working alone, deep focus','Working in a team, lots of collaboration','Working with people directly','Working with my hands or outdoors','A mix of all of these'];}
+  options=seededShuffle(options,Date.now()%99991);
+  document.getElementById('adaptiveReason').textContent=reason;
+  document.getElementById('adaptiveText').textContent=text;
+  document.getElementById('adaptiveOptions').innerHTML=options.map(function(o,i){return '<div class="option fade-up" style="animation-delay:'+(i*55)+'ms" onclick="selectAdaptive(this,\''+o.replace(/'/g,"\\'")+'\')">'+o+'</div>';}).join('');
+  document.getElementById('adaptNextBtn').disabled=true;
+  go('adaptive');
+}
+function selectAdaptive(el,val){el.parentElement.querySelectorAll('.option').forEach(function(o){o.classList.remove('selected');});el.classList.add('selected');STATE.adaptiveAnswer=val;persist();document.getElementById('adaptNextBtn').disabled=false;}
+function continueAdaptive(){STATE.answers.push({module:'Adaptive Follow-Up',q:'Adaptive cluster choice',choice:STATE.adaptiveAnswer});persist();CURRENT_Q++;showQuestion();go('question');}
+
+var DREAM_CLUSTER=[
+  {kw:['doctor','mbbs','medicine','medical','surgeon','dentist','nurse'],cluster:'health'},
+  {kw:['engineer','software','coder','developer','data','ai','programmer','tech','robotics'],cluster:'tech'},
+  {kw:['business','entrepreneur','startup','ceo','founder','manager','finance','banker','marketing'],cluster:'business'},
+  {kw:['designer','artist','design','media','film','writer','journalist','architect','animator','fashion'],cluster:'creative'},
+  {kw:['lawyer','law','ias','ips','civil','judge','politician'],cluster:'humanities'},
+  {kw:['pilot','aviation','sports','athlete','army','defence','coach'],cluster:'physical'}
+];
+function dreamToCluster(dream){
+  if(!dream)return null;
+  var d=dream.toLowerCase();
+  for(var i=0;i<DREAM_CLUSTER.length;i++){var e=DREAM_CLUSTER[i];for(var j=0;j<e.kw.length;j++){if(d.indexOf(e.kw[j])>=0)return e.cluster;}}
+  return null;
+}
+function finishAssessment(){STATE.assessmentStatus='completed';audit('ASSESSMENT_COMPLETED');persist();go('portfolio');}
+function savePortfolio(){STATE.portfolioDesc=document.getElementById('pf_portfolioDesc').value||'';persist();go('parentInput');}
+function saveParentInput(){
+  STATE.parentInput={name:document.getElementById('pi_name').value||'',budget:document.getElementById('pi_budget').value,city:document.getElementById('pi_city').value||'',collegeType:document.getElementById('pi_collegeType').value,abroad:document.getElementById('pi_abroad').value,style:document.getElementById('pi_style').value,concerns:document.getElementById('pi_concerns').value||''};
+  audit('PARENT_INPUT_SAVED');persist();go('processing');
+}
+
+function runProcessing(){
+  var bar=document.getElementById('procBar'),text=document.getElementById('procText');
+  var steps=['Analyzing interests...','Cross-checking aptitude...','Mapping personality...','Matching careers...','Filtering colleges...','Generating report...'];
+  var i=0,p=0;
+  var interval=setInterval(function(){
+    p+=2;bar.style.width=p+'%';
+    if(p%17===0&&i<steps.length-1){i++;text.textContent=steps[i];}
+    if(p>=100){
+      clearInterval(interval);computeResults();
+      var dc=dreamToCluster(STATE.profile.dream);
+      if(dc&&STATE.results&&dc!==STATE.results.topCluster&&STATE.validationAnswer===null){showValidation(dc);}
+      else{go('result');renderResult();}
+    }
+  },28);
+}
+function showValidation(dreamCluster){
+  document.getElementById('validationReason').textContent='You mentioned "'+STATE.profile.dream+'" as a dream career, but your strongest assessment signals point toward '+clusterLabel(STATE.results.topCluster)+'.';
+  document.getElementById('validationText').textContent='Do you still want '+clusterLabel(dreamCluster)+' kept as a serious option in your recommendations?';
+  var options=['Yes, keep it as a serious priority option','Keep it as a backup, but show me my best-fit matches first','No, I am open to exploring my best-fit matches instead'];
+  document.getElementById('validationOptions').innerHTML=options.map(function(o,i){return '<div class="option fade-up" style="animation-delay:'+(i*55)+'ms" onclick="selectValidation(this,\''+o.replace(/'/g,"\\'")+'\')">'+o+'</div>';}).join('');
+  document.getElementById('validationNextBtn').disabled=true;
+  STATE._dreamCluster=dreamCluster;go('validation');
+}
+function selectValidation(el,val){el.parentElement.querySelectorAll('.option').forEach(function(o){o.classList.remove('selected');});el.classList.add('selected');STATE.validationAnswer=val;persist();document.getElementById('validationNextBtn').disabled=false;}
+function continueValidation(){
+  audit('VALIDATION_ANSWERED',{answer:STATE.validationAnswer});
+  if(STATE.validationAnswer&&STATE.validationAnswer.indexOf('serious priority')>=0&&STATE._dreamCluster){computeResults(STATE._dreamCluster);}
+  persist();go('result');renderResult();
+}
+function clusterLabel(c){return {health:'Healthcare & Life Sciences',tech:'Technology & Engineering',business:'Business & Leadership',creative:'Creative & Design',humanities:'Law & Public Service',physical:'Sports & Aviation',broad:'Broad Exploration'}[c]||c;}
+
+function computeResults(priorityCluster){
+  var tags={};
+  var imap={science:['health','tech'],medicine:['health'],psychology:['health'],business:['business'],entrepreneurship:['business'],design:['creative'],media:['creative'],writing:['creative'],ai:['tech'],sports:['physical'],aviation:['physical'],law:['humanities']};
+  STATE.interests.forEach(function(i){(imap[i]||[]).forEach(function(t){tags[t]=(tags[t]||0)+2;});});
+  STATE.answers.forEach(function(a){if(a.tag)tags[a.tag]=(tags[a.tag]||0)+1;});
+  if(STATE.adaptiveCluster)tags[STATE.adaptiveCluster]=(tags[STATE.adaptiveCluster]||0)+3;
+  if(priorityCluster)tags[priorityCluster]=(tags[priorityCluster]||0)+5;
+  STATE.scores=tags;
+  var CAREERS=[
+    {name:'Doctor / Physician',cluster:'health',risk:'Medium',scope:'Very High',duration:'long',cost:'high',salary:'high',stream:'Science PCB',course:'MBBS',india:'AIIMS, JIPMER, AFMC',abroad:'USMLE pathway',backup:'BDS, Physiotherapy',reason:'Health-interest signal and analytical aptitude'},
+    {name:'Biotechnologist',cluster:'health',risk:'Medium',scope:'High',duration:'long',cost:'high',salary:'mid',stream:'Science PCB / PCMB',course:'B.Tech Biotech',india:'IITs, ICT, IISc',abroad:'USA, Germany',backup:'Biochemistry, Microbiology',reason:'Curiosity in biology and a research orientation'},
+    {name:'Clinical Psychologist',cluster:'health',risk:'Low',scope:'High',duration:'long',cost:'mid',salary:'mid',stream:'Humanities / Science',course:'BA/BSc Psychology',india:'TISS, Christ, DU',abroad:'UK, Canada',backup:'Counsellor, HR',reason:'Strong EQ and interest in helping people'},
+    {name:'Software Engineer',cluster:'tech',risk:'Low',scope:'Very High',duration:'long',cost:'mid',salary:'high',stream:'Science PCM',course:'B.Tech CSE',india:'IITs, NITs, BITS',abroad:'USA, Canada',backup:'Web / App developer',reason:'Logical reasoning and a clear technology interest'},
+    {name:'Data Scientist / AI Engineer',cluster:'tech',risk:'Low',scope:'Very High',duration:'long',cost:'mid',salary:'high',stream:'Science PCM',course:'B.Tech / MS Data Science',india:'IIITs, IITs, ISI',abroad:'CMU, Stanford',backup:'Analyst roles',reason:'Logical aptitude and interest in AI and technology'},
+    {name:'Product Designer (UI/UX)',cluster:'creative',risk:'Low',scope:'High',duration:'long',cost:'mid',salary:'mid',stream:'Design / Science',course:'B.Des UX',india:'NID, IIT IDC, Srishti',abroad:'RCA, Parsons',backup:'Graphic designer',reason:'Creative spark and strong observation skills'},
+    {name:'Filmmaker / Media Producer',cluster:'creative',risk:'High',scope:'Medium',duration:'long',cost:'mid',salary:'mid',stream:'Humanities / Design',course:'BA Film & Media',india:'FTII, SRFTI',abroad:'NYU, AFI',backup:'Content creator',reason:'Creative and storytelling inclination'},
+    {name:'Entrepreneur / Founder',cluster:'business',risk:'High',scope:'Very High',duration:'short',cost:'mid',salary:'high',stream:'Commerce / Any',course:'BBA / BA Economics',india:'IIM-A IPM, Ashoka',abroad:'Babson, Wharton',backup:'Family business',reason:'Risk tolerance and a business orientation'},
+    {name:'Investment Banker',cluster:'business',risk:'Medium',scope:'High',duration:'short',cost:'mid',salary:'high',stream:'Commerce with Maths',course:'BCom / BBA Finance',india:'SRCC, Christ, NMIMS',abroad:'LSE, NYU Stern',backup:'CA, Equity research',reason:'Numerical aptitude and a business interest'},
+    {name:'Architect',cluster:'creative',risk:'Medium',scope:'Medium',duration:'long',cost:'mid',salary:'mid',stream:'Science PCM',course:'B.Arch',india:'CEPT, SPA, NIT',abroad:'Bartlett, ETH',backup:'Interior designer',reason:'Visual and spatial reasoning ability'},
+    {name:'Civil Services (IAS/IPS)',cluster:'humanities',risk:'High',scope:'High',duration:'short',cost:'low',salary:'mid',stream:'Any',course:'BA Political Science',india:'DU, JNU',abroad:'N/A',backup:'State services',reason:'Service mindset and broad general knowledge'},
+    {name:'Lawyer / Legal Counsel',cluster:'humanities',risk:'Low',scope:'High',duration:'long',cost:'mid',salary:'mid',stream:'Humanities',course:'BA LLB',india:'NLSIU, NALSAR',abroad:'Harvard Law, Oxford',backup:'Corporate paralegal',reason:'Analytical mind and interest in justice'},
+    {name:'Pilot (Aviation)',cluster:'physical',risk:'Medium',scope:'High',duration:'short',cost:'high',salary:'high',stream:'Science PCM',course:'CPL',india:'IGRUA, BAA',abroad:'CAE Oxford',backup:'Air traffic control',reason:'Aviation interest and decision-making under pressure'},
+    {name:'Writer / Journalist',cluster:'creative',risk:'Medium',scope:'Medium',duration:'short',cost:'low',salary:'mid',stream:'Humanities',course:'BA English / Journalism',india:'St. Stephens, Symbiosis',abroad:'Columbia',backup:'Editor, Content strategist',reason:'Writing interest and observation skills'},
+    {name:'Sports Coach / Athlete',cluster:'physical',risk:'High',scope:'Medium',duration:'short',cost:'low',salary:'mid',stream:'Vocational / Sports',course:'BPEd',india:'LNIPE, NSNIS',abroad:'Loughborough',backup:'Fitness trainer',reason:'Physical aptitude and a sports interest'}
+  ];
+  var scored=CAREERS.map(function(c){
+    var fit=42+(tags[c.cluster]||0)*7;
+    fit+=(strHash(c.name)%9);
+    if(STATE.profile.location==='Abroad'&&c.abroad!=='N/A')fit+=2;
+    fit=Math.min(97,Math.max(35,Math.round(fit)));
+    var copy={};for(var k in c)copy[k]=c[k];copy.fit=fit;return copy;
+  }).sort(function(a,b){return b.fit-a.fit||a.name.localeCompare(b.name);});
+  var topCluster=priorityCluster||Object.keys(tags).sort(function(a,b){return tags[b]-tags[a]||a.localeCompare(b);})[0]||'broad';
+  var confidence=Math.min(95,55+STATE.answers.length*1.5+(STATE.interests.length*2));
+  STATE.results={top10:scored.slice(0,10),topCluster:topCluster,confidence:Math.round(confidence)};
+  var STREAM_MAP={health:{primary:'Science PCB',backup:'PCMB',reason:'Biology-centric career interests need a PCB or PCMB foundation.'},tech:{primary:'Science PCM',backup:'PCMB',reason:'Math and Physics are core for engineering and computer science paths.'},business:{primary:'Commerce with Maths',backup:'Commerce without Maths',reason:'Maths supports finance and ROI-focused careers.'},creative:{primary:'Humanities / Design',backup:'Hybrid',reason:'Design schools value portfolios and humanities thinking.'},humanities:{primary:'Humanities',backup:'Commerce',reason:'Best suited for law, civil services, and social sciences.'},physical:{primary:'Science PCM / Vocational',backup:'Sports',reason:'Aviation and sports paths benefit from these streams.'},broad:{primary:'Hybrid (Commerce / Humanities)',backup:'Science PCB',reason:'Keeps your options open while you continue to discover.'}};
+  STATE.results.stream=STREAM_MAP[topCluster]||STREAM_MAP.broad;
+  persist();
+}
+
+function renderResult(){
+  if(!STATE.results)computeResults();
+  var r=STATE.results;
+  animateCounter(document.getElementById('resScore'),r.confidence,'%',1000);
+  document.getElementById('resCluster').textContent=clusterLabel(r.topCluster);
+  document.getElementById('topDirections').innerHTML=r.top10.slice(0,3).map(function(c,i){return '<div class="card card-tight pop-in" style="border-top:3px solid var(--gold);animation-delay:'+(i*90)+'ms"><h3>'+c.name+'</h3><p class="tiny muted">'+clusterLabel(c.cluster)+'</p><div class="row"><span class="badge badge-gold">Fit '+c.fit+'%</span><span class="badge badge-blue">'+c.scope+' scope</span></div></div>';}).join('');
+  document.getElementById('careerCards').innerHTML=r.top10.map(function(c,i){return '<div class="career-card fade-up" style="animation-delay:'+(i*60)+'ms"><div class="row" style="justify-content:space-between"><h3>'+(i+1)+'. '+c.name+'</h3><span class="badge badge-gold">'+c.fit+'%</span></div><div class="fit-bar"><div class="fit-bar-inner" data-fit="'+c.fit+'"></div></div><div class="row tiny" style="margin-top:4px"><span class="badge '+(c.risk==='High'?'badge-red':c.risk==='Medium'?'badge-gold':'badge-green')+'">Risk: '+c.risk+'</span><span class="badge badge-blue">Scope: '+c.scope+'</span></div><p class="small muted" style="margin-top:6px">'+c.reason+'</p><div class="small"><strong>Stream:</strong> '+c.stream+' &middot; <strong>Course:</strong> '+c.course+'</div></div>';}).join('');
+  setTimeout(function(){document.querySelectorAll('#careerCards .fit-bar-inner').forEach(function(b){b.style.width=b.dataset.fit+'%';});},120);
+  renderStream();renderCompare();renderCourses();renderColleges();renderReport();
+}
+function renderStream(){
+  var r=STATE.results;if(!r)return;
+  document.getElementById('streamLead').textContent=r.stream.reason;
+  document.getElementById('streamGrid').innerHTML='<div class="card card-tight" style="border-left:4px solid var(--gold)"><span class="badge badge-gold">Primary Suggestion</span><h3>'+r.stream.primary+'</h3><p class="small muted">'+r.stream.reason+'</p></div><div class="card card-tight" style="border-left:4px solid var(--navy-3)"><span class="badge badge-navy">Backup Option</span><h3>'+r.stream.backup+'</h3><p class="small muted">A safe alternative that keeps key careers open.</p></div>';
+  var ALL=['Science PCM','Science PCB','PCMB','Commerce with Maths','Commerce without Maths','Humanities','Design','Vocational','Sports','Defence','Aviation','Entrepreneurship','Hybrid'];
+  document.getElementById('streamChips').innerHTML=ALL.map(function(s){return '<span class="chip'+(s===r.stream.primary?' gold':'')+'">'+s+'</span>';}).join('');
+}
+function renderCompare(){
+  if(!STATE.results){document.getElementById('compareTable').innerHTML='<tbody><tr><td>Complete the assessment first.</td></tr></tbody>';return;}
+  var loc=(document.getElementById('cmpLoc')||{}).value||'all',budget=(document.getElementById('cmpBudget')||{}).value||'all',risk=(document.getElementById('cmpRisk')||{}).value||'all',scope=(document.getElementById('cmpScope')||{}).value||'all',dur=(document.getElementById('cmpDuration')||{}).value||'all',sal=(document.getElementById('cmpSalary')||{}).value||'all';
+  var pool=STATE.results.top10.filter(function(c){
+    if(risk!=='all'&&c.risk!==risk)return false;
+    if(scope!=='all'&&c.scope!==scope)return false;
+    if(budget==='low'&&c.cost==='high')return false;
+    if(budget==='high'&&c.cost==='low')return false;
+    if(dur!=='all'&&c.duration!==dur)return false;
+    if(sal!=='all'&&c.salary!==sal)return false;
+    if(loc==='abroad'&&c.abroad==='N/A')return false;
+    return true;
+  });
+  var note=document.getElementById('compareNote');
+  if(pool.length===0){document.getElementById('compareTable').innerHTML='<tbody><tr><td>No careers match these filters. Try widening them.</td></tr></tbody>';if(note)note.textContent='';return;}
+  var top3=pool.slice(0,3);
+  if(note)note.textContent='Showing '+top3.length+' of '+pool.length+' matching careers.';
+  var rows=[['Fit %','fit','%'],['Risk','risk',''],['Future Scope','scope',''],['Stream','stream',''],['Course','course',''],['India Path','india',''],['Abroad Path','abroad',''],['Backup','backup',''],['Why it matches','reason','']];
+  var html='<thead><tr><th>Attribute</th>'+top3.map(function(c){return '<th>'+c.name+'</th>';}).join('')+'</tr></thead><tbody>';
+  rows.forEach(function(row){html+='<tr><td><strong>'+row[0]+'</strong></td>'+top3.map(function(c){return '<td>'+c[row[1]]+row[2]+'</td>';}).join('')+'</tr>';});
+  html+='</tbody>';
+  document.getElementById('compareTable').innerHTML=html;
+}
+
+var COURSES=[
+  {name:'B.Tech Computer Science',type:'ug',cluster:'tech',duration:'4 years',desc:'Software, algorithms, systems',mode:'On-campus'},
+  {name:'MBBS',type:'ug',cluster:'health',duration:'5.5 years',desc:'Medicine and surgery',mode:'On-campus'},
+  {name:'B.Des UX / Visual Design',type:'ug',cluster:'creative',duration:'4 years',desc:'Design thinking and craft',mode:'On-campus'},
+  {name:'BBA',type:'ug',cluster:'business',duration:'3 years',desc:'Business fundamentals',mode:'On-campus'},
+  {name:'BA Psychology',type:'ug',cluster:'health',duration:'3 years',desc:'Human behaviour and research',mode:'On-campus'},
+  {name:'BA LLB',type:'ug',cluster:'humanities',duration:'5 years',desc:'Law and humanities integrated',mode:'On-campus'},
+  {name:'MBA',type:'pg',cluster:'business',duration:'2 years',desc:'Leadership and specialization',mode:'On-campus'},
+  {name:'MS Data Science',type:'pg',cluster:'tech',duration:'2 years',desc:'ML, statistics, big data',mode:'On-campus'},
+  {name:'Diploma in Animation',type:'diploma',cluster:'creative',duration:'1 year',desc:'2D / 3D animation craft',mode:'On-campus'},
+  {name:'Google Data Analytics Certificate',type:'cert',cluster:'tech',duration:'6 months',desc:'Industry certification',mode:'Online'},
+  {name:'CFA Level 1',type:'cert',cluster:'business',duration:'10 months',desc:'Financial analysis',mode:'Online'},
+  {name:'Online AI Specialization',type:'online',cluster:'tech',duration:'4 months',desc:'Foundations of AI and ML',mode:'Online'}
+];
+var courseFilter='all';
+function renderCourses(){
+  var r=STATE.results;if(!r)return;
+  var filtered=COURSES.filter(function(c){return courseFilter==='all'||c.type===courseFilter;});
+  document.getElementById('courseGrid').innerHTML=filtered.map(function(c,i){return '<div class="card card-tight pop-in" style="animation-delay:'+(i*45)+'ms"><div class="row" style="justify-content:space-between"><h3>'+c.name+'</h3>'+(c.cluster===r.topCluster?'<span class="badge badge-gold">Match</span>':'')+'</div><p class="small muted">'+c.desc+'</p><div class="row tiny"><span class="badge badge-navy">'+c.type.toUpperCase()+'</span><span class="badge badge-blue">'+c.duration+'</span><span class="badge badge-green">'+c.mode+'</span></div></div>';}).join('');
+}
+function filterCourses(el,type){el.parentElement.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});el.classList.add('active');courseFilter=type;renderCourses();}
+
+var COLLEGES=[
+  {name:'IIT Delhi',region:'India',country:'India',city:'Delhi',fee:'\u20b92.5L/yr',cost:'low',exam:'JEE',scholarship:true,elig:'specific',eligText:'Class 12 PCM',cluster:'tech'},
+  {name:'AIIMS Delhi',region:'India',country:'India',city:'Delhi',fee:'\u20b96,000/yr',cost:'low',exam:'NEET',scholarship:true,elig:'specific',eligText:'Class 12 PCB',cluster:'health'},
+  {name:'NID Ahmedabad',region:'India',country:'India',city:'Ahmedabad',fee:'\u20b93L/yr',cost:'high',exam:'Portfolio / DAT',scholarship:true,elig:'any',eligText:'Class 12 any stream',cluster:'creative'},
+  {name:'IIM Bangalore (IPM)',region:'India',country:'India',city:'Bangalore',fee:'\u20b94L/yr',cost:'high',exam:'JEE',scholarship:true,elig:'any',eligText:'Class 12 any stream',cluster:'business'},
+  {name:'NLSIU Bangalore',region:'India',country:'India',city:'Bangalore',fee:'\u20b93L/yr',cost:'high',exam:'CLAT',scholarship:true,elig:'any',eligText:'Class 12 any stream',cluster:'humanities'},
+  {name:'Stanford University',region:'Abroad',country:'USA',city:'California',fee:'$58,000/yr',cost:'high',exam:'SAT',scholarship:true,elig:'any',eligText:'Strong academics',cluster:'tech'},
+  {name:'University of Oxford',region:'Abroad',country:'UK',city:'Oxford',fee:'\u00a335,000/yr',cost:'high',exam:'SAT',scholarship:true,elig:'specific',eligText:'Top A-level / IB scores',cluster:'humanities'},
+  {name:'NUS Singapore',region:'Abroad',country:'Singapore',city:'Singapore',fee:'S$30,000/yr',cost:'high',exam:'SAT',scholarship:true,elig:'any',eligText:'Strong academics',cluster:'tech'},
+  {name:'Coursera / edX Pathway',region:'Online',country:'India',city:'Online',fee:'\u20b940,000 total',cost:'low',exam:'Portfolio / DAT',scholarship:false,elig:'any',eligText:'Open to all',cluster:'tech'},
+  {name:'UpGrad Online Degree',region:'Online',country:'India',city:'Online',fee:'\u20b92L total',cost:'low',exam:'Portfolio / DAT',scholarship:true,elig:'any',eligText:'Class 12 any stream',cluster:'business'},
+  {name:'Google Career Certificate',region:'Certification',country:'India',city:'Online',fee:'\u20b925,000 total',cost:'low',exam:'Portfolio / DAT',scholarship:false,elig:'any',eligText:'Open to all',cluster:'tech'},
+  {name:'NSE Finance Certification',region:'Certification',country:'India',city:'Online',fee:'\u20b930,000 total',cost:'low',exam:'Portfolio / DAT',scholarship:false,elig:'any',eligText:'Open to all',cluster:'business'}
+];
+var collegeTab='India';
+function filterColleges(el,region){el.parentElement.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});el.classList.add('active');collegeTab=region;renderColleges();}
+function renderColleges(){
+  var r=STATE.results;
+  var country=(document.getElementById('clgCountry')||{}).value||'all',city=(document.getElementById('clgCity')||{}).value||'all',budget=(document.getElementById('clgBudget')||{}).value||'all',exam=(document.getElementById('clgExam')||{}).value||'all',schol=(document.getElementById('clgSchol')||{}).value||'all',elig=(document.getElementById('clgElig')||{}).value||'all';
+  var pool=COLLEGES.filter(function(c){
+    if(c.region!==collegeTab)return false;
+    if(country!=='all'&&c.country!==country)return false;
+    if(city!=='all'&&c.city!==city)return false;
+    if(budget==='low'&&c.cost!=='low')return false;
+    if(budget==='high'&&c.cost!=='high')return false;
+    if(exam!=='all'&&c.exam!==exam)return false;
+    if(schol==='yes'&&!c.scholarship)return false;
+    if(elig!=='all'&&c.elig!==elig)return false;
+    return true;
+  });
+  var grid=document.getElementById('collegeGrid'),note=document.getElementById('collegeNote');
+  if(pool.length===0){grid.innerHTML='<div class="card card-tight"><p class="small muted">No colleges match these filters. Try widening them or switching tabs.</p></div>';if(note)note.textContent='';return;}
+  if(note)note.textContent='Showing '+pool.length+' option(s) in the '+collegeTab+' tab.';
+  grid.innerHTML=pool.map(function(c,i){return '<div class="card card-tight pop-in" style="animation-delay:'+(i*45)+'ms"><div class="row" style="justify-content:space-between"><h3>'+c.name+'</h3>'+(r&&c.cluster===r.topCluster?'<span class="badge badge-gold">Match</span>':'')+'</div><p class="small muted">'+c.country+' &middot; '+c.city+'</p><div class="small" style="margin:6px 0"><div><strong>Fee:</strong> '+c.fee+'</div><div><strong>Entrance:</strong> '+c.exam+'</div><div><strong>Scholarship:</strong> '+(c.scholarship?'Available':'Not listed')+'</div><div><strong>Eligibility:</strong> '+c.eligText+'</div></div></div>';}).join('');
+}
+
+function calcBudget(){
+  var t=+document.getElementById('bd_tuition').value||0,h=+document.getElementById('bd_hostel').value||0,c=+document.getElementById('bd_coaching').value||0,tr=+document.getElementById('bd_travel').value||0,ab=+document.getElementById('bd_abroad').value||0;
+  var total=t+h+c+tr+ab;
+  var fmt=function(v){return '\u20b9'+v.toLocaleString('en-IN');};
+  document.getElementById('bd_total').textContent=fmt(total);
+  document.getElementById('bd_4yr').textContent=fmt(total*4);
+  var salary=total<300000?500000:total<800000?900000:total<2000000?1500000:2500000;
+  document.getElementById('bd_salary').textContent=fmt(salary);
+  document.getElementById('bd_roi').textContent=salary>total*1.5?'Strong':salary>total?'Moderate':'Tight';
+}
+
+function barChart(items){
+  return '<div class="bar-chart">'+items.map(function(it){return '<div class="bar-row"><div class="bar-label">'+it.label+'</div><div class="bar-track"><div class="bar-fill" data-val="'+it.val+'"></div></div><div class="bar-val">'+it.val+'%</div></div>';}).join('')+'</div>';
+}
+function animateBars(){setTimeout(function(){document.querySelectorAll('.bar-fill').forEach(function(b){if(b.dataset.val)b.style.width=b.dataset.val+'%';});},150);}
+function radarVisual(stats){
+  var cx=110,cy=110,R=80,n=stats.length;
+  var pt=function(i,r){var ang=(Math.PI*2*i/n)-Math.PI/2;return [cx+r*Math.cos(ang),cy+r*Math.sin(ang)];};
+  var grid='';[0.33,0.66,1].forEach(function(f){grid+='<polygon points="'+stats.map(function(s,i){return pt(i,R*f).join(',');}).join(' ')+'" fill="none" stroke="#d3deec" stroke-width="1"/>';});
+  var axes='';stats.forEach(function(s,i){var q=pt(i,R);axes+='<line x1="'+cx+'" y1="'+cy+'" x2="'+q[0]+'" y2="'+q[1]+'" stroke="#e1e8f2" stroke-width="1"/>';});
+  var centerPts=stats.map(function(){return cx+','+cy;}).join(' ');
+  var dataPts=stats.map(function(s,i){return pt(i,R*(s.val/100)).join(',');}).join(' ');
+  var labels='';stats.forEach(function(s,i){var q=pt(i,R+18);labels+='<text x="'+q[0]+'" y="'+q[1]+'" font-size="9" fill="#4A5568" text-anchor="middle" dominant-baseline="middle">'+s.label+'</text>';});
+  var dots=stats.map(function(s,i){var q=pt(i,R*(s.val/100));return '<circle cx="'+q[0]+'" cy="'+q[1]+'" r="3" fill="#0B3D91"/>';}).join('');
+  return '<div class="radar-wrap"><svg width="220" height="220" viewBox="0 0 220 220">'+grid+axes+'<polygon class="radar-poly" points="'+centerPts+'" data-pts="'+dataPts+'" fill="rgba(255,184,0,.3)" stroke="#FFB800" stroke-width="2"/>'+dots+labels+'</svg></div>';
+}
+function animateRadar(){setTimeout(function(){document.querySelectorAll('.radar-poly').forEach(function(p){if(p.dataset.pts)p.setAttribute('points',p.dataset.pts);});},200);}
+
+function renderReport(){
+  var r=STATE.results;
+  if(!r){document.getElementById('reportBody').innerHTML='<p class="muted">Complete the assessment to generate your report.</p>';return;}
+  document.getElementById('rpName').textContent=STATE.profile.name||'Demo Student';
+  document.getElementById('rpMode').textContent=STATE.mode.charAt(0).toUpperCase()+STATE.mode.slice(1);
+  document.getElementById('rpDate').textContent=new Date().toLocaleDateString();
+  var interestBars=STATE.interests.slice(0,6).map(function(id,i){var item=null;INTERESTS.forEach(function(x){if(x.id===id)item=x;});return {label:item?item.label:id,val:Math.max(40,90-i*9)};});
+  if(interestBars.length===0)interestBars.push({label:'No interests selected',val:0});
+  var personalityStats=[{label:'Curiosity',val:78},{label:'Logic',val:r.topCluster==='tech'?88:70},{label:'Empathy',val:r.topCluster==='health'?85:64},{label:'Creativity',val:r.topCluster==='creative'?90:62},{label:'Drive',val:r.topCluster==='business'?86:72},{label:'Structure',val:68}];
+  var careerBars=r.top10.slice(0,10).map(function(c){return {label:c.name,val:c.fit};});
+  var dreamCluster=dreamToCluster(STATE.profile.dream);
+  var validationText='No contradiction detected between your stated dream and your assessment signals.';
+  if(dreamCluster&&dreamCluster!==r.topCluster){
+    validationText='A contradiction was checked: your stated dream ("'+STATE.profile.dream+'") points to '+clusterLabel(dreamCluster)+', while your strongest signals point to '+clusterLabel(r.topCluster)+'.';
+    if(STATE.validationAnswer)validationText+=' Your response: "'+STATE.validationAnswer+'"';
+  } else if(STATE.profile.dream){validationText='Your stated dream ("'+STATE.profile.dream+'") is consistent with your assessment signals.';}
+  var pi=STATE.parentInput||{};
+  var hasParent=pi.name||pi.city||pi.concerns;
+  var parentText=hasParent?'<ul class="small" style="padding-left:18px;color:var(--text-muted)">'+(pi.name?'<li><strong>Submitted by:</strong> '+pi.name+'</li>':'')+'<li><strong>Budget range:</strong> '+(pi.budget||'Not specified')+'</li>'+(pi.city?'<li><strong>Preferred city:</strong> '+pi.city+'</li>':'')+'<li><strong>College type:</strong> '+(pi.collegeType||'Not specified')+'</li>'+'<li><strong>Abroad comfort:</strong> '+(pi.abroad||'Not specified')+'</li>'+'<li><strong>Support style:</strong> '+(pi.style||'Not specified')+'</li>'+(pi.concerns?'<li><strong>Concerns:</strong> '+pi.concerns+'</li>':'')+'</ul><p class="small muted">Guidance: weekly career conversations, support without pressure, and celebrating progress over outcomes.</p>':'<p class="small muted">No parent input submitted. Recommended: weekly career conversations, support without pressure, and celebrating progress over outcomes.</p>';
+  var counsellorText=(STATE.counsellorReviewStatus==='Reviewed - Approved'||STATE.counsellorReviewStatus==='Needs Follow-up')?'<p class="small">Counsellor review status: <strong>'+STATE.counsellorReviewStatus+'</strong>. '+(STATE._counsellorNotes||'Notes recorded in counsellor console.')+'</p>':STATE.counsellorReviewStatus==='Pending Review'?'<p class="small">Counsellor review status: <strong>Pending Review</strong>. A counsellor will validate this AI report shortly.</p>':'<p class="small muted">No counsellor review requested yet. A human review option is available - request a counsellor review for expert validation.</p>';
+  var ring='<div class="score-ring" style="background:conic-gradient(var(--gold) '+(r.confidence*3.6)+'deg,rgba(255,255,255,.15) 0deg)"><span>'+r.confidence+'%</span></div>';
+  var sections=[
+    {title:'Career Confidence Scorecard',html:'<div class="scorecard">'+ring+'<div><div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-soft);font-weight:700">Overall Career Confidence</div><div style="font-family:Georgia,serif;font-size:20px;margin:4px 0">'+clusterLabel(r.topCluster)+'</div><div style="font-size:12px;color:#c4d4ee">Top match: '+r.top10[0].name+' ('+r.top10[0].fit+'% fit)</div></div></div>'},
+    {title:'Executive Summary',html:'<p>Top direction: <strong>'+clusterLabel(r.topCluster)+'</strong>. Career confidence: <strong>'+r.confidence+'%</strong>. Your three strongest matches are '+r.top10.slice(0,3).map(function(c){return c.name;}).join(', ')+'.</p>'},
+    {title:'Interest Analysis',html:'<p class="small muted">Your selected interests, ranked by signal strength.</p>'+barChart(interestBars)},
+    {title:'Aptitude Scorecard',html:'<div class="grid grid-3"><div class="stat"><div class="label">Logical Reasoning</div><div class="value">'+(r.topCluster==='tech'?'88':'74')+'</div></div><div class="stat"><div class="label">Numerical</div><div class="value">'+((r.topCluster==='business'||r.topCluster==='tech')?'82':'68')+'</div></div><div class="stat"><div class="label">Verbal</div><div class="value">'+((r.topCluster==='humanities'||r.topCluster==='creative')?'85':'70')+'</div></div></div>'},
+    {title:'Personality Radar',html:'<p class="small muted">A radar view of your working-style traits.</p>'+radarVisual(personalityStats)},
+    {title:'EQ & Soft Skills',html:'<p>Empathy and self-awareness scored moderately high. Recommended growth area: assertive communication and structured conflict navigation.</p>'},
+    {title:'Skill Readiness',html:'<p>Current skills are at a foundational level. Recommended focus: '+(r.topCluster==='tech'?'coding and mathematics':r.topCluster==='creative'?'design tools and a portfolio':r.topCluster==='health'?'biology and scientific writing':'communication and analytical thinking')+'.</p>'},
+    {title:'Motivation & Values',html:'<p>You value a balance of growth, impact, and stability. Avoid roles that emphasize routine without a sense of meaning.</p>'},
+    {title:'What You Want vs What You Are Good At',html:'<p>'+validationText+'</p>'},
+    {title:'Top 10 Career Fit Chart',html:barChart(careerBars)},
+    {title:'Stream Recommendation',html:'<div class="card card-tight" style="border-left:4px solid var(--gold)"><strong>Primary:</strong> '+r.stream.primary+'<br><strong>Backup:</strong> '+r.stream.backup+'<br><span class="small muted">'+r.stream.reason+'</span></div>'},
+    {title:'Course Roadmap',html:'<div class="card card-tight"><strong>Recommended courses:</strong> '+r.top10.slice(0,3).map(function(c){return c.course;}).join(', ')+'.<br><span class="small muted">Explore undergraduate, postgraduate, diploma, certification, and online formats from the Course Recommendations screen.</span></div>'},
+    {title:'College Shortlist',html:'<div class="card card-tight"><strong>India options:</strong> '+r.top10[0].india+'<br><strong>Abroad options:</strong> '+r.top10[0].abroad+'<br><span class="small muted">Filtered shortlists are available on the College Recommendations screen.</span></div>'},
+    {title:'Career Reality Check',html:'<p>Your top career ('+r.top10[0].name+') carries <strong>'+r.top10[0].risk.toLowerCase()+'</strong> risk with <strong>'+r.top10[0].scope.toLowerCase()+'</strong> future scope. Backup option: '+r.top10[0].backup+'.</p>'},
+    {title:'Personality Development',html:'<p>Recommended focus areas: public speaking, structured note-taking, weekly self-reflection, and building a professional network.</p>'},
+    {title:'Resource Plan',html:'<p>Books: "Atomic Habits", "Range", "Deep Work". Channels: educational explainer content. Courses: an introductory course in '+clusterLabel(r.topCluster)+'.</p>'},
+    {title:'90-Day Plan Summary',html:'<div class="grid grid-3"><div class="card card-tight"><strong>Days 1-30</strong><p class="small muted">Foundations and exploration.</p></div><div class="card card-tight"><strong>Days 31-60</strong><p class="small muted">Skill building and a first project.</p></div><div class="card card-tight"><strong>Days 61-90</strong><p class="small muted">Portfolio and mentorship.</p></div></div>'},
+    {title:'Parent Guidance Section',html:parentText},
+    {title:'Counsellor Notes',html:counsellorText}
+  ];
+  document.getElementById('reportBody').innerHTML=sections.map(function(s,i){return '<div class="report-section" style="animation-delay:'+(i*40)+'ms"><h2>'+(i+1)+'. '+s.title+'</h2>'+s.html+'</div>';}).join('');
+  animateBars();animateRadar();
+}
+function printReport(){
+  if(!STATE.results){alert('Complete the assessment to generate a report first.');return;}
+  go('report');audit('REPORT_PRINT');
+  setTimeout(function(){document.body.classList.add('printing-report');window.print();setTimeout(function(){document.body.classList.remove('printing-report');},400);},250);
+}
+window.onafterprint=function(){document.body.classList.remove('printing-report');};
+
+var ROADMAP_DATA={
+  r1:[
+    {cat:'Skills',task:'Identify the top 3 skills for your target career and start one beginner course.'},
+    {cat:'Books',task:'Read "Atomic Habits" chapters 1-6 and note 5 takeaways.'},
+    {cat:'Projects',task:'Pick one small project idea in your interest area and write a one-page plan.'},
+    {cat:'Habits',task:'Build a daily 30-minute focused study block at a fixed time.'},
+    {cat:'Communication',task:'Practice explaining your career goal out loud to one person each week.'},
+    {cat:'Portfolio',task:'Create a simple document or folder to start collecting your work.'}
+  ],
+  r2:[
+    {cat:'Skills',task:'Finish the beginner course and start an intermediate-level resource.'},
+    {cat:'Books',task:'Read one career-specific book and summarize it in your own words.'},
+    {cat:'Projects',task:'Build the first version of your project and ask for feedback.'},
+    {cat:'Habits',task:'Add a weekly reflection: what worked, what did not, what is next.'},
+    {cat:'Communication',task:'Record a 2-minute video explaining your project or goal.'},
+    {cat:'Portfolio',task:'Add your first project and any certificates to your portfolio.'}
+  ],
+  r3:[
+    {cat:'Skills',task:'Apply your skills in a slightly harder challenge or competition.'},
+    {cat:'Books',task:'Read about real career journeys in your field and note common patterns.'},
+    {cat:'Projects',task:'Polish your project and present it to a mentor or teacher.'},
+    {cat:'Habits',task:'Lock in the routines that worked; drop the ones that did not.'},
+    {cat:'Communication',task:'Reach out to one person working in your target field.'},
+    {cat:'Portfolio',task:'Finalize a clean portfolio you can show to a counsellor or college.'}
+  ]
+};
+function renderRoadmap(){['r1','r2','r3'].forEach(function(key){
+  var el=document.getElementById(key);if(!el)return;
+  el.innerHTML='<div class="timeline">'+ROADMAP_DATA[key].map(function(item,i){return '<div class="timeline-item" style="animation-delay:'+(i*80)+'ms"><span class="badge badge-gold">'+item.cat+'</span><p class="small" style="margin:6px 0 0">'+item.task+'</p></div>';}).join('')+'</div>';
+});}
+function switchRoadmap(el,id){
+  el.parentElement.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});el.classList.add('active');
+  ['r1','r2','r3'].forEach(function(k){var e=document.getElementById(k);if(e)e.style.display=k===id?'block':'none';});
+  var active=document.getElementById(id);
+  if(active)active.querySelectorAll('.timeline-item').forEach(function(it,i){it.style.animation='none';it.offsetHeight;it.style.animation='fadeUp .4s ease both';it.style.animationDelay=(i*80)+'ms';});
+}
+
+var CHAT_LOG=[{from:'bot',text:'Hi! I am your Obliq AI Career Mentor. Ask me about your report, careers, streams, or your 90-day plan. How can I help?'}];
+function renderChat(){
+  document.getElementById('chatMsgs').innerHTML=CHAT_LOG.map(function(m,i){return '<div class="msg '+m.from+'" style="animation-delay:'+(i*50)+'ms"><div class="bubble">'+m.text+'</div></div>';}).join('');
+  var box=document.getElementById('chatMsgs');box.scrollTop=box.scrollHeight;
+}
+function sendChat(){
+  var inp=document.getElementById('chatInput');var txt=inp.value.trim();if(!txt)return;
+  CHAT_LOG.push({from:'user',text:txt});inp.value='';renderChat();
+  setTimeout(function(){CHAT_LOG.push({from:'bot',text:botReply(txt)});renderChat();},420);
+}
+function sendQuick(txt){
+  CHAT_LOG.push({from:'user',text:txt});renderChat();
+  setTimeout(function(){CHAT_LOG.push({from:'bot',text:botReply(txt)});renderChat();},420);
+}
+function botReply(q){
+  var l=q.toLowerCase();var r=STATE.results;
+  if(l.indexOf('report')>=0)return r?'Your report shows '+clusterLabel(r.topCluster)+' as your strongest direction with '+r.confidence+'% confidence. Your top match is '+r.top10[0].name+'. Open the Full Report for all 19 sections.':'Complete the assessment first and I can walk you through your report.';
+  if(l.indexOf('compare')>=0||l.indexOf('career')>=0)return r?'Your top 3 careers are '+r.top10.slice(0,3).map(function(c){return c.name;}).join(', ')+'. Use the Compare Careers screen to see risk, scope, and cost side by side.':'Once you finish the assessment I can compare your matched careers.';
+  if(l.indexOf('book')>=0)return 'A solid starting set: "Atomic Habits" for habits, "Range" for exploring widely, and "Deep Work" for focus. Want field-specific picks?';
+  if(l.indexOf('stream')>=0)return r?'Based on your assessment, '+r.stream.primary+' is your suggested stream, with '+r.stream.backup+' as a backup. Reason: '+r.stream.reason:'Finish the assessment and I will suggest the right stream for you.';
+  if(l.indexOf('week')>=0||l.indexOf('plan')>=0)return 'This week: start one beginner course, read a few chapters of a good book, plan a small project, and do a daily 30-minute focus block. The 90-Day Plan screen has the full breakdown.';
+  if(l.indexOf('college')>=0)return 'Check the College Recommendations screen - you can filter by country, city, budget, entrance exam, and scholarships.';
+  if(l.indexOf('confus')>=0||l.indexOf('help')>=0)return 'That is completely normal. Start with what genuinely interests you, take the assessment honestly, and let the report narrow things down. I am here for any specific questions.';
+  return 'Good question. In this prototype I give general guidance based on your report. Try asking about your report, careers, stream, books, or this week\'s plan.';
+}
+
+function mockVoice(){
+  var status=document.getElementById('voiceStatus');
+  status.textContent='Listening...';
+  setTimeout(function(){status.textContent='Processing your question...';},1100);
+  setTimeout(function(){status.textContent='Mentor: "Based on your report, focus on building one strong project this month. Tap chat for the full conversation."';},2300);
+}
+
+function requestCounsellorReview(){
+  STATE.counsellorReviewStatus='Pending Review';audit('COUNSELLOR_REVIEW_REQUESTED');persist();
+  alert('Counsellor review requested. A human counsellor will validate your AI report. Status is now "Pending Review".');
+}
+function renderCounsellorReview(){
+  document.getElementById('crName').textContent=STATE.profile.name||'Demo Student';
+  if(STATE.results){
+    document.getElementById('crConf').textContent=STATE.results.confidence;
+    document.getElementById('crTop3').innerHTML=STATE.results.top10.slice(0,3).map(function(c){return '<span class="chip gold">'+c.name+'</span>';}).join('');
+  } else {
+    document.getElementById('crTop3').innerHTML='<span class="small muted">No assessment completed yet.</span>';
+  }
+}
+function saveCounsellorReview(){
+  STATE.counsellorReviewStatus=document.getElementById('crStatus').value;
+  STATE._counsellorNotes=document.getElementById('crNotes').value||'';
+  audit('COUNSELLOR_REVIEW_SAVED',{status:STATE.counsellorReviewStatus});persist();
+  alert('Review submitted. Status: '+STATE.counsellorReviewStatus);
+  go('counsellorDash');
+}
+
+var PLANS=[
+  {name:'Free',price:'\u20b90',tag:'Get started',features:['Basic assessment','Top 3 career snapshot','Limited report preview','Community resources'],cta:'Current Plan',primary:false},
+  {name:'Pro',price:'\u20b9999',tag:'Most popular',features:['Full adaptive assessment','50+ page detailed report','All 10 career matches','AI mentor (text + voice)','90-day growth plan','Course & college lists'],cta:'Upgrade to Pro',primary:true},
+  {name:'Pro + Counsellor',price:'\u20b92,999',tag:'Best value',features:['Everything in Pro','1-on-1 human counsellor review','Parent meeting support','Priority report validation','3 follow-up sessions'],cta:'Get Pro + Counsellor',primary:false}
+];
+function renderPayment(){
+  document.getElementById('planGrid').innerHTML=PLANS.map(function(p,i){return '<div class="card pop-in" style="animation-delay:'+(i*80)+'ms;'+(p.primary?'border:2px solid var(--gold);box-shadow:var(--shadow-lg)':'')+'">'+(p.primary?'<span class="badge badge-gold">'+p.tag+'</span>':'<span class="badge badge-navy">'+p.tag+'</span>')+'<h2 style="margin:8px 0 0">'+p.name+'</h2><div style="font-family:Georgia,serif;font-size:30px;color:var(--navy)">'+p.price+'<span style="font-size:13px;color:var(--text-soft)"> / one-time</span></div><ul class="small" style="padding-left:18px;margin:10px 0;color:var(--text-muted)">'+p.features.map(function(f){return '<li>'+f+'</li>';}).join('')+'</ul><button class="btn '+(p.primary?'btn-gold':'btn-ghost')+' btn-block" onclick="alert(\'Mock checkout - no real payment is processed in this prototype.\')">'+p.cta+'</button></div>';}).join('');
+}
+
+var adminPanels={
+  'a-users':'<h3>User Management</h3><p class="small muted">Search, filter, suspend, or assign roles. RBAC-controlled.</p><table><thead><tr><th>Name</th><th>Role</th><th>Status</th><th>Joined</th></tr></thead><tbody><tr><td>Ananya Sharma</td><td>Student</td><td><span class="badge badge-green">Active</span></td><td>2026-04-12</td></tr><tr><td>Sunita Sharma</td><td>Parent</td><td><span class="badge badge-green">Active</span></td><td>2026-04-12</td></tr><tr><td>Dr. Mehta</td><td>Counsellor</td><td><span class="badge badge-green">Active</span></td><td>2026-03-02</td></tr><tr><td>R. Kapoor</td><td>Student</td><td><span class="badge badge-gold">Pending</span></td><td>2026-05-19</td></tr></tbody></table>',
+  'a-questions':'<h3>Question Bank Management</h3><p class="small muted">Add, edit, tag, and version assessment questions across all 10 modules. Questions are shuffled per attempt.</p><div class="row"><span class="chip">Interest Inventory (5)</span><span class="chip">Aptitude (5)</span><span class="chip">Personality (4)</span><span class="chip">EQ (2)</span><span class="chip">SJT (1)</span><span class="chip">Skills (1)</span><span class="chip">Values (1)</span><span class="chip">Lifestyle (1)</span></div><button class="btn btn-primary btn-sm" style="margin-top:10px">Add New Question</button>',
+  'a-careers':'<h3>Career Database</h3><p class="small muted">Manage the career library - clusters, risk, scope, streams, and matching weights.</p><table><thead><tr><th>Career</th><th>Cluster</th><th>Scope</th></tr></thead><tbody><tr><td>Software Engineer</td><td>Tech</td><td>Very High</td></tr><tr><td>Doctor / Physician</td><td>Health</td><td>Very High</td></tr><tr><td>Product Designer</td><td>Creative</td><td>High</td></tr></tbody></table><button class="btn btn-primary btn-sm" style="margin-top:8px">Add Career</button>',
+  'a-courses':'<h3>Course Database</h3><p class="small muted">Manage UG, PG, diploma, certification, and online courses mapped to clusters.</p><div class="row"><span class="chip">Undergraduate</span><span class="chip">Postgraduate</span><span class="chip">Diploma</span><span class="chip">Certification</span><span class="chip">Online</span></div>',
+  'a-colleges':'<h3>College Database</h3><p class="small muted">Manage colleges across India, Abroad, Online, and Certification - with fees, exams, and scholarships.</p><button class="btn btn-primary btn-sm">Add College</button>',
+  'a-reports':'<h3>Report Builder</h3><p class="small muted">Configure the 19 report sections, layout, and branding. Current Report Version: v1.0.</p>',
+  'a-ai':'<h3>AI Settings</h3><p class="small muted">Tune scoring weights, adaptive trigger thresholds, and the contradiction-detection sensitivity.</p><div class="callout">AI changes are logged in the audit trail and require admin approval.</div>',
+  'a-pricing':'<h3>Pricing Management</h3><p class="small muted">Edit plan tiers, prices, and feature lists. Three plans currently active.</p>',
+  'a-coupons':'<h3>Coupon Management</h3><p class="small muted">Create discount codes, set expiry, and track redemptions.</p><table><thead><tr><th>Code</th><th>Discount</th><th>Status</th></tr></thead><tbody><tr><td>WELCOME20</td><td>20%</td><td><span class="badge badge-green">Active</span></td></tr><tr><td>SCHOOL50</td><td>50%</td><td><span class="badge badge-gold">Limited</span></td></tr></tbody></table>',
+  'a-schools':'<h3>School Management</h3><p class="small muted">Onboard institutions, manage seats, and view per-school analytics.</p>',
+  'a-counsellors':'<h3>Counsellor Management</h3><p class="small muted">Verify, assign, and monitor counsellor reviews and approval rates.</p>',
+  'a-analytics':'<h3>Platform Analytics</h3>'+barChart([{label:'Assessment starts',val:82},{label:'Completion rate',val:68},{label:'Report downloads',val:86},{label:'Upgrade rate',val:24}]),
+  'a-feedback':'<h3>Self-Learning Feedback Loop</h3><p class="small muted">Counsellor corrections and outcome data feed back into model tuning. Improvement u'
+};
+adminPanels['a-feedback']+='ses safe internal data only. All model changes require admin approval and an audit log entry.</div>';
+adminPanels['a-feedback']='<h3>Self-Learning Feedback Loop</h3><p class="small muted">Counsellor corrections, student outcomes, and feedback ratings feed back into model tuning.</p><div class="callout">Improvement uses safe internal data only. All model changes require admin approval and an audit log entry.</div>';
+adminPanels['a-audit']='<h3>Audit Log</h3><p class="small muted">Every privileged action is recorded. <a onclick="go(\'auditLog\')">View full audit log</a>.</p>';
+function renderAdmin(){document.getElementById('adminContent').innerHTML=adminPanels['a-users'];var links=document.querySelectorAll('#screen-admin .side-link');links.forEach(function(l,i){l.classList.toggle('active',i===0);});}
+function adminTab(el,id){
+  el.parentElement.querySelectorAll('.side-link').forEach(function(l){l.classList.remove('active');});el.classList.add('active');
+  document.getElementById('adminContent').innerHTML=adminPanels[id]||'<p>Coming soon.</p>';
+  if(id==='a-analytics')animateBars();
+}
+
+var schoolPanels={
+  's-profile':'<h3>Institution Profile</h3><div class="field-row"><div class="field"><label>School Name</label><input value="Delhi Public School, Jaipur"></div><div class="field"><label>City</label><input value="Jaipur"></div></div><div class="field-row"><div class="field"><label>Total Classes</label><input value="14"></div><div class="field"><label>Admin Email</label><input value="principal@dpsjaipur.edu"></div></div>',
+  's-bulk':'<h3>Bulk Student Upload</h3><div class="card card-tight" style="border:2px dashed var(--border-2);text-align:center"><p><strong>Drop CSV file here</strong></p><p class="small muted">Format: name, class, email, phone</p><button class="btn btn-ghost btn-sm">Download template</button></div>',
+  's-class':'<h3>Class-wise Analytics</h3><table><thead><tr><th>Class</th><th>Students</th><th>Tests Done</th><th>Avg Confidence</th></tr></thead><tbody><tr><td>Grade 10-A</td><td>42</td><td>38</td><td>79%</td></tr><tr><td>Grade 11-A</td><td>38</td><td>35</td><td>82%</td></tr><tr><td>Grade 12-A</td><td>40</td><td>40</td><td>85%</td></tr></tbody></table>',
+  's-stream':'',
+  's-heat':'<h3>Career Interest Heatmap</h3><div class="grid grid-4"><div class="card card-tight" style="background:var(--gold-bg)"><h3>Tech</h3><p style="font-family:Georgia,serif;font-size:22px;color:var(--navy)">28%</p></div><div class="card card-tight" style="background:var(--gold-bg)"><h3>Health</h3><p style="font-family:Georgia,serif;font-size:22px;color:var(--navy)">22%</p></div><div class="card card-tight"><h3>Business</h3><p style="font-family:Georgia,serif;font-size:22px;color:var(--navy)">18%</p></div><div class="card card-tight"><h3>Creative</h3><p style="font-family:Georgia,serif;font-size:22px;color:var(--navy)">14%</p></div><div class="card card-tight"><h3>Law</h3><p style="font-family:Georgia,serif;font-size:22px;color:var(--navy)">8%</p></div><div class="card card-tight"><h3>Sports</h3><p style="font-family:Georgia,serif;font-size:22px;color:var(--navy)">5%</p></div><div class="card card-tight"><h3>Aviation</h3><p style="font-family:Georgia,serif;font-size:22px;color:var(--navy)">3%</p></div><div class="card card-tight"><h3>Other</h3><p style="font-family:Georgia,serif;font-size:22px;color:var(--navy)">2%</p></div></div>',
+  's-reports':'<h3>Report Management</h3><p class="small muted">Download all student reports class-wise or in bulk.</p><button class="btn btn-primary btn-sm">Download All Reports</button>',
+  's-couns':'<h3>Counsellor Allocation</h3><p class="small muted">Assign internal staff or external counsellors to student groups.</p>',
+  's-parents':'<h3>Parent Meeting Support</h3><p class="small muted">Auto-generate talking points and summary documents for each parent meeting.</p>',
+  's-sub':'<h3>Subscription</h3><div class="stat"><div class="label">Current Plan</div><div class="value">School Pro</div><div class="delta">486 student seats - Renews Dec 2026</div></div>'
+};
+function renderSchool(){document.getElementById('schoolContent').innerHTML=schoolPanels['s-profile'];var links=document.querySelectorAll('#screen-school .side-link');links.forEach(function(l,i){l.classList.toggle('active',i===0);});}
+function schoolTab(el,id){
+  el.parentElement.querySelectorAll('.side-link').forEach(function(l){l.classList.remove('active');});el.classList.add('active');
+  var html=schoolPanels[id]||'<p>Coming soon.</p>';
+  if(id==='s-stream'){html='<h3>Stream Distribution</h3>'+barChart([{label:'Science PCM',val:38},{label:'Science PCB',val:22},{label:'Commerce',val:24},{label:'Humanities',val:14},{label:'Other',val:2}]);}
+  document.getElementById('schoolContent').innerHTML=html;
+  if(id==='s-stream')animateBars();
+}
+
+function renderDashboard(){
+  var r=STATE.results;
+  document.getElementById('dashName').textContent=STATE.profile.name||'Student';
+  var statusEl=document.getElementById('dashStatus'),cta=document.getElementById('dashCta');
+  if(r){
+    animateCounter(document.getElementById('dashConf'),r.confidence,'%',900);
+    document.getElementById('dashConfDelta').textContent='Match strength';
+    document.getElementById('dashTop').textContent=r.top10[0].name;
+    statusEl.textContent='Report Ready';statusEl.className='badge badge-green';
+    animateCounter(document.getElementById('dashPlan'),STATE.planStarted?12:0,'%',900);
+    document.getElementById('dashTopCareers').innerHTML=r.top10.slice(0,3).map(function(c){return '<div class="row" style="justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span class="small">'+c.name+'</span><span class="badge badge-gold">'+c.fit+'%</span></div>';}).join('');
+    document.getElementById('dashStreamText').textContent='Primary: '+r.stream.primary+' - Backup: '+r.stream.backup;
+    if(STATE.planStarted){cta.innerHTML='<div class="callout"><strong>90-Day Plan active.</strong> You are on Day 4 of 90. <button class="btn btn-gold btn-sm" style="margin-left:8px" onclick="go(\'roadmap\')">Continue Plan</button></div>';}
+    else{cta.innerHTML='<div class="callout"><strong>Your report is ready.</strong> Start your structured 90-day growth plan to act on it. <button class="btn btn-gold btn-sm" style="margin-left:8px" onclick="startPlan()">Start 90-Day Plan</button></div>';}
+  } else if(STATE.assessmentStatus==='in_progress'){
+    document.getElementById('dashConf').textContent='\u2014';document.getElementById('dashConfDelta').textContent='Assessment incomplete';
+    document.getElementById('dashTop').textContent='\u2014';document.getElementById('dashPlan').textContent='0%';
+    statusEl.textContent='Assessment In Progress';statusEl.className='badge badge-gold';
+    document.getElementById('dashTopCareers').innerHTML='<p class="small muted">Resume your assessment to see your matches.</p>';
+    document.getElementById('dashStreamText').textContent='Complete the assessment to see your stream path.';
+    cta.innerHTML='<div class="callout-warn"><strong>Assessment incomplete.</strong> Pick up where you left off. <button class="btn btn-gold btn-sm" style="margin-left:8px" onclick="resumeAssessment()">Resume Assessment</button></div>';
+  } else {
+    document.getElementById('dashConf').textContent='\u2014';document.getElementById('dashConfDelta').textContent='Awaiting assessment';
+    document.getElementById('dashTop').textContent='\u2014';document.getElementById('dashPlan').textContent='0%';
+    statusEl.textContent='Not Started';statusEl.className='badge badge-gold';
+    document.getElementById('dashTopCareers').innerHTML='<p class="small muted">Complete the assessment to see your matches.</p>';
+    document.getElementById('dashStreamText').textContent='Complete the assessment to see your stream path.';
+    cta.innerHTML='<div class="callout-navy"><strong>Get started.</strong> Take the assessment to unlock your career map and report. <button class="btn btn-primary btn-sm" style="margin-left:8px" onclick="go(\'assessHome\')">Take Assessment</button></div>';
+  }
+}
+function resumeAssessment(){
+  if(STATE.assessmentStatus==='in_progress'){
+    if(!QUESTIONS||QUESTIONS.length===0)QUESTIONS=buildShuffledQuestions(Date.now()%233280);
+    CURRENT_Q=STATE.answers?STATE.answers.length:0;
+    if(CURRENT_Q>=QUESTIONS.length)CURRENT_Q=QUESTIONS.length-1;
+    showQuestion();go('question');
+  } else {go('assessHome');}
+}
+function startPlan(){STATE.planStarted=true;persist();audit('PLAN_STARTED');go('roadmap');}
+
+function renderParentDash(){
+  var r=STATE.results;
+  document.getElementById('pdName').textContent=STATE.profile.name||'Demo Student';
+  if(r){
+    document.getElementById('pdConf').textContent=r.confidence+'%';
+    document.getElementById('pdTop').textContent=clusterLabel(r.topCluster)+' - '+r.top10[0].name;
+    document.getElementById('pdStream').textContent=r.stream.primary+' (backup: '+r.stream.backup+')';
+  } else {
+    document.getElementById('pdConf').textContent='\u2014';
+    document.getElementById('pdTop').textContent='Awaiting assessment';
+    document.getElementById('pdStream').textContent='\u2014';
+  }
+  var pi=STATE.parentInput||{};
+  var has=pi.name||pi.city||pi.concerns||pi.budget;
+  document.getElementById('pdParentInput').innerHTML=has?'<ul class="small" style="padding-left:18px;color:var(--text-muted)">'+(pi.name?'<li><strong>Name:</strong> '+pi.name+'</li>':'')+'<li><strong>Budget:</strong> '+(pi.budget||'Not specified')+'</li>'+(pi.city?'<li><strong>City:</strong> '+pi.city+'</li>':'')+'<li><strong>College type:</strong> '+(pi.collegeType||'Not specified')+'</li>'+'<li><strong>Abroad comfort:</strong> '+(pi.abroad||'Not specified')+'</li>'+'<li><strong>Support style:</strong> '+(pi.style||'Not specified')+'</li>'+(pi.concerns?'<li><strong>Concerns:</strong> '+pi.concerns+'</li>':'')+'</ul>':'<p class="small muted">No parent input submitted yet.</p>';
+}
+function renderCounsellorDash(){
+  var r=STATE.results;
+  var rows=[
+    {n:STATE.profile.name||'Demo Student',c:STATE.profile['class']||'Class 10',conf:r?r.confidence+'%':'\u2014',status:STATE.counsellorReviewStatus,action:'counsellorReview'},
+    {n:'Rohan K.',c:'Class 12',conf:'76%',status:'Reviewed - Approved',action:null},
+    {n:'Priya M.',c:'Class 11',conf:'88%',status:'Needs Follow-up',action:'counsellorReview'}
+  ];
+  document.getElementById('cdStudentRows').innerHTML=rows.map(function(row){
+    var bc=row.status==='Reviewed - Approved'?'badge-green':row.status==='Needs Follow-up'?'badge-red':row.status==='Pending Review'?'badge-gold':'badge-blue';
+    var btn=row.action?'<button class="btn btn-ghost btn-sm" onclick="go(\''+row.action+'\')">Open</button>':'<button class="btn btn-ghost btn-sm">View</button>';
+    return '<tr><td>'+row.n+'</td><td>'+row.c+'</td><td>'+row.conf+'</td><td><span class="badge '+bc+'">'+row.status+'</span></td><td>'+btn+'</td></tr>';
+  }).join('');
+  var pending=rows.filter(function(row){return row.status==='Pending Review'||row.status==='Needs Follow-up';}).length;
+  document.getElementById('cdPending').textContent=pending;
+}
+
+function exportData(){
+  audit('DATA_EXPORT_REQUEST');
+  var data={profile:STATE.profile,parentInput:STATE.parentInput,interests:STATE.interests,answers:STATE.answers,consent:STATE.consent,results:STATE.results,assessmentStatus:STATE.assessmentStatus,counsellorReviewStatus:STATE.counsellorReviewStatus};
+  document.getElementById('exportTitle').textContent='Your Data Export';
+  document.getElementById('exportDesc').textContent='Preview of the data we hold on you. In production this would be a downloadable JSON file.';
+  document.getElementById('exportPreview').innerHTML='<pre style="white-space:pre-wrap;font-size:11px;max-height:320px;overflow:auto">'+JSON.stringify(data,null,2)+'</pre>';
+  go('export');
+}
+function deleteData(){
+  if(!confirm('Request account deletion?\n\n30-day cooling period applies. All data is erased after that.\n\n(Demo: this only resets local storage.)'))return;
+  audit('DATA_DELETE_REQUEST');
+  document.getElementById('exportTitle').textContent='Deletion Request Submitted';
+  document.getElementById('exportDesc').textContent='Your deletion request is recorded. In production you would receive an email confirmation and a 30-day cooling-off window before permanent deletion.';
+  document.getElementById('exportPreview').innerHTML='<strong>Status:</strong> Pending (30 days)<br><strong>Cooling-off ends:</strong> '+new Date(Date.now()+30*86400000).toLocaleDateString()+'<br><strong>What gets deleted:</strong> Profile, assessment data, reports, portfolio.<br><strong>Retained for legal / audit:</strong> Consent timestamps and anonymized metrics for up to 7 years.';
+  go('export');
+}
+function renderConsentHistory(){
+  var t=document.getElementById('consentTable');
+  if(!STATE.consent||STATE.consent.length===0){t.innerHTML='<tr><td colspan="5" class="muted">No consent records yet.</td></tr>';return;}
+  t.innerHTML=STATE.consent.map(function(c){return '<tr><td>'+c.type+'</td><td>'+(c.granted?'<span class="badge badge-green">Yes</span>':'<span class="badge badge-red">No</span>')+'</td><td>'+c.version+'</td><td>'+new Date(c.time).toLocaleString()+'</td><td>'+c.ip+'</td></tr>';}).join('');
+}
+function renderAuditLog(){
+  var t=document.getElementById('auditTable');
+  if(!STATE.auditLog||STATE.auditLog.length===0){t.innerHTML='<tr><td colspan="4" class="muted">No events logged yet.</td></tr>';return;}
+  t.innerHTML=STATE.auditLog.slice(0,30).map(function(a){return '<tr><td>'+a.event+'</td><td>'+a.user+'</td><td>'+new Date(a.time).toLocaleString()+'</td><td>'+a.ip+'</td></tr>';}).join('');
+}
+
+var CHECKLIST_ITEMS=['Privacy Policy','Terms of Use','Cookie Policy if cookies or trackers are used','Consent management','User data export, delete, and correction','Secure login and password reset','MFA-ready architecture','RBAC admin panel','Audit logs','Encryption in transit and at rest','Secure cloud hosting','Backup and disaster recovery','Incident response plan','Vulnerability assessment','Penetration test before enterprise use','Legal and compliance review','AI disclaimer and transparency notice','Medical or health disclaimer if wellness features exist'];
+function renderChecklist(){
+  document.getElementById('checklist').innerHTML=CHECKLIST_ITEMS.map(function(c,i){return '<div class="card card-tight pop-in" style="display:flex;align-items:flex-start;gap:10px;animation-delay:'+(i*35)+'ms"><input type="checkbox" '+(i<6?'checked':'')+'><div><strong>'+c+'</strong><div class="tiny muted">'+(i<6?'Prototype demonstrates the structure':'Requires production implementation and review')+'</div></div></div>';}).join('');
+}
+
+function acceptCookies(){var b=document.getElementById('cookieBanner');if(b)b.style.display='none';try{localStorage.setItem('obliqCookies','1')}catch(e){}}
+
+function initAll(){
+  renderRoles();renderInterests();renderModules();renderPayment();renderRoadmap();renderChat();renderConsentHistory();renderAuditLog();renderChecklist();calcBudget();updateRoleChip();
+  try{if(!localStorage.getItem('obliqCookies')){setTimeout(function(){var b=document.getElementById('cookieBanner');if(b)b.style.display='flex';},900);}}catch(e){}
+  if(STATE.profile.name){var el=document.getElementById('pf_name');if(el)el.value=STATE.profile.name;}
+  if(STATE.results){renderResult();renderRoadmap();}
+}
+initAll();
+</script>
+</body>
+</html>

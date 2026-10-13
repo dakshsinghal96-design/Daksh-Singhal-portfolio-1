@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CAT'S CRADLE — Neon Hand Strings</title>
+
+  <!-- MediaPipe Hands -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+
+  <!-- p5.js -->
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #020918;
+      overflow: hidden;
+      font-family: 'Share Tech Mono', 'Courier New', monospace;
+      width: 100vw; height: 100vh;
+    }
+
+    /* Video feed — visible as dark-tinted futuristic background */
+    #inputVideo {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      opacity: 0.42;
+      pointer-events: none;
+      z-index: 0;
+      transform: scaleX(-1);
+      filter: brightness(0.55) contrast(1.15) saturate(0.4) hue-rotate(170deg);
+    }
+
+    /* p5 canvas sits above video */
+    #canvas-container {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 1;
+    }
+    #canvas-container canvas { display: block; }
+
+    /* CRT scanline overlay */
+    #crt {
+      position: fixed; inset: 0;
+      pointer-events: none; z-index: 50;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 0, 0, 0.06) 2px,
+        rgba(0, 0, 0, 0.06) 4px
+      );
+      animation: flicker 8s infinite;
+    }
+
+    /* Vignette */
+    #vignette {
+      position: fixed; inset: 0;
+      pointer-events: none; z-index: 49;
+      background: radial-gradient(ellipse at center, transparent 45%, rgba(0, 2, 14, 0.82) 100%);
+    }
+
+    /* Top HUD */
+    #hud-top {
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 200;
+      padding: 18px 28px;
+      display: flex; align-items: center; justify-content: space-between;
+      pointer-events: none;
+      border-bottom: 1px solid rgba(0, 255, 255, 0.07);
+    }
+    .hud-title {
+      font-size: 1.05rem;
+      letter-spacing: 0.45em;
+      color: #00ffff;
+      text-shadow: 0 0 8px #00ffff, 0 0 22px rgba(0,255,255,0.5);
+    }
+    .hud-sub {
+      font-size: 0.55rem;
+      letter-spacing: 0.22em;
+      color: rgba(0, 255, 255, 0.3);
+      margin-top: 3px;
+    }
+    .hud-corners {
+      display: flex; gap: 6px; align-items: center;
+    }
+    .hud-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: #00ffff;
+      box-shadow: 0 0 8px #00ffff;
+      animation: pulse-dot 1.8s ease-in-out infinite;
+    }
+    .hud-dot:nth-child(2) { animation-delay: 0.3s; background: #ff00ff; box-shadow: 0 0 8px #ff00ff; }
+    .hud-dot:nth-child(3) { animation-delay: 0.6s; background: #ffff00; box-shadow: 0 0 8px #ffff00; }
+
+    /* Bottom status bar */
+    #status-bar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      z-index: 200;
+      padding: 10px 28px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-top: 1px solid rgba(0, 255, 255, 0.07);
+      pointer-events: none;
+    }
+    #status-text {
+      font-size: 0.55rem;
+      letter-spacing: 0.25em;
+      color: rgba(0, 255, 255, 0.45);
+      transition: color 0.4s;
+    }
+    #status-text.active { color: rgba(255, 0, 255, 0.7); }
+    .hud-coords {
+      font-size: 0.5rem;
+      letter-spacing: 0.15em;
+      color: rgba(0, 255, 255, 0.2);
+    }
+
+    /* Corner brackets */
+    .corner {
+      position: fixed; width: 22px; height: 22px; z-index: 200; pointer-events: none;
+      opacity: 0.5;
+    }
+    .corner::before, .corner::after {
+      content: ''; position: absolute; background: #00ffff;
+    }
+    .corner::before { width: 100%; height: 1px; top: 0; left: 0; }
+    .corner::after  { width: 1px; height: 100%; top: 0; left: 0; }
+    .corner-tl { top: 10px; left: 10px; }
+    .corner-tr { top: 10px; right: 10px; transform: scaleX(-1); }
+    .corner-bl { bottom: 10px; left: 10px; transform: scaleY(-1); }
+    .corner-br { bottom: 10px; right: 10px; transform: scale(-1); }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.3; transform: scale(0.6); }
+    }
+    @keyframes flicker {
+      0%,100% { opacity: 1; }
+      92%      { opacity: 1; }
+      93%      { opacity: 0.85; }
+      94%      { opacity: 1; }
+      96%      { opacity: 0.9; }
+      97%      { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Hidden webcam source -->
+  <video id="inputVideo" playsinline autoplay muted></video>
+
+  <!-- p5 renders here -->
+  <div id="canvas-container"></div>
+
+  <!-- Overlays -->
+  <div id="crt"></div>
+  <div id="vignette"></div>
+
+  <!-- Corner decorations -->
+  <div class="corner corner-tl"></div>
+  <div class="corner corner-tr"></div>
+  <div class="corner corner-bl"></div>
+  <div class="corner corner-br"></div>
+
+  <!-- HUD -->
+  <div id="hud-top">
+    <div>
+      <div class="hud-title">CAT'S CRADLE</div>
+      <div class="hud-sub">BIOMETRIC STRING WEAVER · v2.0</div>
+    </div>
+    <div class="hud-corners">
+      <div class="hud-dot"></div>
+      <div class="hud-dot"></div>
+      <div class="hud-dot"></div>
+    </div>
+  </div>
+
+  <div id="status-bar">
+    <div id="status-text">INITIALIZING SENSORS...</div>
+    <div class="hud-coords" id="hud-coords">X:— Y:—</div>
+  </div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+//  SHARED STATE
+// ═══════════════════════════════════════════════════════════════
+let handsData = [];
+let particles = [];
+
+// Fingertip indices as a Set for O(1) lookup (was O(n) with .includes)
+const FINGERTIPS     = [4, 8, 12, 16, 20];
+const FINGERTIP_SET  = new Set(FINGERTIPS);
+
+const CONNECTIONS = [
+  [0,1],[1,2],[2,3],[3,4],
+  [0,5],[5,6],[6,7],[7,8],
+  [5,9],[9,10],[10,11],[11,12],
+  [9,13],[13,14],[14,15],[15,16],
+  [13,17],[17,18],[18,19],[19,20],
+  [0,17]
+];
+
+// Pre-built hull index array — no per-frame allocation
+const HULL = [0,1,2,3,4,8,12,16,20,19,18,17];
+
+// Reusable point objects — avoids per-frame heap allocation
+const _ptA = {x:0,y:0}, _ptB = {x:0,y:0};
+
+// Pre-compute screen coords for all 21 landmarks × 2 hands
+// Index: hand 0..1, landmark 0..20
+const screenPts = [
+  Array.from({length:21}, () => ({x:0,y:0})),
+  Array.from({length:21}, () => ({x:0,y:0}))
+];
+
+// Particle pool — fixed size, no GC
+const MAX_PARTICLES = 120;
+const pPool = Array.from({length: MAX_PARTICLES}, () => ({
+  x:0, y:0, vx:0, vy:0, life:0, decay:0, size:0, r:0, g:0, b:0, alive:false
+}));
+let pHead = 0; // ring-buffer pointer
+
+function spawnParticle(x, y, r, g, b) {
+  const p = pPool[pHead % MAX_PARTICLES];
+  p.x = x; p.y = y;
+  p.vx = (Math.random() - 0.5) * 10;
+  p.vy = (Math.random() - 0.5) * 10;
+  p.life = 1.0;
+  p.decay = 0.028 + Math.random() * 0.032;
+  p.size = 2.5 + Math.random() * 4.5;
+  p.r = r; p.g = g; p.b = b;
+  p.alive = true;
+  pHead++;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════════════════════
+
+// Writes into a pre-allocated object — zero heap allocation
+function lmToScreenInto(out, lm, w, h) {
+  out.x = (1 - lm.x) * w;
+  out.y = lm.y * h;
+}
+
+// Precompute all hand landmark screen positions once per frame
+function precomputeScreenPts(w, h) {
+  for (let hi = 0; hi < handsData.length; hi++) {
+    const lms = handsData[hi].landmarks;
+    const pts = screenPts[hi];
+    for (let li = 0; li < 21; li++) {
+      const lm = lms[li];
+      pts[li].x = (1 - lm.x) * w;
+      pts[li].y = lm.y * h;
+    }
+  }
+}
+
+// t ∈ [0,1] → [r,g,b] cyan→magenta→yellow
+// Returns cached tuple — caller must not mutate
+const _colBuf = [0,0,0];
+function gradientColor(t) {
+  if (t < 0.5) {
+    const s = t * 2;
+    _colBuf[0] = s * 255 | 0;
+    _colBuf[1] = (1-s) * 255 | 0;
+    _colBuf[2] = 255;
+  } else {
+    const s = (t - 0.5) * 2;
+    _colBuf[0] = 255;
+    _colBuf[1] = s * 255 | 0;
+    _colBuf[2] = (1-s) * 255 | 0;
+  }
+  return _colBuf;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  p5 SKETCH
+// ═══════════════════════════════════════════════════════════════
+const sketch = (p) => {
+  let W, H, diagLen;
+  let ctx; // raw Canvas2D — faster than p5 wrapper for hot paths
+  let touchedPairs = new Set();
+  let frameTime = 0;
+
+  p.setup = () => {
+    W = window.innerWidth;
+    H = window.innerHeight;
+    diagLen = Math.hypot(W, H);
+    const cnv = p.createCanvas(W, H);
+    cnv.parent('canvas-container');
+    ctx = p.drawingContext; // cache raw context
+    p.colorMode(p.RGB);
+    p.frameRate(30); // ← Match MediaPipe's real output; no point running at 60
+    p.noSmooth();
+  };
+
+  p.windowResized = () => {
+    W = window.innerWidth; H = window.innerHeight;
+    diagLen = Math.hypot(W, H);
+    p.resizeCanvas(W, H);
+  };
+
+  p.draw = () => {
+    // Semi-transparent dark fade — lets the video face show through
+    p.background(2, 9, 24, 160);
+
+    if (!handsData.length) {
+      drawIdleAmbient();
+      renderParticles();
+      document.getElementById('hud-coords').textContent = 'X:— Y:—';
+      return;
+    }
+
+    // Precompute all screen positions ONCE for this frame
+    precomputeScreenPts(W, H);
+
+    // Map hand index to left/right
+    let leftIdx = -1, rightIdx = -1;
+    for (let i = 0; i < handsData.length; i++) {
+      if (handsData[i].label === 'Left')  leftIdx  = i;
+      else                                rightIdx = i;
+    }
+
+    // Update HUD
+    const wpt = screenPts[0][0];
+    document.getElementById('hud-coords').textContent =
+      `X:${wpt.x|0} Y:${wpt.y|0}`;
+
+    // Draw layers back to front
+    for (let i = 0; i < handsData.length; i++) drawSilhouette(i);
+    for (let i = 0; i < handsData.length; i++) drawSkeleton(i);
+
+    if (leftIdx >= 0 && rightIdx >= 0) {
+      touchedPairs.clear();
+      drawCradleStrings(leftIdx, rightIdx);
+    }
+
+    for (let i = 0; i < handsData.length; i++) drawJoints(i);
+
+    renderParticles();
+  };
+
+  // ── IDLE ambient ──────────────────────────────────────────────
+  function drawIdleAmbient() {
+    const t = p.millis() * 0.001;
+    p.noFill(); p.textAlign(p.CENTER, p.CENTER);
+    for (let i = 0; i < 4; i++) {
+      const r = 60 + i * 35 + Math.sin(t * 0.6 + i * 1.3) * 18;
+      const alpha = 18 + Math.sin(t + i) * 10;
+      const col = gradientColor(i / 3);
+      p.stroke(col[0], col[1], col[2], alpha);
+      p.strokeWeight(0.8);
+      p.ellipse(W/2, H/2, r*2, r*2);
+    }
+    p.noStroke();
+    p.fill(0, 255, 255, 35 + Math.sin(p.millis()*0.002)*15);
+    p.textSize(10);
+    p.text('▸  PLACE BOTH HANDS IN FRAME  ◂', W/2, H/2 + 140);
+  }
+
+  // ── Hand silhouette — no shadowBlur ──────────────────────────
+  function drawSilhouette(hi) {
+    const pts = screenPts[hi];
+    const isLeft = handsData[hi].label === 'Left';
+    ctx.beginPath();
+    ctx.moveTo(pts[HULL[0]].x, pts[HULL[0]].y);
+    for (let k = 1; k < HULL.length; k++) ctx.lineTo(pts[HULL[k]].x, pts[HULL[k]].y);
+    ctx.closePath();
+    ctx.fillStyle = isLeft ? 'rgba(0,255,255,0.04)' : 'rgba(255,0,255,0.04)';
+    ctx.fill();
+  }
+
+  // ── Skeleton — ONE shadowBlur set for the whole hand ─────────
+  // FIX: was setting shadowBlur inside the connection loop (×21 per hand per frame)
+  function drawSkeleton(hi) {
+    const pts = screenPts[hi];
+    const isLeft = handsData[hi].label === 'Left';
+    const col = isLeft ? '0,255,255' : '255,0,255';
+
+    // Set glow ONCE, draw all bones in single path
+    ctx.shadowBlur = 6;
+    ctx.shadowColor = `rgba(${col},0.35)`;
+    ctx.strokeStyle = `rgba(${col},0.22)`;
+    ctx.lineWidth = 0.9;
+    ctx.beginPath();
+    for (const [a, b] of CONNECTIONS) {
+      ctx.moveTo(pts[a].x, pts[a].y);
+      ctx.lineTo(pts[b].x, pts[b].y);
+    }
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+  }
+
+  // ── Joint dots — fake glow via layered circles, NO shadowBlur ─
+  // FIX: was setting shadowBlur 21 times per hand per frame
+  function drawJoints(hi) {
+    const pts = screenPts[hi];
+    const isLeft = handsData[hi].label === 'Left';
+    const [r, g, b] = isLeft ? [0,255,255] : [255,0,255];
+
+    for (let li = 0; li < 21; li++) {
+      const pt  = pts[li];
+      const tip = FINGERTIP_SET.has(li); // O(1) Set lookup
+      const sz  = tip ? 9 : 4.5;
+
+      // Fake glow: 3 concentric circles at decreasing opacity — identical look, zero blur cost
+      ctx.beginPath(); ctx.arc(pt.x, pt.y, sz * 2.2, 0, 6.2832);
+      ctx.fillStyle = `rgba(${r},${g},${b},0.06)`; ctx.fill();
+
+      ctx.beginPath(); ctx.arc(pt.x, pt.y, sz * 1.3, 0, 6.2832);
+      ctx.fillStyle = `rgba(${r},${g},${b},0.18)`; ctx.fill();
+
+      ctx.beginPath(); ctx.arc(pt.x, pt.y, sz * 0.55, 0, 6.2832);
+      ctx.fillStyle = `rgba(${r},${g},${b},0.75)`; ctx.fill();
+
+      // White core
+      ctx.beginPath(); ctx.arc(pt.x, pt.y, sz * 0.22, 0, 6.2832);
+      ctx.fillStyle = `rgba(255,255,255,0.88)`; ctx.fill();
+    }
+  }
+
+  // ── Cat's cradle strings ──────────────────────────────────────
+  function drawCradleStrings(li, ri) {
+    const ptsL = screenPts[li];
+    const ptsR = screenPts[ri];
+    const t = p.millis() * 0.001;
+
+    // Primary strings: each fingertip L ↔ matching fingertip R
+    for (let fi = 0; fi < FINGERTIPS.length; fi++) {
+      const idx  = FINGERTIPS[fi];
+      const ptL  = ptsL[idx];
+      const ptR  = ptsR[idx];
+      const dx   = ptR.x - ptL.x, dy = ptR.y - ptL.y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      const tVal = Math.min(dist / (diagLen * 0.55), 1.0);
+      const col  = gradientColor(tVal);
+      const thick = 2.8 - tVal * 2.2;  // thick when close, thin when far
+
+      drawLaser(ptL, ptR, col[0], col[1], col[2], thick, fi, t, 1.0);
+
+      if (dist < 28 && !touchedPairs.has(fi)) {
+        touchedPairs.add(fi);
+        const mx = (ptL.x + ptR.x) * 0.5, my = (ptL.y + ptR.y) * 0.5;
+        for (let k = 0; k < 14; k++) spawnParticle(mx, my, col[0], col[1], col[2]);
+      }
+    }
+
+    // Cross-weave strings
+    const crosses = [
+      [FINGERTIPS[1], FINGERTIPS[3]],
+      [FINGERTIPS[3], FINGERTIPS[1]],
+      [FINGERTIPS[2], FINGERTIPS[4]],
+      [FINGERTIPS[4], FINGERTIPS[2]],
+    ];
+    for (let ci = 0; ci < crosses.length; ci++) {
+      const [la, rb] = crosses[ci];
+      drawLaser(ptsL[la], ptsR[rb], 255, 255, 0, 0.6, ci + 10, t, 0.28);
+    }
+  }
+
+  // ── Laser string — fake glow, NO shadowBlur ───────────────────
+  // FIX: was setting shadowBlur 3× per string × 9 strings = 27 shadowBlur changes/frame
+  function drawLaser(ptA, ptB, r, g, b, thick, idx, t, alpha) {
+    const mx = (ptA.x + ptB.x) * 0.5;
+    const my = (ptA.y + ptB.y) * 0.5;
+
+    // Elastic perpendicular wobble
+    let pX = -(ptB.y - ptA.y);
+    let pY =  (ptB.x - ptA.x);
+    const pLen = Math.sqrt(pX*pX + pY*pY) || 1;
+    const wave = Math.sin(t * 2.2 + idx * 0.9) * 6;
+    const cx = mx + (pX / pLen) * wave;
+    const cy = my + (pY / pLen) * wave;
+
+    // Fake glow with 3 layered strokes — zero shadowBlur
+    // Outer haze
+    ctx.beginPath();
+    ctx.moveTo(ptA.x, ptA.y);
+    ctx.quadraticCurveTo(cx, cy, ptB.x, ptB.y);
+    ctx.strokeStyle = `rgba(${r},${g},${b},${0.08 * alpha})`;
+    ctx.lineWidth = thick * 7;
+    ctx.stroke();
+
+    // Mid glow
+    ctx.beginPath();
+    ctx.moveTo(ptA.x, ptA.y);
+    ctx.quadraticCurveTo(cx, cy, ptB.x, ptB.y);
+    ctx.strokeStyle = `rgba(${r},${g},${b},${0.50 * alpha})`;
+    ctx.lineWidth = thick * 1.8;
+    ctx.stroke();
+
+    // Bright core
+    ctx.beginPath();
+    ctx.moveTo(ptA.x, ptA.y);
+    ctx.quadraticCurveTo(cx, cy, ptB.x, ptB.y);
+    ctx.strokeStyle = `rgba(255,255,255,${0.38 * alpha})`;
+    ctx.lineWidth = thick * 0.35;
+    ctx.stroke();
+  }
+
+  // ── Particles — pool-based, no shadowBlur ─────────────────────
+  // FIX: was setting shadowBlur per particle + unbounded array growth
+  function renderParticles() {
+    ctx.save();
+    for (let i = 0; i < MAX_PARTICLES; i++) {
+      const par = pPool[i];
+      if (!par.alive) continue;
+
+      par.x  += par.vx; par.y  += par.vy;
+      par.vx *= 0.91;   par.vy *= 0.91;
+      par.life -= par.decay;
+
+      if (par.life <= 0) { par.alive = false; continue; }
+
+      const sz = par.size * par.life;
+      const a  = par.life;
+
+      // Fake glow: 2 circles per particle
+      ctx.beginPath(); ctx.arc(par.x, par.y, sz * 1.8, 0, 6.2832);
+      ctx.fillStyle = `rgba(${par.r},${par.g},${par.b},${a * 0.10})`;
+      ctx.fill();
+
+      ctx.beginPath(); ctx.arc(par.x, par.y, sz * 0.55, 0, 6.2832);
+      ctx.fillStyle = `rgba(${par.r},${par.g},${par.b},${a * 0.85})`;
+      ctx.fill();
+
+      ctx.beginPath(); ctx.arc(par.x, par.y, sz * 0.20, 0, 6.2832);
+      ctx.fillStyle = `rgba(255,255,255,${a * 0.70})`;
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+};
+
+// ═══════════════════════════════════════════════════════════════
+//  BOOT p5
+// ═══════════════════════════════════════════════════════════════
+new p5(sketch);
+
+// ═══════════════════════════════════════════════════════════════
+//  MEDIAPIPE HANDS + CAMERA
+// ═══════════════════════════════════════════════════════════════
+const videoEl  = document.getElementById('inputVideo');
+const statusEl = document.getElementById('status-text');
+
+const mpHands = new Hands({
+  locateFile: (f) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`
+});
+
+mpHands.setOptions({
+  maxNumHands:            2,
+  modelComplexity:        0,   // FIX: was 1 — model 0 is fast, nearly identical quality
+  minDetectionConfidence: 0.65,
+  minTrackingConfidence:  0.5,
+});
+
+mpHands.onResults((results) => {
+  handsData = [];
+  if (results.multiHandLandmarks && results.multiHandedness) {
+    for (let i = 0; i < results.multiHandLandmarks.length; i++) {
+      handsData.push({
+        label:     results.multiHandedness[i].label,
+        landmarks: results.multiHandLandmarks[i]
+      });
+    }
+  }
+  const count = handsData.length;
+  if (count === 0) {
+    statusEl.className = '';
+    statusEl.textContent = 'NO HANDS DETECTED · SHOW BOTH HANDS';
+  } else if (count === 1) {
+    statusEl.className = '';
+    statusEl.textContent = `${handsData[0].label.toUpperCase()} HAND LOCKED · AWAITING SECOND`;
+  } else {
+    statusEl.className = 'active';
+    statusEl.textContent = 'BOTH HANDS LOCKED · WEAVING STRINGS';
+  }
+});
+
+const cam = new Camera(videoEl, {
+  onFrame: async () => { await mpHands.send({ image: videoEl }); },
+  width:  640,   // FIX: was 1280 — half resolution, same visual result
+  height: 480,
+});
+
+cam.start()
+  .then(() => { statusEl.textContent = 'CAMERA ACTIVE · SHOW YOUR HANDS'; })
+  .catch((err) => {
+    statusEl.textContent = 'CAMERA ERROR — CHECK PERMISSIONS';
+    console.error('[Cat\'s Cradle] Camera error:', err);
+  });
+</script>
+</body>
+</html>

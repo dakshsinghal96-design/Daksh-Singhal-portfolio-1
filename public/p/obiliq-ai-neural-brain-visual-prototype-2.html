@@ -1,0 +1,844 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>OBILIQ AI — Neural Brain (Visual Prototype)</title>
+<style>
+  :root {
+    --bg-0: #02050c;
+    --bg-1: #030914;
+    --bg-2: #02050a;
+    --ink: #eaf4ff;
+    --muted: rgba(206, 224, 250, 0.72);
+    --cyan: #42f3ff;
+    --blue: #4f8cff;
+    --nav-h: clamp(56px, 8vh, 66px);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    margin: 0;
+  }
+
+  body {
+    height: 100vh;
+    overflow: hidden;
+    color: var(--ink);
+    font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+    background:
+      radial-gradient(circle at 50% 40%, rgba(58, 132, 255, 0.16), transparent 44%),
+      radial-gradient(circle at 16% 26%, rgba(66, 243, 255, 0.10), transparent 34%),
+      radial-gradient(circle at 84% 28%, rgba(168, 85, 247, 0.10), transparent 32%),
+      radial-gradient(circle at 62% 84%, rgba(255, 159, 67, 0.08), transparent 34%),
+      linear-gradient(180deg, var(--bg-0) 0%, var(--bg-1) 52%, var(--bg-2) 100%);
+  }
+
+  /* ---------- Background starfield ---------- */
+  .stars {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .star {
+    position: absolute;
+    border-radius: 999px;
+    background: #cfe9ff;
+    box-shadow: 0 0 6px rgba(150, 210, 255, 0.7);
+    opacity: 0.2;
+    animation: twinkle var(--dur, 6s) ease-in-out var(--delay, 0s) infinite;
+    will-change: opacity, transform;
+  }
+
+  /* ---------- Shell ---------- */
+  .shell {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+
+  /* ---------- Navbar ---------- */
+  .nav {
+    position: relative;
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    height: var(--nav-h);
+    padding: 0 clamp(16px, 4vw, 40px);
+    margin: 10px clamp(10px, 2.5vw, 26px) 0;
+    border: 1px solid rgba(70, 140, 255, 0.28);
+    border-radius: 16px;
+    background: linear-gradient(180deg, rgba(6, 14, 30, 0.82), rgba(4, 10, 22, 0.6));
+    box-shadow: 0 14px 44px rgba(0, 0, 0, 0.4), inset 0 -1px 22px rgba(60, 149, 255, 0.08);
+    backdrop-filter: blur(16px);
+    animation: fade-down 0.9s ease both;
+  }
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 11px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+  .brand-mark {
+    display: grid;
+    width: 34px;
+    height: 34px;
+    place-items: center;
+    color: #7fe1ff;
+    border: 1px solid rgba(97, 166, 255, 0.5);
+    border-radius: 10px;
+    background: radial-gradient(circle at 40% 30%, rgba(120, 210, 255, 0.4), rgba(8, 20, 44, 0.9));
+    box-shadow: 0 0 18px rgba(60, 137, 255, 0.5);
+  }
+  .brand-mark svg { width: 20px; height: 20px; }
+  .brand-name { font-size: clamp(15px, 2.2vw, 19px); text-shadow: 0 0 16px rgba(150, 200, 255, 0.35); }
+  .nav-links {
+    display: flex;
+    gap: clamp(14px, 2.4vw, 32px);
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--muted);
+  }
+  .nav-links a { color: inherit; text-decoration: none; transition: color 0.18s, text-shadow 0.18s; }
+  .nav-links a:hover, .nav-links a.active { color: #fff; text-shadow: 0 0 14px rgba(66, 243, 255, 0.5); }
+  .nav-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 38px;
+    padding: 0 16px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    border: 1px solid rgba(61, 145, 255, 0.6);
+    border-radius: 9px;
+    background: rgba(6, 18, 42, 0.7);
+    box-shadow: 0 0 22px rgba(60, 143, 255, 0.18), inset 0 0 18px rgba(66, 243, 255, 0.06);
+    cursor: pointer;
+    transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s;
+  }
+  .nav-cta:hover { transform: translateY(-1px); border-color: rgba(127, 221, 255, 0.9); box-shadow: 0 0 30px rgba(66, 243, 255, 0.3); }
+  @media (max-width: 720px) { .nav-links { display: none; } }
+
+  /* ---------- Stage (neural map) ---------- */
+  .stage {
+    position: relative;
+    z-index: 5;
+    flex: 1 1 auto;
+    display: grid;
+    place-items: center;
+    min-height: 0;
+  }
+  .map {
+    position: relative;
+    width: min(118vh, 96vw, 1180px);
+    height: clamp(300px, 60vh, 640px);
+    max-width: 96vw;
+  }
+
+  .links {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .links path { fill: none; vector-effect: non-scaling-stroke; stroke-linecap: round; }
+
+  .web-line {
+    stroke: rgba(96, 165, 255, 0.5);
+    stroke-width: 0.7;
+    opacity: 0;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: draw 1.4s ease forwards, line-breathe 9s ease-in-out infinite;
+  }
+  .dendrite {
+    stroke: rgba(120, 190, 255, 0.55);
+    stroke-width: 1;
+    opacity: 0.5;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    filter: drop-shadow(0 0 2px rgba(90, 170, 255, 0.5));
+    animation: draw 1.5s ease forwards, wave 8s ease-in-out infinite;
+  }
+
+  .branch-group { transition: opacity 0.5s cubic-bezier(0.65,0,0.35,1), filter 0.5s cubic-bezier(0.65,0,0.35,1); }
+  .branch-group.dim { opacity: 0.16; filter: saturate(0.7); }
+
+  .branch {
+    stroke: var(--c);
+    stroke-width: 2.2;
+    opacity: 0.66;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    filter: drop-shadow(0 0 4px var(--c));
+    animation: draw 1.2s cubic-bezier(0.65,0,0.35,1) var(--d, 0s) forwards, wave 7s ease-in-out infinite;
+  }
+  .branch-flow {
+    stroke: #eafcff;
+    stroke-width: 2.6;
+    stroke-dasharray: 0.05 0.95;
+    stroke-dashoffset: 1;
+    opacity: 0.9;
+    filter: drop-shadow(0 0 6px var(--c));
+    animation: flow 3.6s linear var(--fd, 0s) infinite;
+  }
+  .connector {
+    stroke: var(--c);
+    stroke-width: 1.1;
+    opacity: 0.42;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: draw 0.9s ease var(--d, 0s) forwards, line-breathe 6s ease-in-out infinite;
+  }
+  .branch-group.focus .branch { opacity: 1; stroke-width: 2.8; }
+  .branch-group.focus .connector { opacity: 0.78; }
+
+  /* ---------- Core ---------- */
+  .node { position: absolute; transform: translate(-50%, -50%); }
+
+  .core {
+    z-index: 8;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: clamp(120px, 17vmin, 190px);
+    height: clamp(120px, 17vmin, 190px);
+    border: 1px solid rgba(97, 166, 255, 0.5);
+    border-radius: 999px;
+    color: #eef8ff;
+    background:
+      radial-gradient(circle at 38% 30%, rgba(150, 226, 255, 0.5), transparent 46%),
+      radial-gradient(circle, rgba(17, 41, 99, 0.94), rgba(5, 14, 38, 0.98) 66%, rgba(3, 7, 17, 0.98));
+    box-shadow: 0 0 32px rgba(69, 133, 255, 0.6), 0 0 74px rgba(67, 155, 255, 0.34), inset 0 0 46px rgba(63, 133, 255, 0.3);
+    transform: translate(-50%, -50%) scale(0.6);
+    opacity: 0;
+    animation: core-wake 1s cubic-bezier(0.34,1.56,0.64,1) 0.15s forwards, core-breathe 8s ease-in-out 1.2s infinite;
+    will-change: transform;
+  }
+  .core-ring, .core-aura, .core-spokes { position: absolute; border-radius: inherit; pointer-events: none; }
+  .core-ring { border: 1px solid rgba(111, 205, 255, 0.4); animation: ring-pulse 7s ease-in-out infinite; }
+  .core-ring.r1 { inset: -14px; }
+  .core-ring.r2 { inset: -30px; border-style: dashed; border-color: rgba(255, 163, 92, 0.24); animation-delay: -2.3s; }
+  .core-ring.r3 { inset: -48px; border-color: rgba(120, 190, 255, 0.16); animation-delay: -3.6s; }
+  .core-aura {
+    inset: -46px;
+    background: conic-gradient(from 0deg, transparent, rgba(88,183,255,0.42), transparent 30%, rgba(168,85,247,0.28), transparent 58%, rgba(66,243,255,0.44), transparent);
+    mix-blend-mode: screen;
+    -webkit-mask: radial-gradient(circle, transparent 53%, #000 57%, #000 70%, transparent 74%);
+    mask: radial-gradient(circle, transparent 53%, #000 57%, #000 70%, transparent 74%);
+    opacity: 0.5;
+    animation: spin 20s linear infinite;
+  }
+  .core-spokes {
+    inset: 16px;
+    background:
+      radial-gradient(circle at 30% 32%, rgba(126,232,255,0.9) 0 1.4px, transparent 2.2px),
+      radial-gradient(circle at 66% 30%, rgba(255,255,255,0.75) 0 1.2px, transparent 2px),
+      radial-gradient(circle at 70% 66%, rgba(66,243,255,0.8) 0 1.4px, transparent 2.2px),
+      radial-gradient(circle at 34% 70%, rgba(159,116,255,0.7) 0 1.2px, transparent 2px),
+      radial-gradient(circle at 50% 50%, rgba(126,224,255,0.5) 0 1.2px, transparent 2px);
+    -webkit-mask: radial-gradient(circle, #000 0 60%, transparent 72%);
+    mask: radial-gradient(circle, #000 0 60%, transparent 72%);
+    opacity: 0.55;
+    animation: spin 16s linear infinite reverse;
+  }
+  .core-icon { display: grid; width: clamp(34px, 5vmin, 48px); height: clamp(34px, 5vmin, 48px); place-items: center; color: #7fe1ff; filter: drop-shadow(0 0 10px rgba(98,200,255,0.6)); }
+  .core-icon svg { width: 74%; height: 74%; }
+  .core-label { margin-top: 6px; font-size: clamp(15px, 2.4vmin, 23px); font-weight: 600; text-shadow: 0 0 20px rgba(215,241,255,0.5); }
+
+  /* ---------- Category hubs ---------- */
+  .hub {
+    z-index: 7;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5);
+    animation: pop 0.7s cubic-bezier(0.34,1.56,0.64,1) var(--d, 0s) forwards;
+    transition: opacity 0.4s, filter 0.4s;
+  }
+  .hub.dim { opacity: 0.4; filter: saturate(0.72) brightness(0.82); }
+  .hub-inner {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    width: clamp(84px, 13vmin, 122px);
+    padding: clamp(8px, 1.4vmin, 13px) 8px clamp(7px, 1.2vmin, 11px);
+    text-align: center;
+    border: 1px solid color-mix(in srgb, var(--c) 55%, transparent);
+    border-radius: 50% 50% 46% 46% / 54% 54% 46% 46%;
+    background:
+      radial-gradient(circle at 50% 12%, color-mix(in srgb, var(--c) 24%, transparent), transparent 62%),
+      linear-gradient(160deg, rgba(8,17,34,0.92), rgba(4,9,20,0.94));
+    box-shadow: 0 0 24px color-mix(in srgb, var(--c) 28%, transparent), inset 0 0 20px color-mix(in srgb, var(--c) 12%, transparent);
+    backdrop-filter: blur(7px);
+    animation: float var(--fs, 9s) ease-in-out infinite;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    will-change: transform;
+  }
+  .hub-inner::before {
+    content: "";
+    position: absolute;
+    inset: -9px;
+    border-radius: inherit;
+    border: 1px solid color-mix(in srgb, var(--c) 34%, transparent);
+    opacity: 0.5;
+    -webkit-mask: radial-gradient(circle, transparent 58%, #000 62%);
+    mask: radial-gradient(circle, transparent 58%, #000 62%);
+    animation: ring-pulse var(--fs, 9s) ease-in-out infinite;
+  }
+  .hub:hover .hub-inner, .hub:focus-visible .hub-inner {
+    transform: translateY(-3px) scale(1.06);
+    border-color: color-mix(in srgb, var(--c) 92%, #fff 8%);
+    box-shadow: 0 0 38px color-mix(in srgb, var(--c) 50%, transparent), inset 0 0 26px color-mix(in srgb, var(--c) 20%, transparent);
+  }
+  .hub.selected .hub-inner {
+    transform: scale(1.08);
+    border-color: color-mix(in srgb, var(--c) 94%, #fff 6%);
+    box-shadow: 0 0 44px color-mix(in srgb, var(--c) 56%, transparent), inset 0 0 30px color-mix(in srgb, var(--c) 22%, transparent);
+  }
+  .hub-icon { display: grid; width: clamp(26px, 3.6vmin, 34px); height: clamp(26px, 3.6vmin, 34px); place-items: center; color: var(--c); filter: drop-shadow(0 0 7px var(--g)); }
+  .hub-icon svg { width: 66%; height: 66%; }
+  .hub-name { font-size: clamp(9.5px, 1.35vmin, 12px); font-weight: 700; line-height: 1.15; color: #fff; text-shadow: 0 0 12px var(--g); }
+  .hub-count { font-size: clamp(8.5px, 1.1vmin, 10px); font-weight: 600; color: color-mix(in srgb, var(--c) 78%, #fff 22%); }
+
+  /* ---------- Project spark nodes ---------- */
+  .spark {
+    z-index: 6;
+    display: grid;
+    width: clamp(20px, 2.6vmin, 26px);
+    height: clamp(20px, 2.6vmin, 26px);
+    padding: 0;
+    place-items: center;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.3);
+    animation: pop 0.6s ease var(--d, 0s) forwards;
+    transition: opacity 0.4s, filter 0.4s;
+  }
+  .spark.dim { opacity: 0.28; filter: brightness(0.8); }
+  .spark-dot {
+    position: relative;
+    width: clamp(8px, 1.1vmin, 11px);
+    height: clamp(8px, 1.1vmin, 11px);
+    border-radius: 999px;
+    background: var(--c);
+    box-shadow: 0 0 12px var(--g), inset 0 0 3px #fff;
+    animation: spark-pulse 5s ease-in-out var(--sd, 0s) infinite;
+  }
+  .spark-dot::after {
+    content: "";
+    position: absolute;
+    inset: -6px;
+    border: 1px solid color-mix(in srgb, var(--c) 55%, transparent);
+    border-radius: 999px;
+    opacity: 0.5;
+    animation: spark-ring 5s ease-in-out var(--sd, 0s) infinite;
+  }
+  .spark:hover .spark-dot, .spark:focus-visible .spark-dot { transform: scale(1.5); box-shadow: 0 0 18px var(--c), inset 0 0 4px #fff; }
+  .spark.selected .spark-dot { transform: scale(1.6); box-shadow: 0 0 22px var(--c), inset 0 0 5px #fff; }
+  .tip {
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    z-index: 20;
+    width: max-content;
+    max-width: 170px;
+    padding: 5px 9px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+    color: #eaf8ff;
+    border: 1px solid color-mix(in srgb, var(--c) 46%, transparent);
+    border-radius: 8px;
+    background: rgba(3, 9, 22, 0.94);
+    box-shadow: 0 0 18px color-mix(in srgb, var(--c) 26%, transparent);
+    opacity: 0;
+    transform: translate(-50%, 4px);
+    pointer-events: none;
+    transition: opacity 0.16s, transform 0.16s;
+  }
+  .spark:hover .tip, .spark:focus-visible .tip { opacity: 1; transform: translate(-50%, 0); }
+
+  /* ---------- Bottom copy band ---------- */
+  .copy {
+    position: relative;
+    z-index: 6;
+    flex: 0 0 auto;
+    padding: clamp(6px, 1.5vh, 16px) 20px clamp(14px, 3vh, 30px);
+    text-align: center;
+    animation: fade-up 1s ease 0.5s both;
+  }
+  .title {
+    margin: 0;
+    font-size: clamp(34px, 7vw, 74px);
+    font-weight: 700;
+    line-height: 0.96;
+    letter-spacing: -0.01em;
+    color: #eaf8ff;
+    text-shadow: 0 0 18px rgba(202,235,255,0.5), 0 0 44px rgba(80,165,255,0.34);
+  }
+  .tagline { margin: clamp(6px, 1.4vh, 12px) auto 0; max-width: 620px; font-size: clamp(13px, 1.8vw, 17px); color: var(--muted); }
+  .actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; margin-top: clamp(10px, 1.8vh, 18px); }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 46px;
+    padding: 0 22px;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s;
+  }
+  .btn svg { width: 16px; height: 16px; }
+  .btn-primary {
+    color: #041018;
+    border: 1px solid rgba(127, 221, 255, 0.6);
+    background: linear-gradient(135deg, #42f3ff, #7fd0ff 46%, #4f8cff);
+    box-shadow: 0 0 26px rgba(66, 243, 255, 0.32);
+  }
+  .btn-secondary {
+    color: #eaf3ff;
+    border: 1px solid rgba(160, 200, 255, 0.32);
+    background: rgba(8, 17, 36, 0.72);
+    box-shadow: inset 0 0 22px rgba(66, 243, 255, 0.06);
+  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 0 36px rgba(66, 243, 255, 0.42); }
+
+  /* ---------- Floating project detail panel ---------- */
+  .panel {
+    position: fixed;
+    right: clamp(14px, 3vw, 40px);
+    bottom: clamp(14px, 3vh, 40px);
+    z-index: 60;
+    width: min(340px, calc(100vw - 28px));
+    padding: 20px;
+    color: #f3fbff;
+    border: 1px solid color-mix(in srgb, var(--c, #42f3ff) 42%, transparent);
+    border-radius: 16px;
+    background:
+      radial-gradient(circle at 18% 8%, color-mix(in srgb, var(--c, #42f3ff) 20%, transparent), transparent 40%),
+      linear-gradient(160deg, rgba(6, 14, 32, 0.95), rgba(2, 6, 17, 0.96));
+    box-shadow: 0 0 40px color-mix(in srgb, var(--c, #42f3ff) 24%, transparent), 0 24px 60px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(18px);
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+    pointer-events: none;
+    transition: opacity 0.35s cubic-bezier(0.65,0,0.35,1), transform 0.35s cubic-bezier(0.65,0,0.35,1);
+  }
+  .panel.open { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+  .panel-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .panel-cat { font-size: 11px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--c, #7db9ff); text-shadow: 0 0 12px var(--g, rgba(86,152,255,0.4)); }
+  .panel-close {
+    display: grid; width: 32px; height: 32px; place-items: center;
+    color: #cfe6ff; border: 1px solid rgba(140,190,255,0.28); border-radius: 8px;
+    background: rgba(6,14,30,0.7); cursor: pointer; transition: transform 0.18s, border-color 0.18s, color 0.18s;
+  }
+  .panel-close svg { width: 15px; height: 15px; }
+  .panel-close:hover { color: #fff; border-color: rgba(127,221,255,0.7); transform: rotate(90deg); }
+  .panel-title { margin: 14px 0 0; font-size: 21px; font-weight: 700; line-height: 1.2; color: #fff; }
+  .panel-status { display: inline-block; margin-top: 10px; padding: 3px 10px; font-size: 11px; font-weight: 700; border-radius: 999px; }
+  .panel-status.live { color: #6ff3c4; border: 1px solid rgba(62,242,163,0.4); background: rgba(62,242,163,0.12); }
+  .panel-status.prototype { color: #ffc987; border: 1px solid rgba(255,159,67,0.4); background: rgba(255,159,67,0.12); }
+  .panel-desc { margin: 14px 0 0; font-size: 14px; line-height: 1.55; color: rgba(214,230,250,0.9); }
+  .panel-launch {
+    display: inline-flex; align-items: center; gap: 8px; margin-top: 18px; width: 100%; height: 44px;
+    justify-content: center; font-size: 14px; font-weight: 700; text-decoration: none;
+    color: #041018; border-radius: 10px;
+    border: 1px solid rgba(127,221,255,0.6);
+    background: linear-gradient(135deg, #42f3ff, #7fd0ff 46%, #4f8cff);
+    box-shadow: 0 0 26px rgba(66,243,255,0.32); cursor: pointer;
+    transition: box-shadow 0.18s, transform 0.18s;
+  }
+  .panel-launch svg { width: 16px; height: 16px; }
+  .panel-launch:hover { transform: translateY(-2px); box-shadow: 0 0 44px rgba(66,243,255,0.6); }
+  .panel-launch:active { animation: burst 0.5s ease; }
+
+  /* ---------- Keyframes ---------- */
+  @keyframes draw { to { opacity: 1; stroke-dashoffset: 0; } }
+  @keyframes flow { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+  @keyframes line-breathe { 0%,100% { opacity: 0.4; } 50% { opacity: 0.72; } }
+  @keyframes wave { 0%,100% { opacity: 0.6; } 50% { opacity: 0.9; } }
+  @keyframes twinkle { 0%,100% { opacity: 0.12; transform: translateY(0); } 50% { opacity: 0.7; transform: translateY(-3px); } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes core-wake {
+    from { opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
+    to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  }
+  @keyframes core-breathe {
+    0%,100% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 32px rgba(69,133,255,0.6), 0 0 74px rgba(67,155,255,0.34), inset 0 0 46px rgba(63,133,255,0.3); }
+    50% { transform: translate(-50%, -50%) scale(1.035); box-shadow: 0 0 44px rgba(69,133,255,0.8), 0 0 100px rgba(67,155,255,0.46), inset 0 0 54px rgba(63,133,255,0.36); }
+  }
+  @keyframes ring-pulse { 0%,100% { opacity: 0.5; transform: scale(1); } 50% { opacity: 0.85; transform: scale(1.04); } }
+  @keyframes pop { from { opacity: 0; transform: translate(-50%, -50%) scale(0.5); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+  @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+  @keyframes spark-pulse { 0%,100% { transform: scale(1); opacity: 0.85; } 50% { transform: scale(1.25); opacity: 1; } }
+  @keyframes spark-ring { 0%,100% { opacity: 0.15; transform: scale(0.85); } 50% { opacity: 0.6; transform: scale(1.25); } }
+  @keyframes fade-down { from { opacity: 0; transform: translateY(-14px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fade-up { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes burst {
+    0% { box-shadow: 0 0 0 rgba(66,243,255,0.7); }
+    40% { box-shadow: 0 0 60px rgba(66,243,255,0.85), 0 0 0 12px rgba(66,243,255,0.12); }
+    100% { box-shadow: 0 0 26px rgba(66,243,255,0.32); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; }
+    .web-line, .dendrite, .branch, .connector { stroke-dashoffset: 0; opacity: 0.6; }
+    .branch-flow, .stars { display: none; }
+    .core, .hub, .spark { opacity: 1; }
+  }
+</style>
+</head>
+<body>
+  <div class="stars" id="stars" aria-hidden="true"></div>
+
+  <div class="shell">
+    <!-- Navbar -->
+    <header class="nav">
+      <span class="brand">
+        <span class="brand-mark" id="brandMark"></span>
+        <span class="brand-name">OBILIQ AI</span>
+      </span>
+      <nav class="nav-links">
+        <a href="#" class="active">Home</a>
+        <a href="#">Projects</a>
+        <a href="#">Categories</a>
+        <a href="#">About</a>
+        <a href="#">Contact</a>
+      </nav>
+      <button type="button" class="nav-cta">Launch App</button>
+    </header>
+
+    <!-- Neural map -->
+    <main class="stage">
+      <div class="map" id="map">
+        <svg class="links" viewBox="0 0 100 100" preserveAspectRatio="none" id="links" aria-hidden="true"></svg>
+        <!-- core + hubs + sparks injected by JS -->
+      </div>
+    </main>
+
+    <!-- Bottom copy (separate band — never overlaps nodes) -->
+    <section class="copy">
+      <h1 class="title">OBILIQ AI</h1>
+      <p class="tagline">1000+ AI Projects Connected Through One Neural System</p>
+      <div class="actions">
+        <a href="#" class="btn btn-primary">Explore Projects <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></a>
+        <a href="#" class="btn btn-secondary">Build With Us</a>
+      </div>
+    </section>
+  </div>
+
+  <!-- Floating detail panel -->
+  <aside class="panel" id="panel" aria-live="polite"></aside>
+
+<script>
+(function () {
+  "use strict";
+
+  var ICONS = {
+    brain: '<path d="M12 4.5a3.6 3.6 0 0 0-3.6 3.6 2.8 2.8 0 0 0-1.6 5 2.9 2.9 0 0 0 1.6 5.3 3.6 3.6 0 0 0 7.2 0 2.9 2.9 0 0 0 1.6-5.3 2.8 2.8 0 0 0-1.6-5A3.6 3.6 0 0 0 12 4.5Z"/><path d="M12 4.5v15"/><path d="M8.4 8.1c1.2.7 2.4.7 3.6 0M12 12c-1.2.7-2.4.7-3.6 0M15.6 12c-1.2.7-2.4.7-3.6 0"/>',
+    vision: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="2.6"/>',
+    people: '<circle cx="9" cy="8" r="3"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 5.2a3 3 0 0 1 0 5.6"/><path d="M17.5 20a6.5 6.5 0 0 0-2.7-5.3"/>',
+    scan: '<path d="M4 8V5.5A1.5 1.5 0 0 1 5.5 4H8"/><path d="M16 4h2.5A1.5 1.5 0 0 1 20 5.5V8"/><path d="M20 16v2.5a1.5 1.5 0 0 1-1.5 1.5H16"/><path d="M8 20H5.5A1.5 1.5 0 0 1 4 18.5V16"/><path d="M4 12h16"/>',
+    sparkles: '<path d="M12 3l1.7 4.6L18.5 9l-4.8 1.4L12 15l-1.7-4.6L5.5 9l4.8-1.4Z"/><path d="M18.5 14l.8 2.1 2.2.8-2.2.8-.8 2.1-.8-2.1-2.2-.8 2.2-.8Z"/>',
+    code: '<path d="M8.5 8 4.5 12l4 4"/><path d="M15.5 8l4 4-4 4"/><path d="M13 6l-2 12"/>',
+    mobile: '<rect x="7" y="2.5" width="10" height="19" rx="2.4"/><path d="M10.5 18.5h3"/>',
+    dashboard: '<rect x="3.5" y="3.5" width="7.5" height="7" rx="1.2"/><rect x="13" y="3.5" width="7.5" height="4.5" rx="1.2"/><rect x="13" y="10.5" width="7.5" height="10" rx="1.2"/><rect x="3.5" y="12.5" width="7.5" height="8" rx="1.2"/>',
+    launch: '<path d="M7 17 17 7"/><path d="M8 7h9v9"/>',
+    close: '<path d="M6 6l12 12M18 6 6 18"/>'
+  };
+
+  function svgIcon(key, cls) {
+    return '<svg class="' + (cls || '') + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + ICONS[key] + '</svg>';
+  }
+
+  var CATEGORIES = [
+    { name: "Gesture & Vision AI", color: "#42f3ff", glow: "rgba(66,243,255,0.55)", count: 168, icon: "vision" },
+    { name: "People Service AI", color: "#4f8cff", glow: "rgba(79,140,255,0.55)", count: 142, icon: "people" },
+    { name: "Scan & Detection AI", color: "#ff9f43", glow: "rgba(255,159,67,0.55)", count: 96, icon: "scan" },
+    { name: "AI Experience Labs", color: "#a855f7", glow: "rgba(168,85,247,0.55)", count: 74, icon: "sparkles" },
+    { name: "AI Coding & Software Engineering", color: "#3ef2a3", glow: "rgba(62,242,163,0.55)", count: 210, icon: "code" },
+    { name: "Mobile Apps", color: "#f472b6", glow: "rgba(244,114,182,0.55)", count: 88, icon: "mobile" },
+    { name: "Web Apps, Dashboards & Automation", color: "#ff5d6c", glow: "rgba(255,93,108,0.55)", count: 224, icon: "dashboard" }
+  ];
+
+  var PROJECTS = {
+    "Gesture & Vision AI": [
+      { name: "GesturePilot Vision", desc: "Hands-free gesture control for screens and kiosks.", status: "Live" },
+      { name: "HandTrack Studio", desc: "Precise hand and finger tracking for interactive apps.", status: "Prototype" },
+      { name: "PoseSense AI", desc: "Full-body pose detection for fitness and motion apps.", status: "Live" }
+    ],
+    "People Service AI": [
+      { name: "ServiceMate Concierge", desc: "A friendly AI concierge for visitor service.", status: "Live" },
+      { name: "SmartQueue AI", desc: "Smart queue guidance for desks and venues.", status: "Prototype" },
+      { name: "CareBot Assistant", desc: "A caring AI assistant for support and follow-ups.", status: "Live" }
+    ],
+    "Scan & Detection AI": [
+      { name: "FaceScan AI", desc: "Fast, private face detection for check-in flows.", status: "Live" },
+      { name: "DocuScan Intelligence", desc: "Document scanning that reads and flags details.", status: "Prototype" },
+      { name: "HealthSignal Scan", desc: "Visual health-signal detection for triage support.", status: "Prototype" }
+    ],
+    "AI Experience Labs": [
+      { name: "DreamRoom AI", desc: "Immersive AI rooms that react to people and sound.", status: "Live" },
+      { name: "Neural Museum", desc: "An AI-guided museum that adapts to each visitor.", status: "Prototype" },
+      { name: "AI Avatar Lab", desc: "Real-time AI avatars that talk and perform live.", status: "Live" }
+    ],
+    "AI Coding & Software Engineering": [
+      { name: "CodePilot Studio", desc: "AI planning and code generation for teams.", status: "Live" },
+      { name: "BugFix Agent", desc: "Bug triage from logs, screenshots, and repos.", status: "Prototype" },
+      { name: "AppForge AI", desc: "Turn plain ideas into working app scaffolds.", status: "Prototype" }
+    ],
+    "Mobile Apps": [
+      { name: "MobileCare AI", desc: "A pocket AI health companion for reminders.", status: "Live" },
+      { name: "PocketTutor AI", desc: "A personal AI tutor that adapts on mobile.", status: "Prototype" },
+      { name: "FieldAgent Mobile", desc: "On-site photo capture and AI notes for field teams.", status: "Live" }
+    ],
+    "Web Apps, Dashboards & Automation": [
+      { name: "InsightBoard AI", desc: "A live dashboard that explains your data.", status: "Live" },
+      { name: "AutoFlow Workspace", desc: "Automation builder for forms, data, and AI.", status: "Prototype" },
+      { name: "ClientOps Dashboard", desc: "One workspace for client tasks and status.", status: "Live" }
+    ]
+  };
+
+  var CX = 50, CY = 50;        // core position (viewBox units)
+  var CAT_RX = 38, CAT_RY = 31; // category radius (elliptical -> brain-wide)
+  var DEG = Math.PI / 180;
+
+  function fx(n) { return Math.round(n * 100) / 100; }
+
+  function branchPath(x, y, curve) {
+    var dx = x - CX, dy = y - CY, len = Math.hypot(dx, dy) || 1;
+    var px = -dy / len, py = dx / len;
+    var c1x = CX + dx * 0.35 + px * curve, c1y = CY + dy * 0.35 + py * curve;
+    var c2x = CX + dx * 0.70 - px * curve, c2y = CY + dy * 0.70 - py * curve;
+    return "M" + CX + "," + CY + " C" + fx(c1x) + "," + fx(c1y) + " " + fx(c2x) + "," + fx(c2y) + " " + fx(x) + "," + fx(y);
+  }
+
+  function connectorPath(ax, ay, bx, by, bend) {
+    var dx = bx - ax, dy = by - ay, len = Math.hypot(dx, dy) || 1;
+    var px = -dy / len, py = dx / len;
+    var mx = (ax + bx) / 2 + px * bend, my = (ay + by) / 2 + py * bend;
+    return "M" + fx(ax) + "," + fx(ay) + " Q" + fx(mx) + "," + fx(my) + " " + fx(bx) + "," + fx(by);
+  }
+
+  var map = document.getElementById("map");
+  var linksSvg = document.getElementById("links");
+  var panel = document.getElementById("panel");
+  document.getElementById("brandMark").innerHTML = svgIcon("brain");
+
+  var svgParts = [];
+  var domParts = [];
+  var groups = [];        // per-category refs { branchGroup, hub, sparks[] }
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // --- Background faint neural web (density, behind branches) ---
+  for (var w = 0; w < 26; w++) {
+    var a1 = Math.random() * Math.PI * 2, r1 = 12 + Math.random() * 34;
+    var a2 = a1 + (Math.random() - 0.5) * 1.4, r2 = r1 + 6 + Math.random() * 14;
+    var wx1 = CX + Math.cos(a1) * r1, wy1 = CY + Math.sin(a1) * r1 * 0.82;
+    var wx2 = CX + Math.cos(a2) * r2, wy2 = CY + Math.sin(a2) * r2 * 0.82;
+    svgParts.push('<path class="web-line" d="M' + fx(wx1) + ',' + fx(wy1) + ' L' + fx(wx2) + ',' + fx(wy2) + '" pathLength="1" style="animation-delay:' + fx(Math.random() * 1.2) + 's,' + fx(Math.random() * 4) + 's"/>');
+  }
+
+  // --- Decorative dendrites between the real branches (fills emptiness) ---
+  for (var d = 0; d < 14; d++) {
+    var da = (d / 14) * 360 * DEG + 26 * DEG;
+    var dr = 22 + (d % 3) * 5;
+    var ex = CX + Math.cos(da) * dr, ey = CY + Math.sin(da) * dr * 0.86;
+    svgParts.push('<path class="dendrite" d="' + branchPath(ex, ey, (d % 2 ? 5 : -5)) + '" pathLength="1" style="animation-delay:' + fx(0.2 + d * 0.05) + 's,' + fx(Math.random() * 4) + 's"/>');
+  }
+
+  // --- Real branches + category hubs + project sparks ---
+  var globalSpark = 0;
+  CATEGORIES.forEach(function (cat, i) {
+    var ang = (-90 + i * (360 / CATEGORIES.length)) * DEG;
+    var hx = CX + Math.cos(ang) * CAT_RX;
+    var hy = CY + Math.sin(ang) * CAT_RY;
+    var curve = 5 * (i % 2 === 0 ? 1 : -1);
+
+    var groupInner = '';
+    groupInner += '<path class="branch" d="' + branchPath(hx, hy, curve) + '" pathLength="1" style="--d:' + fx(0.15 + i * 0.12) + 's"/>';
+    groupInner += '<path class="branch-flow" d="' + branchPath(hx, hy, curve) + '" pathLength="1" style="--fd:' + fx(i * 0.5) + 's"/>';
+
+    var cprojects = PROJECTS[cat.name] || [];
+    var sparkData = [];
+    cprojects.forEach(function (proj, j) {
+      var spread = (j - 1) * 15 * DEG;
+      var pang = ang + spread;
+      var reach = (j === 1 ? 1.08 : 0.99);
+      var pxx = CX + Math.cos(pang) * 50 * reach;
+      var pyy = CY + Math.sin(pang) * 42 * reach;
+      groupInner += '<path class="connector" d="' + connectorPath(hx, hy, pxx, pyy, (j - 1) * 2.4) + '" pathLength="1" style="--d:' + fx(0.8 + globalSpark * 0.05) + 's"/>';
+      sparkData.push({ x: fx(pxx), y: fx(pyy), proj: proj, gi: globalSpark });
+      globalSpark++;
+    });
+
+    svgParts.push('<g class="branch-group" data-cat="' + i + '" style="--c:' + cat.color + '">' + groupInner + '</g>');
+
+    // hub DOM
+    domParts.push(
+      '<button type="button" class="hub node" data-cat="' + i + '" ' +
+      'style="left:' + fx(hx) + '%;top:' + fx(hy) + '%;--c:' + cat.color + ';--g:' + cat.glow + ';--d:' + fx(0.6 + i * 0.12) + 's;--fs:' + (8 + i * 0.5) + 's">' +
+        '<span class="hub-inner">' +
+          '<span class="hub-icon">' + svgIcon(cat.icon) + '</span>' +
+          '<span class="hub-name">' + cat.name + '</span>' +
+          '<span class="hub-count">' + cat.count + ' projects</span>' +
+        '</span>' +
+      '</button>'
+    );
+
+    // spark DOM
+    sparkData.forEach(function (s) {
+      domParts.push(
+        '<button type="button" class="spark node" data-cat="' + i + '" data-proj="' + s.proj.name + '" ' +
+        'style="left:' + s.x + '%;top:' + s.y + '%;--c:' + cat.color + ';--g:' + cat.glow + ';--d:' + fx(1 + s.gi * 0.05) + 's;--sd:' + fx(s.gi * 0.3) + 's">' +
+          '<span class="spark-dot"></span>' +
+          '<span class="tip">' + s.proj.name + '</span>' +
+        '</button>'
+      );
+    });
+  });
+
+  // --- Core ---
+  domParts.unshift(
+    '<div class="core node" style="left:50%;top:50%">' +
+      '<span class="core-aura"></span>' +
+      '<span class="core-spokes"></span>' +
+      '<span class="core-ring r1"></span>' +
+      '<span class="core-ring r2"></span>' +
+      '<span class="core-ring r3"></span>' +
+      '<span class="core-icon">' + svgIcon("brain") + '</span>' +
+      '<span class="core-label">OBILIQ AI</span>' +
+    '</div>'
+  );
+
+  linksSvg.innerHTML = svgParts.join("");
+  map.insertAdjacentHTML("beforeend", domParts.join(""));
+
+  // --- Interaction: focus / dim ---
+  var branchGroups = Array.prototype.slice.call(map.querySelectorAll(".branch-group"));
+  var hubs = Array.prototype.slice.call(map.querySelectorAll(".hub"));
+  var sparks = Array.prototype.slice.call(map.querySelectorAll(".spark"));
+
+  function setFocus(catIndex) {
+    branchGroups.forEach(function (g) {
+      var i = +g.getAttribute("data-cat");
+      g.classList.toggle("focus", catIndex === i);
+      g.classList.toggle("dim", catIndex !== null && catIndex !== i);
+    });
+    hubs.forEach(function (h) {
+      var i = +h.getAttribute("data-cat");
+      h.classList.toggle("dim", catIndex !== null && catIndex !== i);
+    });
+    sparks.forEach(function (s) {
+      var i = +s.getAttribute("data-cat");
+      s.classList.toggle("dim", catIndex !== null && catIndex !== i);
+    });
+  }
+
+  var selectedCat = null;
+
+  hubs.forEach(function (h) {
+    var i = +h.getAttribute("data-cat");
+    h.addEventListener("mouseenter", function () { setFocus(i); });
+    h.addEventListener("mouseleave", function () { setFocus(selectedCat); });
+    h.addEventListener("focus", function () { setFocus(i); });
+    h.addEventListener("blur", function () { setFocus(selectedCat); });
+    h.addEventListener("click", function () {
+      selectedCat = (selectedCat === i) ? null : i;
+      hubs.forEach(function (x) { x.classList.toggle("selected", +x.getAttribute("data-cat") === selectedCat); });
+      setFocus(selectedCat);
+    });
+  });
+
+  sparks.forEach(function (s) {
+    var i = +s.getAttribute("data-cat");
+    s.addEventListener("mouseenter", function () { setFocus(i); });
+    s.addEventListener("mouseleave", function () { setFocus(selectedCat); });
+    s.addEventListener("focus", function () { setFocus(i); });
+    s.addEventListener("blur", function () { setFocus(selectedCat); });
+    s.addEventListener("click", function () { openPanel(i, s.getAttribute("data-proj"), s); });
+  });
+
+  // --- Project detail panel ---
+  var activeSpark = null;
+  function openPanel(catIndex, projName, sparkEl) {
+    var cat = CATEGORIES[catIndex];
+    var list = PROJECTS[cat.name] || [];
+    var proj = null;
+    for (var k = 0; k < list.length; k++) { if (list[k].name === projName) { proj = list[k]; break; } }
+    if (!proj) return;
+
+    sparks.forEach(function (x) { x.classList.remove("selected"); });
+    if (sparkEl) sparkEl.classList.add("selected");
+    activeSpark = sparkEl;
+
+    panel.style.setProperty("--c", cat.color);
+    panel.style.setProperty("--g", cat.glow);
+    panel.innerHTML =
+      '<div class="panel-top">' +
+        '<span class="panel-cat">' + cat.name + '</span>' +
+        '<button type="button" class="panel-close" aria-label="Close">' + svgIcon("close") + '</button>' +
+      '</div>' +
+      '<h2 class="panel-title">' + proj.name + '</h2>' +
+      '<span class="panel-status ' + proj.status.toLowerCase() + '">' + proj.status + '</span>' +
+      '<p class="panel-desc">' + proj.desc + '</p>' +
+      '<a class="panel-launch" href="#" target="_blank" rel="noopener">Launch Demo ' + svgIcon("launch") + '</a>';
+    panel.classList.add("open");
+    panel.querySelector(".panel-close").addEventListener("click", closePanel);
+  }
+
+  function closePanel() {
+    panel.classList.remove("open");
+    if (activeSpark) activeSpark.classList.remove("selected");
+    activeSpark = null;
+  }
+
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") closePanel(); });
+  document.addEventListener("click", function (e) {
+    if (panel.classList.contains("open") && !panel.contains(e.target) && !e.target.closest(".spark")) closePanel();
+  });
+
+  // --- Background stars (max 100) ---
+  var starLayer = document.getElementById("stars");
+  if (!reduceMotion) {
+    var starFrag = document.createDocumentFragment();
+    for (var st = 0; st < 100; st++) {
+      var el = document.createElement("span");
+      el.className = "star";
+      var size = Math.random() < 0.2 ? 2.4 : 1.3;
+      el.style.left = fx(Math.random() * 100) + "%";
+      el.style.top = fx(Math.random() * 100) + "%";
+      el.style.width = size + "px";
+      el.style.height = size + "px";
+      el.style.setProperty("--dur", fx(4 + Math.random() * 6) + "s");
+      el.style.setProperty("--delay", fx(Math.random() * 6) + "s");
+      starFrag.appendChild(el);
+    }
+    starLayer.appendChild(starFrag);
+  }
+})();
+</script>
+</body>
+</html>

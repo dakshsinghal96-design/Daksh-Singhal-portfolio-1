@@ -1,0 +1,1790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hammerr — AI Voice Command Assistant</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Exo+2:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet" />
+  <style>
+    /* ── CSS Variables ─────────────────────────────────────── */
+    :root {
+      --bg:        #06060f;
+      --bg2:       #0c0c1e;
+      --bg3:       #111128;
+      --glass:     rgba(255,255,255,0.04);
+      --glass2:    rgba(255,255,255,0.08);
+      --border:    rgba(0,212,255,0.18);
+      --accent:    #00d4ff;
+      --accent2:   #7b2fff;
+      --accent3:   #ff2f7b;
+      --silver:    #c0c8d8;
+      --white:     #e8edf5;
+      --muted:     #5a6680;
+      --success:   #00ff88;
+      --warn:      #ffb300;
+      --danger:    #ff4444;
+      --shadow:    0 8px 40px rgba(0,212,255,0.12);
+      --glow:      0 0 30px rgba(0,212,255,0.3);
+      --glow2:     0 0 30px rgba(123,47,255,0.3);
+      --radius:    16px;
+      --radius-sm: 8px;
+      --nav-h:     64px;
+    }
+    /* Purple theme override */
+    body.theme-purple { --accent:#a855f7; --accent2:#ec4899; --border:rgba(168,85,247,0.2); --glow:0 0 30px rgba(168,85,247,0.3); }
+    body.theme-green  { --accent:#00ff88; --accent2:#00d4ff; --border:rgba(0,255,136,0.2); --glow:0 0 30px rgba(0,255,136,0.3); }
+    body.theme-dark   { --accent:#8898aa; --accent2:#5566aa; --border:rgba(136,152,170,0.2); --glow:0 0 20px rgba(136,152,170,0.2); }
+
+    /* ── Reset ────────────────────────────────────────────── */
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body {
+      font-family: 'Exo 2', sans-serif;
+      background: var(--bg);
+      color: var(--white);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    ::selection { background: rgba(0,212,255,0.3); }
+    ::-webkit-scrollbar { width:6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--accent2); border-radius:3px; }
+
+    /* ── Background grid ──────────────────────────────────── */
+    body::before {
+      content:'';
+      position: fixed; inset:0; z-index:0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 60px 60px;
+      opacity: 0.4;
+      pointer-events:none;
+    }
+    body::after {
+      content:'';
+      position:fixed; inset:0; z-index:0;
+      background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(123,47,255,0.15) 0%, transparent 70%),
+                  radial-gradient(ellipse 60% 40% at 100% 100%, rgba(0,212,255,0.08) 0%, transparent 60%);
+      pointer-events:none;
+    }
+
+    /* ── Particles canvas ─────────────────────────────────── */
+    #particleCanvas {
+      position:fixed; inset:0; z-index:0;
+      pointer-events:none;
+    }
+
+    /* ── Top Nav ──────────────────────────────────────────── */
+    #topNav {
+      position: fixed; top:0; left:0; right:0; z-index:100;
+      height: var(--nav-h);
+      background: rgba(6,6,15,0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      display:flex; align-items:center; justify-content:space-between;
+      padding: 0 24px;
+      gap:16px;
+    }
+    .nav-logo {
+      display:flex; align-items:center; gap:12px;
+      cursor:pointer;
+    }
+    .nav-logo-orb {
+      width:36px; height:36px; border-radius:50%;
+      background: radial-gradient(circle at 35% 35%, #fff 0%, var(--accent) 40%, var(--accent2) 100%);
+      box-shadow: 0 0 20px var(--accent), 0 0 40px rgba(0,212,255,0.3);
+      animation: orbPulse 3s ease-in-out infinite;
+      flex-shrink:0;
+    }
+    .nav-logo-text {
+      font-family:'Orbitron',monospace; font-weight:900; font-size:1.4rem;
+      letter-spacing:4px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .nav-links {
+      display:flex; align-items:center; gap:4px; flex:1; justify-content:center;
+      overflow-x:auto; scrollbar-width:none;
+    }
+    .nav-links::-webkit-scrollbar { display:none; }
+    .nav-link {
+      padding:7px 14px; border-radius:8px; cursor:pointer;
+      font-size:0.78rem; font-weight:600; letter-spacing:1px; text-transform:uppercase;
+      color: var(--muted); transition: all 0.2s; white-space:nowrap;
+      border:1px solid transparent;
+    }
+    .nav-link:hover { color:var(--accent); border-color:var(--border); background:var(--glass); }
+    .nav-link.active { color:var(--accent); background:rgba(0,212,255,0.1); border-color:var(--border); }
+    .nav-right { display:flex; align-items:center; gap:12px; flex-shrink:0; }
+    .mic-status-dot {
+      width:10px; height:10px; border-radius:50%; background:var(--muted);
+      transition: all 0.3s;
+    }
+    .mic-status-dot.passive  { background:var(--muted); }
+    .mic-status-dot.listening{ background:var(--accent); box-shadow:0 0 10px var(--accent); animation:blink 1s infinite; }
+    .mic-status-dot.speaking { background:var(--accent2); box-shadow:0 0 10px var(--accent2); }
+    .mic-status-dot.processing{ background:var(--warn); box-shadow:0 0 10px var(--warn); }
+    .status-label { font-size:0.72rem; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--muted); }
+
+    /* ── Main layout ──────────────────────────────────────── */
+    #app {
+      position:relative; z-index:1;
+      padding-top: var(--nav-h);
+    }
+    .section { display:none; }
+    .section.active { display:block; }
+
+    /* ── Home Section ─────────────────────────────────────── */
+    #sec-home {
+      min-height: calc(100vh - var(--nav-h));
+      display:none; flex-direction:column; align-items:center; justify-content:center;
+      padding: 60px 24px;
+      text-align:center; gap:32px;
+    }
+    #sec-home.active { display:flex; }
+
+    /* ── Big Orb ──────────────────────────────────────────── */
+    .hero-orb-wrap {
+      position:relative; width:200px; height:200px; flex-shrink:0;
+    }
+    .hero-orb-ring {
+      position:absolute; inset:0;
+      border-radius:50%;
+      border:1.5px solid var(--accent);
+      opacity:0;
+      animation: ringExpand 3s ease-out infinite;
+    }
+    .hero-orb-ring:nth-child(2) { animation-delay:1s; }
+    .hero-orb-ring:nth-child(3) { animation-delay:2s; }
+    @keyframes ringExpand {
+      0%   { transform:scale(0.9); opacity:0.6; }
+      100% { transform:scale(1.6); opacity:0; }
+    }
+    .hero-orb {
+      position:absolute; inset:20px;
+      border-radius:50%;
+      background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.7) 0%, var(--accent) 30%, var(--accent2) 65%, #0a0020 100%);
+      box-shadow: 0 0 60px var(--accent), 0 0 100px rgba(123,47,255,0.4), inset 0 0 30px rgba(0,212,255,0.2);
+      animation: orbPulse 3s ease-in-out infinite;
+    }
+    .hero-orb-inner {
+      position:absolute; inset:30px;
+      border-radius:50%;
+      background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.4), transparent 60%);
+      animation: orbSpin 8s linear infinite;
+    }
+    @keyframes orbPulse {
+      0%,100% { transform:scale(1); box-shadow:0 0 60px var(--accent),0 0 100px rgba(123,47,255,0.4); }
+      50%      { transform:scale(1.05); box-shadow:0 0 80px var(--accent),0 0 140px rgba(123,47,255,0.5); }
+    }
+    @keyframes orbSpin { to { transform:rotate(360deg); } }
+
+    .hero-orb.listening {
+      animation: orbListen 0.8s ease-in-out infinite;
+    }
+    @keyframes orbListen {
+      0%,100% { transform:scale(1); box-shadow:0 0 60px var(--accent),0 0 120px var(--accent); }
+      50%      { transform:scale(1.1); box-shadow:0 0 100px var(--accent),0 0 200px rgba(0,212,255,0.6); }
+    }
+    .hero-orb.speaking {
+      animation: orbSpeak 0.4s ease-in-out infinite;
+    }
+    @keyframes orbSpeak {
+      0%,100% { transform:scale(1); }
+      50%      { transform:scale(1.08); }
+    }
+
+    .hero-title {
+      font-family:'Orbitron',monospace; font-weight:900; font-size:clamp(2.5rem,8vw,5rem);
+      letter-spacing:12px; text-transform:uppercase;
+      background: linear-gradient(135deg, #fff 0%, var(--accent) 50%, var(--accent2) 100%);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+      text-shadow:none;
+      line-height:1.1;
+    }
+    .hero-sub {
+      font-size:clamp(0.85rem,2.5vw,1rem); color:var(--silver); letter-spacing:3px;
+      text-transform:uppercase; font-weight:500;
+      max-width:500px;
+    }
+    .hero-brand {
+      font-size:0.72rem; color:var(--muted); letter-spacing:2px;
+      text-transform:uppercase;
+    }
+    .hero-brand span { color:var(--accent); }
+
+    .hero-btns { display:flex; gap:16px; flex-wrap:wrap; justify-content:center; }
+
+    /* ── Buttons ──────────────────────────────────────────── */
+    .btn {
+      padding:12px 28px; border-radius:10px; cursor:pointer; font-family:'Exo 2',sans-serif;
+      font-size:0.85rem; font-weight:600; letter-spacing:2px; text-transform:uppercase;
+      border:1px solid; transition: all 0.25s; outline:none;
+      display:inline-flex; align-items:center; gap:8px;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-color: transparent; color:#fff;
+      box-shadow:0 4px 24px rgba(0,212,255,0.3);
+    }
+    .btn-primary:hover { transform:translateY(-2px); box-shadow:0 8px 32px rgba(0,212,255,0.5); }
+    .btn-outline {
+      background:transparent; border-color:var(--border); color:var(--silver);
+    }
+    .btn-outline:hover { border-color:var(--accent); color:var(--accent); background:rgba(0,212,255,0.05); }
+    .btn-danger { background:rgba(255,68,68,0.15); border-color:rgba(255,68,68,0.4); color:var(--danger); }
+    .btn-danger:hover { background:rgba(255,68,68,0.25); }
+    .btn-success { background:rgba(0,255,136,0.1); border-color:rgba(0,255,136,0.3); color:var(--success); }
+    .btn-sm { padding:8px 16px; font-size:0.75rem; letter-spacing:1px; }
+    .btn-icon { padding:10px; border-radius:50%; }
+    .btn:disabled { opacity:0.4; cursor:not-allowed; }
+
+    /* Manual command input */
+    .manual-cmd-wrap {
+      display:flex; gap:12px; width:100%; max-width:600px;
+      align-items:center;
+    }
+    .cmd-input {
+      flex:1; padding:14px 20px; background:var(--glass2); border:1px solid var(--border);
+      border-radius:12px; color:var(--white); font-family:'Exo 2',sans-serif; font-size:0.9rem;
+      outline:none; transition:border-color 0.2s;
+    }
+    .cmd-input::placeholder { color:var(--muted); }
+    .cmd-input:focus { border-color:var(--accent); }
+
+    /* ── Voice Wave ──────────────────────────────────────── */
+    .voice-wave {
+      display:flex; align-items:center; gap:4px; height:40px;
+      opacity:0; transition:opacity 0.3s;
+    }
+    .voice-wave.active { opacity:1; }
+    .wave-bar {
+      width:4px; border-radius:2px; background:var(--accent);
+      animation: waveAnim 1s ease-in-out infinite;
+    }
+    .wave-bar:nth-child(1){ height:8px; animation-delay:0s; }
+    .wave-bar:nth-child(2){ height:18px; animation-delay:0.1s; }
+    .wave-bar:nth-child(3){ height:30px; animation-delay:0.2s; }
+    .wave-bar:nth-child(4){ height:22px; animation-delay:0.3s; }
+    .wave-bar:nth-child(5){ height:14px; animation-delay:0.4s; }
+    .wave-bar:nth-child(6){ height:26px; animation-delay:0.15s; }
+    .wave-bar:nth-child(7){ height:10px; animation-delay:0.35s; }
+    @keyframes waveAnim {
+      0%,100%{ transform:scaleY(1); }
+      50%{ transform:scaleY(0.3); }
+    }
+
+    /* ── Glass Card ──────────────────────────────────────── */
+    .glass-card {
+      background: var(--glass);
+      backdrop-filter:blur(20px);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      padding:24px;
+      transition:border-color 0.3s, box-shadow 0.3s;
+    }
+    .glass-card:hover { border-color:rgba(0,212,255,0.35); box-shadow:var(--shadow); }
+
+    /* ── Live Assistant Section ───────────────────────────── */
+    #sec-assistant { padding:24px; }
+    .assistant-grid {
+      display:grid; grid-template-columns:1fr 1fr; gap:20px; max-width:1100px; margin:0 auto;
+    }
+    @media(max-width:768px){ .assistant-grid{ grid-template-columns:1fr; } }
+
+    .panel-label {
+      font-family:'Orbitron',monospace; font-size:0.65rem; letter-spacing:3px;
+      text-transform:uppercase; color:var(--accent); margin-bottom:12px;
+      display:flex; align-items:center; gap:8px;
+    }
+    .panel-label::after {
+      content:''; flex:1; height:1px; background:var(--border);
+    }
+    .response-box {
+      min-height:100px; padding:16px; background:rgba(0,212,255,0.03);
+      border:1px solid var(--border); border-radius:10px;
+      font-size:0.95rem; line-height:1.6; color:var(--white);
+      word-break:break-word;
+    }
+    .response-box.speak { color:var(--accent); border-color:rgba(0,212,255,0.4); }
+    .command-box {
+      min-height:60px; padding:16px; background:rgba(255,255,255,0.03);
+      border:1px solid var(--border); border-radius:10px;
+      font-size:0.9rem; color:var(--silver); word-break:break-word;
+    }
+    .wake-badge {
+      display:inline-flex; align-items:center; gap:6px;
+      padding:4px 12px; border-radius:20px; font-size:0.7rem; font-weight:700;
+      letter-spacing:2px; text-transform:uppercase;
+    }
+    .wake-badge.active { background:rgba(0,212,255,0.15); border:1px solid rgba(0,212,255,0.4); color:var(--accent); }
+    .wake-badge.passive { background:rgba(90,102,128,0.15); border:1px solid rgba(90,102,128,0.3); color:var(--muted); }
+
+    /* History */
+    #historyList { max-height:280px; overflow-y:auto; display:flex; flex-direction:column; gap:8px; }
+    .history-item {
+      padding:10px 14px; background:rgba(255,255,255,0.03); border:1px solid var(--border);
+      border-radius:8px; font-size:0.8rem;
+    }
+    .history-item .hi-cmd { color:var(--silver); margin-bottom:4px; }
+    .history-item .hi-res { color:var(--muted); font-size:0.75rem; }
+    .history-item .hi-time { color:var(--muted); font-size:0.68rem; float:right; }
+
+    /* ── Dashboard ──────────────────────────────────────── */
+    #sec-dashboard { padding:24px; }
+    .dash-grid {
+      display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+      gap:16px; max-width:1100px; margin:0 auto;
+    }
+    .dash-card {
+      background:var(--glass); backdrop-filter:blur(20px);
+      border:1px solid var(--border); border-radius:var(--radius);
+      padding:20px; display:flex; flex-direction:column; gap:12px;
+      transition:all 0.25s;
+    }
+    .dash-card:hover { border-color:rgba(0,212,255,0.4); transform:translateY(-3px); box-shadow:var(--shadow); }
+    .dash-icon { font-size:1.8rem; }
+    .dash-val { font-family:'Orbitron',monospace; font-size:1.6rem; font-weight:700; color:var(--accent); }
+    .dash-lbl { font-size:0.72rem; letter-spacing:2px; text-transform:uppercase; color:var(--muted); }
+    .battery-bar { height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden; }
+    .battery-fill { height:100%; background:linear-gradient(90deg,var(--success),var(--accent)); border-radius:3px; transition:width 1s; }
+
+    /* ── Voice Commands ──────────────────────────────────── */
+    #sec-commands { padding:24px; }
+    .cmd-cat-title {
+      font-family:'Orbitron',monospace; font-size:0.7rem; letter-spacing:3px;
+      text-transform:uppercase; color:var(--accent2); margin:24px 0 12px;
+    }
+    .cmd-cards-grid {
+      display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:12px;
+    }
+    .cmd-card {
+      background:var(--glass); border:1px solid var(--border); border-radius:12px;
+      padding:14px 18px; cursor:pointer; transition:all 0.2s;
+      display:flex; align-items:center; gap:12px;
+    }
+    .cmd-card:hover { border-color:var(--accent); background:rgba(0,212,255,0.07); transform:translateY(-2px); }
+    .cmd-card-icon { font-size:1.2rem; flex-shrink:0; }
+    .cmd-card-text { font-size:0.82rem; color:var(--silver); }
+
+    /* ── Notes ──────────────────────────────────────────── */
+    #sec-notes { padding:24px; }
+    .notes-layout { display:grid; grid-template-columns:1fr; gap:20px; max-width:900px; margin:0 auto; }
+    .note-item {
+      background:var(--glass); border:1px solid var(--border); border-radius:12px;
+      padding:16px; display:flex; align-items:flex-start; gap:12px;
+    }
+    .note-item-body { flex:1; }
+    .note-item-text { font-size:0.9rem; color:var(--white); line-height:1.5; }
+    .note-item-time { font-size:0.7rem; color:var(--muted); margin-top:6px; }
+    .note-del { background:none; border:none; color:var(--muted); cursor:pointer; font-size:1rem; transition:color 0.2s; padding:4px; }
+    .note-del:hover { color:var(--danger); }
+
+    /* ── Tasks ──────────────────────────────────────────── */
+    #sec-tasks { padding:24px; }
+    .task-item {
+      background:var(--glass); border:1px solid var(--border); border-radius:12px;
+      padding:16px; display:flex; align-items:center; gap:12px; transition:all 0.2s;
+    }
+    .task-item.done { opacity:0.5; }
+    .task-item.done .task-text { text-decoration:line-through; color:var(--muted); }
+    .task-check {
+      width:22px; height:22px; border-radius:50%; border:2px solid var(--border);
+      cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center;
+      transition:all 0.2s; background:transparent;
+    }
+    .task-check.checked { background:var(--success); border-color:var(--success); color:#000; font-size:0.75rem; }
+    .task-text { flex:1; font-size:0.9rem; color:var(--white); }
+    .task-time { font-size:0.7rem; color:var(--muted); }
+
+    /* ── Calculator ─────────────────────────────────────── */
+    #sec-calc { padding:24px; }
+    .calc-wrap { max-width:420px; margin:0 auto; }
+    .calc-display {
+      background:rgba(0,0,0,0.4); border:1px solid var(--border); border-radius:14px;
+      padding:20px 24px; margin-bottom:16px; text-align:right;
+    }
+    .calc-expr { font-size:0.85rem; color:var(--muted); min-height:22px; word-break:break-all; }
+    .calc-result { font-family:'Orbitron',monospace; font-size:2.2rem; color:var(--accent); margin-top:4px; word-break:break-all; }
+    .calc-grid {
+      display:grid; grid-template-columns:repeat(4,1fr); gap:10px;
+    }
+    .calc-btn {
+      padding:18px 10px; border-radius:12px; cursor:pointer; font-family:'Exo 2',sans-serif;
+      font-size:1rem; font-weight:600; border:1px solid var(--border);
+      background:var(--glass); color:var(--white); transition:all 0.15s;
+      outline:none;
+    }
+    .calc-btn:hover { background:var(--glass2); border-color:var(--accent); }
+    .calc-btn:active { transform:scale(0.95); }
+    .calc-btn.op { color:var(--accent); }
+    .calc-btn.eq { background:linear-gradient(135deg,var(--accent),var(--accent2)); border-color:transparent; color:#fff; grid-column:span 2; }
+    .calc-btn.clr { color:var(--danger); }
+    .calc-btn.wide { grid-column:span 2; }
+
+    /* ── Section Headers ─────────────────────────────────── */
+    .section-header {
+      max-width:1100px; margin:0 auto 24px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;
+    }
+    .section-title {
+      font-family:'Orbitron',monospace; font-weight:700; font-size:1.2rem; letter-spacing:3px;
+      background:linear-gradient(90deg,var(--accent),var(--accent2));
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    }
+
+    /* ── Settings ──────────────────────────────────────── */
+    #sec-settings { padding:24px; }
+    .settings-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:20px; max-width:900px; margin:0 auto; }
+    .setting-row { display:flex; flex-direction:column; gap:8px; }
+    .setting-label { font-size:0.75rem; letter-spacing:2px; text-transform:uppercase; color:var(--muted); }
+    .setting-val { font-size:0.9rem; color:var(--white); }
+    .setting-input {
+      padding:10px 14px; background:var(--glass2); border:1px solid var(--border);
+      border-radius:8px; color:var(--white); font-family:'Exo 2',sans-serif; font-size:0.9rem;
+      outline:none; width:100%; transition:border-color 0.2s;
+    }
+    .setting-input:focus { border-color:var(--accent); }
+    .toggle-wrap { display:flex; align-items:center; gap:12px; }
+    .toggle {
+      width:48px; height:26px; background:var(--glass2); border:1px solid var(--border);
+      border-radius:13px; cursor:pointer; position:relative; transition:all 0.3s; flex-shrink:0;
+    }
+    .toggle.on { background:rgba(0,212,255,0.3); border-color:var(--accent); }
+    .toggle-thumb {
+      width:20px; height:20px; border-radius:50%; background:var(--muted);
+      position:absolute; top:2px; left:2px; transition:all 0.3s;
+    }
+    .toggle.on .toggle-thumb { background:var(--accent); transform:translateX(22px); }
+    .theme-btns { display:flex; gap:8px; flex-wrap:wrap; }
+    .theme-btn {
+      padding:8px 16px; border-radius:8px; cursor:pointer; font-size:0.75rem;
+      letter-spacing:1px; font-weight:600; border:1px solid var(--border);
+      background:var(--glass); color:var(--silver); transition:all 0.2s;
+    }
+    .theme-btn:hover, .theme-btn.active { border-color:var(--accent); color:var(--accent); }
+
+    /* ── Privacy Note ──────────────────────────────────── */
+    .privacy-note {
+      max-width:900px; margin:24px auto 0;
+      padding:12px 16px; background:rgba(0,212,255,0.05);
+      border:1px solid rgba(0,212,255,0.12); border-radius:8px;
+      font-size:0.75rem; color:var(--muted); display:flex; align-items:center; gap:8px;
+    }
+
+    /* ── Mic FAB (mobile) ──────────────────────────────── */
+    #micFab {
+      display:none;
+      position:fixed; bottom:24px; right:24px; z-index:200;
+      width:60px; height:60px; border-radius:50%;
+      background:linear-gradient(135deg,var(--accent),var(--accent2));
+      border:none; cursor:pointer;
+      box-shadow:0 4px 30px rgba(0,212,255,0.5);
+      font-size:1.5rem; color:#fff; transition:all 0.3s;
+      align-items:center; justify-content:center;
+    }
+    #micFab.listening { animation:micPulse 1s ease-in-out infinite; }
+    @keyframes micPulse {
+      0%,100%{ box-shadow:0 4px 30px rgba(0,212,255,0.5); }
+      50%{ box-shadow:0 4px 50px rgba(0,212,255,0.9), 0 0 80px rgba(0,212,255,0.3); }
+    }
+    @media(max-width:768px){ #micFab{ display:flex; } }
+
+    /* ── Toasts ────────────────────────────────────────── */
+    #toastBox {
+      position:fixed; bottom:100px; left:50%; transform:translateX(-50%);
+      z-index:300; display:flex; flex-direction:column; gap:8px; align-items:center;
+    }
+    .toast {
+      padding:10px 20px; border-radius:20px; font-size:0.82rem; font-weight:600;
+      letter-spacing:1px; color:#fff;
+      background:rgba(0,212,255,0.2); border:1px solid rgba(0,212,255,0.4);
+      backdrop-filter:blur(12px);
+      animation: toastIn 0.3s ease, toastOut 0.3s ease 2.5s forwards;
+    }
+    @keyframes toastIn { from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:translateY(0); } }
+    @keyframes toastOut { to{ opacity:0; transform:translateY(-10px); } }
+
+    /* ── Misc ──────────────────────────────────────────── */
+    @keyframes blink {
+      0%,100%{ opacity:1; } 50%{ opacity:0.3; }
+    }
+    .empty-msg { color:var(--muted); font-size:0.85rem; text-align:center; padding:32px; }
+    .items-list { display:flex; flex-direction:column; gap:10px; }
+    .section-wrap { max-width:900px; margin:0 auto; display:flex; flex-direction:column; gap:16px; }
+    select.setting-input option { background:#0c0c1e; }
+
+    /* unsupported banner */
+    #unsupportedBanner {
+      display:none;
+      padding:14px 24px; background:rgba(255,68,68,0.12); border:1px solid rgba(255,68,68,0.3);
+      border-radius:10px; margin:20px 24px; color:var(--danger); font-size:0.85rem; text-align:center;
+    }
+
+    /* ── Awaiting Note/Task input ─────────────────────── */
+    .awaiting-input-wrap {
+      position:fixed; bottom:100px; left:50%; transform:translateX(-50%);
+      z-index:250; background:rgba(11,11,30,0.95); backdrop-filter:blur(20px);
+      border:1px solid var(--border); border-radius:14px;
+      padding:20px 24px; width:min(90vw,500px);
+      display:none; flex-direction:column; gap:12px;
+    }
+    .awaiting-input-wrap.show { display:flex; }
+    .ai-prompt { font-size:0.85rem; color:var(--accent); font-weight:600; }
+    .ai-input-row { display:flex; gap:10px; }
+    .ai-text-input {
+      flex:1; padding:10px 14px; background:var(--glass2); border:1px solid var(--border);
+      border-radius:8px; color:var(--white); font-family:'Exo 2',sans-serif; font-size:0.85rem;
+      outline:none;
+    }
+    .ai-text-input:focus { border-color:var(--accent); }
+  </style>
+</head>
+<body>
+
+<!-- Particle Canvas -->
+<canvas id="particleCanvas"></canvas>
+
+<!-- Top Navigation -->
+<nav id="topNav">
+  <div class="nav-logo" onclick="showSection('home')">
+    <div class="nav-logo-orb"></div>
+    <span class="nav-logo-text">HAMMERR</span>
+  </div>
+  <div class="nav-links">
+    <div class="nav-link active" data-sec="home"      onclick="showSection('home')">Home</div>
+    <div class="nav-link"       data-sec="assistant"  onclick="showSection('assistant')">Assistant</div>
+    <div class="nav-link"       data-sec="dashboard"  onclick="showSection('dashboard')">Dashboard</div>
+    <div class="nav-link"       data-sec="commands"   onclick="showSection('commands')">Commands</div>
+    <div class="nav-link"       data-sec="notes"      onclick="showSection('notes')">Notes</div>
+    <div class="nav-link"       data-sec="tasks"      onclick="showSection('tasks')">Tasks</div>
+    <div class="nav-link"       data-sec="calc"       onclick="showSection('calc')">Calc</div>
+    <div class="nav-link"       data-sec="settings"   onclick="showSection('settings')">Settings</div>
+  </div>
+  <div class="nav-right" style="gap:14px;">
+    <div style="display:flex;align-items:center;gap:7px;cursor:pointer;" onclick="toggleAlwaysActive()" title="Always Active — skip wake word">
+      <div class="toggle" id="alwaysActiveToggle" style="width:38px;height:22px;"><div class="toggle-thumb" style="width:16px;height:16px;top:2px;left:2px;"></div></div>
+      <span style="font-size:0.68rem;letter-spacing:1px;text-transform:uppercase;color:var(--muted);white-space:nowrap;" id="alwaysActiveLabel">Wake Word</span>
+    </div>
+    <div class="mic-status-dot passive" id="statusDot"></div>
+    <span class="status-label" id="statusLabel">PASSIVE</span>
+  </div>
+</nav>
+
+<div id="app">
+
+  <!-- ── HOME ─────────────────────────────────────────── -->
+  <section id="sec-home" class="section active">
+    <div class="hero-orb-wrap">
+      <div class="hero-orb-ring"></div>
+      <div class="hero-orb-ring"></div>
+      <div class="hero-orb-ring"></div>
+      <div class="hero-orb" id="heroOrb"><div class="hero-orb-inner"></div></div>
+    </div>
+    <div>
+      <div class="hero-title">HAMMERR</div>
+      <div class="hero-sub" style="margin-top:10px;">Your Voice Controlled AI Command Assistant</div>
+      <div class="hero-brand" style="margin-top:12px;">Powered by <span>Obliq AI</span> &amp; <span>Digital Hammerr</span></div>
+    </div>
+    <div class="voice-wave" id="heroWave">
+      <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+      <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+      <div class="wave-bar"></div>
+    </div>
+    <div class="hero-btns">
+      <button class="btn btn-primary" onclick="startListening()">🎙 Start Listening</button>
+      <button class="btn btn-outline" onclick="stopListening()">⏹ Stop Listening</button>
+      <button class="btn btn-outline" onclick="showSection('commands')">⚡ Commands</button>
+    </div>
+    <div class="manual-cmd-wrap">
+      <input class="cmd-input" id="homeTextCmd" type="text" placeholder="Type a command… (e.g. what is the time)" />
+      <button class="btn btn-primary" onclick="handleTextCommand(document.getElementById('homeTextCmd').value)">Send</button>
+    </div>
+    <div id="unsupportedBanner">⚠ Voice recognition is not supported in this browser. Please use Chrome or Edge. Manual text input is still available.</div>
+    <div class="privacy-note">🔒 Voice commands are processed in your browser. Notes and tasks are saved locally on your device.</div>
+  </section>
+
+  <!-- ── ASSISTANT ─────────────────────────────────────── -->
+  <section id="sec-assistant" class="section">
+    <div class="section-header">
+      <span class="section-title">LIVE ASSISTANT</span>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <span id="wakeBadge" class="wake-badge passive">⚫ PASSIVE</span>
+        <button class="btn btn-outline btn-sm" onclick="startListening()">🎙 Start</button>
+        <button class="btn btn-outline btn-sm" onclick="stopListening()">⏹ Stop</button>
+      </div>
+    </div>
+    <div class="assistant-grid">
+      <div class="glass-card">
+        <div class="panel-label">Recognized Command</div>
+        <div class="command-box" id="cmdDisplay">Waiting for voice input…</div>
+        <div style="margin-top:14px;">
+          <div class="panel-label">Assistant Response</div>
+          <div class="response-box" id="resDisplay">I am Hammerr, standing by.</div>
+        </div>
+        <div style="margin-top:14px;display:flex;align-items:center;gap:12px;">
+          <div class="voice-wave" id="assistantWave">
+            <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+            <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+          </div>
+          <span id="assistantStatus" style="font-size:0.75rem;color:var(--muted);letter-spacing:2px;text-transform:uppercase;">Ready</span>
+        </div>
+      </div>
+      <div class="glass-card">
+        <div class="panel-label">Manual Input</div>
+        <div style="display:flex;gap:10px;">
+          <input class="cmd-input" id="assistantTextCmd" type="text" placeholder="Type command…" />
+          <button class="btn btn-primary btn-sm" onclick="handleTextCommand(document.getElementById('assistantTextCmd').value)">→</button>
+        </div>
+        <div style="margin-top:20px;">
+          <div class="panel-label">Command History</div>
+          <div id="historyList"><div class="empty-msg">No commands yet.</div></div>
+        </div>
+        <div style="margin-top:12px;text-align:right;">
+          <button class="btn btn-danger btn-sm" onclick="clearHistory()">Clear History</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── DASHBOARD ─────────────────────────────────────── -->
+  <section id="sec-dashboard" class="section">
+    <div class="section-header"><span class="section-title">SYSTEM DASHBOARD</span></div>
+    <div class="dash-grid" id="dashGrid">
+      <div class="dash-card">
+        <div class="dash-icon">🕐</div>
+        <div class="dash-val" id="dashTime">--:--</div>
+        <div class="dash-lbl">Current Time</div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-icon">📅</div>
+        <div class="dash-val" id="dashDate" style="font-size:1rem;">---</div>
+        <div class="dash-lbl">Today's Date</div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-icon">⚡</div>
+        <div class="dash-val" id="dashCmds">0</div>
+        <div class="dash-lbl">Commands Used</div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-icon">📝</div>
+        <div class="dash-val" id="dashNotes">0</div>
+        <div class="dash-lbl">Notes Saved</div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-icon">✅</div>
+        <div class="dash-val" id="dashTasks">0</div>
+        <div class="dash-lbl">Tasks Active</div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-icon">🎯</div>
+        <div class="dash-val" id="dashFocus" style="font-size:0.9rem;">OFF</div>
+        <div class="dash-lbl">Focus Mode</div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-icon">⏱</div>
+        <div class="dash-val" id="dashTimer" style="font-size:1rem;">00:00</div>
+        <div class="dash-lbl">Timer</div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-icon">🔋</div>
+        <div id="dashBatteryVal" class="dash-val">--%</div>
+        <div class="battery-bar"><div class="battery-fill" id="batteryFill" style="width:70%"></div></div>
+        <div class="dash-lbl">Battery</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── COMMANDS ─────────────────────────────────────── -->
+  <section id="sec-commands" class="section">
+    <div class="section-header"><span class="section-title">VOICE COMMANDS</span></div>
+    <div style="max-width:1100px;margin:0 auto;">
+      <div class="cmd-cat-title">🎙 Wake &amp; Basic</div>
+      <div class="cmd-cards-grid" id="cmdCardsBasic"></div>
+      <div class="cmd-cat-title">⏰ Time &amp; Date</div>
+      <div class="cmd-cards-grid" id="cmdCardsTime"></div>
+      <div class="cmd-cat-title">🧭 Navigation</div>
+      <div class="cmd-cards-grid" id="cmdCardsNav"></div>
+      <div class="cmd-cat-title">📝 Notes &amp; Tasks</div>
+      <div class="cmd-cards-grid" id="cmdCardsNotes"></div>
+      <div class="cmd-cat-title">🧮 Calculator</div>
+      <div class="cmd-cards-grid" id="cmdCardsCalc"></div>
+      <div class="cmd-cat-title">🌐 Web Actions</div>
+      <div class="cmd-cards-grid" id="cmdCardsWeb"></div>
+      <div class="cmd-cat-title">🎭 Fun &amp; Personality</div>
+      <div class="cmd-cards-grid" id="cmdCardsFun"></div>
+    </div>
+  </section>
+
+  <!-- ── NOTES ─────────────────────────────────────────── -->
+  <section id="sec-notes" class="section">
+    <div class="section-header">
+      <span class="section-title">NOTES</span>
+      <button class="btn btn-danger btn-sm" onclick="clearNotes()">Clear All</button>
+    </div>
+    <div class="section-wrap">
+      <div class="glass-card">
+        <div class="panel-label">Add Note Manually</div>
+        <div style="display:flex;gap:10px;">
+          <input class="cmd-input" id="noteInput" type="text" placeholder="Type your note…" />
+          <button class="btn btn-primary btn-sm" onclick="addNoteManual()">Save</button>
+        </div>
+      </div>
+      <div class="items-list" id="notesList">
+        <div class="empty-msg">No notes saved yet. Say "Hey Hammerr, take a note" or add one above.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── TASKS ─────────────────────────────────────────── -->
+  <section id="sec-tasks" class="section">
+    <div class="section-header">
+      <span class="section-title">TASKS</span>
+      <button class="btn btn-danger btn-sm" onclick="clearTasks()">Clear All</button>
+    </div>
+    <div class="section-wrap">
+      <div class="glass-card">
+        <div class="panel-label">Add Task Manually</div>
+        <div style="display:flex;gap:10px;">
+          <input class="cmd-input" id="taskInput" type="text" placeholder="Type a task…" />
+          <button class="btn btn-primary btn-sm" onclick="addTaskManual()">Add</button>
+        </div>
+      </div>
+      <div class="items-list" id="tasksList">
+        <div class="empty-msg">No tasks yet. Say "Hey Hammerr, add a task" or add one above.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CALCULATOR ─────────────────────────────────────── -->
+  <section id="sec-calc" class="section">
+    <div class="section-header"><span class="section-title">CALCULATOR</span></div>
+    <div class="calc-wrap">
+      <div class="glass-card" style="padding:16px;margin-bottom:16px;">
+        <div class="panel-label">Voice Command</div>
+        <div style="font-size:0.82rem;color:var(--muted);">Say: <span style="color:var(--accent);">"Calculate 25 plus 40"</span> · "What is 10 divided by 2" · "Square root of 144"</div>
+      </div>
+      <div class="calc-display">
+        <div class="calc-expr" id="calcExpr"></div>
+        <div class="calc-result" id="calcResult">0</div>
+      </div>
+      <div class="calc-grid">
+        <button class="calc-btn clr" onclick="calcClear()">AC</button>
+        <button class="calc-btn op"  onclick="calcInput('(')">(</button>
+        <button class="calc-btn op"  onclick="calcInput(')')">)</button>
+        <button class="calc-btn op"  onclick="calcInput('/')">÷</button>
+        <button class="calc-btn"     onclick="calcInput('7')">7</button>
+        <button class="calc-btn"     onclick="calcInput('8')">8</button>
+        <button class="calc-btn"     onclick="calcInput('9')">9</button>
+        <button class="calc-btn op"  onclick="calcInput('*')">×</button>
+        <button class="calc-btn"     onclick="calcInput('4')">4</button>
+        <button class="calc-btn"     onclick="calcInput('5')">5</button>
+        <button class="calc-btn"     onclick="calcInput('6')">6</button>
+        <button class="calc-btn op"  onclick="calcInput('-')">−</button>
+        <button class="calc-btn"     onclick="calcInput('1')">1</button>
+        <button class="calc-btn"     onclick="calcInput('2')">2</button>
+        <button class="calc-btn"     onclick="calcInput('3')">3</button>
+        <button class="calc-btn op"  onclick="calcInput('+')">+</button>
+        <button class="calc-btn"     onclick="calcInput('%')">%</button>
+        <button class="calc-btn"     onclick="calcInput('0')">0</button>
+        <button class="calc-btn"     onclick="calcInput('.')">.</button>
+        <button class="calc-btn op"  onclick="calcBack()">⌫</button>
+        <button class="calc-btn eq"  onclick="calcEval()">=</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SETTINGS ─────────────────────────────────────── -->
+  <section id="sec-settings" class="section">
+    <div class="section-header"><span class="section-title">SETTINGS</span></div>
+    <div class="settings-grid">
+      <div class="glass-card">
+        <div class="panel-label">Assistant Info</div>
+        <div class="setting-row" style="margin-bottom:14px;">
+          <div class="setting-label">Assistant Name</div>
+          <div class="setting-val">Hammerr</div>
+        </div>
+        <div class="setting-row" style="margin-bottom:14px;">
+          <div class="setting-label">Wake Phrase</div>
+          <div class="setting-val" style="color:var(--accent);">Hey Hammerr</div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-label">Language</div>
+          <div class="setting-val">English (en-US)</div>
+        </div>
+      </div>
+      <div class="glass-card">
+        <div class="panel-label">Voice Settings</div>
+        <div class="setting-row" style="margin-bottom:16px;">
+          <div class="setting-label">Voice Reply</div>
+          <div class="toggle-wrap">
+            <div class="toggle on" id="voiceToggle" onclick="toggleVoice()"><div class="toggle-thumb"></div></div>
+            <span id="voiceToggleLabel" style="font-size:0.82rem;color:var(--silver);">Enabled</span>
+          </div>
+        </div>
+        <div class="setting-row" style="margin-bottom:16px;">
+          <div class="setting-label">Speech Rate (0.5 – 2)</div>
+          <input class="setting-input" type="range" min="0.5" max="2" step="0.1" id="rateRange" value="1" oninput="updateRate(this.value)" style="padding:0;height:4px;cursor:pointer;" />
+          <span id="rateVal" style="font-size:0.8rem;color:var(--accent);">1.0</span>
+        </div>
+        <div class="setting-row">
+          <div class="setting-label">Speech Pitch (0.5 – 2)</div>
+          <input class="setting-input" type="range" min="0.5" max="2" step="0.1" id="pitchRange" value="1" oninput="updatePitch(this.value)" style="padding:0;height:4px;cursor:pointer;" />
+          <span id="pitchVal" style="font-size:0.8rem;color:var(--accent);">1.0</span>
+        </div>
+      </div>
+      <div class="glass-card">
+        <div class="panel-label">Theme</div>
+        <div class="theme-btns">
+          <button class="theme-btn active" onclick="setTheme('blue',this)">Neon Blue</button>
+          <button class="theme-btn"        onclick="setTheme('purple',this)">Purple</button>
+          <button class="theme-btn"        onclick="setTheme('green',this)">Cyber Green</button>
+          <button class="theme-btn"        onclick="setTheme('dark',this)">Minimal Dark</button>
+        </div>
+      </div>
+      <div class="glass-card">
+        <div class="panel-label">Data Management</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <button class="btn btn-danger btn-sm" onclick="if(confirm('Clear all notes?'))clearNotes()">Clear All Notes</button>
+          <button class="btn btn-danger btn-sm" onclick="if(confirm('Clear all tasks?'))clearTasks()">Clear All Tasks</button>
+          <button class="btn btn-danger btn-sm" onclick="if(confirm('Clear history?'))clearHistory()">Clear History</button>
+        </div>
+      </div>
+    </div>
+    <div class="privacy-note" style="margin-top:24px;">🔒 Voice commands are processed in your browser. Notes and tasks are saved locally on your device.</div>
+  </section>
+
+</div><!-- /app -->
+
+<!-- Mobile FAB -->
+<button id="micFab" onclick="toggleListening()">🎙</button>
+
+<!-- Toast box -->
+<div id="toastBox"></div>
+
+<!-- Awaiting Note Input Overlay -->
+<div class="awaiting-input-wrap" id="awaitingInputWrap">
+  <div class="ai-prompt" id="awaitingPrompt">What should I note?</div>
+  <div class="ai-input-row">
+    <input class="ai-text-input" id="awaitingInput" type="text" placeholder="Speak or type here…" />
+    <button class="btn btn-primary btn-sm" onclick="submitAwaitingInput()">✓</button>
+    <button class="btn btn-outline btn-sm" onclick="cancelAwaitingInput()">✕</button>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════
+   HAMMERR — AI Voice Assistant
+   Powered by Obliq AI & Digital Hammerr
+   ════════════════════════════════════════════════════ */
+
+// ── State ────────────────────────────────────────────
+let isListening   = false;
+let isActivated   = false;  // wake word heard
+let voiceEnabled  = true;
+let speechRate    = 1.0;
+let speechPitch   = 1.0;
+let commandCount  = 0;
+let focusMode     = false;
+let timerInterval = null;
+let timerSeconds  = 0;
+let timerRunning  = false;
+let awaitingMode  = null;   // 'note' | 'task' | null
+let currentTheme  = 'blue';
+
+let notes   = JSON.parse(localStorage.getItem('hmr_notes')   || '[]');
+let tasks   = JSON.parse(localStorage.getItem('hmr_tasks')   || '[]');
+let history = JSON.parse(localStorage.getItem('hmr_history') || '[]');
+
+// ── Load settings ────────────────────────────────────
+(function loadSettings() {
+  const s = JSON.parse(localStorage.getItem('hmr_settings') || '{}');
+  voiceEnabled = s.voiceEnabled !== false;
+  speechRate   = s.rate  || 1.0;
+  speechPitch  = s.pitch || 1.0;
+  commandCount = parseInt(localStorage.getItem('hmr_cmdcount') || '0');
+  currentTheme = s.theme || 'blue';
+  applyTheme(currentTheme);
+  document.getElementById('rateRange').value  = speechRate;
+  document.getElementById('pitchRange').value = speechPitch;
+  document.getElementById('rateVal').textContent  = speechRate.toFixed(1);
+  document.getElementById('pitchVal').textContent = speechPitch.toFixed(1);
+  if (!voiceEnabled) {
+    document.getElementById('voiceToggle').classList.remove('on');
+    document.getElementById('voiceToggleLabel').textContent = 'Disabled';
+  }
+  // theme buttons
+  document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+  const map = {blue:0,purple:1,green:2,dark:3};
+  const idx = map[currentTheme] ?? 0;
+  document.querySelectorAll('.theme-btn')[idx]?.classList.add('active');
+})();
+
+// ── Particle system ──────────────────────────────────
+(function initParticles() {
+  const canvas = document.getElementById('particleCanvas');
+  const ctx    = canvas.getContext('2d');
+  let W, H, particles = [];
+  function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+  for (let i = 0; i < 60; i++) particles.push({
+    x: Math.random()*2000, y: Math.random()*1200,
+    vx:(Math.random()-0.5)*0.3, vy:(Math.random()-0.5)*0.3,
+    r: Math.random()*1.5+0.5, a: Math.random()*0.5+0.1
+  });
+  function draw() {
+    ctx.clearRect(0,0,W,H);
+    particles.forEach(p => {
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+      if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(0,212,255,${p.a})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// ── Speech Recognition ───────────────────────────────
+const SRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recognition = null;
+let recognitionActive = false;
+
+if (!SRec) {
+  document.getElementById('unsupportedBanner').style.display = 'block';
+} else {
+  recognition = new SRec();
+  recognition.continuous     = true;
+  recognition.interimResults = true;
+  recognition.lang           = 'en-US';
+  recognition.maxAlternatives = 1;
+
+  recognition.onresult = function(e) {
+    let interim = '', final = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const t = e.results[i][0].transcript;
+      if (e.results[i].isFinal) final += t; else interim += t;
+    }
+    const display = (final || interim).trim();
+    if (display) showCommandOnScreen(display + (final ? '' : ' …'));
+    if (final) processVoiceInput(final.trim());
+  };
+
+  recognition.onerror = function(e) {
+    if (e.error === 'not-allowed') {
+      showToast('⚠ Microphone permission denied. Use manual input.');
+      stopListening();
+    }
+    if (e.error === 'no-speech') { /* ignore */ }
+  };
+
+  recognition.onend = function() {
+    recognitionActive = false;
+    if (isListening) {
+      setTimeout(()=>{ if(isListening && !recognitionActive){ try{ recognition.start(); recognitionActive=true; }catch(ex){} } }, 300);
+    }
+  };
+}
+
+function startListening() {
+  if (!recognition) { showToast('Voice recognition not supported. Use Chrome.'); return; }
+  isListening = true;
+  if (!recognitionActive) {
+    try { recognition.start(); recognitionActive = true; } catch(e) {}
+  }
+  setStatus('listening');
+  showToast('🎙 Listening… Say "Hey Hammerr" to activate');
+  document.getElementById('micFab').classList.add('listening');
+  document.getElementById('heroWave').classList.add('active');
+}
+
+function stopListening() {
+  isListening   = false;
+  isActivated   = false;
+  recognitionActive = false;
+  try { recognition && recognition.stop(); } catch(e) {}
+  setStatus('passive');
+  setWakeBadge(false);
+  document.getElementById('micFab').classList.remove('listening');
+  document.getElementById('heroWave').classList.remove('active');
+  document.getElementById('assistantWave').classList.remove('active');
+  showToast('⏹ Stopped listening');
+}
+
+function toggleListening() {
+  isListening ? stopListening() : startListening();
+}
+
+// ── Status helpers ───────────────────────────────────
+function setStatus(state) {
+  const dot   = document.getElementById('statusDot');
+  const label = document.getElementById('statusLabel');
+  const aWave = document.getElementById('assistantWave');
+  const aStatus= document.getElementById('assistantStatus');
+  dot.className   = 'mic-status-dot ' + state;
+  label.textContent = state.toUpperCase();
+  if (aStatus) aStatus.textContent = state.charAt(0).toUpperCase()+state.slice(1);
+  if (state === 'listening' || state === 'speaking') {
+    aWave && aWave.classList.add('active');
+    document.getElementById('heroWave').classList.add('active');
+  } else {
+    if (state !== 'processing') {
+      aWave && aWave.classList.remove('active');
+      document.getElementById('heroWave').classList.remove('active');
+    }
+  }
+  const orb = document.getElementById('heroOrb');
+  orb.className = 'hero-orb';
+  if (state === 'listening') orb.classList.add('listening');
+  if (state === 'speaking')  orb.classList.add('speaking');
+}
+
+function setWakeBadge(active) {
+  const b = document.getElementById('wakeBadge');
+  if (!b) return;
+  b.className = 'wake-badge ' + (active ? 'active' : 'passive');
+  b.textContent = active ? '🟢 ACTIVE' : '⚫ PASSIVE';
+}
+
+function showCommandOnScreen(txt) {
+  const d = document.getElementById('cmdDisplay');
+  if (d) d.textContent = txt;
+}
+
+function showResponseOnScreen(txt) {
+  const r = document.getElementById('resDisplay');
+  if (r) { r.textContent = txt; r.classList.add('speak'); setTimeout(()=>r.classList.remove('speak'),3000); }
+}
+
+// ── Speech Synthesis ─────────────────────────────────
+function speak(text, onEnd) {
+  window.speechSynthesis && window.speechSynthesis.cancel();
+  if (!voiceEnabled) { onEnd && onEnd(); return; }
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang  = 'en-US';
+  u.rate  = speechRate;
+  u.pitch = speechPitch;
+  // prefer English voice
+  const voices = window.speechSynthesis.getVoices();
+  const engVoice = voices.find(v => v.lang.startsWith('en') && v.localService) ||
+                   voices.find(v => v.lang.startsWith('en')) || null;
+  if (engVoice) u.voice = engVoice;
+  u.onstart = ()=>{ setStatus('speaking'); showResponseOnScreen(text); };
+  u.onend   = ()=>{ setStatus(isListening?'listening':'passive'); onEnd && onEnd(); };
+  u.onerror  = ()=>{ setStatus(isListening?'listening':'passive'); onEnd && onEnd(); };
+  setStatus('speaking');
+  showResponseOnScreen(text);
+  window.speechSynthesis.speak(u);
+}
+
+// ── Always-active mode ────────────────────────────────
+let alwaysActive = JSON.parse(localStorage.getItem('hmr_alwaysActive') || 'false');
+(function applyAlwaysActiveUI() {
+  const tog = document.getElementById('alwaysActiveToggle');
+  const lbl = document.getElementById('alwaysActiveLabel');
+  if (!tog) return;
+  tog.classList.toggle('on', alwaysActive);
+  lbl.textContent  = alwaysActive ? 'Always On' : 'Wake Word';
+  lbl.style.color  = alwaysActive ? 'var(--accent)' : '';
+})();
+function toggleAlwaysActive() {
+  alwaysActive = !alwaysActive;
+  if (alwaysActive) isActivated = true;
+  localStorage.setItem('hmr_alwaysActive', JSON.stringify(alwaysActive));
+  const tog = document.getElementById('alwaysActiveToggle');
+  const lbl = document.getElementById('alwaysActiveLabel');
+  tog.classList.toggle('on', alwaysActive);
+  lbl.textContent = alwaysActive ? 'Always On' : 'Wake Word';
+  lbl.style.color = alwaysActive ? 'var(--accent)' : '';
+  setWakeBadge(alwaysActive);
+  showToast(alwaysActive ? '⚡ Always Active — no wake word needed' : '🔒 Wake word required: "Hey Hammerr"');
+}
+
+// ── Wake word detection (fuzzy) ───────────────────────
+function detectWake(lower) {
+  const variants = [
+    'hey hammerr','hey hammer','hammerr','hey hummer','hey humor',
+    'hey hammers','hey hammered','hey hammar','hey hamar',
+    'a hammerr','hey hamer','hey hemmer'
+  ];
+  return variants.some(v => lower.includes(v));
+}
+function stripWake(lower) {
+  return lower
+    .replace(/hey hamm[a-z]*/gi,'')
+    .replace(/^hamm[a-z]*/gi,'')
+    .replace(/,\s*/,'')
+    .trim();
+}
+
+// ── Process voice input ───────────────────────────────
+function processVoiceInput(input) {
+  const lower = input.toLowerCase().replace(/[.,!?]/g,'').trim();
+  const hasWake = detectWake(lower);
+
+  if (alwaysActive) {
+    // skip wake word completely
+    if (awaitingMode) { handleAwaitingVoice(lower); return; }
+    const cmd = hasWake ? (stripWake(lower) || lower) : lower;
+    if (!cmd) return;
+    processCommand(cmd, input);
+    return;
+  }
+
+  if (!isActivated) {
+    if (!hasWake) return; // stay passive
+    isActivated = true;
+    setWakeBadge(true);
+    const cmd = stripWake(lower);
+    if (!cmd) {
+      respond('Yes, I am listening. How can I help you?', input);
+    } else {
+      processCommand(cmd, input);
+    }
+  } else {
+    if (awaitingMode) { handleAwaitingVoice(lower); return; }
+    const cmd = hasWake ? (stripWake(lower) || lower) : lower;
+    processCommand(cmd || lower, input);
+  }
+}
+
+// Manual text command (no wake word required)
+function handleTextCommand(val) {
+  const t = (val||'').trim();
+  if (!t) return;
+  const lc = t.toLowerCase().replace(/[.,!?]/g,'').trim();
+  showCommandOnScreen(t);
+  if (awaitingMode) { handleAwaitingVoice(lc); return; }
+  processCommand(lc, t);
+  // clear inputs
+  const hi = document.getElementById('homeTextCmd'); if(hi) hi.value='';
+  const ai = document.getElementById('assistantTextCmd'); if(ai) ai.value='';
+}
+
+// ── Main Command Processor ────────────────────────────
+function processCommand(cmd, raw) {
+  setStatus('processing');
+  commandCount++;
+  localStorage.setItem('hmr_cmdcount', commandCount);
+  updateDashboard();
+
+  let response = '';
+  const c = cmd.toLowerCase().replace(/[.,!?]/g,'').trim();
+
+  // ── Identity ──
+  if (match(c,['tell me about you','who are you','what are you','about you'])) {
+    response = 'I am Hammerr, your voice-controlled AI assistant powered by Obliq AI and Digital Hammerr. I can help you with tasks, notes, calculations, web actions, productivity, and smart commands.';
+  } else if (match(c,['who created you','who made you','who built you'])) {
+    response = 'I was created as a futuristic AI assistant experience by Obliq AI and Digital Hammerr.';
+  } else if (match(c,['what can you do','your features','help me','what do you do'])) {
+    response = 'I can help you manage notes, tasks, calculations, timers, web searches, productivity commands, and voice-controlled navigation. Click Commands in the menu to see everything I can do.';
+
+  // ── Time & Date ──
+  } else if (match(c,['what is the time','tell me the time','current time','what time is it','what is time'])) {
+    response = 'The current time is ' + getTime();
+  } else if (match(c,['what is today\'s date','what is the date','today\'s date','what day is today','today date','current date'])) {
+    response = 'Today is ' + getDate();
+
+  // ── Navigation ──
+  } else if (match(c,['open dashboard','go to dashboard','show dashboard'])) {
+    showSection('dashboard'); response = 'Opening Dashboard.';
+  } else if (match(c,['open notes','go to notes','show notes','show my notes'])) {
+    showSection('notes'); response = 'Opening Notes.';
+  } else if (match(c,['open tasks','go to tasks','show tasks','show my tasks'])) {
+    showSection('tasks'); response = 'Opening Tasks.';
+  } else if (match(c,['open calculator','go to calculator','show calculator'])) {
+    showSection('calc'); response = 'Opening Calculator.';
+  } else if (match(c,['open settings','go to settings','show settings'])) {
+    showSection('settings'); response = 'Opening Settings.';
+  } else if (match(c,['go home','home','main screen'])) {
+    showSection('home'); response = 'Going home.';
+  } else if (match(c,['show commands','open commands','list commands','what commands'])) {
+    showSection('commands'); response = 'Here are all my supported commands.';
+
+  // ── Notes ──
+  } else if (match(c,['take a note','add note','create note','make a note'])) {
+    awaitingMode = 'note';
+    showAwaitingInput('📝 What should I note?');
+    response = 'What should I note?';
+  } else if (match(c,['clear notes','delete notes','delete all notes','remove notes'])) {
+    clearNotes(); response = 'All notes have been cleared.';
+
+  // ── Tasks ──
+  } else if (match(c,['add a task','add task','create task','new task'])) {
+    awaitingMode = 'task';
+    showAwaitingInput('✅ What task should I add?');
+    response = 'What task should I add?';
+  } else if (match(c,['clear tasks','delete tasks','delete all tasks','remove tasks'])) {
+    clearTasks(); response = 'All tasks have been cleared.';
+
+  // ── Focus Mode ──
+  } else if (match(c,['start focus mode','enable focus mode','focus mode on'])) {
+    focusMode = true; updateDashboard();
+    response = 'Focus mode activated. Stay focused and get things done.';
+  } else if (match(c,['stop focus mode','disable focus mode','focus mode off'])) {
+    focusMode = false; updateDashboard();
+    response = 'Focus mode deactivated.';
+
+  // ── Timer ──
+  } else if (c.includes('start timer')) {
+    const mins = extractNumber(c) || 5;
+    startTimer(mins); response = `Timer started for ${mins} minute${mins>1?'s':''}.`;
+  } else if (match(c,['stop timer','pause timer','cancel timer'])) {
+    stopTimer(); response = 'Timer stopped.';
+
+  // ── History ──
+  } else if (match(c,['clear history','clear command history','delete history'])) {
+    clearHistory(); response = 'Command history cleared.';
+  } else if (match(c,['read history','read command history','show history'])) {
+    if (history.length === 0) { response = 'No command history available.'; }
+    else { response = `You have ${history.length} commands in history. Your last command was: ${history[history.length-1].cmd}`; }
+
+  // ── Calculator ──
+  } else if (c.startsWith('calculate') || c.startsWith('what is ') || c.includes('plus') || c.includes('minus') || c.includes('multiplied') || c.includes('divided') || c.includes('percent') || c.includes('square root') || c.includes('squared')) {
+    const result = voiceCalculate(c);
+    response = result;
+
+  // ── Web actions ──
+  } else if (match(c,['open google','go to google'])) {
+    window.open('https://www.google.com','_blank'); response = 'Opening Google.';
+  } else if (match(c,['open youtube','go to youtube'])) {
+    window.open('https://www.youtube.com','_blank'); response = 'Opening YouTube.';
+  } else if (match(c,['open gmail','go to gmail'])) {
+    window.open('https://mail.google.com','_blank'); response = 'Opening Gmail.';
+  } else if (match(c,['open chatgpt','go to chatgpt'])) {
+    window.open('https://chat.openai.com','_blank'); response = 'Opening ChatGPT.';
+  } else if (match(c,['open whatsapp','open whatsapp web'])) {
+    window.open('https://web.whatsapp.com','_blank'); response = 'Opening WhatsApp Web.';
+  } else if (c.includes('search google for')) {
+    const q = c.replace(/.*search google for\s*/,'').trim();
+    window.open(`https://www.google.com/search?q=${encodeURIComponent(q)}`,'_blank');
+    response = `Searching Google for "${q}".`;
+  } else if (c.includes('search youtube for')) {
+    const q = c.replace(/.*search youtube for\s*/,'').trim();
+    window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(q)}`,'_blank');
+    response = `Searching YouTube for "${q}".`;
+
+  // ── Greeting ──
+  } else if (match(c,['hello','hi','hey','hi hammerr','hello hammerr'])) {
+    response = 'Hello! I am Hammerr, ready to assist you. What can I do for you?';
+  } else if (c.includes('how are you')) {
+    response = 'I am fully operational and running at peak performance. How can I assist you today?';
+  } else if (match(c,['good morning'])) {
+    response = 'Good morning! A new day full of possibilities. I am Hammerr and I am ready. Let us get things done.';
+  } else if (match(c,['good night','goodnight'])) {
+    response = 'Good night. Rest well. I will be here whenever you need me. Signing off for now.';
+  } else if (match(c,['are you there','hammerr are you there'])) {
+    response = 'Yes, I am here. Hammerr is always on standby for you.';
+
+  // ── Fun ──
+  } else if (c.includes('motivate me') || c.includes('motivation')) {
+    const quotes = [
+      'Every expert was once a beginner. Keep going.',
+      'The future belongs to those who prepare for it today.',
+      'Your potential is limitless. Believe in yourself.',
+      'Small steps every day lead to massive results.',
+      'Stay focused. Stay disciplined. Stay unstoppable.'
+    ];
+    response = quotes[Math.floor(Math.random()*quotes.length)];
+  } else if (c.includes('tell me a quote') || c.includes('quote')) {
+    const q = [
+      '"Innovation distinguishes between a leader and a follower." — Steve Jobs',
+      '"The only way to do great work is to love what you do." — Steve Jobs',
+      '"In the middle of every difficulty lies opportunity." — Albert Einstein',
+      '"It always seems impossible until it is done." — Nelson Mandela',
+      '"The best way to predict the future is to create it." — Peter Drucker'
+    ];
+    response = q[Math.floor(Math.random()*q.length)];
+  } else if (c.includes('tell me a joke') || c.includes('joke')) {
+    const j = [
+      'Why do programmers prefer dark mode? Because light attracts bugs.',
+      'I told my AI to stop telling jokes. It said: "Error 404 — sense of humor not found."',
+      'Why did the computer go to therapy? It had too many bytes of emotional baggage.',
+      'How does a computer get drunk? It takes screenshots.',
+    ];
+    response = j[Math.floor(Math.random()*j.length)];
+
+  // ── Stop ──
+  } else if (match(c,['stop listening','deactivate','go passive','stop'])) {
+    isActivated = false;
+    setWakeBadge(false);
+    response = 'Going passive. Say Hey Hammerr to activate me again.';
+
+  // ── Non-English ──
+  } else if (/[\u0900-\u097F]/.test(raw)) {
+    response = 'I can currently respond only in English. Please speak in English.';
+
+  // ── Unknown ──
+  } else {
+    response = `Command not recognised: "${raw}". Say "What can you do" to see all commands.`;
+  }
+
+  addToHistory(raw, response);
+  speak(response, ()=>{
+    if (isListening) setStatus('listening');
+  });
+}
+
+// ── Awaiting input (note / task) ─────────────────────
+function showAwaitingInput(prompt) {
+  const wrap = document.getElementById('awaitingInputWrap');
+  document.getElementById('awaitingPrompt').textContent = prompt;
+  document.getElementById('awaitingInput').value = '';
+  wrap.classList.add('show');
+  document.getElementById('awaitingInput').focus();
+}
+
+function cancelAwaitingInput() {
+  awaitingMode = null;
+  document.getElementById('awaitingInputWrap').classList.remove('show');
+}
+
+function submitAwaitingInput() {
+  const val = document.getElementById('awaitingInput').value.trim();
+  if (!val) return;
+  handleAwaitingVoice(val);
+}
+
+document.getElementById('awaitingInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') submitAwaitingInput();
+});
+
+function handleAwaitingVoice(text) {
+  document.getElementById('awaitingInputWrap').classList.remove('show');
+  if (awaitingMode === 'note') {
+    addNote(text);
+    awaitingMode = null;
+    const r = `Got it. Note saved: "${text}"`;
+    addToHistory(text, r);
+    speak(r);
+  } else if (awaitingMode === 'task') {
+    addTask(text);
+    awaitingMode = null;
+    const r = `Task added: "${text}"`;
+    addToHistory(text, r);
+    speak(r);
+  }
+}
+
+// ── Notes CRUD ───────────────────────────────────────
+function addNote(text) {
+  notes.unshift({ id: Date.now(), text, time: new Date().toLocaleString() });
+  localStorage.setItem('hmr_notes', JSON.stringify(notes));
+  renderNotes(); updateDashboard();
+}
+function addNoteManual() {
+  const v = document.getElementById('noteInput').value.trim();
+  if (!v) return;
+  addNote(v); document.getElementById('noteInput').value = '';
+  showToast('📝 Note saved');
+}
+function deleteNote(id) {
+  notes = notes.filter(n => n.id !== id);
+  localStorage.setItem('hmr_notes', JSON.stringify(notes));
+  renderNotes(); updateDashboard();
+}
+function clearNotes() {
+  notes = []; localStorage.removeItem('hmr_notes');
+  renderNotes(); updateDashboard(); showToast('🗑 Notes cleared');
+}
+function renderNotes() {
+  const el = document.getElementById('notesList');
+  if (!el) return;
+  if (!notes.length) { el.innerHTML='<div class="empty-msg">No notes saved yet.</div>'; return; }
+  el.innerHTML = notes.map(n=>`
+    <div class="note-item glass-card" style="padding:14px;">
+      <div class="note-item-body">
+        <div class="note-item-text">${escHtml(n.text)}</div>
+        <div class="note-item-time">${n.time}</div>
+      </div>
+      <button class="note-del" onclick="deleteNote(${n.id})">🗑</button>
+    </div>
+  `).join('');
+}
+
+// ── Tasks CRUD ───────────────────────────────────────
+function addTask(text) {
+  tasks.unshift({ id: Date.now(), text, done: false, time: new Date().toLocaleString() });
+  localStorage.setItem('hmr_tasks', JSON.stringify(tasks));
+  renderTasks(); updateDashboard();
+}
+function addTaskManual() {
+  const v = document.getElementById('taskInput').value.trim();
+  if (!v) return;
+  addTask(v); document.getElementById('taskInput').value = '';
+  showToast('✅ Task added');
+}
+function toggleTask(id) {
+  const t = tasks.find(t=>t.id===id);
+  if (t) { t.done = !t.done; localStorage.setItem('hmr_tasks',JSON.stringify(tasks)); renderTasks(); updateDashboard(); }
+}
+function deleteTask(id) {
+  tasks = tasks.filter(t=>t.id!==id);
+  localStorage.setItem('hmr_tasks', JSON.stringify(tasks));
+  renderTasks(); updateDashboard();
+}
+function clearTasks() {
+  tasks = []; localStorage.removeItem('hmr_tasks');
+  renderTasks(); updateDashboard(); showToast('🗑 Tasks cleared');
+}
+function renderTasks() {
+  const el = document.getElementById('tasksList');
+  if (!el) return;
+  if (!tasks.length) { el.innerHTML='<div class="empty-msg">No tasks yet.</div>'; return; }
+  el.innerHTML = tasks.map(t=>`
+    <div class="task-item${t.done?' done':''}">
+      <div class="task-check${t.done?' checked':''}" onclick="toggleTask(${t.id})">${t.done?'✓':''}</div>
+      <div class="task-text">${escHtml(t.text)}</div>
+      <div class="task-time">${t.time}</div>
+      <button class="note-del" onclick="deleteTask(${t.id})">🗑</button>
+    </div>
+  `).join('');
+}
+
+// ── Calculator ───────────────────────────────────────
+let calcExprStr = '';
+function calcInput(v) {
+  const opMap = { '/':'/', '*':'*', '+':'+', '-':'-', '%':'%' };
+  calcExprStr += v;
+  document.getElementById('calcExpr').textContent = calcExprStr;
+}
+function calcClear() {
+  calcExprStr = '';
+  document.getElementById('calcExpr').textContent = '';
+  document.getElementById('calcResult').textContent = '0';
+}
+function calcBack() {
+  calcExprStr = calcExprStr.slice(0,-1);
+  document.getElementById('calcExpr').textContent = calcExprStr;
+}
+function calcEval() {
+  try {
+    let expr = calcExprStr.replace(/÷/g,'/').replace(/×/g,'*');
+    // handle percentage
+    expr = expr.replace(/(\d+(\.\d+)?)\s*%/g, '($1/100)');
+    const res = Function('"use strict"; return ('+expr+')')();
+    document.getElementById('calcResult').textContent = parseFloat(res.toFixed(10)).toString();
+    addToHistory(calcExprStr, String(res));
+  } catch(e) {
+    document.getElementById('calcResult').textContent = 'Error';
+  }
+}
+function voiceCalculate(c) {
+  try {
+    let expr = c.replace(/calculate|what is|compute/gi,'').trim();
+    // word → symbol
+    expr = expr.replace(/\bplus\b/g,'+').replace(/\bminus\b/g,'-')
+               .replace(/\bmultiplied by\b/g,'*').replace(/\btimes\b/g,'*')
+               .replace(/\bdivided by\b/g,'/').replace(/\bover\b/g,'/')
+               .replace(/\bto the power of\b/g,'**');
+    // square root
+    if (/square root of (\d+(\.\d+)?)/.test(expr)) {
+      const n = parseFloat(expr.match(/square root of (\d+(\.\d+)?)/)[1]);
+      const r = Math.sqrt(n);
+      showSection('calc');
+      document.getElementById('calcExpr').textContent = `√${n}`;
+      document.getElementById('calcResult').textContent = parseFloat(r.toFixed(10)).toString();
+      return `The square root of ${n} is ${parseFloat(r.toFixed(6))}.`;
+    }
+    // squared
+    if (/(\d+(\.\d+)?) squared/.test(expr)) {
+      const n = parseFloat(expr.match(/(\d+(\.\d+)?) squared/)[1]);
+      const r = n * n;
+      showSection('calc');
+      document.getElementById('calcResult').textContent = r.toString();
+      return `${n} squared is ${r}.`;
+    }
+    // percent
+    if (/(\d+(\.\d+)?) percent of (\d+(\.\d+)?)/.test(expr)) {
+      const [,a,,b] = expr.match(/(\d+(\.\d+)?) percent of (\d+(\.\d+)?)/);
+      const r = (parseFloat(a)/100)*parseFloat(b);
+      showSection('calc');
+      document.getElementById('calcResult').textContent = r.toString();
+      return `${a} percent of ${b} is ${r}.`;
+    }
+    expr = expr.replace(/(\d+(\.\d+)?)\s*percent/g,'($1/100)');
+    const cleaned = expr.replace(/[^0-9+\-*/.() ]/g,'').trim();
+    if (!cleaned) return 'Please say a valid calculation like: calculate 25 plus 40.';
+    const result = Function('"use strict"; return ('+cleaned+')')();
+    showSection('calc');
+    document.getElementById('calcExpr').textContent = cleaned;
+    document.getElementById('calcResult').textContent = parseFloat(result.toFixed(10)).toString();
+    return `The result is ${parseFloat(result.toFixed(8))}.`;
+  } catch(e) {
+    return 'Sorry, I could not compute that. Try saying: calculate 25 plus 40.';
+  }
+}
+
+// ── Timer ────────────────────────────────────────────
+function startTimer(mins) {
+  stopTimer();
+  timerSeconds = mins * 60;
+  timerRunning = true;
+  updateTimerDisplay();
+  timerInterval = setInterval(()=>{
+    timerSeconds--;
+    updateTimerDisplay();
+    if (timerSeconds <= 0) {
+      stopTimer();
+      speak('Timer complete. Time is up.');
+    }
+  }, 1000);
+  updateDashboard();
+}
+function stopTimer() {
+  clearInterval(timerInterval);
+  timerRunning = false;
+  updateDashboard();
+}
+function updateTimerDisplay() {
+  const m = Math.floor(timerSeconds/60).toString().padStart(2,'0');
+  const s = (timerSeconds%60).toString().padStart(2,'0');
+  const el = document.getElementById('dashTimer');
+  if (el) el.textContent = `${m}:${s}`;
+}
+
+// ── Dashboard update ─────────────────────────────────
+function updateDashboard() {
+  const te = document.getElementById('dashTime');
+  const de = document.getElementById('dashDate');
+  if (te) te.textContent = getTime();
+  if (de) de.textContent = getDateShort();
+  const ce = document.getElementById('dashCmds');   if(ce) ce.textContent = commandCount;
+  const ne = document.getElementById('dashNotes');   if(ne) ne.textContent = notes.length;
+  const tse= document.getElementById('dashTasks');   if(tse) tse.textContent = tasks.filter(t=>!t.done).length;
+  const fe = document.getElementById('dashFocus');   if(fe) fe.textContent = focusMode ? 'ON' : 'OFF';
+  if (!timerRunning) { const tim=document.getElementById('dashTimer'); if(tim) tim.textContent='00:00'; }
+  // battery
+  if (navigator.getBattery) {
+    navigator.getBattery().then(b=>{
+      const pct = Math.round(b.level*100);
+      const bv = document.getElementById('dashBatteryVal');
+      const bf = document.getElementById('batteryFill');
+      if(bv) bv.textContent = pct+'%';
+      if(bf) bf.style.width = pct+'%';
+    }).catch(()=>{});
+  }
+}
+setInterval(updateDashboard, 1000);
+
+// ── History ──────────────────────────────────────────
+function addToHistory(cmd, res) {
+  history.push({ cmd, res, time: new Date().toLocaleTimeString() });
+  if (history.length > 50) history.shift();
+  localStorage.setItem('hmr_history', JSON.stringify(history));
+  renderHistory();
+}
+function clearHistory() {
+  history = []; localStorage.removeItem('hmr_history');
+  renderHistory(); showToast('History cleared');
+}
+function renderHistory() {
+  const el = document.getElementById('historyList');
+  if (!el) return;
+  if (!history.length) { el.innerHTML = '<div class="empty-msg">No commands yet.</div>'; return; }
+  el.innerHTML = [...history].reverse().slice(0,20).map(h=>`
+    <div class="history-item">
+      <span class="hi-time">${h.time}</span>
+      <div class="hi-cmd">▶ ${escHtml(h.cmd)}</div>
+      <div class="hi-res">↳ ${escHtml(h.res)}</div>
+    </div>
+  `).join('');
+}
+
+// ── Settings ─────────────────────────────────────────
+function saveSettings() {
+  localStorage.setItem('hmr_settings', JSON.stringify({ voiceEnabled, rate:speechRate, pitch:speechPitch, theme:currentTheme }));
+}
+function toggleVoice() {
+  voiceEnabled = !voiceEnabled;
+  const tog = document.getElementById('voiceToggle');
+  const lbl = document.getElementById('voiceToggleLabel');
+  tog.classList.toggle('on', voiceEnabled);
+  lbl.textContent = voiceEnabled ? 'Enabled' : 'Disabled';
+  saveSettings();
+}
+function updateRate(v) {
+  speechRate = parseFloat(v);
+  document.getElementById('rateVal').textContent = speechRate.toFixed(1);
+  saveSettings();
+}
+function updatePitch(v) {
+  speechPitch = parseFloat(v);
+  document.getElementById('pitchVal').textContent = speechPitch.toFixed(1);
+  saveSettings();
+}
+function setTheme(theme, btn) {
+  currentTheme = theme;
+  applyTheme(theme);
+  document.querySelectorAll('.theme-btn').forEach(b=>b.classList.remove('active'));
+  btn && btn.classList.add('active');
+  saveSettings();
+}
+function applyTheme(theme) {
+  document.body.className = '';
+  if (theme === 'purple') document.body.classList.add('theme-purple');
+  if (theme === 'green')  document.body.classList.add('theme-green');
+  if (theme === 'dark')   document.body.classList.add('theme-dark');
+}
+
+// ── Respond helper ────────────────────────────────────
+function respond(text, raw) {
+  addToHistory(raw || text, text);
+  speak(text, ()=>{ if(isListening) setStatus('listening'); });
+}
+
+// ── Navigation ────────────────────────────────────────
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  const sec = document.getElementById('sec-'+id);
+  if (sec) sec.classList.add('active');
+  const link = document.querySelector(`.nav-link[data-sec="${id}"]`);
+  if (link) link.classList.add('active');
+  // lazy render
+  if (id==='notes')   renderNotes();
+  if (id==='tasks')   renderTasks();
+  if (id==='assistant') renderHistory();
+  if (id==='dashboard') updateDashboard();
+  if (id==='commands') renderCommandCards();
+}
+
+// ── Command Cards ─────────────────────────────────────
+const CMD_CATALOG = {
+  basic:[
+    {icon:'👋',text:'Hey Hammerr'},
+    {icon:'🙋',text:'Hello Hammerr'},
+    {icon:'❓',text:'Hammerr are you there'},
+    {icon:'ℹ️',text:'Tell me about you'},
+    {icon:'🛠',text:'Who created you'},
+    {icon:'⚡',text:'What can you do'},
+    {icon:'⏹',text:'Stop listening'},
+  ],
+  time:[
+    {icon:'🕐',text:'What is the time'},
+    {icon:'📅',text:'What is today\'s date'},
+    {icon:'📆',text:'What day is today'},
+  ],
+  nav:[
+    {icon:'🏠',text:'Go home'},
+    {icon:'📊',text:'Open dashboard'},
+    {icon:'📝',text:'Open notes'},
+    {icon:'✅',text:'Open tasks'},
+    {icon:'🧮',text:'Open calculator'},
+    {icon:'⚙️',text:'Open settings'},
+    {icon:'📋',text:'Show commands'},
+  ],
+  notes:[
+    {icon:'📝',text:'Take a note'},
+    {icon:'➕',text:'Add note'},
+    {icon:'🗂',text:'Show my notes'},
+    {icon:'🗑',text:'Clear notes'},
+    {icon:'➕',text:'Add a task'},
+    {icon:'📋',text:'Show my tasks'},
+    {icon:'🗑',text:'Clear tasks'},
+  ],
+  calc:[
+    {icon:'🧮',text:'Calculate 25 plus 40'},
+    {icon:'➗',text:'What is 50 divided by 5'},
+    {icon:'💯',text:'Calculate 15 percent of 200'},
+    {icon:'√',text:'Square root of 144'},
+    {icon:'✖️',text:'What is 9 multiplied by 8'},
+    {icon:'➖',text:'Calculate 100 minus 35'},
+    {icon:'²',text:'What is 7 squared'},
+  ],
+  web:[
+    {icon:'🔍',text:'Open Google'},
+    {icon:'▶️',text:'Open YouTube'},
+    {icon:'📧',text:'Open Gmail'},
+    {icon:'🤖',text:'Open ChatGPT'},
+    {icon:'💬',text:'Open WhatsApp'},
+    {icon:'🔎',text:'Search Google for artificial intelligence'},
+    {icon:'🎬',text:'Search YouTube for AI tools'},
+  ],
+  fun:[
+    {icon:'😊',text:'How are you'},
+    {icon:'💪',text:'Motivate me'},
+    {icon:'💬',text:'Tell me a quote'},
+    {icon:'😂',text:'Tell me a joke'},
+    {icon:'🌅',text:'Good morning'},
+    {icon:'🌙',text:'Good night'},
+  ],
+};
+function renderCommandCards() {
+  const map = { basic:'cmdCardsBasic', time:'cmdCardsTime', nav:'cmdCardsNav', notes:'cmdCardsNotes', calc:'cmdCardsCalc', web:'cmdCardsWeb', fun:'cmdCardsFun' };
+  Object.entries(CMD_CATALOG).forEach(([key, cmds])=>{
+    const el = document.getElementById(map[key]);
+    if (!el) return;
+    el.innerHTML = cmds.map(c=>`
+      <div class="cmd-card" onclick="handleTextCommand('${c.text.replace(/'/g,"\\'")}')">
+        <div class="cmd-card-icon">${c.icon}</div>
+        <div class="cmd-card-text">${escHtml(c.text)}</div>
+      </div>
+    `).join('');
+  });
+}
+
+// ── Utility ───────────────────────────────────────────
+function getTime() {
+  return new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+function getDate() {
+  return new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+}
+function getDateShort() {
+  return new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+function match(str, arr) {
+  return arr.some(a => str === a || str.includes(a));
+}
+function extractNumber(str) {
+  const m = str.match(/\d+/);
+  return m ? parseInt(m[0]) : null;
+}
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function showToast(msg) {
+  const box = document.getElementById('toastBox');
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  box.appendChild(t);
+  setTimeout(()=>t.remove(), 3000);
+}
+
+// ── Enter key support ─────────────────────────────────
+document.getElementById('homeTextCmd').addEventListener('keydown', e => {
+  if (e.key==='Enter') handleTextCommand(e.target.value);
+});
+document.getElementById('assistantTextCmd').addEventListener('keydown', e => {
+  if (e.key==='Enter') handleTextCommand(e.target.value);
+});
+document.getElementById('noteInput').addEventListener('keydown', e => {
+  if (e.key==='Enter') addNoteManual();
+});
+document.getElementById('taskInput').addEventListener('keydown', e => {
+  if (e.key==='Enter') addTaskManual();
+});
+
+// ── Init ─────────────────────────────────────────────
+updateDashboard();
+renderNotes();
+renderTasks();
+renderHistory();
+renderCommandCards();
+if (alwaysActive) { isActivated = true; setWakeBadge(true); }
+
+// Pre-load voices
+if (window.speechSynthesis) {
+  window.speechSynthesis.getVoices();
+  window.speechSynthesis.addEventListener('voiceschanged', ()=>window.speechSynthesis.getVoices());
+}
+</script>
+</body>
+</html>
