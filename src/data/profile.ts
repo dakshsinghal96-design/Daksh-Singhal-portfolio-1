@@ -72,7 +72,7 @@ export const profile = {
   contactFormEndpoint: null as string | null,
 
   /** Canonical origin, used for SEO tags and sitemap generation. */
-  siteUrl: 'https://project-archive-nu.vercel.app',
+  siteUrl: 'https://portfoio-silk.vercel.app',
 
   seo: {
     title: 'Daksh Sinhghal — Student Innovator & Creative Developer',
