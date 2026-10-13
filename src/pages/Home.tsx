@@ -10,6 +10,7 @@ import { SectionHeading } from '../components/headings';
 import { IconArrowRight, IconCode, IconHand, IconLayers, IconSpark } from '../components/icons';
 import { profile } from '../data/profile';
 import { featuredProjects, projectStats } from '../data/projects';
+import TextLoop from '../components/TextLoop';
 
 const WHAT_I_BUILD = [
   {
@@ -108,6 +109,27 @@ export default function Home() {
 
           <ProfilePortrait />
         </div>
+      </section>
+
+      {/* ---------------- Text Loop Marquee ---------------- */}
+      <section className="relative -my-8 overflow-hidden lg:-my-12" aria-hidden="true">
+        <TextLoop
+          text="AI ✦ Web Dev ✦ Creative Tech ✦ Daksh Sinhghal"
+          shape="wave"
+          speed={90}
+          direction="forward"
+          separator="✦"
+          curviness={90}
+          fontSize={46}
+          fontWeight={800}
+          letterSpacing={2}
+          uppercase
+          color="#ffffff"
+          ribbon
+          ribbonColor="#5227FF"
+          ribbonWidth={86}
+          pauseOnHover
+        />
       </section>
 
       {/* ---------------- Stats ---------------- */}
