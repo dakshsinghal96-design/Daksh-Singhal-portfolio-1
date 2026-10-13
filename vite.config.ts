@@ -8,6 +8,7 @@ export default defineConfig({
       output: {
         manualChunks: {
           three: ['three'],
+          vgpu: ['vgpu'],
           router: ['react-router-dom'],
         },
       },
