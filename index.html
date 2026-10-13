@@ -53,5 +53,24 @@
       </div>
     </noscript>
     <script type="module" src="/src/main.tsx"></script>
+
+    <!--
+      Botpress webchat. Loaded last so it never delays the hero paint, and kept
+      here rather than inside a React component so a route change cannot mount a
+      second copy of the widget.
+
+      This only covers the portfolio SPA. The archived builds under /p/ and /s/
+      are standalone HTML files that do not include this file, so the widget
+      deliberately does not appear over them.
+    -->
+    <!--
+      Both scripts are deferred. inject.js is ~1.7 MB — larger than the whole
+      app bundle — so leaving it render-blocking delayed the load event and
+      competed with the app's own chunks for bandwidth. Deferred scripts still
+      run in document order, so inject.js is still guaranteed to execute before
+      the configuration script that depends on it.
+    -->
+    <script src="https://cdn.botpress.cloud/webchat/v5.0/inject.js" defer></script>
+    <script src="https://files.bpcontent.cloud/2026/10/01/06/20261001062153-B3H69HX8.js" defer></script>
   </body>
 </html>
